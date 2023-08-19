@@ -25,7 +25,7 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
 /**
- * A resource that keeps track of all configuration settings in neon.ini.
+ * A resource that keeps track of all configuration settings in neon.ini.xml.
  * 
  * @author mdriesen
  */

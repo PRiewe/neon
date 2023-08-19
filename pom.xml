@@ -9,9 +9,9 @@
     <url>http://neon.sourceforge.net/</url>
 
     <properties>
-        <jdk.version>1.6</jdk.version>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <jdk.version>1.8</jdk.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -27,7 +27,13 @@
             <artifactId>jdbm</artifactId>
             <version>3.0-alpha5</version>
         </dependency>
-
+        <!--
+        <dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>15.4</version>
+        </dependency>
+           -->
         <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom2</artifactId>
@@ -41,9 +47,9 @@
         </dependency>
 
         <dependency>
-            <groupId>phys2d</groupId>
+            <groupId>org.peterriewe</groupId>
             <artifactId>phys2d</artifactId>
-            <version>060408</version>
+            <version>1.0-Snapshot</version>
         </dependency>
 
         <dependency>
@@ -51,11 +57,10 @@
             <artifactId>tinylaf</artifactId>
             <version>1.4.0</version>
         </dependency>
-
         <dependency>
-            <groupId>org.jtexgen</groupId>
+            <groupId>org.fluttercode.jtexgen</groupId>
             <artifactId>jtexgen</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
         </dependency>
 
     </dependencies>

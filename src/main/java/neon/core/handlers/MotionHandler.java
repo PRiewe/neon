@@ -62,9 +62,9 @@ public class MotionHandler {
 	 */
 	public static byte teleport(Creature creature, Door door) {
 		if(door.portal.isPortal()) {
-			Zone previous = Engine.getAtlas().getCurrentZone();	// effe huidige zone bufferen
+			Zone previous = Engine.getAtlas().getCurrentZone();	// buffer current zone
 			if(door.portal.getDestMap() != 0) {
-				// effen map laden en deur terug laten verwijzen
+				// load plain folder and let door refer back
 				Map map = Engine.getAtlas().getMap(door.portal.getDestMap());
 				Zone zone = map.getZone(door.portal.getDestZone());
 				for(long uid : zone.getItems(door.portal.getDestPos())) {
@@ -85,7 +85,7 @@ public class MotionHandler {
 			Engine.getAtlas().enterZone(door, previous);
 			
 			walk(creature, door.portal.getDestPos());
-			// kijken of er op de bestemming een deur staat, zo ja, deze deur unlocken en openen
+			// check whether there is a door at the destination, if so, unlock and open this door
 			Rectangle bounds = creature.getShapeComponent();
 			for(long uid : Engine.getAtlas().getCurrentZone().getItems(bounds)) {
 				Entity i = Engine.getStore().getEntity(uid);
@@ -94,7 +94,7 @@ public class MotionHandler {
 				}
 			}
 
-			// als er een sign op de deur staat, nu laten zien
+			// if there's a sign on the door, show it now
 			if(door.hasSign()) {
 				Engine.post(new MessageEvent(door, door.toString(), 3, SwingConstants.BOTTOM));
 			}

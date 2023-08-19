@@ -251,7 +251,7 @@ public class Editor implements Runnable, ActionListener {
 	}
 	
 	private void createMain() {
-		JFileChooser chooser = new JFileChooser(new File("neon.ini"));
+		JFileChooser chooser = new JFileChooser(new File("neon.ini.xml"));
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setDialogTitle("Choose module directory");
 		if(chooser.showDialog(frame, "Choose") == JFileChooser.APPROVE_OPTION) {
@@ -303,7 +303,7 @@ public class Editor implements Runnable, ActionListener {
 	}
 	
 	private void createExtension() {
-		JFileChooser chooser = new JFileChooser(new File("neon.ini"));
+		JFileChooser chooser = new JFileChooser(new File("neon.ini.xml"));
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setDialogTitle("Choose master module");
 		if(chooser.showDialog(frame, "Master") == JFileChooser.APPROVE_OPTION) {
@@ -586,7 +586,8 @@ public class Editor implements Runnable, ActionListener {
 	private void pack() {
 		filer.save();
 		try {
-			JarFile jar = FileUtils.pack(store.getActive().getPath()[0], store.getActive().get("id"));
+
+			JarFile jar = FileUtils.pack(store.getActive().getPath()[0], store.getActive().get("id"),files);
 			System.out.println("attributes: " + jar.getManifest().getMainAttributes());
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(frame, "Packing failed");

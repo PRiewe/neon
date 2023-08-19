@@ -62,7 +62,7 @@ public class CClient extends Resource {
 	private Properties strings;
 	
 	// other settings
-	private String bigCoin = "€";
+	private String bigCoin = "C";
 	private String smallCoin = "c";
 	private String title = "";
 	
@@ -188,15 +188,15 @@ public class CClient extends Resource {
 		keys = choice;
 		switch(keys) {
 		case NUMPAD: 
-			up = KeyEvent.VK_NUMPAD8;
-			upright = KeyEvent.VK_NUMPAD9;
-			right = KeyEvent.VK_NUMPAD6;
-			downright = KeyEvent.VK_NUMPAD3;
-			down = KeyEvent.VK_NUMPAD2;
-			downleft = KeyEvent.VK_NUMPAD1;
-			left = KeyEvent.VK_NUMPAD4;
-			upleft = KeyEvent.VK_NUMPAD7;
-			wait = KeyEvent.VK_NUMPAD5;
+			up = KeyEvent.VK_UP;
+			upright = KeyEvent.VK_PAGE_UP;
+			right = KeyEvent.VK_RIGHT;
+			downright = KeyEvent.VK_PAGE_DOWN;
+			down = KeyEvent.VK_DOWN;
+			downleft = KeyEvent.VK_END;
+			left = KeyEvent.VK_LEFT;
+			upleft = KeyEvent.VK_HOME;
+			wait = KeyEvent.VK_COMMA;
 			break;
 		case AZERTY:
 			up = KeyEvent.VK_Z;

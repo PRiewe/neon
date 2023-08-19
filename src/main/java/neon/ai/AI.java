@@ -173,10 +173,10 @@ public abstract class AI {
 	}
 	
 	/*
-	 * heal: kijken of er spells/scrolls/potions zijn om te healen
+	 * heal: see if there are any spells/scrolls/potions to heal
 	 */
 	protected boolean heal() {
-		// eerst potions en scrolls bekijken?
+		// first view potions and scrolls?
 		for(long uid : creature.getInventoryComponent()) {
 			Item item = (Item)Engine.getStore().getEntity(uid);
 			if(item instanceof Item.Scroll || item instanceof Item.Potion) {
@@ -207,7 +207,7 @@ public abstract class AI {
 	}
 
 	/*
-	 * cure: kijken of er iets gecured moet worden
+	 * cure: see if anything needs to be cured
 	 */
 	protected boolean cure() {
 		if(creature.hasCondition(Condition.CURSED) && cure(Effect.LIFT_CURSE)) {
@@ -258,7 +258,7 @@ public abstract class AI {
 	}
 
 	/*
-	 * equip(slot): proberen iets te equipen dat in dit slot past
+	 * equip(slot): try to equip something that will fit in this slot
 	 */
 	private boolean equip(Slot slot) {
 		for(long uid : creature.getInventoryComponent()) {
@@ -286,7 +286,7 @@ public abstract class AI {
 	}
 
 	/*
-	 * flee: wegvluchten van de jager
+	 * flee: run away from the hunter
 	 */
 	protected void flee(Creature hunter) {
 		Rectangle cBounds = creature.getShapeComponent();

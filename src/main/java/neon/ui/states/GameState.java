@@ -81,7 +81,12 @@ public class GameState extends State implements KeyListener, CollisionListener {
 		panel.removeKeyListener(this);
 	}
 
-	public void keyTyped(KeyEvent key) { 
+	@Override
+	public void separationOccured(CollisionEvent collisionEvent) {
+
+	}
+
+	public void keyTyped(KeyEvent key) {
 		switch (key.getKeyChar()) {
 		case '+': panel.zoomIn(); break;
 		case '-': panel.zoomOut(); break;	

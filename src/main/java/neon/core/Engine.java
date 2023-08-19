@@ -19,6 +19,7 @@
 package neon.core;
 
 import java.util.EventObject;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.script.*;
 import neon.core.event.*;
@@ -68,7 +69,9 @@ public class Engine implements Runnable {
 	public Engine(Port port) {
 		// engine componenten opzetten
 		bus = port.getBus();
-		engine = new ScriptEngineManager().getEngineByName("JavaScript");
+		ScriptEngineManager manager = new ScriptEngineManager();
+		List<ScriptEngineFactory> factories = manager.getEngineFactories();
+		engine = manager.getEngineByExtension("js");
 		files = new FileSystem();
 		physics = new PhysicsSystem();
 		queue = new TaskQueue();
@@ -77,7 +80,7 @@ public class Engine implements Runnable {
 		// create a resourcemanager to keep track of all the resources
 		resources = new ResourceManager();
 		// we use an IniBuilder to add all resources to the manager
-		new IniBuilder("neon.ini", files, queue).build(resources);
+		new IniBuilder("neon.ini.xml", files, queue).build(resources);
 
 		// nog engine componenten opzetten
 		quests = new QuestTracker();

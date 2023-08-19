@@ -106,7 +106,7 @@ public class Atlas {
 				Engine.getPhysicsEngine().register(region, region.getBounds(), true);
 			}
 		}
-		// niet vergeten player terug te registreren
+		// Don't forget to register player again
 		PhysicsComponent physics = Engine.getPlayer().getPhysicsComponent();
 		Engine.getPhysicsEngine().register(physics);
 	}

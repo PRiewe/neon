@@ -67,7 +67,8 @@ public class ObjectNode extends DefaultMutableTreeNode {
 	
 	public void insert(MutableTreeNode newChild, int childIndex)    {
 	    super.insert(newChild, childIndex);
-	    Collections.sort(children, nodeComparator);
+
+	    //Collections.sort(children, nodeComparator);
 	}
 
 	private static class NodeComparator implements Comparator<MutableTreeNode>, Serializable {

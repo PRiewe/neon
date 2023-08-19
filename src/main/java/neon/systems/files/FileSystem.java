@@ -29,17 +29,17 @@ import neon.util.trees.PathTree;
  * 	|- mod1
  * 	|- mod2
  * 	|- ...
- * 
- * Alle onveranderlijke data steekt in modX. Alles wat tijdens het spelen gegenereerd 
- * wordt, komt in temp. Alles in temp wordt gekopieerd naar saves als het spel wordt
- * afgesloten. In elke savegame directory wordt de structuur van data overgenomen. 
- * 
- * Als een file opgevraagd wordt: eerst kijken in temp, dan kijken in save, dan kijken
- * in mod. Klasses hoeven niet te weten dat dit gebeurt.
- * Als een file gesaved wordt: in temp steken. (eventueel later path met writable bit maken)
- * Als spel gesaved wordt: gewijzigde bestanden op een of andere manier opvragen en in
- * save dir steken.
- * 
+ *
+ * All immutable data resides in modX. Everything generated during gameplay
+ * becomes, comes in temp. Everything in temp is copied to saves when the game is running
+ * closed. The structure of data is taken over in every savegame directory.
+ *
+ * When a file is requested: first look in temp, then look in save, then look
+ * in mod. Classes don't need to know this is happening.
+ * When saving a file: put in temp. (possibly create path with writable bit later)
+ * When saving the game: retrieve and save modified files in one way or another
+ * save dir stitches.
+ *
  * verloop filegebuik tijdens spel:
  * 1. new game: 
  * 		- alles in temp saven
@@ -53,7 +53,7 @@ public class FileSystem {
 	private HashMap<String, String> jars;
 	private File temp;
 	private PathTree<String, String> files;
-	private HashMap<String, String> paths;	// om de absolute paths naar een dir of jar bij te houden
+	private HashMap<String, String> paths;	// to keep track of the absolute paths to a dir or jar
 	
 	public FileSystem() {
 		this("temp");
@@ -80,7 +80,7 @@ public class FileSystem {
 	public String mount(String path) throws IOException {
 		// file separator miserie
 		String root = path.replace("/", File.separator);
-		// het probleem is dat in neon.ini een / wordt gebruikt, waardoor windows van slag raakt
+		// the problem is that neon.ini.xml uses a /, which messes up windows
 
 		// dan laden
 		root = root.substring(0, root.lastIndexOf(File.separator) + 1);
@@ -107,7 +107,10 @@ public class FileSystem {
 		jars.remove(path);
 		files.remove(path);
 	}
-	
+
+	public String getAbsolutePath(String path) {
+		return paths.get(path);
+	}
 	/**
 	 * @param dir	the directory to search
 	 * @return	all files in the given directory
@@ -142,8 +145,8 @@ public class FileSystem {
 	}
 
 	/*
-	 * directory bijvoegen en alle subdirs en bestanden in tree steken. Het absolute path wordt afgekapt:
-	 * 'c:\games\neon\mod1' wordt toegevoegd als 'mod1'
+	 * append directory and put all subdirs and files in tree. The absolute path is truncated:
+	 * 'c:\games\neon\mod1' will be added as 'mod1'
 	 */
 	private String addDirectory(String path, String root) {
 		File dir = new File(path);

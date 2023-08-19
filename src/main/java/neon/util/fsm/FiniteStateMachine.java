@@ -57,11 +57,11 @@ public class FiniteStateMachine extends State {
 	}
 
 	public void transition(TransitionEvent event) {
-		// hier een kopie van currents maken, omdat currents kan aangepast worden
+		// make a copy of currents here, because currents can be modified
 		for(State current : new ArrayList<State>(currents)) {
 			if(currents.contains(current) && !current.isBlocked()) {
 				if(transitions.containsKey(event.toString() + current)) {
-					// dit wil zeggen dat transition.from zeker de current state is
+					// this means that transition.from is definitely the current state
 					stateChanged(event, current);
 				}
 			}

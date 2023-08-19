@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import javax.swing.border.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 
 import neon.editor.Editor;
 import neon.editor.resources.RMap;
@@ -110,8 +111,8 @@ public class MapInfoEditor implements ActionListener {
 					JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
 				data.zones.clear();
 				DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-				for(Enumeration<MutableTreeNode> mtn = node.children(); mtn.hasMoreElements();) {
-					model.removeNodeFromParent(mtn.nextElement());
+				for(Enumeration<TreeNode> mtn = node.children(); mtn.hasMoreElements();) {
+					model.removeNodeFromParent((MutableTreeNode) mtn.nextElement());
 				}
 				data.theme = (RDungeonTheme)themeBox.getSelectedItem();				
 			}

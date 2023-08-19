@@ -54,7 +54,11 @@ public class RQuest extends RData {
 		}
 		repeat = properties.getName().equals("repeat");
 		if(repeat) {
-			frequency = Integer.parseInt(properties.getAttributeValue("f"));
+			try {
+				frequency = Integer.parseInt(properties.getAttributeValue("f"));
+			}catch (NumberFormatException nfe) {
+				frequency = 1;
+			}
 		}
 		initial = (properties.getAttribute("init") != null);
 		
@@ -117,7 +121,7 @@ public class RQuest extends RData {
 			quest.addContent(pre);
 		}
 		
-		if(variables != null) {
+		if(variables != null && variables.getParent() == null) {
 			quest.addContent(variables);
 		}
 		

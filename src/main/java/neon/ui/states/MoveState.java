@@ -65,11 +65,12 @@ public class MoveState extends State implements KeyListener {
 	}
 	
 	private void move(int x, int y) {
-		// TODO: dit moet gedeeltelijk naar MotionHandler?
+		// TODO:
+		//this must be partially to MotionHandler?
 		Rectangle bounds = player.getShapeComponent();
 		Point p = new Point(bounds.x + x, bounds.y + y);
 
-		// kijken of creature in de weg staat
+		// see if creature is in the way
 		Creature other = Engine.getAtlas().getCurrentZone().getCreature(p);
 		if(other != null && !other.hasCondition(Condition.DEAD)) {
 			if(other.brain.isHostile()) {
@@ -78,7 +79,7 @@ public class MoveState extends State implements KeyListener {
 			} else {
 				bus.publishAsync(new TransitionEvent("bump", "creature", other));
 			}
-		} else {	// niemand in de weg, dus moven
+		} else {	// nno one in the way, so move
 			if(MotionHandler.move(player, p) == MotionHandler.DOOR) {
 				for(long uid : Engine.getAtlas().getCurrentZone().getItems(p)) {
 					if(Engine.getStore().getEntity(uid) instanceof Door) {

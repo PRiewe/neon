@@ -40,7 +40,7 @@ public class PhysicsSystem {
 	}
 	
 	public void register(Object object, Rectangle bounds, boolean isStatic) {
-		// -1 en -0.5f om afrondingsfouten met floats te voorkomen
+		// -1 and -0.5f to avoid rounding errors with floats
 		Box box = new Box(bounds.width - 1, bounds.height - 1);
 		Body body = isStatic ? new StaticBody(box) : new Body(box, 1);
 		body.setUserData(object);

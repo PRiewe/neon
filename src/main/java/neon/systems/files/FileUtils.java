@@ -38,6 +38,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class FileUtils {
 	/**
@@ -100,48 +102,58 @@ public class FileUtils {
 	 * @param path	the path to the directory that has to be packed
 	 * @throws IOException 
 	 */
-	public static JarFile pack(String path, String modID) throws IOException {
-		// alle oudermappen wegknippen
+	public static JarFile pack(String path, String modID, FileSystem fileSystem) throws IOException {
+		// cut out all parent folders
+
 		String name = path.substring(Math.max(0, path.lastIndexOf(File.separator)));
 
-		File mod = new File(path);
+		File mod = new File(fileSystem.getAbsolutePath(path));
 		File jar = new File(name + ".jar");
 
 		byte buffer[] = new byte[1024];
 		// open jar file
 		FileOutputStream stream = new FileOutputStream(jar);
+
 		JarOutputStream out = new JarOutputStream(stream);
 
-		for(File file : listFiles(mod)) {
-			String entry = file.getPath().replace(path + File.separator, "").replace(File.separator, "/");
-			System.out.println("Adding " + entry);
+		try {
+			for (File file : listFiles(mod)) {
+				String entry = file.getPath().replace(fileSystem.getAbsolutePath(path) + File.separator, "").replace(File.separator, "/");
+				System.out.println("Adding " + entry);
 
-			// add jar entry
-			out.putNextEntry(new JarEntry(entry));
+				// add jar entry
+				out.putNextEntry(new JarEntry(entry));
 
-			// write file to jar
-			FileInputStream in = new FileInputStream(file);
-			while(true) {
-				int nRead = in.read(buffer, 0, buffer.length);
-				if(nRead <= 0) { break; }
-				out.write(buffer, 0, nRead);
+				// write file to jar
+				FileInputStream in = new FileInputStream(file);
+				while (true) {
+					int nRead = in.read(buffer, 0, buffer.length);
+					if (nRead <= 0) {
+						break;
+					}
+					out.write(buffer, 0, nRead);
+				}
+				in.close();
 			}
-			in.close();
+			// manifest schrijven
+			Manifest mf = new Manifest();
+			mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+			mf.getMainAttributes().putValue("Mod-ID", modID);
+			System.out.println(mf.getMainAttributes().getValue("Mod-ID"));
+
+			JarEntry manifest = new JarEntry("META-INF/MANIFEST.MF");
+			out.putNextEntry(manifest);
+			mf.write(out);
+			out.finish();
+			out.close();
+			stream.close();
+			System.out.println("Adding completed!");
+			return new JarFile(jar);
+		} catch (IOException ioe) {
+			System.out.println(ioe.toString());
+			ioe.printStackTrace();
+			throw(ioe);
 		}
-		// manifest schrijven
-		Manifest mf = new Manifest();
-		mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-		mf.getMainAttributes().putValue("Mod-ID", modID);
-		System.out.println(mf.getMainAttributes().getValue("Mod-ID"));
-
-		JarEntry manifest = new JarEntry("META-INF/MANIFEST.MF");
-		out.putNextEntry(manifest);
-		mf.write(out);
-
-		out.close();
-		stream.close();
-		System.out.println("Adding completed!");
-		return new JarFile(jar);
 	}
 	
 	/**
@@ -185,7 +197,10 @@ public class FileUtils {
 	// geeft lijst terug van alle files in een directory en zijn subdirectories
 	private static List<File> listFiles(File dir) {
 		ArrayList<File> files = new ArrayList<File>();
-		for(File file : dir.listFiles()) {
+
+		File[] fileArray = dir.listFiles();
+		if(fileArray == null) return files;
+		for(File file : fileArray) {
 			if(file.isDirectory()) {
 				files.addAll(listFiles(file));
 			} else {
