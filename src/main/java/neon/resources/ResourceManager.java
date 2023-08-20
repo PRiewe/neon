@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 public class ResourceManager {
-  private HashMap<String, Resource> resources = new HashMap<String, Resource>();
+  private final HashMap<String, Resource> resources = new HashMap<String, Resource>();
 
   public Resource getResource(String id) {
     return resources.get(id);

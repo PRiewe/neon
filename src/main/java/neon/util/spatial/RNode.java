@@ -27,10 +27,10 @@ class RNode<E> {
   private RNode<E>[] nodes;
   private int[] entries;
   private Rectangle[] boxes;
-  private int max; // node size van de tree	(max aantal elementen in een node)
-  private int min; // fill factor van de tree	(min aantal elementen in een node)
+  private final int max; // node size van de tree	(max aantal elementen in een node)
+  private final int min; // fill factor van de tree	(min aantal elementen in een node)
   private int size; // totaal aantal objecten in deze node en subnodes
-  private RTree<E> tree;
+  private final RTree<E> tree;
 
   protected RNode(int nodesize, int fillfactor, RTree<E> parent) {
     tree = parent;
@@ -42,7 +42,7 @@ class RNode<E> {
   }
 
   protected Rectangle getBox() {
-    return (Rectangle) box;
+    return box;
   }
 
   protected RNode<E>[] getNodes() {

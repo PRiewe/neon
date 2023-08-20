@@ -30,7 +30,7 @@ import org.jdom2.input.SAXBuilder;
  * @author mdriesen
  */
 public class CServer extends Resource {
-  private ArrayList<String> mods = new ArrayList<String>();
+  private final ArrayList<String> mods = new ArrayList<String>();
   private String log = "FINEST";
   private boolean gThread = true;
   //	private boolean audio = false;

@@ -31,9 +31,9 @@ import neon.entities.Entity;
  */
 @SuppressWarnings("serial")
 public class InventoryCellRenderer extends JLabel implements ListCellRenderer<Entity> {
-  private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-  private Font font;
-  private HashMap<String, Integer> data;
+  private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+  private final Font font;
+  private final HashMap<String, Integer> data;
 
   /** Initializes this renderer. */
   public InventoryCellRenderer(HashMap<String, Integer> data) {

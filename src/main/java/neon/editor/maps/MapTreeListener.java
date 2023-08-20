@@ -36,9 +36,9 @@ import neon.ui.graphics.Scene;
 import org.jdom2.Element;
 
 public class MapTreeListener implements MouseListener {
-  private JTree tree;
-  private JTabbedPane tabs;
-  private MapEditor editor;
+  private final JTree tree;
+  private final JTabbedPane tabs;
+  private final MapEditor editor;
 
   public MapTreeListener(JTree tree, JTabbedPane mapPane, MapEditor editor) {
     this.tree = tree;
@@ -177,7 +177,7 @@ public class MapTreeListener implements MouseListener {
   }
 
   private class TabLabelListener implements ActionListener {
-    private ZoneTreeNode node;
+    private final ZoneTreeNode node;
 
     public TabLabelListener(ZoneTreeNode node) {
       this.node = node;
@@ -190,7 +190,7 @@ public class MapTreeListener implements MouseListener {
 
   @SuppressWarnings("serial")
   private class ClickAction extends AbstractAction {
-    private RMap map;
+    private final RMap map;
 
     public ClickAction(String name, RMap map) {
       super(name);

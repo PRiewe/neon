@@ -24,9 +24,13 @@ import javax.swing.JComponent;
 import neon.entities.Entity;
 
 public class Translation implements Runnable {
-  private JComponent component;
-  private Entity entity;
-  private int x1, y1, x2, y2, interval;
+  private final JComponent component;
+  private final Entity entity;
+  private final int x1;
+  private final int y1;
+  private final int x2;
+  private final int y2;
+  private final int interval;
 
   /**
    * Translates an entity from one position to another.

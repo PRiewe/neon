@@ -35,7 +35,7 @@ import neon.ui.console.JConsole;
  * @author mdriesen
  */
 public class UserInterface {
-  private JFrame window;
+  private final JFrame window;
   private Popup popup;
   private HelpWindow help;
 
@@ -218,7 +218,7 @@ public class UserInterface {
 
   @SuppressWarnings("serial")
   private class DialogListener extends AbstractAction {
-    private JDialog dialog;
+    private final JDialog dialog;
     private boolean answer;
 
     public DialogListener(JDialog dialog) {

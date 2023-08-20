@@ -28,8 +28,8 @@ import neon.maps.Zone;
 import neon.ui.MapPanel;
 
 public class MapDialog implements KeyListener {
-  private JDialog frame;
-  private MapPanel map;
+  private final JDialog frame;
+  private final MapPanel map;
 
   public MapDialog(JFrame parent, Zone zone) {
     frame = new JDialog(parent, false);

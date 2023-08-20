@@ -26,10 +26,10 @@ import javax.swing.table.TableCellEditor;
 
 @SuppressWarnings("serial")
 public class DialogEditor extends AbstractCellEditor implements ActionListener, TableCellEditor {
-  private JDialog frame;
-  private JTextArea pre;
-  private JTextArea answer;
-  private JTextArea action;
+  private final JDialog frame;
+  private final JTextArea pre;
+  private final JTextArea answer;
+  private final JTextArea action;
   private String[] topic;
   private int col, row;
   private JTable table;

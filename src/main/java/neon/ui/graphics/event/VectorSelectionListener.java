@@ -21,5 +21,5 @@ package neon.ui.graphics.event;
 import java.util.EventListener;
 
 public interface VectorSelectionListener extends EventListener {
-  public void selectionChanged(VectorSelectionEvent e);
+  void selectionChanged(VectorSelectionEvent e);
 }

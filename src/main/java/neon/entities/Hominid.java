@@ -28,7 +28,7 @@ import neon.resources.RCreature;
 import neon.resources.RTattoo;
 
 public class Hominid extends neon.entities.Creature {
-  private Set<RTattoo> tattoos = new HashSet<RTattoo>();
+  private final Set<RTattoo> tattoos = new HashSet<RTattoo>();
 
   public Hominid(String id, long uid, RCreature species) {
     super(id, uid, species);

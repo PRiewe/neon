@@ -28,9 +28,9 @@ import neon.resources.RRecipe;
 
 @SuppressWarnings("serial")
 public class ResourceNode extends DefaultMutableTreeNode {
-  private static NodeComparator nodeComparator = new NodeComparator();
+  private static final NodeComparator nodeComparator = new NodeComparator();
   private RData resource;
-  private ResourceType type;
+  private final ResourceType type;
   private String name;
 
   public ResourceNode(RData r, ResourceType t) {
@@ -104,13 +104,13 @@ public class ResourceNode extends DefaultMutableTreeNode {
     DISEASE("magic"),
     RECIPE("magic");
 
-    private String namespace;
+    private final String namespace;
 
-    private ResourceType() {
+    ResourceType() {
       this(null);
     }
 
-    private ResourceType(String namespace) {
+    ResourceType(String namespace) {
       this.namespace = namespace;
     }
 

@@ -36,10 +36,14 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 public class OptionDialog {
-  private JCheckBox audioBox;
-  private JRadioButton numpad, qwerty, azerty, qwertz, arrows;
-  private ButtonGroup group;
-  private JDialog frame;
+  private final JCheckBox audioBox;
+  private final JRadioButton numpad;
+  private final JRadioButton qwerty;
+  private final JRadioButton azerty;
+  private final JRadioButton qwertz;
+  private final JRadioButton arrows;
+  private final ButtonGroup group;
+  private final JDialog frame;
 
   public OptionDialog(JFrame parent) {
     frame = new JDialog(parent, false);

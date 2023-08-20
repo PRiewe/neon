@@ -29,8 +29,8 @@ import neon.resources.RSpell;
 import neon.util.Dice;
 
 public class HuntBehaviour implements Behaviour {
-  private Creature creature;
-  private Creature prey;
+  private final Creature creature;
+  private final Creature prey;
 
   public HuntBehaviour(Creature hunter, Creature prey) {
     creature = hunter;

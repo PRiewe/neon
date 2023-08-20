@@ -35,7 +35,7 @@ public class Conversation {
   public final String id;
 
   // vieze manier om een tree structuur te maken met een multimap
-  private Multimap<Topic, Topic> topics = ArrayListMultimap.create();
+  private final Multimap<Topic, Topic> topics = ArrayListMultimap.create();
   private Topic root;
 
   /**

@@ -42,7 +42,7 @@ import neon.util.Dice;
  */
 public class DungeonGenerator {
   // zone info
-  private RZoneTheme theme;
+  private final RZoneTheme theme;
   private Zone zone;
 
   // dingen
@@ -456,7 +456,7 @@ public class DungeonGenerator {
   }
 
   private static String[][] makeTerrain(int[][] tiles, String[] floors) {
-    String terrain[][] = new String[tiles.length][tiles[0].length];
+    String[][] terrain = new String[tiles.length][tiles[0].length];
 
     for (int x = 0; x < tiles.length; x++) {
       for (int y = 0; y < tiles[0].length; y++) {

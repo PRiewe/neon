@@ -45,13 +45,13 @@ import net.engio.mbassy.bus.MBassador;
 
 public class InventoryState extends State implements KeyListener, MouseListener {
   private Player player;
-  private JList<Item> inventory;
-  private JLabel info;
-  private HashMap<String, Integer> listData;
-  private JPanel panel;
-  private DescriptionPanel description;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JList<Item> inventory;
+  private final JLabel info;
+  private final HashMap<String, Integer> listData;
+  private final JPanel panel;
+  private final DescriptionPanel description;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
 
   public InventoryState(State parent, MBassador<EventObject> bus, UserInterface ui) {
     super(parent, "inventory module");

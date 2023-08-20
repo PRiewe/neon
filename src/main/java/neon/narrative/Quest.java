@@ -27,7 +27,7 @@ public class Quest {
   public RQuest template;
   private int stage = 0;
   private boolean finished = false;
-  private HashMap<String, Object> objects = new HashMap<String, Object>();
+  private final HashMap<String, Object> objects = new HashMap<String, Object>();
 
   public Quest(RQuest template) {
     this.template = template;

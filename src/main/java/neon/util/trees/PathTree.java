@@ -28,7 +28,7 @@ import java.util.Collection;
  * @param <F>
  */
 public class PathTree<E, F> {
-  private PathNode<E, F> top;
+  private final PathNode<E, F> top;
 
   public PathTree() {
     top = new PathNode<E, F>(0);

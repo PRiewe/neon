@@ -22,8 +22,8 @@ import java.util.EventObject;
 
 @SuppressWarnings("serial")
 public class TurnEvent extends EventObject {
-  private int time;
-  private boolean start;
+  private final int time;
+  private final boolean start;
 
   public TurnEvent(int turn) {
     this(turn, false);

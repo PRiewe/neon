@@ -29,7 +29,7 @@ public class Trap implements Component {
 
   private int DC;
   private int state;
-  private long uid;
+  private final long uid;
 
   public Trap(long uid) {
     this.uid = uid;

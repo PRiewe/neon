@@ -40,9 +40,9 @@ import net.engio.mbassy.listener.References;
 
 @Listener(references = References.Strong) // strong, om gc te vermijden
 public class TurnHandler {
-  private GamePanel panel;
+  private final GamePanel panel;
   private Generator generator;
-  private int range;
+  private final int range;
 
   public TurnHandler(GamePanel panel) {
     this.panel = panel;

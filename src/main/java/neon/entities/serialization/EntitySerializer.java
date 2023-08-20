@@ -29,8 +29,8 @@ import org.apache.jdbm.Serializer;
 
 public class EntitySerializer implements Serializer<Entity>, Serializable {
   private static final long serialVersionUID = 4682346337753485512L;
-  private ItemSerializer itemSerializer = new ItemSerializer();
-  private CreatureSerializer creatureSerializer = new CreatureSerializer();
+  private final ItemSerializer itemSerializer = new ItemSerializer();
+  private final CreatureSerializer creatureSerializer = new CreatureSerializer();
 
   public Entity deserialize(DataInput input) throws IOException, ClassNotFoundException {
     switch (input.readUTF()) {

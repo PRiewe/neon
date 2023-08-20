@@ -27,7 +27,7 @@ public class RClothing extends RItem {
     LIGHT,
     MEDIUM,
     HEAVY,
-    NONE;
+    NONE
   }
 
   // algemene dingen

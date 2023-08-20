@@ -76,13 +76,13 @@ public class Resolver {
       String[] things = var.getAttributeValue("id").split(",");
       String item = things[Dice.roll(1, things.length, -1)];
       strings.add("$" + var.getTextTrim() + "$");
-      strings.add(item.toString());
+      strings.add(item);
       tracker.addObject(item);
     } else {
       String item = items.toArray()[Dice.roll(1, items.size(), -1)].toString();
       strings.add("$" + var.getTextTrim() + "$");
-      strings.add(item.toString());
-      tracker.addObject(item.toString());
+      strings.add(item);
+      tracker.addObject(item);
     }
   }
 

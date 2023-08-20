@@ -42,9 +42,9 @@ import neon.resources.*;
 import neon.resources.RItem.Type;
 
 public class ObjectTreeListener implements MouseListener {
-  private JTree tree;
-  private JFrame frame;
-  private DefaultTreeModel model;
+  private final JTree tree;
+  private final JFrame frame;
+  private final DefaultTreeModel model;
 
   public ObjectTreeListener(JTree objectTree, JFrame frame) {
     this.frame = frame;
@@ -143,7 +143,7 @@ public class ObjectTreeListener implements MouseListener {
 
   @SuppressWarnings("serial")
   public class ClickAction extends AbstractAction {
-    private ObjectNode.ObjectType type;
+    private final ObjectNode.ObjectType type;
 
     public ClickAction(String name, ObjectNode.ObjectType type) {
       super(name);

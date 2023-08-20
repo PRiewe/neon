@@ -33,14 +33,14 @@ import java.util.*;
  * @author mdriesen
  */
 public class TextureFactory {
-  private static HashMap<Integer, HashMap<String, TexturePaint>> textures = new HashMap<>();
-  private static HashMap<Integer, HashMap<String, Image>> images = new HashMap<>();
+  private static final HashMap<Integer, HashMap<String, TexturePaint>> textures = new HashMap<>();
+  private static final HashMap<Integer, HashMap<String, Image>> images = new HashMap<>();
 
   private static Font base = new Font("Lucida Sans Typewriter Regular", Font.PLAIN, 12);
 
-  private static GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-  private static GraphicsDevice gs = ge.getDefaultScreenDevice();
-  private static GraphicsConfiguration gc = gs.getDefaultConfiguration();
+  private static final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+  private static final GraphicsDevice gs = ge.getDefaultScreenDevice();
+  private static final GraphicsConfiguration gc = gs.getDefaultConfiguration();
 
   static { // try to load DejaVu font, fallback is Lucida
     try {

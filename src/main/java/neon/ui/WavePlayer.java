@@ -23,7 +23,7 @@ import javax.sound.sampled.*;
 
 public class WavePlayer extends Thread {
   private static final int EXTERNAL_BUFFER_SIZE = 524288; // 128Kb
-  private String filename;
+  private final String filename;
 
   public WavePlayer(String wavfile) {
     filename = wavfile;

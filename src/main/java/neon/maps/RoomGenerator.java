@@ -213,7 +213,7 @@ public class RoomGenerator {
   }
 
   protected static class Room {
-    private Rectangle[] regions;
+    private final Rectangle[] regions;
 
     public Room(Rectangle... regions) {
       this.regions = regions;

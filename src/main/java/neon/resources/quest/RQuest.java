@@ -36,8 +36,8 @@ public class RQuest extends RData {
   // initial quest wordt toegevoegd van zodra spel start
   public boolean initial = false;
 
-  private ArrayList<String> conditions = new ArrayList<String>();
-  private ArrayList<Conversation> conversations = new ArrayList<Conversation>();
+  private final ArrayList<String> conditions = new ArrayList<String>();
+  private final ArrayList<Conversation> conversations = new ArrayList<Conversation>();
 
   public RQuest(String id, Element properties, String... path) {
     super(id, path);

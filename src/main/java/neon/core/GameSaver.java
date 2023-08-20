@@ -41,7 +41,7 @@ import org.jdom2.Element;
 
 @Listener(references = References.Strong)
 public class GameSaver {
-  private TaskQueue queue;
+  private final TaskQueue queue;
 
   public GameSaver(TaskQueue queue) {
     this.queue = queue;

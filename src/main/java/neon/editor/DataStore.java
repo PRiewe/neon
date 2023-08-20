@@ -32,9 +32,9 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 
 public class DataStore {
-  private HashMap<String, RScript> scripts = new HashMap<String, RScript>();
-  private Multimap<String, String> events = ArrayListMultimap.create();
-  private HashMap<String, RMod> mods = new HashMap<String, RMod>();
+  private final HashMap<String, RScript> scripts = new HashMap<String, RScript>();
+  private final Multimap<String, String> events = ArrayListMultimap.create();
+  private final HashMap<String, RMod> mods = new HashMap<String, RMod>();
   private RMod active;
 
   public RMod getActive() {

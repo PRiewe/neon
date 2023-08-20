@@ -31,11 +31,11 @@ import org.apache.jdbm.*;
  * @author mdriesen
  */
 public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
-  private NavigableMap<Integer, E> objects;
-  private Map<Integer, Rectangle2D> boxes;
+  private final NavigableMap<Integer, E> objects;
+  private final Map<Integer, Rectangle2D> boxes;
   private RNode<E> root;
-  private int max;
-  private int min;
+  private final int max;
+  private final int min;
 
   /**
    * Initializes a new R-tree with the given maximum node size and minimum fill factor.

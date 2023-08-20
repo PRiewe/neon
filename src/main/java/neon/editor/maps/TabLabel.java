@@ -24,7 +24,7 @@ import javax.swing.*;
 
 @SuppressWarnings("serial")
 public class TabLabel extends JPanel {
-  private JButton button;
+  private final JButton button;
 
   public TabLabel(String title) {
     // randen rond label wat kleiner maken

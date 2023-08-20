@@ -24,7 +24,7 @@ import neon.ui.graphics.JVectorPane;
 
 @SuppressWarnings("serial")
 public class VectorSelectionEvent extends EventObject {
-  private Rectangle selection;
+  private final Rectangle selection;
 
   public VectorSelectionEvent(JVectorPane source, Rectangle selection) {
     super(source);

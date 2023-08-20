@@ -40,13 +40,13 @@ public class MapEditor {
   private static JToggleButton selectButton;
   private static UndoAction undoAction;
   private static HashMap<String, Short> mapUIDs;
-  private JScrollPane mapScrollPane;
-  private JTree mapTree;
-  private JButton undo;
-  private HashSet<RMap> activeMaps;
-  private JTabbedPane tabs;
-  private JCheckBox levelBox;
-  private JSpinner levelSpinner;
+  private final JScrollPane mapScrollPane;
+  private final JTree mapTree;
+  private final JButton undo;
+  private final HashSet<RMap> activeMaps;
+  private final JTabbedPane tabs;
+  private final JCheckBox levelBox;
+  private final JSpinner levelSpinner;
 
   public MapEditor(JTabbedPane tabs, JPanel panel) {
     activeMaps = new HashSet<RMap>();
@@ -109,11 +109,7 @@ public class MapEditor {
   public static boolean isVisible(Instance r) {
     if (r instanceof IRegion && Editor.tShow.isSelected()) {
       return true;
-    } else if (r instanceof IObject && Editor.oShow.isSelected()) {
-      return true;
-    } else {
-      return false;
-    }
+    } else return r instanceof IObject && Editor.oShow.isSelected();
   }
 
   public static void setUndoAction(UndoAction undo) {

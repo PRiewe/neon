@@ -60,7 +60,7 @@ public enum Trait {
 
   public final String text;
 
-  private Trait(String text) {
+  Trait(String text) {
     this.text = text;
   }
 }

@@ -24,11 +24,11 @@ package neon.util.fsm;
  * @author mdriesen
  */
 public class Transition {
-  private String condition;
-  private boolean local;
-  private Action action;
-  private State next;
-  private State from;
+  private final String condition;
+  private final boolean local;
+  private final Action action;
+  private final State next;
+  private final State from;
 
   public Transition(State from, State next, String condition) {
     this(from, next, condition, null);

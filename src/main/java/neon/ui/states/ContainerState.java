@@ -48,18 +48,20 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
 
   private Player player;
   private Object container;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
 
   // onderdelen van het JPanel
-  private JPanel panel;
-  private JList<Item> iList;
-  private JList<Entity> cList;
-  private JScrollPane cScroll, iScroll;
-  private DescriptionPanel description;
+  private final JPanel panel;
+  private final JList<Item> iList;
+  private final JList<Entity> cList;
+  private final JScrollPane cScroll;
+  private final JScrollPane iScroll;
+  private final DescriptionPanel description;
 
   // lijstjes
-  private HashMap<String, Integer> cData, iData;
+  private final HashMap<String, Integer> cData;
+  private final HashMap<String, Integer> iData;
 
   public ContainerState(State parent, MBassador<EventObject> bus, UserInterface ui) {
     super(parent);
@@ -148,7 +150,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
       case KeyEvent.VK_SPACE:
         try {
           if (iList.hasFocus()) { // iets dumpen
-            Item item = (Item) iList.getSelectedValue();
+            Item item = iList.getSelectedValue();
             InventoryHandler.removeItem(player, item.getUID());
             if (container instanceof Container) { // verandering registreren
               ((Container) container).addItem(item.getUID());
@@ -162,7 +164,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
             }
             update();
           } else { // iets oppakken
-            Entity item = (Entity) cList.getSelectedValue();
+            Entity item = cList.getSelectedValue();
             if (item instanceof Container) {
               bus.publishAsync(new TransitionEvent("return"));
               bus.publishAsync(new TransitionEvent("container", "holder", item));

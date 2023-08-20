@@ -30,10 +30,13 @@ import neon.resources.RSpell;
 import neon.util.ColorFactory;
 
 public class PotionEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JFormattedTextField costField, weightField, charField;
-  private JComboBox<String> colorBox, spellBox;
-  private RItem data;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final JComboBox<String> spellBox;
+  private final RItem data;
 
   public PotionEditor(JFrame parent, RItem data) {
     super(parent, "Potion Editor: " + data.id);

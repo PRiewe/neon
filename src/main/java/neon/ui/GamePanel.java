@@ -47,16 +47,26 @@ import neon.util.ColorFactory;
 @SuppressWarnings("serial")
 public class GamePanel extends JComponent {
   // onderdelen
-  private JTextArea text;
-  private JScrollPane scroller;
-  private JPanel stats;
+  private final JTextArea text;
+  private final JScrollPane scroller;
+  private final JPanel stats;
   private DefaultRenderable cursor;
-  private TitledBorder sBorder, aBorder, cBorder;
-  private JVectorPane drawing;
+  private final TitledBorder sBorder;
+  private final TitledBorder aBorder;
+  private final TitledBorder cBorder;
+  private final JVectorPane drawing;
 
   // onderdelen van het statspanel
-  private JLabel intLabel, conLabel, dexLabel, strLabel, wisLabel, chaLabel;
-  private JLabel healthLabel, magicLabel, AVLabel, DVLabel;
+  private final JLabel intLabel;
+  private final JLabel conLabel;
+  private final JLabel dexLabel;
+  private final JLabel strLabel;
+  private final JLabel wisLabel;
+  private final JLabel chaLabel;
+  private final JLabel healthLabel;
+  private final JLabel magicLabel;
+  private final JLabel AVLabel;
+  private final JLabel DVLabel;
 
   /** Initializes this GamePanel. */
   public GamePanel() {

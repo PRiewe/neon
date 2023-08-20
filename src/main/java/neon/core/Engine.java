@@ -56,8 +56,8 @@ public class Engine implements Runnable {
   private static MBassador<EventObject> bus; // event bus
   private static ResourceManager resources;
 
-  private TaskQueue queue;
-  private Configuration config;
+  private final TaskQueue queue;
+  private final Configuration config;
 
   // wordt extern geset
   private static Game game;

@@ -41,13 +41,13 @@ public class UIDStore {
   public static final long DUMMY = 0;
 
   // uid database
-  private DB db;
+  private final DB db;
   // uids van alle objecten in het spel
-  private ConcurrentMap<Long, Entity> objects;
+  private final ConcurrentMap<Long, Entity> objects;
   // uids van alle geladen mods
-  private ConcurrentMap<Short, Mod> mods;
+  private final ConcurrentMap<Short, Mod> mods;
   // uids van alle geladen maps
-  private BiMap<Integer, String> maps = HashBiMap.create();
+  private final BiMap<Integer, String> maps = HashBiMap.create();
 
   /**
    * Tells this UIDStore to use the given jdbm3 cache.

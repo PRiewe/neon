@@ -197,7 +197,7 @@ public class MapUtils {
    */
   public static Point[] randomRibbon(Rectangle r, boolean horizontal) {
     // richting: true is horizontaal, false is verticaal
-    Point ribbon[];
+    Point[] ribbon;
 
     if (horizontal) {
       ribbon = new Point[r.width];

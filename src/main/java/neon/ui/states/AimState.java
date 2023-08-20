@@ -50,14 +50,14 @@ import net.engio.mbassy.bus.MBassador;
  * @author mdriesen
  */
 public class AimState extends State implements KeyListener {
-  private Point target;
+  private final Point target;
   private Player player;
   private DefaultRenderable cursor;
   private Popup popup;
   private GamePanel panel;
-  private CClient keys;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final CClient keys;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
 
   /** Constructs a new AimModule. */
   public AimState(State state, MBassador<EventObject> bus, UserInterface ui) {

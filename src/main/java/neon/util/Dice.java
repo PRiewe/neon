@@ -66,12 +66,12 @@ public class Dice {
 
     if (index2 > 0) { // -1 wilt zeggen dat er geen + is gevonden
       dice = Integer.parseInt(roll.substring(index1 + 1, index2));
-      mod = Integer.parseInt(roll.substring(index2 + 1, roll.length()));
+      mod = Integer.parseInt(roll.substring(index2 + 1));
     } else if (index3 > 0) { // -1 wilt zeggen dat er geen - is gevonden
       dice = Integer.parseInt(roll.substring(index1 + 1, index3));
-      mod = -Integer.parseInt(roll.substring(index3 + 1, roll.length()));
+      mod = -Integer.parseInt(roll.substring(index3 + 1));
     } else {
-      dice = Integer.parseInt(roll.substring(index1 + 1, roll.length()));
+      dice = Integer.parseInt(roll.substring(index1 + 1));
     }
 
     return roll(number, dice, mod);

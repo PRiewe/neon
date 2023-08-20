@@ -23,8 +23,8 @@ import java.util.HashMap;
 
 @SuppressWarnings("serial")
 public class TransitionEvent extends EventObject {
-  private String eventID;
-  private HashMap<String, Object> parameters;
+  private final String eventID;
+  private final HashMap<String, Object> parameters;
   private boolean consumed;
 
   public TransitionEvent(String id) {

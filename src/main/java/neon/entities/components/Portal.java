@@ -26,7 +26,7 @@ public class Portal implements Component {
   private Point destPos;
   private int destZone = -1; // -1 is zelfde zone
   private String theme;
-  private long uid;
+  private final long uid;
 
   public Portal(long uid) {
     this.uid = uid;

@@ -32,8 +32,8 @@ import org.jdom2.*;
 
 public class ModLoader {
   private String path;
-  private TaskQueue queue;
-  private FileSystem files;
+  private final TaskQueue queue;
+  private final FileSystem files;
 
   public ModLoader(String mod, TaskQueue queue, FileSystem files) {
     this.queue = queue;

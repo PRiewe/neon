@@ -32,8 +32,8 @@ import org.jdom2.Element;
 
 @SuppressWarnings("serial")
 public class ObjectTransferHandler extends TransferHandler {
-  private RZone zone;
-  private EditablePane pane;
+  private final RZone zone;
+  private final EditablePane pane;
 
   public ObjectTransferHandler(RZone zone, EditablePane pane) {
     this.zone = zone;

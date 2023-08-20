@@ -78,9 +78,12 @@ public class BlocksGenerator {
   }
 
   private static class SparseGenerator {
-    private int w, h, minW, maxW;
-    private double ratio;
-    private ArrayList<Rectangle> rooms;
+    private final int w;
+    private final int h;
+    private final int minW;
+    private final int maxW;
+    private final double ratio;
+    private final ArrayList<Rectangle> rooms;
     private Area area;
 
     private SparseGenerator(int w, int h, int minW, int maxW, double ratio) {
@@ -129,7 +132,10 @@ public class BlocksGenerator {
   }
 
   private static class BSPGenerator {
-    private int w, h, minW, maxW;
+    private final int w;
+    private final int h;
+    private final int minW;
+    private final int maxW;
 
     private BSPGenerator(int w, int h, int minW, int maxW) {
       this.w = w;
@@ -178,9 +184,12 @@ public class BlocksGenerator {
   }
 
   private static class RectangleGenerator {
-    private int w, h, minW, maxW;
-    private double ratio;
-    private ArrayList<Rectangle> rooms;
+    private final int w;
+    private final int h;
+    private final int minW;
+    private final int maxW;
+    private final double ratio;
+    private final ArrayList<Rectangle> rooms;
     private Area area;
 
     private RectangleGenerator(int w, int h, int minW, int maxW, double ratio) {

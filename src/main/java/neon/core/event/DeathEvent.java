@@ -23,7 +23,7 @@ import neon.entities.Creature;
 
 @SuppressWarnings("serial")
 public class DeathEvent extends EventObject {
-  private int time;
+  private final int time;
 
   /**
    * @param c the creature that died

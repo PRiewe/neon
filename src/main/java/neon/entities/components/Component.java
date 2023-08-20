@@ -22,5 +22,5 @@ public interface Component {
   /**
    * @return the uid of the entity this component belongs to
    */
-  public long getUID();
+  long getUID();
 }

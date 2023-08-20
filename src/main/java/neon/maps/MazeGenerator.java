@@ -260,10 +260,7 @@ public class MazeGenerator {
       if (!up && !down && left && !right) {
         return true;
       }
-      if (!up && !down && !left && right) {
-        return true;
-      }
-      return false;
+      return !up && !down && !left && right;
     }
   }
 }

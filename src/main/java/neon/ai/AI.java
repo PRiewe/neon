@@ -213,10 +213,7 @@ public abstract class AI {
       return true;
     } else if (creature.hasCondition(Condition.PARALYZED) && cure(Effect.CURE_PARALYZATION)) {
       return true;
-    } else if (creature.hasCondition(Condition.BLIND) && cure(Effect.CURE_BLINDNESS)) {
-      return true;
-    }
-    return false;
+    } else return creature.hasCondition(Condition.BLIND) && cure(Effect.CURE_BLINDNESS);
   }
 
   /*

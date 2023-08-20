@@ -32,12 +32,12 @@ import neon.resources.RTattoo;
 import neon.ui.UserInterface;
 
 public class TattooDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<RTattoo> tattoos;
-  private JPanel panel;
-  private String coin;
-  private UserInterface ui;
+  private final JList<RTattoo> tattoos;
+  private final JPanel panel;
+  private final String coin;
+  private final UserInterface ui;
 
   public TattooDialog(UserInterface ui, String coin) {
     this.coin = coin;
@@ -131,7 +131,7 @@ public class TattooDialog implements KeyListener {
   }
 
   private class TattooCellRenderer implements ListCellRenderer<RTattoo> {
-    private UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    private final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
     public Component getListCellRendererComponent(
         JList<? extends RTattoo> list,

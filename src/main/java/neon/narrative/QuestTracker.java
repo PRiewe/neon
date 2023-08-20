@@ -29,10 +29,10 @@ import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.listener.Handler;
 
 public class QuestTracker {
-  private LinkedList<String> objects = new LinkedList<>();
-  private HashMap<String, Quest> quests = new HashMap<>();
+  private final LinkedList<String> objects = new LinkedList<>();
+  private final HashMap<String, Quest> quests = new HashMap<>();
   // tijdelijke map voor quests die voor dialogmodule zijn geladen
-  private HashMap<String, Quest> temp = new HashMap<>();
+  private final HashMap<String, Quest> temp = new HashMap<>();
 
   public QuestTracker() {}
 

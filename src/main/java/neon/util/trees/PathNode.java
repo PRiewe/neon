@@ -21,9 +21,9 @@ package neon.util.trees;
 import java.util.*;
 
 public class PathNode<E, F> {
-  private HashMap<E, PathNode<E, F>> nodes; // directories
-  private HashMap<E, F> values; // files
-  private int level;
+  private final HashMap<E, PathNode<E, F>> nodes; // directories
+  private final HashMap<E, F> values; // files
+  private final int level;
 
   protected PathNode(int level) {
     this.level = level;
@@ -81,11 +81,7 @@ public class PathNode<E, F> {
 
   protected boolean contains(E[] path) {
     if (path.length == level + 1) {
-      if (values.containsKey(path[level])) {
-        return true;
-      } else {
-        return false;
-      }
+      return values.containsKey(path[level]);
     } else {
       if (nodes.containsKey(path[level])) {
         return nodes.get(path[level]).contains(path);

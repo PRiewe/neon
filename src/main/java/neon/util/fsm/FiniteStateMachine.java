@@ -27,9 +27,9 @@ import java.util.*;
  */
 public class FiniteStateMachine extends State {
   // String in hashmap is eventID + current state, dan kunnen eventIDs herbruikt worden
-  private HashMap<String, Transition> transitions = new HashMap<>();
-  private HashMap<String, Object> variables = new HashMap<>();
-  private List<State> starts = new ArrayList<>(); // lijst met alle start states
+  private final HashMap<String, Transition> transitions = new HashMap<>();
+  private final HashMap<String, Object> variables = new HashMap<>();
+  private final List<State> starts = new ArrayList<>(); // lijst met alle start states
   private Set<State> currents; // lijst van alle current states
 
   public FiniteStateMachine() {

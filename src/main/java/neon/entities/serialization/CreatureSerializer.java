@@ -39,7 +39,7 @@ import org.apache.jdbm.Serializer;
 // TODO: factions
 public class CreatureSerializer implements Serializer<Creature>, Serializable {
   private static final long serialVersionUID = -2452444993764883434L;
-  private static AIFactory aiFactory = new AIFactory();
+  private static final AIFactory aiFactory = new AIFactory();
 
   public Creature deserialize(DataInput in) throws IOException, ClassNotFoundException {
     String id = in.readUTF();

@@ -39,13 +39,13 @@ import neon.resources.RSpell;
 import neon.ui.UserInterface;
 
 public class EnchantDialog implements KeyListener, ListSelectionListener {
-  private JDialog frame;
-  private JPanel panel;
-  private JList<Item> itemList;
-  private DefaultListModel<Item> itemModel;
-  private JList<Effect> spellList;
-  private DefaultListModel<Effect> spellModel;
-  private UserInterface ui;
+  private final JDialog frame;
+  private final JPanel panel;
+  private final JList<Item> itemList;
+  private final DefaultListModel<Item> itemModel;
+  private final JList<Effect> spellList;
+  private final DefaultListModel<Effect> spellModel;
+  private final UserInterface ui;
 
   public EnchantDialog(UserInterface ui) {
     this.ui = ui;

@@ -19,6 +19,7 @@
 package neon.resources;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -38,11 +39,11 @@ public class RItem extends RData {
     light,
     potion,
     scroll,
-    weapon;
+    weapon
   }
 
-  private static XMLOutputter outputter = new XMLOutputter();
-  private static SAXBuilder builder = new SAXBuilder();
+  private static final XMLOutputter outputter = new XMLOutputter();
+  private static final SAXBuilder builder = new SAXBuilder();
 
   public int cost;
   public float weight;
@@ -65,7 +66,7 @@ public class RItem extends RData {
       spell = item.getAttributeValue("spell");
     }
     if (item.getChild("svg") != null) {
-      svg = outputter.outputString((Element) item.getChild("svg").getChildren().get(0));
+      svg = outputter.outputString(item.getChild("svg").getChildren().get(0));
     }
   }
 
@@ -80,8 +81,9 @@ public class RItem extends RData {
     if (svg != null) {
       try {
         Element graphics = new Element("svg");
-        ByteArrayInputStream stream = new ByteArrayInputStream(svg.getBytes("UTF-8"));
-        Element shape = (Element) builder.build(stream).getRootElement().detach();
+        ByteArrayInputStream stream =
+            new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8));
+        Element shape = builder.build(stream).getRootElement().detach();
         graphics.addContent(shape);
         item.addContent(graphics);
       } catch (Exception e) {

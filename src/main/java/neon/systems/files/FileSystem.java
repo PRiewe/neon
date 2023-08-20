@@ -50,10 +50,11 @@ import neon.util.trees.PathTree;
  * 		- alles hetzelfde, alleen dir al gemaakt en saves.xml niet aanpassen
  */
 public class FileSystem {
-  private HashMap<String, String> jars;
-  private File temp;
-  private PathTree<String, String> files;
-  private HashMap<String, String> paths; // to keep track of the absolute paths to a dir or jar
+  private final HashMap<String, String> jars;
+  private final File temp;
+  private final PathTree<String, String> files;
+  private final HashMap<String, String>
+      paths; // to keep track of the absolute paths to a dir or jar
 
   public FileSystem() {
     this("temp");
@@ -127,7 +128,7 @@ public class FileSystem {
     while (entries.hasMoreElements()) {
       JarEntry entry = entries.nextElement();
       if (!entry.isDirectory()) {
-        String name = new String(entry.getName());
+        String name = entry.getName();
         // dit moet blijkbaar met "/" omdat ik in een jar zit, en niet met File.separator
         int separatorCount = name.length() - name.replace("/", "").length();
         String[] pathArray = new String[separatorCount + 2];

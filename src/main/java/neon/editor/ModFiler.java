@@ -49,10 +49,10 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
 public class ModFiler {
-  private FileSystem files;
-  private DataStore store;
-  private Editor editor;
-  private JFrame frame;
+  private final FileSystem files;
+  private final DataStore store;
+  private final Editor editor;
+  private final JFrame frame;
 
   public ModFiler(JFrame frame, FileSystem files, DataStore store, Editor editor) {
     this.frame = frame;

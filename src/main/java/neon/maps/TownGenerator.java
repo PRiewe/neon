@@ -32,7 +32,7 @@ import neon.resources.RTerrain;
  * @author mdriesen
  */
 public class TownGenerator {
-  private Zone zone;
+  private final Zone zone;
 
   public TownGenerator(Zone zone) {
     this.zone = zone;

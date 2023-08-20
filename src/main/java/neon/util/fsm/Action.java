@@ -21,5 +21,5 @@ package neon.util.fsm;
 import java.util.EventObject;
 
 public interface Action {
-  public void run(EventObject e);
+  void run(EventObject e);
 }

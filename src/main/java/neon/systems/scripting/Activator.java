@@ -19,9 +19,9 @@
 package neon.systems.scripting;
 
 public interface Activator {
-  public java.util.Collection<String> getScripts();
+  java.util.Collection<String> getScripts();
 
-  public void addScript(String id, boolean once);
+  void addScript(String id, boolean once);
 
-  public void removeScript(String id);
+  void removeScript(String id);
 }

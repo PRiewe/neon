@@ -108,7 +108,7 @@ public class FileUtils {
     File mod = new File(fileSystem.getAbsolutePath(path));
     File jar = new File(name + ".jar");
 
-    byte buffer[] = new byte[1024];
+    byte[] buffer = new byte[1024];
     // open jar file
     FileOutputStream stream = new FileOutputStream(jar);
 

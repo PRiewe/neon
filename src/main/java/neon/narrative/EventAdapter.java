@@ -24,7 +24,7 @@ import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.listener.Handler;
 
 public class EventAdapter {
-  private QuestTracker tracker;
+  private final QuestTracker tracker;
 
   public EventAdapter(QuestTracker tracker) {
     this.tracker = tracker;

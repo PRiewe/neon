@@ -30,9 +30,9 @@ import java.util.List;
  * @param <E>
  */
 public class QuadTree<E> implements SpatialIndex<E> {
-  private Node root;
-  private Rectangle bounds;
-  private int capacity;
+  private final Node root;
+  private final Rectangle bounds;
+  private final int capacity;
 
   public QuadTree(int capacity, Rectangle bounds) {
     this.capacity = capacity;

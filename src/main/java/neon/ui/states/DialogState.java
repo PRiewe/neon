@@ -62,20 +62,22 @@ import org.jdom2.Element;
  * af van de precondities die in quests staan.
  */
 public class DialogState extends State implements KeyListener {
-  private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+  private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
-  private JPanel panel, conversation;
+  private final JPanel panel;
+  private final JPanel conversation;
   private Creature target;
-  private JTextPane text = new JTextPane();
-  private JList<Topic> subjects;
-  private JList<String> services;
+  private final JTextPane text = new JTextPane();
+  private final JList<Topic> subjects;
+  private final JList<String> services;
   private JList<?> list;
-  private JScrollPane left;
-  private HTMLEditorKit kit = new HTMLEditorKit();
-  private HTMLDocument doc;
-  private String big, small;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JScrollPane left;
+  private final HTMLEditorKit kit = new HTMLEditorKit();
+  private final HTMLDocument doc;
+  private final String big;
+  private final String small;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private Topic topic;
 
   public DialogState(State parent, MBassador<EventObject> bus, UserInterface ui) {
@@ -315,7 +317,7 @@ public class DialogState extends State implements KeyListener {
   }
 
   private static class AutoScroller implements Runnable {
-    private JScrollBar bar;
+    private final JScrollBar bar;
 
     public AutoScroller(JScrollBar bar) {
       this.bar = bar;

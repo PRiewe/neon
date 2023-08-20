@@ -33,7 +33,7 @@ public class Lock implements Component {
   private int lock = 0;
   private int state = OPEN;
   private RItem key;
-  private long uid;
+  private final long uid;
 
   public Lock(long uid) {
     this.uid = uid;

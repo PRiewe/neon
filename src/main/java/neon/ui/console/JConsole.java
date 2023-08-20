@@ -38,12 +38,12 @@ import javax.swing.text.*;
 @SuppressWarnings("serial")
 public class JConsole extends JTextArea implements KeyListener {
   private final ConsoleInputStream in;
-  private CommandHistory history;
+  private final CommandHistory history;
   private int editStart;
   private boolean running;
-  private ScriptEngine engine;
-  private ConsoleFilter filter;
-  private JDialog frame;
+  private final ScriptEngine engine;
+  private final ConsoleFilter filter;
+  private final JDialog frame;
 
   /** Initializes a console with the given <code>ScriptEngine</code> and the given parent window. */
   public JConsole(ScriptEngine engine, JFrame parent) {
@@ -100,7 +100,7 @@ public class JConsole extends JTextArea implements KeyListener {
   }
 
   private static class ConsoleFilter extends DocumentFilter {
-    private JConsole console;
+    private final JConsole console;
     public boolean useFilters;
 
     public ConsoleFilter(JConsole console) {
@@ -270,7 +270,7 @@ public class JConsole extends JTextArea implements KeyListener {
   }
 
   private class JavaScriptRunner implements Runnable {
-    private String commands;
+    private final String commands;
 
     public JavaScriptRunner(String commands) {
       this.commands = commands;

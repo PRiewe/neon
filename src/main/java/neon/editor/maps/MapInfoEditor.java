@@ -31,13 +31,13 @@ import neon.editor.resources.RMap;
 import neon.resources.RDungeonTheme;
 
 public class MapInfoEditor implements ActionListener {
-  private JDialog frame;
-  private JPanel itemProps;
-  private JTextField nameField;
-  private JComboBox<RDungeonTheme> themeBox;
-  private RMap data;
-  private MapTreeNode node;
-  private JTree tree;
+  private final JDialog frame;
+  private final JPanel itemProps;
+  private final JTextField nameField;
+  private final JComboBox<RDungeonTheme> themeBox;
+  private final RMap data;
+  private final MapTreeNode node;
+  private final JTree tree;
 
   public MapInfoEditor(JFrame parent, MapTreeNode node, JTree tree) {
     data = node.getMap();

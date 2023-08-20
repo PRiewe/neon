@@ -37,20 +37,21 @@ import neon.resources.RSpell.SpellType;
 
 public class CCEditor
     implements ActionListener, ItemListener, ListSelectionListener, MouseListener {
-  private JDialog frame;
-  private JCheckBox raceBox;
-  private JFormattedTextField xField, yField;
-  private JComboBox<RMap> mapBox;
-  private JComboBox<RZone> zoneBox;
+  private final JDialog frame;
+  private final JCheckBox raceBox;
+  private final JFormattedTextField xField;
+  private final JFormattedTextField yField;
+  private final JComboBox<RMap> mapBox;
+  private final JComboBox<RZone> zoneBox;
   private HashMap<RCreature, Boolean> races;
-  private JList<RCreature> raceList;
-  private JList<RItem> itemList;
-  private JList<RSpell> spellList;
+  private final JList<RCreature> raceList;
+  private final JList<RItem> itemList;
+  private final JList<RSpell> spellList;
   private RCreature currentRace;
-  private DefaultListModel<RSpell> spellListModel;
-  private DefaultListModel<RItem> itemListModel;
+  private final DefaultListModel<RSpell> spellListModel;
+  private final DefaultListModel<RItem> itemListModel;
   private String[] spells;
-  private JPanel raceEditPanel;
+  private final JPanel raceEditPanel;
 
   public CCEditor(JFrame parent) {
     frame = new JDialog(parent, "Character Creation Editor", true); // modal dialog

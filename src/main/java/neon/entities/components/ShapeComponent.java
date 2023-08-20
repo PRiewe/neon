@@ -23,7 +23,7 @@ import neon.entities.Entity;
 
 @SuppressWarnings("serial")
 public class ShapeComponent extends Rectangle implements Component {
-  private Entity entity;
+  private final Entity entity;
 
   public ShapeComponent(Entity entity, int x, int y, int width, int height) {
     super(x, y, width, height);

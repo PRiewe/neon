@@ -42,9 +42,9 @@ import neon.resources.RWeapon;
 
 @SuppressWarnings("serial")
 public class DescriptionPanel extends JPanel {
-  private JLabel label = new JLabel();
-  private JPanel properties = new JPanel();
-  private String coin;
+  private final JLabel label = new JLabel();
+  private final JPanel properties = new JPanel();
+  private final String coin;
 
   public DescriptionPanel(String coin) {
     this.coin = coin;

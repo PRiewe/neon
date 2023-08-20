@@ -35,7 +35,7 @@ import neon.ui.graphics.svg.SVGLoader;
 import neon.util.Dice;
 
 public class EntityFactory {
-  private static AIFactory aiFactory = new AIFactory();
+  private static final AIFactory aiFactory = new AIFactory();
 
   public static Item getItem(String id, long uid) {
     Item item = getItem(id, -1, -1, uid);
@@ -87,7 +87,7 @@ public class EntityFactory {
     // item aanmaken
     switch (resource.type) {
       case container:
-        return new Container(uid, (RItem.Container) resource);
+        return new Container(uid, resource);
       case food:
         return new Item.Food(uid, resource);
       case aid:

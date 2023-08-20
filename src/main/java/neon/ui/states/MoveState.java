@@ -43,8 +43,8 @@ import net.engio.mbassy.bus.MBassador;
 public class MoveState extends State implements KeyListener {
   private Player player;
   private GamePanel panel;
-  private CClient keys;
-  private MBassador<EventObject> bus;
+  private final CClient keys;
+  private final MBassador<EventObject> bus;
 
   public MoveState(State parent, MBassador<EventObject> bus) {
     super(parent, "move module");
