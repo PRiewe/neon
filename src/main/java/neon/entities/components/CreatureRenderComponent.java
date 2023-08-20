@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -21,7 +21,6 @@ package neon.entities.components;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-
 import neon.entities.Creature;
 import neon.entities.property.Condition;
 import neon.resources.RCreature;
@@ -30,47 +29,60 @@ import neon.util.ColorFactory;
 import neon.util.TextureFactory;
 
 /**
- * Class used to render creatures. Rendering takes into account the size of a 
- * creature, whether it has any active spells, and whether it's dead or alive.
- * 
+ * Class used to render creatures. Rendering takes into account the size of a creature, whether it
+ * has any active spells, and whether it's dead or alive.
+ *
  * @author mdriesen
  */
 public class CreatureRenderComponent extends RenderComponent {
-	protected Creature creature;
-	
-	public CreatureRenderComponent(Creature creature) {
-		this.creature = creature;
-	}
-	
-	@Override
-	public void paint(Graphics2D graphics, float zoomf, boolean isSelected) {
-		RCreature species = creature.species;
-		Rectangle bounds = creature.getShapeComponent();
-		int x = bounds.x;
-		int y = bounds.y;
-		String text = creature.hasCondition(Condition.DEAD) ? "%" : species.text;
-		int zoom = (int)zoomf;
-		Color color = ColorFactory.getColor(species.color);
-		if(species.size == Size.tiny) {
-			graphics.drawImage(TextureFactory.getImage(text, zoom*2/3, color), x*zoom + zoom/6, y*zoom + zoom/6, zoom*2/3, zoom*2/3, null);
-		} else if(species.size == Size.huge) {
-			graphics.drawImage(TextureFactory.getImage(text, zoom*3/2, color), x*zoom - zoom/4, y*zoom - zoom/4, zoom*3/2, zoom*3/2, null);
-		} else {
-			graphics.drawImage(TextureFactory.getImage(text, zoom, color), x*zoom, y*zoom, zoom, zoom, null);
-		}
-		if(creature.getActiveSpells().size() != 0) {
-			graphics.setPaint(Color.blue);
-			graphics.drawOval(x*zoom, y*zoom, bounds.width*zoom, bounds.height*zoom);
-		} 		
-	}
+  protected Creature creature;
 
-	@Override
-	public Rectangle getBounds() {
-		return creature.getShapeComponent();
-	}
+  public CreatureRenderComponent(Creature creature) {
+    this.creature = creature;
+  }
 
-	@Override
-	public long getUID() {
-		return creature.getUID();
-	}
+  @Override
+  public void paint(Graphics2D graphics, float zoomf, boolean isSelected) {
+    RCreature species = creature.species;
+    Rectangle bounds = creature.getShapeComponent();
+    int x = bounds.x;
+    int y = bounds.y;
+    String text = creature.hasCondition(Condition.DEAD) ? "%" : species.text;
+    int zoom = (int) zoomf;
+    Color color = ColorFactory.getColor(species.color);
+    if (species.size == Size.tiny) {
+      graphics.drawImage(
+          TextureFactory.getImage(text, zoom * 2 / 3, color),
+          x * zoom + zoom / 6,
+          y * zoom + zoom / 6,
+          zoom * 2 / 3,
+          zoom * 2 / 3,
+          null);
+    } else if (species.size == Size.huge) {
+      graphics.drawImage(
+          TextureFactory.getImage(text, zoom * 3 / 2, color),
+          x * zoom - zoom / 4,
+          y * zoom - zoom / 4,
+          zoom * 3 / 2,
+          zoom * 3 / 2,
+          null);
+    } else {
+      graphics.drawImage(
+          TextureFactory.getImage(text, zoom, color), x * zoom, y * zoom, zoom, zoom, null);
+    }
+    if (creature.getActiveSpells().size() != 0) {
+      graphics.setPaint(Color.blue);
+      graphics.drawOval(x * zoom, y * zoom, bounds.width * zoom, bounds.height * zoom);
+    }
+  }
+
+  @Override
+  public Rectangle getBounds() {
+    return creature.getShapeComponent();
+  }
+
+  @Override
+  public long getUID() {
+    return creature.getUID();
+  }
 }

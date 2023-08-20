@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -31,34 +31,33 @@ import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
 
 /**
- * 
- * 
  * @author mdriesen
  */
-@Listener(references = References.Strong)	// strong, om gc te vermijden
+@Listener(references = References.Strong) // strong, om gc te vermijden
 public class DeathHandler {
-	public DeathHandler() {}
-	
-	@Handler public void handle(DeathEvent de) {
-		Creature creature = de.getCreature();
-		
-		// creature laten doodgaan
-		creature.die(de.getTime());
-		
-		// scripts draaien op creature
-		ScriptComponent sc = creature.getScriptComponent();
-		
-		for(String s : sc.getScripts()) {
-			RScript rs = (RScript) Engine.getResources().getResource(s, "script");
-			ScriptEngine se = Engine.getScriptEngine();
-			try {
-				se.eval(rs.script);
-				((Invocable) se).invokeFunction("onDeath", "0");
-			} catch (ScriptException e) {
-				e.printStackTrace();
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+  public DeathHandler() {}
+
+  @Handler
+  public void handle(DeathEvent de) {
+    Creature creature = de.getCreature();
+
+    // creature laten doodgaan
+    creature.die(de.getTime());
+
+    // scripts draaien op creature
+    ScriptComponent sc = creature.getScriptComponent();
+
+    for (String s : sc.getScripts()) {
+      RScript rs = (RScript) Engine.getResources().getResource(s, "script");
+      ScriptEngine se = Engine.getScriptEngine();
+      try {
+        se.eval(rs.script);
+        ((Invocable) se).invokeFunction("onDeath", "0");
+      } catch (ScriptException e) {
+        e.printStackTrace();
+      } catch (NoSuchMethodException e) {
+        e.printStackTrace();
+      }
+    }
+  }
 }

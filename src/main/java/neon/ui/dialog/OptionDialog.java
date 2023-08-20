@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -26,194 +26,220 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.swing.*;
 import javax.swing.border.*;
+import neon.core.Configuration;
+import neon.core.Engine;
+import neon.resources.CClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import neon.core.Configuration;
-import neon.core.Engine;
-import neon.resources.CClient;
 
 public class OptionDialog {
-	private JCheckBox audioBox;
-	private JRadioButton numpad, qwerty, azerty, qwertz, arrows;
-	private ButtonGroup group;	
-	private JDialog frame;
-	
-	public OptionDialog(JFrame parent) {
-		frame = new JDialog(parent, false);
-		frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
-		frame.setUndecorated(true);
-		frame.setTitle("Options");
-		
-		JPanel control = new JPanel();
-		control.setLayout(new BoxLayout(control, BoxLayout.PAGE_AXIS));
-		control.setBorder(new TitledBorder("Choose movement keys"));
-		numpad = new JRadioButton("numpad");
-		numpad.setMnemonic('n');
-		numpad.setSelected(true);
-		qwerty = new JRadioButton("qwerty");
-		qwerty.setMnemonic('q');
-		azerty = new JRadioButton("azerty");
-		azerty.setMnemonic('a');
-		qwertz = new JRadioButton("qwertz");
-		qwertz.setMnemonic('z');
-		arrows = new JRadioButton("arrowkeys");
-		qwertz.setMnemonic('k');
+  private JCheckBox audioBox;
+  private JRadioButton numpad, qwerty, azerty, qwertz, arrows;
+  private ButtonGroup group;
+  private JDialog frame;
 
-		ButtonAction numpadAction = new ButtonAction("numpad", "numpad");
-		control.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("N"), "numpad");
-		control.getActionMap().put("numpad", numpadAction);
-		ButtonAction qwertyAction = new ButtonAction("qwerty", "qwerty");
-		control.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("Q"), "qwerty");
-		control.getActionMap().put("qwerty", qwertyAction);
-		ButtonAction azertyAction = new ButtonAction("azerty", "azerty");
-		control.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("A"), "azerty");
-		control.getActionMap().put("azerty", azertyAction);
-		ButtonAction qwertzAction = new ButtonAction("qwertz", "qwertz");
-		control.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("Z"), "qwertz");
-		control.getActionMap().put("qwertz", qwertzAction);
-		ButtonAction arrowAction = new ButtonAction("arrowskeys", "arrowkeys");
-		control.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("K"), "arrowkeys");
-		control.getActionMap().put("arrowskeys", arrowAction);
+  public OptionDialog(JFrame parent) {
+    frame = new JDialog(parent, false);
+    frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
+    frame.setUndecorated(true);
+    frame.setTitle("Options");
 
-		group = new ButtonGroup();
-		group.add(numpad);
-		group.add(qwerty);
-		group.add(qwertz);
-		group.add(azerty);
-		group.add(arrows);
-		
-		JPanel audio = new JPanel();
-		audio.setBorder(new TitledBorder("Audio options"));
-		audioBox = new JCheckBox("audio on");
-		audioBox.setDisplayedMnemonicIndex(6);
-		audioBox.setSelected(Configuration.audio);
-		audio.add(audioBox);
-		ButtonAction audioAction = new ButtonAction("audio", "audio");
-		audio.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("O"), "audio");
-		audio.getActionMap().put("audio", audioAction);
-		
-		JPanel buttons = new JPanel();
-		Action okAction = new ButtonAction("Ok", "ok");
-		JButton ok = new JButton(okAction);
-		buttons.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ENTER"), "ok");
-		buttons.getActionMap().put("ok", okAction);
-		Action cancelAction = new ButtonAction("Cancel", "esc");
-		JButton cancel = new JButton(cancelAction);
-		buttons.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), "esc");
-		buttons.getActionMap().put("esc", okAction);
-		
-		control.add(numpad);
-		control.add(azerty);
-		control.add(qwerty);
-		control.add(qwertz);
-		control.add(arrows);
-		buttons.add(ok);
-		buttons.add(cancel);
-		
-		JPanel options = new JPanel(new BorderLayout());		
-		options.add(control, BorderLayout.CENTER);
-		options.add(audio, BorderLayout.PAGE_END);
-		
-    	JLabel instructions = new JLabel("Press enter to accept settings, esc to cancel.");
-    	instructions.setBorder(new CompoundBorder(new TitledBorder("Instructions"), new EmptyBorder(0,5,10,5)));
-		
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(instructions, BorderLayout.PAGE_START);
-		panel.add(options);
-		panel.add(buttons, BorderLayout.PAGE_END);
-		panel.setBorder(new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10,10,10,10)));		
-		frame.setContentPane(panel);
-        try {
-        	frame.setOpacity(0.9f);
-        } catch(UnsupportedOperationException e) {
-        	System.out.println("setOpacity() not supported.");
-        }
-	}
-	
-	public void show() {
-		CClient keys = (CClient)Engine.getResources().getResource("client", "config");
+    JPanel control = new JPanel();
+    control.setLayout(new BoxLayout(control, BoxLayout.PAGE_AXIS));
+    control.setBorder(new TitledBorder("Choose movement keys"));
+    numpad = new JRadioButton("numpad");
+    numpad.setMnemonic('n');
+    numpad.setSelected(true);
+    qwerty = new JRadioButton("qwerty");
+    qwerty.setMnemonic('q');
+    azerty = new JRadioButton("azerty");
+    azerty.setMnemonic('a');
+    qwertz = new JRadioButton("qwertz");
+    qwertz.setMnemonic('z');
+    arrows = new JRadioButton("arrowkeys");
+    qwertz.setMnemonic('k');
 
-		switch(keys.getSettings()) {
-		case CClient.AZERTY: azerty.setSelected(true); break;
-		case CClient.QWERTY: qwerty.setSelected(true); break;
-		case CClient.QWERTZ: qwertz.setSelected(true); break;
-		case CClient.NUMPAD: numpad.setSelected(true); break;
-		case CClient.ARROWKEYS: arrows.setSelected(true); break;
-		}
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);	
-	}
+    ButtonAction numpadAction = new ButtonAction("numpad", "numpad");
+    control
+        .getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+        .put(KeyStroke.getKeyStroke("N"), "numpad");
+    control.getActionMap().put("numpad", numpadAction);
+    ButtonAction qwertyAction = new ButtonAction("qwerty", "qwerty");
+    control
+        .getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+        .put(KeyStroke.getKeyStroke("Q"), "qwerty");
+    control.getActionMap().put("qwerty", qwertyAction);
+    ButtonAction azertyAction = new ButtonAction("azerty", "azerty");
+    control
+        .getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+        .put(KeyStroke.getKeyStroke("A"), "azerty");
+    control.getActionMap().put("azerty", azertyAction);
+    ButtonAction qwertzAction = new ButtonAction("qwertz", "qwertz");
+    control
+        .getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+        .put(KeyStroke.getKeyStroke("Z"), "qwertz");
+    control.getActionMap().put("qwertz", qwertzAction);
+    ButtonAction arrowAction = new ButtonAction("arrowskeys", "arrowkeys");
+    control
+        .getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+        .put(KeyStroke.getKeyStroke("K"), "arrowkeys");
+    control.getActionMap().put("arrowskeys", arrowAction);
 
-	@SuppressWarnings("serial")
-	private class ButtonAction extends AbstractAction {
-		public ButtonAction(String text, String command) {
-			super(text);
-			putValue(ACTION_COMMAND_KEY, command);
-		}
-		
-		public void actionPerformed(ActionEvent e) {
-			if(e.getActionCommand().equals("numpad")) {
-				numpad.setSelected(true);
-			} else if(e.getActionCommand().equals("azerty")) {
-				azerty.setSelected(true);
-			} else if(e.getActionCommand().equals("qwerty")) {
-				qwerty.setSelected(true);
-			} else if(e.getActionCommand().equals("qwertz")) {
-				qwertz.setSelected(true);
-			} else if(e.getActionCommand().equals("arrowkeys")) {
-				arrows.setSelected(true);
-			} else if(e.getActionCommand().equals("audio")) {
-				audioBox.setSelected(!audioBox.isSelected());
-			} else if(e.getActionCommand().equals("ok")) {
-				save();
-				frame.dispose();
-			} else if(e.getActionCommand().equals("esc")) {
-				frame.dispose();
-			}
-		}
-		
-		private void save() {
-			Document doc = new Document();
-			try {
-				FileInputStream in = new FileInputStream("neon.ini.xml");
-				doc = new SAXBuilder().build(in);
-				in.close();
-			} catch (Exception e) {
-				Engine.getLogger().severe(e.getMessage());
-			}
-			
-			Configuration.audio = audioBox.isSelected();
-			Element ini = doc.getRootElement();
-			CClient keys = (CClient)Engine.getResources().getResource("client", "config");
-			if(group.isSelected(numpad.getModel())) {
-				keys.setKeys(CClient.NUMPAD);
-				ini.getChild("keys").setText("numpad");
-			} else if(group.isSelected(azerty.getModel())) {
-				keys.setKeys(CClient.AZERTY);
-				ini.getChild("keys").setText("azerty");
-			} else if(group.isSelected(qwerty.getModel())) {
-				keys.setKeys(CClient.QWERTY);
-				ini.getChild("keys").setText("qwerty");
-			} else if(group.isSelected(qwertz.getModel())) {
-				keys.setKeys(CClient.QWERTZ);
-				ini.getChild("keys").setText("qwertz");
-			} else if (group.isSelected(arrows.getModel())) {
-				keys.setKeys(CClient.ARROWKEYS);
-				ini.getChild("keys").setText("arrowkeys");
-			}
-			
-			XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-			try {
-				FileOutputStream out = new FileOutputStream("neon.ini.xml");
-				outputter.output(doc, out);
-				out.close();
-			} catch (IOException e) {
-				Engine.getLogger().severe(e.getMessage());
-			} 
-		}
-	}
+    group = new ButtonGroup();
+    group.add(numpad);
+    group.add(qwerty);
+    group.add(qwertz);
+    group.add(azerty);
+    group.add(arrows);
+
+    JPanel audio = new JPanel();
+    audio.setBorder(new TitledBorder("Audio options"));
+    audioBox = new JCheckBox("audio on");
+    audioBox.setDisplayedMnemonicIndex(6);
+    audioBox.setSelected(Configuration.audio);
+    audio.add(audioBox);
+    ButtonAction audioAction = new ButtonAction("audio", "audio");
+    audio.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("O"), "audio");
+    audio.getActionMap().put("audio", audioAction);
+
+    JPanel buttons = new JPanel();
+    Action okAction = new ButtonAction("Ok", "ok");
+    JButton ok = new JButton(okAction);
+    buttons
+        .getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+        .put(KeyStroke.getKeyStroke("ENTER"), "ok");
+    buttons.getActionMap().put("ok", okAction);
+    Action cancelAction = new ButtonAction("Cancel", "esc");
+    JButton cancel = new JButton(cancelAction);
+    buttons
+        .getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+        .put(KeyStroke.getKeyStroke("ESCAPE"), "esc");
+    buttons.getActionMap().put("esc", okAction);
+
+    control.add(numpad);
+    control.add(azerty);
+    control.add(qwerty);
+    control.add(qwertz);
+    control.add(arrows);
+    buttons.add(ok);
+    buttons.add(cancel);
+
+    JPanel options = new JPanel(new BorderLayout());
+    options.add(control, BorderLayout.CENTER);
+    options.add(audio, BorderLayout.PAGE_END);
+
+    JLabel instructions = new JLabel("Press enter to accept settings, esc to cancel.");
+    instructions.setBorder(
+        new CompoundBorder(new TitledBorder("Instructions"), new EmptyBorder(0, 5, 10, 5)));
+
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.add(instructions, BorderLayout.PAGE_START);
+    panel.add(options);
+    panel.add(buttons, BorderLayout.PAGE_END);
+    panel.setBorder(
+        new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10, 10, 10, 10)));
+    frame.setContentPane(panel);
+    try {
+      frame.setOpacity(0.9f);
+    } catch (UnsupportedOperationException e) {
+      System.out.println("setOpacity() not supported.");
+    }
+  }
+
+  public void show() {
+    CClient keys = (CClient) Engine.getResources().getResource("client", "config");
+
+    switch (keys.getSettings()) {
+      case CClient.AZERTY:
+        azerty.setSelected(true);
+        break;
+      case CClient.QWERTY:
+        qwerty.setSelected(true);
+        break;
+      case CClient.QWERTZ:
+        qwertz.setSelected(true);
+        break;
+      case CClient.NUMPAD:
+        numpad.setSelected(true);
+        break;
+      case CClient.ARROWKEYS:
+        arrows.setSelected(true);
+        break;
+    }
+    frame.pack();
+    frame.setLocationRelativeTo(null);
+    frame.setVisible(true);
+  }
+
+  @SuppressWarnings("serial")
+  private class ButtonAction extends AbstractAction {
+    public ButtonAction(String text, String command) {
+      super(text);
+      putValue(ACTION_COMMAND_KEY, command);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+      if (e.getActionCommand().equals("numpad")) {
+        numpad.setSelected(true);
+      } else if (e.getActionCommand().equals("azerty")) {
+        azerty.setSelected(true);
+      } else if (e.getActionCommand().equals("qwerty")) {
+        qwerty.setSelected(true);
+      } else if (e.getActionCommand().equals("qwertz")) {
+        qwertz.setSelected(true);
+      } else if (e.getActionCommand().equals("arrowkeys")) {
+        arrows.setSelected(true);
+      } else if (e.getActionCommand().equals("audio")) {
+        audioBox.setSelected(!audioBox.isSelected());
+      } else if (e.getActionCommand().equals("ok")) {
+        save();
+        frame.dispose();
+      } else if (e.getActionCommand().equals("esc")) {
+        frame.dispose();
+      }
+    }
+
+    private void save() {
+      Document doc = new Document();
+      try {
+        FileInputStream in = new FileInputStream("neon.ini.xml");
+        doc = new SAXBuilder().build(in);
+        in.close();
+      } catch (Exception e) {
+        Engine.getLogger().severe(e.getMessage());
+      }
+
+      Configuration.audio = audioBox.isSelected();
+      Element ini = doc.getRootElement();
+      CClient keys = (CClient) Engine.getResources().getResource("client", "config");
+      if (group.isSelected(numpad.getModel())) {
+        keys.setKeys(CClient.NUMPAD);
+        ini.getChild("keys").setText("numpad");
+      } else if (group.isSelected(azerty.getModel())) {
+        keys.setKeys(CClient.AZERTY);
+        ini.getChild("keys").setText("azerty");
+      } else if (group.isSelected(qwerty.getModel())) {
+        keys.setKeys(CClient.QWERTY);
+        ini.getChild("keys").setText("qwerty");
+      } else if (group.isSelected(qwertz.getModel())) {
+        keys.setKeys(CClient.QWERTZ);
+        ini.getChild("keys").setText("qwertz");
+      } else if (group.isSelected(arrows.getModel())) {
+        keys.setKeys(CClient.ARROWKEYS);
+        ini.getChild("keys").setText("arrowkeys");
+      }
+
+      XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+      try {
+        FileOutputStream out = new FileOutputStream("neon.ini.xml");
+        outputter.output(doc, out);
+        out.close();
+      } catch (IOException e) {
+        Engine.getLogger().severe(e.getMessage());
+      }
+    }
+  }
 }

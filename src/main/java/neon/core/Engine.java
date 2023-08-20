@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -34,186 +34,176 @@ import neon.narrative.EventAdapter;
 import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
 import neon.resources.builder.IniBuilder;
-import neon.systems.physics.PhysicsSystem;
-import neon.systems.timing.Timer;
 import neon.systems.files.FileSystem;
 import neon.systems.io.Port;
+import neon.systems.physics.PhysicsSystem;
+import neon.systems.timing.Timer;
 import net.engio.mbassy.bus.MBassador;
 
 /**
- * The engine class is the core of the neon roguelike engine. It keeps track of 
- * all game elements.
- * 
+ * The engine class is the core of the neon roguelike engine. It keeps track of all game elements.
+ *
  * @author mdriesen
  */
 public class Engine implements Runnable {
-	// wordt door engine geïnitialiseerd
-	// TODO: alle global static state wegwerken
-	private static ScriptEngine engine;	
-	private static FileSystem files;		// virtual file system
-	private static PhysicsSystem physics;	// de physics engine
-	private static Logger logger;
-	private static QuestTracker quests;	
-	private static MBassador<EventObject> bus;	// event bus
-	private static ResourceManager resources;
-	
-	private TaskQueue queue;
-	private Configuration config;
+  // wordt door engine geïnitialiseerd
+  // TODO: alle global static state wegwerken
+  private static ScriptEngine engine;
+  private static FileSystem files; // virtual file system
+  private static PhysicsSystem physics; // de physics engine
+  private static Logger logger;
+  private static QuestTracker quests;
+  private static MBassador<EventObject> bus; // event bus
+  private static ResourceManager resources;
 
-	// wordt extern geset
-	private static Game game;
-	
-	/**
-	 * Initializes the engine. 
-	 */
-	public Engine(Port port) {
-		// engine componenten opzetten
-		bus = port.getBus();
-		ScriptEngineManager manager = new ScriptEngineManager();
-		List<ScriptEngineFactory> factories = manager.getEngineFactories();
-		engine = manager.getEngineByExtension("js");
-		files = new FileSystem();
-		physics = new PhysicsSystem();
-		queue = new TaskQueue();
-		logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-		
-		// create a resourcemanager to keep track of all the resources
-		resources = new ResourceManager();
-		// we use an IniBuilder to add all resources to the manager
-		new IniBuilder("neon.ini.xml", files, queue).build(resources);
+  private TaskQueue queue;
+  private Configuration config;
 
-		// nog engine componenten opzetten
-		quests = new QuestTracker();
-		config = new Configuration(resources);
-	}
-	
-	/**
-	 * This method is the run method of the gamethread. It sets up the event
-	 * system.
-	 */
-	public void run() {
-		EventAdapter adapter = new EventAdapter(quests);
-		bus.subscribe(queue);
-		bus.subscribe(new CombatHandler());	
-		bus.subscribe(new DeathHandler());
-		bus.subscribe(new InventoryHandler());
-		bus.subscribe(adapter);
-		bus.subscribe(quests);
-		bus.subscribe(new GameLoader(this, config));
-		bus.subscribe(new GameSaver(queue));
-	}
-	
-	/**
-	 * Convenience method to post an event to the event bus.
-	 * 
-	 * @param message
-	 */
-	public static void post(EventObject message) {
-		bus.publishAsync(message);
-	}
-	
-/*
- * alle scriptbrol
- */
-	/**
-	 * Executes a script.
-	 * 
-	 * @param script	the script to execute
-	 * @return			the result of the script
-	 */
-	public static Object execute(String script) {
-		try {
-			return engine.eval(script);
-		} catch(Exception e) {
-			return null;	// niet geweldig goed
-		}
-	}
-	
-/*
- * alle getters
- */
-	/**
-	 * @return	the player
-	 */
-	public static Player getPlayer() {
-		return game.getPlayer();
-	}
-	
-	public static QuestTracker getQuestTracker() {
-		return quests;
-	}
-	
-	/**
-	 * @return	the timer
-	 */
-	public static Timer getTimer() {
-		return game.getTimer();
-	}
-	
-	/**
-	 * @return	the virtual filesystem of the engine
-	 */
-	public static FileSystem getFileSystem() {
-		return files;
-	}
-	
-	/**
-	 * @return	the physics engine
-	 */
-	public static PhysicsSystem getPhysicsEngine() {
-		return physics;
-	}
-	
-	/**
-	 * @return	the script engine
-	 */
-	public static ScriptEngine getScriptEngine() {
-		return engine;
-	}
-	
-	/**
-	 * @return	the logger
-	 */
-	public static Logger getLogger() {
-		return logger;
-	}
-	
-	public static UIDStore getStore() {
-		return game.getStore();
-	}
-	
-	public static ResourceManager getResources() {
-		return resources;
-	}
+  // wordt extern geset
+  private static Game game;
 
-	public static Atlas getAtlas() {
-		return game.getAtlas();
-	}
-	
-	public TaskQueue getQueue() {
-		return queue;
-	}
-	
-	/**
-	 * Starts a new game.
-	 */
-	public void startGame(Game game) {
-		Engine.game = game;
+  /** Initializes the engine. */
+  public Engine(Port port) {
+    // engine componenten opzetten
+    bus = port.getBus();
+    ScriptEngineManager manager = new ScriptEngineManager();
+    List<ScriptEngineFactory> factories = manager.getEngineFactories();
+    engine = manager.getEngineByExtension("js");
+    files = new FileSystem();
+    physics = new PhysicsSystem();
+    queue = new TaskQueue();
+    logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-		// ontbrekende systemen opzetten
-		bus.subscribe(new MagicHandler(queue, game));
-		
-		// player registreren
-		Player player = game.getPlayer();
-		engine.put("journal", player.getJournal());	
-		engine.put("player", player);
-		engine.put("PC", player);
-	}
-	
-	/**
-	 * quit the game
-	 */
-	public static void quit() {
-		System.exit(0);
-	}
+    // create a resourcemanager to keep track of all the resources
+    resources = new ResourceManager();
+    // we use an IniBuilder to add all resources to the manager
+    new IniBuilder("neon.ini.xml", files, queue).build(resources);
+
+    // nog engine componenten opzetten
+    quests = new QuestTracker();
+    config = new Configuration(resources);
+  }
+
+  /** This method is the run method of the gamethread. It sets up the event system. */
+  public void run() {
+    EventAdapter adapter = new EventAdapter(quests);
+    bus.subscribe(queue);
+    bus.subscribe(new CombatHandler());
+    bus.subscribe(new DeathHandler());
+    bus.subscribe(new InventoryHandler());
+    bus.subscribe(adapter);
+    bus.subscribe(quests);
+    bus.subscribe(new GameLoader(this, config));
+    bus.subscribe(new GameSaver(queue));
+  }
+
+  /**
+   * Convenience method to post an event to the event bus.
+   *
+   * @param message
+   */
+  public static void post(EventObject message) {
+    bus.publishAsync(message);
+  }
+
+  /*
+   * alle scriptbrol
+   */
+  /**
+   * Executes a script.
+   *
+   * @param script the script to execute
+   * @return the result of the script
+   */
+  public static Object execute(String script) {
+    try {
+      return engine.eval(script);
+    } catch (Exception e) {
+      return null; // niet geweldig goed
+    }
+  }
+
+  /*
+   * alle getters
+   */
+  /**
+   * @return the player
+   */
+  public static Player getPlayer() {
+    return game.getPlayer();
+  }
+
+  public static QuestTracker getQuestTracker() {
+    return quests;
+  }
+
+  /**
+   * @return the timer
+   */
+  public static Timer getTimer() {
+    return game.getTimer();
+  }
+
+  /**
+   * @return the virtual filesystem of the engine
+   */
+  public static FileSystem getFileSystem() {
+    return files;
+  }
+
+  /**
+   * @return the physics engine
+   */
+  public static PhysicsSystem getPhysicsEngine() {
+    return physics;
+  }
+
+  /**
+   * @return the script engine
+   */
+  public static ScriptEngine getScriptEngine() {
+    return engine;
+  }
+
+  /**
+   * @return the logger
+   */
+  public static Logger getLogger() {
+    return logger;
+  }
+
+  public static UIDStore getStore() {
+    return game.getStore();
+  }
+
+  public static ResourceManager getResources() {
+    return resources;
+  }
+
+  public static Atlas getAtlas() {
+    return game.getAtlas();
+  }
+
+  public TaskQueue getQueue() {
+    return queue;
+  }
+
+  /** Starts a new game. */
+  public void startGame(Game game) {
+    Engine.game = game;
+
+    // ontbrekende systemen opzetten
+    bus.subscribe(new MagicHandler(queue, game));
+
+    // player registreren
+    Player player = game.getPlayer();
+    engine.put("journal", player.getJournal());
+    engine.put("player", player);
+    engine.put("PC", player);
+  }
+
+  /** quit the game */
+  public static void quit() {
+    System.exit(0);
+  }
 }

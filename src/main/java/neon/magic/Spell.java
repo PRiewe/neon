@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -24,70 +24,70 @@ import neon.resources.RSpell.SpellType;
 
 /**
  * A spell contains all information about its casting.
- * 
- * @author 	mdriesen
+ *
+ * @author mdriesen
  */
 public class Spell {
-	private Effect effect;
-	private float magnitude;
-	private String script;
-	private SpellType type;
-	private Entity caster;
-	private Entity target;
-	
-	public Spell(Entity target, Entity caster, Effect effect, float magnitude, String script, SpellType type) {
-		this.caster = caster;
-		this.target = target;
-		this.effect = effect;
-		this.magnitude = magnitude;
-		this.script = script;
-		this.type = type;
-	}
-	
-	public Spell(RSpell spell, float modifier, Entity target, Entity caster) {
-		this(spell, modifier);
-		this.caster = caster;
-		this.target = target;
-	}
-	
-	public Spell(RSpell spell, float modifier) {
-		this.effect = spell.effect;
-		this.magnitude = spell.size*modifier;
-		this.script = spell.script;
-		this.type = spell.type;
-	}
-	
-	public Effect getEffect() {
-		return effect;
-	}
-	
-	public float getMagnitude() {
-		return magnitude;
-	}
-	
-	public String getScript() {
-		return script;
-	}
-	
-	public SpellType getType() {
-		return type;
-	}
-	
-	public Entity getCaster() {
-		return caster;
-	}
-	
-	public Entity getTarget() {
-		return target;
-	}
-	
-	/**
-	 * Convenience method to get the {@code EffectHandler} of the effect 
-	 * associated with this spell.
-	 * 
-	 * @return	an {@code EffectHandler}
-	 */
-	public EffectHandler getHandler() {
-		return effect.getHandler();
-	}
+  private Effect effect;
+  private float magnitude;
+  private String script;
+  private SpellType type;
+  private Entity caster;
+  private Entity target;
+
+  public Spell(
+      Entity target, Entity caster, Effect effect, float magnitude, String script, SpellType type) {
+    this.caster = caster;
+    this.target = target;
+    this.effect = effect;
+    this.magnitude = magnitude;
+    this.script = script;
+    this.type = type;
+  }
+
+  public Spell(RSpell spell, float modifier, Entity target, Entity caster) {
+    this(spell, modifier);
+    this.caster = caster;
+    this.target = target;
+  }
+
+  public Spell(RSpell spell, float modifier) {
+    this.effect = spell.effect;
+    this.magnitude = spell.size * modifier;
+    this.script = spell.script;
+    this.type = spell.type;
+  }
+
+  public Effect getEffect() {
+    return effect;
+  }
+
+  public float getMagnitude() {
+    return magnitude;
+  }
+
+  public String getScript() {
+    return script;
+  }
+
+  public SpellType getType() {
+    return type;
+  }
+
+  public Entity getCaster() {
+    return caster;
+  }
+
+  public Entity getTarget() {
+    return target;
+  }
+
+  /**
+   * Convenience method to get the {@code EffectHandler} of the effect associated with this spell.
+   *
+   * @return an {@code EffectHandler}
+   */
+  public EffectHandler getHandler() {
+    return effect.getHandler();
+  }
 }

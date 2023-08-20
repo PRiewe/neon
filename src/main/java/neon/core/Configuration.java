@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -25,49 +25,47 @@ import neon.resources.CServer;
 import neon.resources.ResourceManager;
 
 public class Configuration {
-	public static boolean audio = false;	// audio aan of uit?
-	public static boolean gThread = true;	// terrain generation threaded of niet?
+  public static boolean audio = false; // audio aan of uit?
+  public static boolean gThread = true; // terrain generation threaded of niet?
 
-	private HashMap<String, String> properties = new HashMap<>();
-	
-	/**
-	 * Loads all kinds of stuff.
-	 */
-	public Configuration(ResourceManager resources) {
-		// ini file inladen
-		CServer config = (CServer)resources.getResource("ini", "config");
+  private HashMap<String, String> properties = new HashMap<>();
 
-		// logging
-		Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-		logger.setLevel(Level.parse(config.getLogLevel()));
-		try {
-			Handler handler = new FileHandler("neon.log");
-			handler.setFormatter(new SimpleFormatter());
-			logger.addHandler(handler);
-		} catch (SecurityException | IOException e) {
-			e.printStackTrace();
-		}
+  /** Loads all kinds of stuff. */
+  public Configuration(ResourceManager resources) {
+    // ini file inladen
+    CServer config = (CServer) resources.getResource("ini", "config");
 
-		// threading
-		gThread = config.isMapThreaded();
-		logger.config("Map generation thread: " + gThread);
-	}
-	
-	/**
-	 * @param property
-	 * @return	the requested property
-	 */
-	public String getProperty(String property) {
-		return properties.get(property);
-	}
-	
-	/**
-	 * Sets the string value of the given property.
-	 * 
-	 * @param property
-	 * @param value
-	 */
-	public void setProperty(String property, String value) {
-		properties.put(property, value);
-	}
+    // logging
+    Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    logger.setLevel(Level.parse(config.getLogLevel()));
+    try {
+      Handler handler = new FileHandler("neon.log");
+      handler.setFormatter(new SimpleFormatter());
+      logger.addHandler(handler);
+    } catch (SecurityException | IOException e) {
+      e.printStackTrace();
+    }
+
+    // threading
+    gThread = config.isMapThreaded();
+    logger.config("Map generation thread: " + gThread);
+  }
+
+  /**
+   * @param property
+   * @return the requested property
+   */
+  public String getProperty(String property) {
+    return properties.get(property);
+  }
+
+  /**
+   * Sets the string value of the given property.
+   *
+   * @param property
+   * @param value
+   */
+  public void setProperty(String property, String value) {
+    properties.put(property, value);
+  }
 }

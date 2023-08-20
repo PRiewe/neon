@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2010 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -19,55 +19,54 @@
 package neon.util.fsm;
 
 /**
- * Transitions must be added to the (nested) state or state machine that contains the 
- * 'from' state.
- * 
+ * Transitions must be added to the (nested) state or state machine that contains the 'from' state.
+ *
  * @author mdriesen
  */
 public class Transition {
-	private String condition;
-	private boolean local;
-	private Action action;
-	private State next;
-	private State from;
-	
-	public Transition(State from, State next, String condition) {
-		this(from, next, condition, null);
-	}
-	
-	public Transition(State from, State next, String condition, Action action) {
-		this(from, next, condition, action, false);
-	}
-	
-	public Transition(State from, State next, String condition, boolean isLocal) {
-		this(from, next, condition, null, isLocal);
-	}
-	
-	public Transition(State from, State next, String condition, Action action, boolean isLocal) {
-		this.condition = condition;
-		local = isLocal;
-		this.action = action;
-		this.next = next;
-		this.from = from;
-	}
+  private String condition;
+  private boolean local;
+  private Action action;
+  private State next;
+  private State from;
 
-	public State getNext() {
-		return next;
-	}
-	
-	public State getFrom() {
-		return from;
-	}
-	
-	public Action getAction() {
-		return action;
-	}
-	
-	public String getCondition() {
-		return condition;
-	}
-	
-	public boolean isLocal() {
-		return local;
-	}
+  public Transition(State from, State next, String condition) {
+    this(from, next, condition, null);
+  }
+
+  public Transition(State from, State next, String condition, Action action) {
+    this(from, next, condition, action, false);
+  }
+
+  public Transition(State from, State next, String condition, boolean isLocal) {
+    this(from, next, condition, null, isLocal);
+  }
+
+  public Transition(State from, State next, String condition, Action action, boolean isLocal) {
+    this.condition = condition;
+    local = isLocal;
+    this.action = action;
+    this.next = next;
+    this.from = from;
+  }
+
+  public State getNext() {
+    return next;
+  }
+
+  public State getFrom() {
+    return from;
+  }
+
+  public Action getAction() {
+    return action;
+  }
+
+  public String getCondition() {
+    return condition;
+  }
+
+  public boolean isLocal() {
+    return local;
+  }
 }

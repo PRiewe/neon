@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2010 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -19,15 +19,20 @@
 package neon.util.spatial;
 
 import java.awt.Rectangle;
-import java.util.Collection;
 import java.util.List;
 
 public interface SpatialIndex<E> {
-	public List<E> getElements();
-	public List<E> getElements(Rectangle bounds);
-	public void insert(E e, Rectangle bounds);
-	public void remove(E e);
-	public void clear();
-	public int getWidth();
-	public int getHeight();
+  public List<E> getElements();
+
+  public List<E> getElements(Rectangle bounds);
+
+  public void insert(E e, Rectangle bounds);
+
+  public void remove(E e);
+
+  public void clear();
+
+  public int getWidth();
+
+  public int getHeight();
 }

@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -22,24 +22,21 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
 public class JVCompoundShape extends JVShape {
-	public int getX() {
-		return 0;
-	}
+  public int getX() {
+    return 0;
+  }
 
-	public int getY() {
-		return 0;
-	}
+  public int getY() {
+    return 0;
+  }
 
-	public void setX(int x) {
-	}
+  public void setX(int x) {}
 
-	public void setY(int y) {
-	}
+  public void setY(int y) {}
 
-	public void paint(Graphics2D graphics, float zoom, boolean isSelected) {
-	}
+  public void paint(Graphics2D graphics, float zoom, boolean isSelected) {}
 
-	public Rectangle getBounds() {
-		return null;
-	}
+  public Rectangle getBounds() {
+    return null;
+  }
 }

@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -19,22 +19,24 @@
 package neon.magic;
 
 public interface EffectHandler {
-	/**
-	 * @return whether this effect can be used as a weapon enchantment
-	 */
-	public boolean isWeaponEnchantment();
-	
-	/**
-	 * @return whether this effect can be used as a clothing enchantment
-	 */
-	public boolean isClothingEnchantment();
-	
-	/**
-	 * @return	whether this effect can be cast on an item
-	 */
-	public boolean onItem();
-	
-	public void addEffect(Spell spell);
-	public void repeatEffect(Spell spell);
-	public void removeEffect(Spell spell);
+  /**
+   * @return whether this effect can be used as a weapon enchantment
+   */
+  public boolean isWeaponEnchantment();
+
+  /**
+   * @return whether this effect can be used as a clothing enchantment
+   */
+  public boolean isClothingEnchantment();
+
+  /**
+   * @return whether this effect can be cast on an item
+   */
+  public boolean onItem();
+
+  public void addEffect(Spell spell);
+
+  public void repeatEffect(Spell spell);
+
+  public void removeEffect(Spell spell);
 }
