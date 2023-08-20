@@ -21,11 +21,11 @@ package neon.util.spatial;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.*;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+
+import com.google.common.collect.*;
 
 public class GridIndex<E> implements SpatialIndex<E> {
-	private Multimap<Point, E> elements = ArrayListMultimap.create();
+	private Multimap<Point, E> elements = new ConcurrentArrayListMultimap<>();
 
 	public List<E> getElements() {
 		ArrayList<E> list = new ArrayList<E>();
@@ -35,7 +35,7 @@ public class GridIndex<E> implements SpatialIndex<E> {
 		return list;
 	}
 
-	public synchronized List<E> getElements(Rectangle bounds) {
+	public List<E> getElements(Rectangle bounds) {
 		ArrayList<E> list = new ArrayList<E>();
 		for(Point p : elements.keySet()) {
 			if(bounds.contains(p)) {
@@ -45,15 +45,16 @@ public class GridIndex<E> implements SpatialIndex<E> {
 		return list;
 	}
 
-	public Collection<E> getElements(Point point) {
+	public ImmutableList<E> getElements(Point point) {
 		if(elements.get(point) != null) {
-			return elements.get(point);			
+			return ImmutableList.copyOf(elements.get(point));
+
 		} else {
-			return new ArrayList<E>();
+			return ImmutableList.copyOf(Collections.emptyList());
 		}
 	}
 
-	public synchronized void insert(E e, Rectangle bounds) {
+	public  void insert(E e, Rectangle bounds) {
 		for(int x = bounds.x; x < bounds.x + bounds.width; x++) {
 			for(int y = bounds.y; y < bounds.y + bounds.height; y++) {
 				elements.put(new Point(x, y), e);
@@ -61,13 +62,13 @@ public class GridIndex<E> implements SpatialIndex<E> {
 		}
 	}
 
-	public void remove(E e) {
+	public  void remove(E e) {
 		for(Point p : elements.keySet()) {
 			elements.get(p).remove(e);
 		}
 	}
 	
-	public void clear() {
+	public  void clear() {
 		elements.clear();
 	}
 	

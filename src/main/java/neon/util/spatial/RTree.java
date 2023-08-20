@@ -23,6 +23,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.awt.Rectangle;
 import java.awt.Point;
 import java.awt.geom.Rectangle2D;
+import java.util.stream.Collectors;
+
 import org.apache.jdbm.*;
 
 /**
@@ -156,8 +158,8 @@ public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
 	/**
 	 * @return	all elements in this tree
 	 */
-	public Collection<E> getElements() {
-		return objects.values();
+	public List<E> getElements() {
+		return new ArrayList<>(objects.values());
 	}
 
 	/**

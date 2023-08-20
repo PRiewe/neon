@@ -35,17 +35,18 @@ public class CClient extends Resource {
 	public static final int AZERTY = 1;
 	public static final int QWERTY = 2;
 	public static final int QWERTZ = 3;
+	public static final int ARROWKEYS = 4;
 
-	public int up = KeyEvent.VK_NUMPAD8;
-	public int upright = KeyEvent.VK_NUMPAD9;
-	public int right = KeyEvent.VK_NUMPAD6;
-	public int downright = KeyEvent.VK_NUMPAD3;
-	public int down = KeyEvent.VK_NUMPAD2;
-	public int downleft = KeyEvent.VK_NUMPAD1;
-	public int left = KeyEvent.VK_NUMPAD4;
-	public int upleft = KeyEvent.VK_NUMPAD7;
-	public int wait = KeyEvent.VK_NUMPAD5;
-	
+	public int up = KeyEvent.VK_UP;
+	public int upright = KeyEvent.VK_PAGE_UP;
+	public int right = KeyEvent.VK_RIGHT;
+	public int downright = KeyEvent.VK_PAGE_DOWN;
+	public int down = KeyEvent.VK_DOWN;
+	public int downleft = KeyEvent.VK_END;
+	public int left = KeyEvent.VK_LEFT;
+	public int upleft = KeyEvent.VK_HOME;
+	public int wait = KeyEvent.VK_COMMA;
+
 	public int map = KeyEvent.VK_M;
 	public int magic = KeyEvent.VK_G;
 	public int shoot = KeyEvent.VK_F;
@@ -148,9 +149,11 @@ public class CClient extends Resource {
 		if(settings != null) {
 			// movement keys
 			switch(settings.getText()) {
-			case "azerty": setKeys(AZERTY); break;
-			case "qwerty": setKeys(QWERTY); break;
-			case "qwertz": setKeys(QWERTZ); break;
+				case "numpad": setKeys(NUMPAD); break;
+				case "azerty": setKeys(AZERTY); break;
+				case "qwerty": setKeys(QWERTY); break;
+				case "qwertz": setKeys(QWERTZ); break;
+				case "arrowkeys": setKeys(ARROWKEYS); break;
 			}
 
 			// andere keys
@@ -187,15 +190,16 @@ public class CClient extends Resource {
 	public void setKeys(int choice) {
 		keys = choice;
 		switch(keys) {
-		case NUMPAD: 
-			up = KeyEvent.VK_UP;
-			upright = KeyEvent.VK_PAGE_UP;
-			right = KeyEvent.VK_RIGHT;
-			downright = KeyEvent.VK_PAGE_DOWN;
-			down = KeyEvent.VK_DOWN;
-			downleft = KeyEvent.VK_END;
-			left = KeyEvent.VK_LEFT;
-			upleft = KeyEvent.VK_HOME;
+		case NUMPAD:
+			up = KeyEvent.VK_NUMPAD8;
+			upright = KeyEvent.VK_NUMPAD9;
+			right = KeyEvent.VK_NUMPAD6;
+			downright = KeyEvent.VK_NUMPAD3;
+			down = KeyEvent.VK_NUMPAD2;
+			downleft = KeyEvent.VK_NUMPAD1;
+			left = KeyEvent.VK_NUMPAD4;
+			upleft = KeyEvent.VK_NUMPAD7;
+			wait = KeyEvent.VK_NUMPAD5;
 			wait = KeyEvent.VK_COMMA;
 			break;
 		case AZERTY:
@@ -230,6 +234,17 @@ public class CClient extends Resource {
 			left = KeyEvent.VK_A;
 			upleft = KeyEvent.VK_Q;
 			wait = KeyEvent.VK_S;
+			break;
+		case ARROWKEYS:
+	  		up = KeyEvent.VK_UP;
+			upright = KeyEvent.VK_PAGE_UP;
+			right = KeyEvent.VK_RIGHT;
+			downright = KeyEvent.VK_PAGE_DOWN;
+			down = KeyEvent.VK_DOWN;
+			downleft = KeyEvent.VK_END;
+			left = KeyEvent.VK_LEFT;
+			upleft = KeyEvent.VK_HOME;
+			wait = KeyEvent.VK_COMMA;
 			break;
 		}
 	}

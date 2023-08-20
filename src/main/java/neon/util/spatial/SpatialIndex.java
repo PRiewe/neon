@@ -20,10 +20,11 @@ package neon.util.spatial;
 
 import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.List;
 
 public interface SpatialIndex<E> {
-	public Collection<E> getElements();
-	public Collection<E> getElements(Rectangle bounds);
+	public List<E> getElements();
+	public List<E> getElements(Rectangle bounds);
 	public void insert(E e, Rectangle bounds);
 	public void remove(E e);
 	public void clear();

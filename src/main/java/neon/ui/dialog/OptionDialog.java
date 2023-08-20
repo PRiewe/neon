@@ -37,7 +37,7 @@ import neon.resources.CClient;
 
 public class OptionDialog {
 	private JCheckBox audioBox;
-	private JRadioButton numpad, qwerty, azerty, qwertz;
+	private JRadioButton numpad, qwerty, azerty, qwertz, arrows;
 	private ButtonGroup group;	
 	private JDialog frame;
 	
@@ -59,6 +59,9 @@ public class OptionDialog {
 		azerty.setMnemonic('a');
 		qwertz = new JRadioButton("qwertz");
 		qwertz.setMnemonic('z');
+		arrows = new JRadioButton("arrowkeys");
+		qwertz.setMnemonic('k');
+
 		ButtonAction numpadAction = new ButtonAction("numpad", "numpad");
 		control.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("N"), "numpad");
 		control.getActionMap().put("numpad", numpadAction);
@@ -71,12 +74,16 @@ public class OptionDialog {
 		ButtonAction qwertzAction = new ButtonAction("qwertz", "qwertz");
 		control.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("Z"), "qwertz");
 		control.getActionMap().put("qwertz", qwertzAction);
-		
+		ButtonAction arrowAction = new ButtonAction("arrowskeys", "arrowkeys");
+		control.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("K"), "arrowkeys");
+		control.getActionMap().put("arrowskeys", arrowAction);
+
 		group = new ButtonGroup();
 		group.add(numpad);
 		group.add(qwerty);
 		group.add(qwertz);
 		group.add(azerty);
+		group.add(arrows);
 		
 		JPanel audio = new JPanel();
 		audio.setBorder(new TitledBorder("Audio options"));
@@ -102,6 +109,7 @@ public class OptionDialog {
 		control.add(azerty);
 		control.add(qwerty);
 		control.add(qwertz);
+		control.add(arrows);
 		buttons.add(ok);
 		buttons.add(cancel);
 		
@@ -133,6 +141,7 @@ public class OptionDialog {
 		case CClient.QWERTY: qwerty.setSelected(true); break;
 		case CClient.QWERTZ: qwertz.setSelected(true); break;
 		case CClient.NUMPAD: numpad.setSelected(true); break;
+		case CClient.ARROWKEYS: arrows.setSelected(true); break;
 		}
 		frame.pack();
 		frame.setLocationRelativeTo(null);
@@ -155,6 +164,8 @@ public class OptionDialog {
 				qwerty.setSelected(true);
 			} else if(e.getActionCommand().equals("qwertz")) {
 				qwertz.setSelected(true);
+			} else if(e.getActionCommand().equals("arrowkeys")) {
+				arrows.setSelected(true);
 			} else if(e.getActionCommand().equals("audio")) {
 				audioBox.setSelected(!audioBox.isSelected());
 			} else if(e.getActionCommand().equals("ok")) {
@@ -190,6 +201,9 @@ public class OptionDialog {
 			} else if(group.isSelected(qwertz.getModel())) {
 				keys.setKeys(CClient.QWERTZ);
 				ini.getChild("keys").setText("qwertz");
+			} else if (group.isSelected(arrows.getModel())) {
+				keys.setKeys(CClient.ARROWKEYS);
+				ini.getChild("keys").setText("arrowkeys");
 			}
 			
 			XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
