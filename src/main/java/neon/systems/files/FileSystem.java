@@ -80,7 +80,7 @@ public class FileSystem {
   public String mount(String path) throws IOException {
     // file separator miserie
     String root = path.replace("/", File.separator);
-    // het probleem is dat in neon.ini een / wordt gebruikt, waardoor windows van slag raakt
+    // het probleem is dat in neon.ini.xml een / wordt gebruikt, waardoor windows van slag raakt
 
     // dan laden
     root = root.substring(0, root.lastIndexOf(File.separator) + 1);

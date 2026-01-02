@@ -190,7 +190,7 @@ public class OptionDialog {
     private void save() {
       Document doc = new Document();
       try {
-        FileInputStream in = new FileInputStream("neon.ini");
+        FileInputStream in = new FileInputStream("neon.ini.xml");
         doc = new SAXBuilder().build(in);
         in.close();
       } catch (Exception e) {
@@ -216,7 +216,7 @@ public class OptionDialog {
 
       XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
       try {
-        FileOutputStream out = new FileOutputStream("neon.ini");
+        FileOutputStream out = new FileOutputStream("neon.ini.xml");
         outputter.output(doc, out);
         out.close();
       } catch (IOException e) {

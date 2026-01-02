@@ -74,7 +74,7 @@ public class Engine implements Runnable {
     // create a resourcemanager to keep track of all the resources
     resources = new ResourceManager();
     // we use an IniBuilder to add all resources to the manager
-    new IniBuilder("neon.ini", files, queue).build(resources);
+    new IniBuilder("neon.ini.xml", files, queue).build(resources);
 
     // nog engine componenten opzetten
     quests = new QuestTracker();

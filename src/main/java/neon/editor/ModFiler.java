@@ -63,7 +63,7 @@ public class ModFiler {
 
   void loadMod() {
     // louche manier om de filechooser in de game dir te laten beginnen
-    JFileChooser chooser = new JFileChooser(new File("neon.ini"));
+    JFileChooser chooser = new JFileChooser(new File("neon.ini.xml"));
     chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     chooser.setDialogTitle("Choose module");
     if (chooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
@@ -84,8 +84,8 @@ public class ModFiler {
           for (Object master : doc.getRootElement().getChildren("master")) {
             String id = ((Element) master).getText();
             Document ini = new Document();
-            try { // kijken in neon.ini welke mods er zijn
-              FileInputStream in = new FileInputStream("neon.ini");
+            try { // kijken in neon.ini.xml welke mods er zijn
+              FileInputStream in = new FileInputStream("neon.ini.xml");
               ini = new SAXBuilder().build(in);
               in.close();
             } catch (JDOMException e) {

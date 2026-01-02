@@ -37,7 +37,8 @@ public class Configuration {
 
     // logging
     Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-    logger.setLevel(Level.parse(config.getLogLevel()));
+
+    logger.setLevel(Level.parse("FINER"));
     try {
       Handler handler = new FileHandler("neon.log");
       handler.setFormatter(new SimpleFormatter());

@@ -33,7 +33,7 @@ public class IniBuilder extends Builder {
   /**
    * Initializes this {@code Builder}.
    *
-   * @param ini a neon.ini file
+   * @param ini a neon.ini.xml file
    * @param files
    * @param queue
    */
