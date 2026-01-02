@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -20,49 +20,46 @@ package neon.narrative;
 
 import java.util.Collection;
 import java.util.HashMap;
-
 import neon.resources.quest.Conversation;
 import neon.resources.quest.RQuest;
 
 public class Quest {
-	public RQuest template;
-	private int stage = 0;
-	private boolean finished = false;
-	private HashMap<String, Object> objects = new HashMap<String, Object>();
-	
-	public Quest(RQuest template) {
-		this.template = template;
-	}
-	
-	public Collection<Conversation> getConversations() {
-		return template.getConversations();
-	}
-	
-	public void setStage(int stage) {
-		this.stage = stage;
-	}
-	
-	public int getStage() {
-		return stage;
-	}
-	
-	public boolean isFinished() {
-		return finished;
-	}
-	
-	/**
-	 * Finishes this quest.
-	 */
-	public void finish() {
-		finished = true;
-		objects.clear();
-	}
-	
-	public void addObject(String name, Object object) {
-		objects.put(name,  object);
-	}
-	
-	public HashMap<String, Object> getObjects() {
-		return objects;
-	}
+  public RQuest template;
+  private int stage = 0;
+  private boolean finished = false;
+  private HashMap<String, Object> objects = new HashMap<String, Object>();
+
+  public Quest(RQuest template) {
+    this.template = template;
+  }
+
+  public Collection<Conversation> getConversations() {
+    return template.getConversations();
+  }
+
+  public void setStage(int stage) {
+    this.stage = stage;
+  }
+
+  public int getStage() {
+    return stage;
+  }
+
+  public boolean isFinished() {
+    return finished;
+  }
+
+  /** Finishes this quest. */
+  public void finish() {
+    finished = true;
+    objects.clear();
+  }
+
+  public void addObject(String name, Object object) {
+    objects.put(name, object);
+  }
+
+  public HashMap<String, Object> getObjects() {
+    return objects;
+  }
 }

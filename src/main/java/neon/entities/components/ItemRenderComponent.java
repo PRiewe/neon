@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -26,32 +26,32 @@ import neon.util.TextureFactory;
 
 /**
  * Class used to render {@code Item}s.
- * 
+ *
  * @author mdriesen
  */
 public class ItemRenderComponent extends RenderComponent {
-	protected Item item;
-	
-	public ItemRenderComponent(Item item) {
-		this.item = item;
-	}
-	
-	@Override
-	public void paint(Graphics2D graphics, float zoom, boolean isSelected) {
-		Rectangle bounds = item.getShapeComponent();
-		Rectangle2D rect = new Rectangle2D.Float(bounds.x*zoom, bounds.y*zoom, zoom, zoom);
-		graphics.setPaint(TextureFactory.getTexture(item.resource.text, (int)zoom, item.resource.color));
-		graphics.fill(rect);
-	}
+  protected Item item;
 
-	@Override
-	public Rectangle getBounds() {
-		return item.getShapeComponent();
-	}
+  public ItemRenderComponent(Item item) {
+    this.item = item;
+  }
 
-	@Override
-	public long getUID() {
-		return item.getUID();
-	}
+  @Override
+  public void paint(Graphics2D graphics, float zoom, boolean isSelected) {
+    Rectangle bounds = item.getShapeComponent();
+    Rectangle2D rect = new Rectangle2D.Float(bounds.x * zoom, bounds.y * zoom, zoom, zoom);
+    graphics.setPaint(
+        TextureFactory.getTexture(item.resource.text, (int) zoom, item.resource.color));
+    graphics.fill(rect);
+  }
+
+  @Override
+  public Rectangle getBounds() {
+    return item.getShapeComponent();
+  }
+
+  @Override
+  public long getUID() {
+    return item.getUID();
+  }
 }
-

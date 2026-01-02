@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,22 +23,24 @@ import java.awt.Rectangle;
 import neon.entities.components.RenderComponent;
 
 public abstract class JVShape extends RenderComponent {
-	protected Paint paint;
-	private int z;
+  protected Paint paint;
+  private int z;
 
-	public Paint getPaint() {
-		return paint;
-	}
-	
-	public void setZ(int z) {
-		this.z = z;
-	}
-	
-	public int getZ() {
-		return z;
-	}
-	
-	public abstract Rectangle getBounds();
-	public abstract void setX(int x);
-	public abstract void setY(int y);
+  public Paint getPaint() {
+    return paint;
+  }
+
+  public void setZ(int z) {
+    this.z = z;
+  }
+
+  public int getZ() {
+    return z;
+  }
+
+  public abstract Rectangle getBounds();
+
+  public abstract void setX(int x);
+
+  public abstract void setY(int y);
 }

@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -22,49 +22,48 @@ import org.jdom2.Element;
 
 /**
  * A resource that is loaded from/saved to an XML data file.
- * 
- * @author mdriesen
  *
+ * @author mdriesen
  */
 public abstract class RData extends Resource {
-	// dit dient eigenlijk alleen voor items en creatures
-	public String text = "x";
-	public String color = "white";
-	public String name;
+  // dit dient eigenlijk alleen voor items en creatures
+  public String text = "x";
+  public String color = "white";
+  public String name;
 
-	/**
-	 * Initializes this resource from a JDOM {@code Element}.
-	 * 
-	 * @param data
-	 * @param path
-	 */
-	public RData(Element data, String... path) {
-		super(data.getAttributeValue("id"), path);
-		color = data.getAttributeValue("color");
-		text = data.getAttributeValue("char");
-		name = data.getAttributeValue("name");
-	}
-	
-	/**
-	 * Initializes an empty resource with the given id.
-	 * 
-	 * @param id
-	 * @param path
-	 */
-	public RData(String id, String... path) {
-		super(id, path);
-	}
-	
-	/**
-	 * Creates a JDOM {@code Element} from this resource.
-	 * 
-	 * @return
-	 */
-	public abstract Element toElement();
-	
-	@Override
-	public void load() {}	// RData heeft niets om te laden buiten wat er in de constructor staat
-	
-	@Override
-	public void unload() {}	// RData heeft niets om te ontladen
+  /**
+   * Initializes this resource from a JDOM {@code Element}.
+   *
+   * @param data
+   * @param path
+   */
+  public RData(Element data, String... path) {
+    super(data.getAttributeValue("id"), path);
+    color = data.getAttributeValue("color");
+    text = data.getAttributeValue("char");
+    name = data.getAttributeValue("name");
+  }
+
+  /**
+   * Initializes an empty resource with the given id.
+   *
+   * @param id
+   * @param path
+   */
+  public RData(String id, String... path) {
+    super(id, path);
+  }
+
+  /**
+   * Creates a JDOM {@code Element} from this resource.
+   *
+   * @return
+   */
+  public abstract Element toElement();
+
+  @Override
+  public void load() {} // RData heeft niets om te laden buiten wat er in de constructor staat
+
+  @Override
+  public void unload() {} // RData heeft niets om te ontladen
 }

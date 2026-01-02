@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -24,59 +24,58 @@ import java.io.ObjectOutput;
 import java.util.*;
 
 /**
- * This class represents the surface of the game world. It can be 
- * seamlessly traversed.
- * 
+ * This class represents the surface of the game world. It can be seamlessly traversed.
+ *
  * @author mdriesen
  */
 public class World implements Map {
-	private String name;
-	private int uid;
-	private Zone zone;
-	
-	/**
-	 * Initializes this {@code World} with the given parameters.
-	 * 
-	 * @param name		the name of this map
-	 * @param uid		the uid of this map
-	 */
-	public World(String name, int uid) {
-		zone = new Zone("world", uid, 0);
-		this.name = name;
-		this.uid = uid;
-	}
+  private String name;
+  private int uid;
+  private Zone zone;
 
-	public Zone getZone(int i) {
-		return zone;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public int getUID() {
-		return uid;
-	}
-	
-	public String getName() {
-		return name;
-	}
+  /**
+   * Initializes this {@code World} with the given parameters.
+   *
+   * @param name the name of this map
+   * @param uid the uid of this map
+   */
+  public World(String name, int uid) {
+    zone = new Zone("world", uid, 0);
+    this.name = name;
+    this.uid = uid;
+  }
 
-	public Collection<Zone> getZones() {
-		ArrayList<Zone> zones = new ArrayList<Zone>();
-		zones.add(zone);
-		return zones;
-	}
+  public Zone getZone(int i) {
+    return zone;
+  }
 
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		name = in.readUTF();
-		uid = in.readInt();
-		zone = (Zone)in.readObject();
-	}
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeUTF(name);
-		out.writeInt(uid);
-		out.writeObject(zone);
-	}
+  public int getUID() {
+    return uid;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public Collection<Zone> getZones() {
+    ArrayList<Zone> zones = new ArrayList<Zone>();
+    zones.add(zone);
+    return zones;
+  }
+
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    name = in.readUTF();
+    uid = in.readInt();
+    zone = (Zone) in.readObject();
+  }
+
+  public void writeExternal(ObjectOutput out) throws IOException {
+    out.writeUTF(name);
+    out.writeInt(uid);
+    out.writeObject(zone);
+  }
 }

@@ -61,9 +61,9 @@
         </dependency>
 
         <dependency>
-            <groupId>phys2d</groupId>
+            <groupId>net.phys2d</groupId>
             <artifactId>phys2d</artifactId>
-            <version>060408</version>
+            <version>1.0.0</version>
         </dependency>
 
         <dependency>
@@ -73,9 +73,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jtexgen</groupId>
+            <groupId>org.fluttercode.jtexgen</groupId>
             <artifactId>jtexgen</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
         </dependency>
 
     </dependencies>

@@ -1,4 +1,6 @@
 .settings/
+.idea/
+.serena/
 .classpath
 .project
 dist/*

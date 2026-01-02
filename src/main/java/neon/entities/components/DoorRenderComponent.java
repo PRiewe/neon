@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -26,30 +26,30 @@ import neon.resources.RItem;
 import neon.util.TextureFactory;
 
 /**
- * Class used to render doors. Rendering takes into account the state of the
- * door (open, locked or closed).
- * 
+ * Class used to render doors. Rendering takes into account the state of the door (open, locked or
+ * closed).
+ *
  * @author mdriesen
  */
 public class DoorRenderComponent extends ItemRenderComponent {
-	public DoorRenderComponent(Door door) {
-		super(door);
-	}
+  public DoorRenderComponent(Door door) {
+    super(door);
+  }
 
-	@Override
-	public void paint(Graphics2D graphics, float zoom, boolean isSelected) {
-		Rectangle bounds = item.getShapeComponent();
-		Rectangle2D rect = new Rectangle2D.Float(bounds.x*zoom, bounds.y*zoom, zoom, zoom);
-		String text = item.resource.text;
-		Lock lock = ((Door)item).lock;
-		if(lock != null) {
-			if(lock.isLocked()) {
-				text = ((RItem.Door)item.resource).locked;
-			} else if(lock.isClosed()) {
-				text = ((RItem.Door)item.resource).closed;
-			}
-		}
-		graphics.setPaint(TextureFactory.getTexture(text, (int)zoom, item.resource.color));
-		graphics.fill(rect);		
-	}
+  @Override
+  public void paint(Graphics2D graphics, float zoom, boolean isSelected) {
+    Rectangle bounds = item.getShapeComponent();
+    Rectangle2D rect = new Rectangle2D.Float(bounds.x * zoom, bounds.y * zoom, zoom, zoom);
+    String text = item.resource.text;
+    Lock lock = ((Door) item).lock;
+    if (lock != null) {
+      if (lock.isLocked()) {
+        text = ((RItem.Door) item.resource).locked;
+      } else if (lock.isClosed()) {
+        text = ((RItem.Door) item.resource).closed;
+      }
+    }
+    graphics.setPaint(TextureFactory.getTexture(text, (int) zoom, item.resource.color));
+    graphics.fill(rect);
+  }
 }

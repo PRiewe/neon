@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -21,5 +21,5 @@ package neon.util.fsm;
 import java.util.EventObject;
 
 public interface Action {
-	public void run(EventObject e);
+  public void run(EventObject e);
 }

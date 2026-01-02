@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -28,38 +28,40 @@ import net.engio.mbassy.listener.References;
 
 /**
  * A {@code Port} to connect client and server running locally.
- * 
+ *
  * @author mdriesen
  */
-@Listener(references = References.Strong)	// strong, om gc te vermijden
+@Listener(references = References.Strong) // strong, om gc te vermijden
 public class LocalPort extends Port {
-	private Collection<EventObject> buffer = Collections.synchronizedCollection(new ArrayDeque<EventObject>());
-	private LocalPort peer;
-	
-	public LocalPort() {
-		bus.subscribe(this);
-	}
-	
-	/**
-	 * Connects this {@code LocalPort} to another {@code LocalPort}.
-	 * 
-	 * @param peer	another {@code LocalPort}
-	 */
-	public void connect(LocalPort peer) {
-		this.peer = peer;
-	}
+  private Collection<EventObject> buffer =
+      Collections.synchronizedCollection(new ArrayDeque<EventObject>());
+  private LocalPort peer;
 
-	@Override
-	@Handler public void receive(EventObject event) {
-		// zorgen dat al behandelde events niet nog eens worden teruggestuurd
-		if(!buffer.remove(event)) {
-			peer.write(event);
-		}
-	}
+  public LocalPort() {
+    bus.subscribe(this);
+  }
 
-	private void write(EventObject event) {
-		buffer.add(event);
-		// geen async, anders werkt save en quit niet meer
-		bus.publish(event);
-	}
+  /**
+   * Connects this {@code LocalPort} to another {@code LocalPort}.
+   *
+   * @param peer another {@code LocalPort}
+   */
+  public void connect(LocalPort peer) {
+    this.peer = peer;
+  }
+
+  @Override
+  @Handler
+  public void receive(EventObject event) {
+    // zorgen dat al behandelde events niet nog eens worden teruggestuurd
+    if (!buffer.remove(event)) {
+      peer.write(event);
+    }
+  }
+
+  private void write(EventObject event) {
+    buffer.add(event);
+    // geen async, anders werkt save en quit niet meer
+    bus.publish(event);
+  }
 }

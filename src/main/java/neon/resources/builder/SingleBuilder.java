@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -22,12 +22,10 @@ import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 
 public class SingleBuilder extends Builder {
-	protected SingleBuilder(FileSystem files) {
-		super(files);
-	}
+  protected SingleBuilder(FileSystem files) {
+    super(files);
+  }
 
-	@Override
-	public void build(ResourceManager resources) {
-		
-	}
+  @Override
+  public void build(ResourceManager resources) {}
 }

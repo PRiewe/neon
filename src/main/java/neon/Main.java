@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -24,34 +24,34 @@ import neon.ui.Client;
 
 /**
  * The main class of the neon roguelike engine.
- * 
- * @author	mdriesen
+ *
+ * @author mdriesen
  */
 public class Main {
-	private static final String version = "0.4.2";	// huidige versie
+  private static final String version = "0.4.2"; // huidige versie
 
-	/**
-     * The application's main method. This method creates an {@code Engine} and 
-     * a {@code Client} instance and connects them.
-     * 
-     * @param args	the command line arguments
-     */
-	public static void main(String[] args) {
-		// poorten aanmaken en verbinden
-		LocalPort cPort = new LocalPort();
-		LocalPort sPort = new LocalPort();
-		cPort.connect(sPort);
-		sPort.connect(cPort);
-		
-		// engine en ui aanmaken
+  /**
+   * The application's main method. This method creates an {@code Engine} and a {@code Client}
+   * instance and connects them.
+   *
+   * @param args the command line arguments
+   */
+  public static void main(String[] args) {
+    // poorten aanmaken en verbinden
+    LocalPort cPort = new LocalPort();
+    LocalPort sPort = new LocalPort();
+    cPort.connect(sPort);
+    sPort.connect(cPort);
 
-		Engine engine = new Engine(sPort);
-		Client client = new Client(cPort, version);
-		
-		// custom look and feels zijn soms wat strenger als gewone, blijkbaar
-		// is het grootste probleem dat delen van de ui buiten de swing thread 
-		// worden aangemaakt. Daarom alles maar op event-dispatch thread.
-		javax.swing.SwingUtilities.invokeLater(client);
-		engine.run();
-	}
+    // engine en ui aanmaken
+
+    Engine engine = new Engine(sPort);
+    Client client = new Client(cPort, version);
+
+    // custom look and feels zijn soms wat strenger als gewone, blijkbaar
+    // is het grootste probleem dat delen van de ui buiten de swing thread
+    // worden aangemaakt. Daarom alles maar op event-dispatch thread.
+    javax.swing.SwingUtilities.invokeLater(client);
+    engine.run();
+  }
 }

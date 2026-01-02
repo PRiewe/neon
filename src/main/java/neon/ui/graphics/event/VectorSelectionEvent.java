@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2010 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -20,23 +20,22 @@ package neon.ui.graphics.event;
 
 import java.awt.Rectangle;
 import java.util.EventObject;
-
 import neon.ui.graphics.JVectorPane;
 
 @SuppressWarnings("serial")
 public class VectorSelectionEvent extends EventObject {
-	private Rectangle selection;
-	
-	public VectorSelectionEvent(JVectorPane source, Rectangle selection) {
-		super(source);
-		this.selection = selection;
-	}
-	
-	public Rectangle getSelection() {
-		return selection;
-	}
-	
-	public JVectorPane getSource() {
-		return (JVectorPane)super.getSource();
-	}
+  private Rectangle selection;
+
+  public VectorSelectionEvent(JVectorPane source, Rectangle selection) {
+    super(source);
+    this.selection = selection;
+  }
+
+  public Rectangle getSelection() {
+    return selection;
+  }
+
+  public JVectorPane getSource() {
+    return (JVectorPane) super.getSource();
+  }
 }

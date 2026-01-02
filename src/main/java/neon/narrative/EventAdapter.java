@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -24,23 +24,22 @@ import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.listener.Handler;
 
 public class EventAdapter {
-	private QuestTracker tracker;
-	
-	public EventAdapter(QuestTracker tracker) {
-		this.tracker = tracker;
-	}
-	
-	@Handler public void handleSkill(SkillEvent se) {
+  private QuestTracker tracker;
 
-	}
+  public EventAdapter(QuestTracker tracker) {
+    this.tracker = tracker;
+  }
 
-	@Handler public void handleCombat(CombatEvent ce) {
-		
-	}
-	
-	@Handler public void transition(TransitionEvent event) {
-		if(event.toString().equals("dialog")) {
-			tracker.checkTransition(event);
-		}
-	}
+  @Handler
+  public void handleSkill(SkillEvent se) {}
+
+  @Handler
+  public void handleCombat(CombatEvent ce) {}
+
+  @Handler
+  public void transition(TransitionEvent event) {
+    if (event.toString().equals("dialog")) {
+      tracker.checkTransition(event);
+    }
+  }
 }
