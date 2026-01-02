@@ -44,6 +44,7 @@ public class Main {
 		sPort.connect(cPort);
 		
 		// engine en ui aanmaken
+
 		Engine engine = new Engine(sPort);
 		Client client = new Client(cPort, version);
 		
