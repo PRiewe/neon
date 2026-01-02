@@ -163,7 +163,7 @@ public class ResourceAction extends AbstractAction {
 					ResourceNode parent = (ResourceNode)root.getChildAt(i);
 					if(parent.getType() == type) {
 						parent.add(node);
-						tree.updateUI();	// anders update de tree niet na toevoegen
+						tree.updateUI();	// otherwise tree doesn't update after adding
 						Object[] nodes = {root, parent, node};
 						TreePath path = new TreePath(nodes);
 						tree.scrollPathToVisible(path);

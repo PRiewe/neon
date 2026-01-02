@@ -62,7 +62,7 @@ public class EditablePane extends JScrollPane implements MouseMotionListener, Mo
 		this.node = node;
 		setBackground(Color.black);
 		pane = new JVectorPane();
-		scene = node.getZone().getScene();	// scene na pane, anders loopt repaint mis
+		scene = node.getZone().getScene();	// scene after pane, otherwise repaint fails
 		setViewportView(pane);
 		pane.setEditable(true);
 		pane.setPreferredSize(new Dimension((int)(scene.getWidth()*pane.getZoom()), 
@@ -81,7 +81,7 @@ public class EditablePane extends JScrollPane implements MouseMotionListener, Mo
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				repaint();	// omdat er anders iets misloopt met nieuwe panes
+				repaint();	// otherwise something goes wrong with new panes
 			}
 		});
 	}
@@ -296,7 +296,7 @@ public class EditablePane extends JScrollPane implements MouseMotionListener, Mo
 		final int x = Math.max(0, (int)(viewport.getViewPosition().x*ratio + dx));
 		final int y = Math.max(0, (int)(viewport.getViewPosition().y*ratio + dy));
 		pane.setZoom(zoom);
-		// omdat preferredSize van de viewport niet onmiddelijk verandert
+		// because preferredSize of the viewport does not change immediately
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				viewport.setViewPosition(new Point(x, y));				

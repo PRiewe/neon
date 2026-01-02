@@ -137,12 +137,12 @@ public class SkillHandler {
 
 		if(value < player.getSkill(skill)) {	// skill is met 1 gestegen
 			Engine.post(new SkillEvent(skill));
-			// kijken of er een feat unlocked wordt
+			// check if a feat is unlocked
 			checkFeat(skill, player);
 
 			int level = player.getLevel();
 			int stat = getStatValue(skill, player);
-			// kijken welke stat er stijgt
+			// check which stat increases
 			switch(skill.stat) {
 			case STRENGTH: player.addBaseStr(0.1f); break;
 			case CONSTITUTION: 

@@ -85,7 +85,7 @@ public class AimState extends State implements KeyListener {
 	@Override
 	public void exit(TransitionEvent e) {
 		panel.removeKeyListener(this);
-		if(popup != null) {	// kan gebeuren als popup nog niet geset is in look()
+		if(popup != null) {	// can happen if popup is not yet set in look()
 			popup.hide();
 		}
 		panel.hideCursor();

@@ -112,7 +112,7 @@ public class RPerson extends RData {
 		npc.setAttribute("id", id);
 		
 		for(Element service : services) {
-			service.detach();	// anders fout bij 2de keer saven
+			service.detach();	// otherwise error on second save
 			npc.addContent(service);
 		}
 		

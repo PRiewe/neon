@@ -29,8 +29,8 @@ public class FiniteStateMachine extends State {
 	// String in hashmap is eventID + current state, dan kunnen eventIDs herbruikt worden
 	private HashMap<String, Transition> transitions = new HashMap<>();
 	private HashMap<String, Object> variables = new HashMap<>();
-	private List<State> starts = new ArrayList<>();	// lijst met alle start states
-	private Set<State> currents;	// lijst van alle current states
+	private List<State> starts = new ArrayList<>();	// list with all start states
+	private Set<State> currents;	// list of all current states
 	
 	public FiniteStateMachine() {
 		super(null, "FSM");
@@ -57,7 +57,7 @@ public class FiniteStateMachine extends State {
 	}
 
 	public void transition(TransitionEvent event) {
-		// hier een kopie van currents maken, omdat currents kan aangepast worden
+		// make a copy of currents here, because currents can be modified
 		for(State current : new ArrayList<State>(currents)) {
 			if(currents.contains(current) && !current.isBlocked()) {
 				if(transitions.containsKey(event.toString() + current)) {
@@ -76,26 +76,26 @@ public class FiniteStateMachine extends State {
 		State next = transition.getNext();
 		State ancestor = getCommonAncestor(current, next);
 //		System.out.println(current.getName() + " -> " + next.getName());
-		// lokale transitie
+		// local transition
 		boolean isLocal = transition.isLocal();
 
-		// alle nodige state exiten
+		// exit all necessary states
 		if(isLocal) {	// lokale transitie
 			for(State state : new ArrayList<State>(currents)) {
 				if(state.parent == ancestor) {
 					exit(e, ancestor, state);
 				}
 			}
-		} else {	// alle andere transities
+		} else {	// all other transitions
 			exit(e, ancestor, current);
 		}
 
-		// acties op transitie uitvoeren
+		// execute actions on transition
 		if(transition.getAction() != null) {
 			transition.getAction().run(e);
 		}
 
-		// alle nodige states enteren
+		// enter all necessary states
 		if(isLocal) {	// lokale transitie
 			enter(e, ancestor, next);
 			for(State state : starts) {
@@ -108,7 +108,7 @@ public class FiniteStateMachine extends State {
 		}
 	}
 
-	// current en alle super/substates exiten
+	// exit current and all super/substates
 	private void exit(TransitionEvent e, State ancestor, State current) {
 		currents.remove(current);
 		// substates exiten
@@ -125,22 +125,22 @@ public class FiniteStateMachine extends State {
 		}
 	}
 
-	// current en alle super/substates enteren
+	// enter current and all super/substates
 	private void enter(TransitionEvent e, State ancestor, State next) {
 		currents.add(next);
 
-		// alle superstates enteren
+		// enter all superstates
 		if(next != ancestor && next.parent != ancestor && !currents.contains(next.parent)) {
 			enter(e, ancestor, next.parent);
 		}
 		// next enteren
 		next.enter(e);
-		// alle substates enteren
+		// enter all substates
 		for(State state : starts) {
 			if(state.parent == next) {
 				boolean check = true;
 
-				// als huidige state al actieve state heeft, overslaan
+				// if current state already has an active state, skip
 				for(State other : currents) {
 					if(other.parent == next) {
 						check = false;
@@ -197,7 +197,7 @@ public class FiniteStateMachine extends State {
 			} else if(getCommonAncestor(one, two) == one) {
 				return -1;
 			} else {
-				return 1;	// om volgorde in set goed te krijgen...
+				return 1;	// to get the order in set right...
 			}
 		}
 	}

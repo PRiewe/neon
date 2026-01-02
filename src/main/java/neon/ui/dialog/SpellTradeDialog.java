@@ -60,7 +60,7 @@ public class SpellTradeDialog implements KeyListener {
 		panel = new JPanel(new BorderLayout());
 		panel.setBorder(new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10,10,10,10)));
         
-		// trader panel klaarmaken
+		// prepare trader panel
         buy = new JList<RSpell>();
 		JScrollPane scroller = new JScrollPane(buy);
      	scroller.setBorder(new TitledBorder("Spells"));

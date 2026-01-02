@@ -124,7 +124,7 @@ public class ObjectTreeListener implements MouseListener {
 						"Create new " + type.toString().toLowerCase());
 				if(!props.cancelled()) {
 					RData object;
-					// item aanmaken en in dataStore toevoegen
+					// create item and add to dataStore
 					switch(type) {
 					case CREATURE: 
 						object = new RCreature(props.getID(), Editor.getStore().getActive().get("id")); break;
@@ -161,7 +161,7 @@ public class ObjectTreeListener implements MouseListener {
 						ObjectNode parent = (ObjectNode)root.getChildAt(i);
 						if(parent.getType() == type) {
 							parent.add(node);
-							tree.updateUI();	// anders update de tree niet na toevoegen
+							tree.updateUI();	// otherwise tree doesn't update after adding
 							Object[] nodes = {root, parent, node};
 							TreePath path = new TreePath(nodes);
 							tree.scrollPathToVisible(path);

@@ -177,7 +177,7 @@ public class GameLoader {
 		// tijd juist zetten (met setTime(), anders worden listeners aangeroepen)
 		Engine.getTimer().setTime(Integer.parseInt(root.getChild("timer").getAttributeValue("ticks")));
 		
-		// player aanmaken
+		// create player
 		loadPlayer(root.getChild("player"));
 
 		// events
@@ -234,7 +234,7 @@ public class GameLoader {
 	}
 
 	private void loadPlayer(Element playerData) {
-		// player aanmaken
+		// create player
 		RCreature species = (RCreature)Engine.getResources().getResource(playerData.getAttributeValue("race"));
 		Player player = new Player(new RCreature(species.toElement()), playerData.getAttributeValue("name"), 
 				Gender.valueOf(playerData.getAttributeValue("gender").toUpperCase()), Player.Specialisation.valueOf(playerData.getAttributeValue("spec")),

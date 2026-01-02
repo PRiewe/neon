@@ -72,7 +72,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
         JPanel center = new JPanel(new java.awt.GridLayout(0,3));
         panel.addKeyListener(this);
         
-        // inventory panel klaarmaken
+        // prepare inventory panel
         iList = new JList<Item>();
 		iList.addKeyListener(this);
 		iList.addListSelectionListener(this);
@@ -83,12 +83,12 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     	iScroll.setBorder(new TitledBorder(new LineBorder(line.brighter(), 2), "Inventory"));
     	center.add(iScroll);
 
-    	// description panel klaarmaken
+    	// prepare description panel
 		CClient ini = (CClient)Engine.getResources().getResource("client", "config");
     	description = new DescriptionPanel(ini.getSmall());
     	center.add(description);
     	
-        // container panel klaarmaken
+        // prepare container panel
         cList = new JList<Entity>();
 		cList.addKeyListener(this);
 		cList.addListSelectionListener(this);

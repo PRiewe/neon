@@ -33,7 +33,7 @@ public class Conversation {
 	public final String questID;
 	public final String id;
 	
-	// vieze manier om een tree structuur te maken met een multimap
+	// dirty way to create a tree structure with a multimap
 	private Multimap<Topic, Topic> topics = ArrayListMultimap.create();
 	private Topic root;
 	

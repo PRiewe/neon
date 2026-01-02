@@ -65,16 +65,16 @@ public class MoveState extends State implements KeyListener {
 	}
 	
 	private void move(int x, int y) {
-		// TODO: dit moet gedeeltelijk naar MotionHandler?
+		// TODO: this should partially go to MotionHandler?
 		Rectangle bounds = player.getShapeComponent();
 		Point p = new Point(bounds.x + x, bounds.y + y);
 
-		// kijken of creature in de weg staat
+		// check if creature is in the way
 		Creature other = Engine.getAtlas().getCurrentZone().getCreature(p);
 		if(other != null && !other.hasCondition(Condition.DEAD)) {
 			if(other.brain.isHostile()) {
 				bus.publishAsync(new CombatEvent(player, other));
-				bus.publishAsync(new TurnEvent(Engine.getTimer().addTick())); // volgende beurt
+				bus.publishAsync(new TurnEvent(Engine.getTimer().addTick())); // next turn
 			} else {
 				bus.publishAsync(new TransitionEvent("bump", "creature", other));
 			}

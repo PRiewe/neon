@@ -119,7 +119,7 @@ public class DungeonGenerator {
 					toDoor.lock.open();
 					toDoor.portal.setDestination(null, to, 0);
 					zone.addItem(toDoor);
-				} else {	// meerdere deuren tussen twee zones
+				} else {	// multiple doors between two zones
 					for(long uid : previous.getItems()) {
 						if(Engine.getStore().getEntity(uid) instanceof Door) {
 							Door fromDoor = (Door)Engine.getStore().getEntity(uid);
@@ -179,7 +179,7 @@ public class DungeonGenerator {
 		int width = MapUtils.random(theme.min, theme.max);
 		int height = MapUtils.random(theme.min, theme.max);
 		
-		// basis terrein zonder features
+		// base terrain without features
 		tiles = generateBaseTiles(theme.type, width, height);
 		terrain = makeTerrain(tiles, theme.floor.split(","));
 		
@@ -268,7 +268,7 @@ public class DungeonGenerator {
 				for(Rectangle r : lakes) {	// meer inkwakken
 					FeatureGenerator.generateLake(terrain, t, r);
 				}
-			} else if(feature[1].equals("patch")) {	// patch die enkel floor tiles overschrijft
+			} else if(feature[1].equals("patch")) {	// patch that only overwrites floor tiles
 				// stukken inkwakken
 				ArrayList<Rectangle> patches = BlocksGenerator.generateSparseRectangles(width, height, s, s, 2, n);
 				for(Rectangle r : patches) {
@@ -306,7 +306,7 @@ public class DungeonGenerator {
 					}
 				}
 			} else if(feature[1].equals("river")) {
-				while(n-- > 0) {	// blijkbaar eerst >, dan --
+				while(n-- > 0) {	// apparently first >, then --
 					FeatureGenerator.generateRiver(terrain, tiles, t, s);
 				}
 			}
@@ -395,7 +395,7 @@ public class DungeonGenerator {
 		Modifier modifier = zone.getRegion(bounds.getLocation()).getMovMod();
 		Habitat habitat = creature.species.habitat;
 		if(habitat == Habitat.LAND && !(modifier == Modifier.NONE || modifier == Modifier.ICE)) {
-			return;	// landdieren alleen op land zetten
+			return;	// only place land animals on land
 		}
 		Engine.getStore().addEntity(creature);
 		zone.addCreature(creature);			

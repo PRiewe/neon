@@ -27,7 +27,7 @@ import org.jdom2.Element;
  *
  */
 public abstract class RData extends Resource {
-	// dit dient eigenlijk alleen voor items en creatures
+	// this is actually only used for items and creatures
 	public String text = "x";
 	public String color = "white";
 	public String name;
@@ -63,7 +63,7 @@ public abstract class RData extends Resource {
 	public abstract Element toElement();
 	
 	@Override
-	public void load() {}	// RData heeft niets om te laden buiten wat er in de constructor staat
+	public void load() {}	// RData has nothing to load beyond what's in the constructor
 	
 	@Override
 	public void unload() {}	// RData heeft niets om te ontladen

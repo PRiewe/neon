@@ -51,7 +51,7 @@ public class RZone extends RData {
 
 	// zone als element uit file geladen
 	public RZone(Element properties, RMap map, String... path) {
-		// mottige truc omdat id final is.
+		// hacky trick because id is final.
 		super((map.isDungeon() ? properties.getAttributeValue("name") : properties.getChild("header").getChildText("name")), path);
 		this.map = map;
 		name = id;

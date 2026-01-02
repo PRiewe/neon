@@ -37,7 +37,7 @@ public class GuardAI extends AI {
 	}
 
 	public void act() {
-		// TODO: niet alleen op player letten, maar ook op andere wezens in zicht
+		// TODO: not only pay attention to player, but also to other creatures in sight
 		ShapeComponent cBounds = creature.getShapeComponent();
 		ShapeComponent pBounds = Engine.getPlayer().getShapeComponent();
 		if(isHostile() && cBounds.getLocation().distance(pBounds.getLocation()) < range){

@@ -86,7 +86,7 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
 	}
 
 	public void valueChanged(ListSelectionEvent e) {
-		// blijkbaar worden er twee events gefired bij selectie
+		// apparently two events are fired on selection
 		if(e.getValueIsAdjusting()) {
 			stampModel.clear();
 			for(String s : events.get(list.getSelectedValue().toString())) {

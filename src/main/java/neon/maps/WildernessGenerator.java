@@ -25,7 +25,7 @@ import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.jdom2.Element;
-import org.texgen.signals.AnimalStripe;
+import org.fluttercode.texgen.signals.AnimalStripe;
 import neon.core.Engine;
 import neon.entities.*;
 import neon.entities.property.Habitat;
@@ -73,11 +73,11 @@ public class WildernessGenerator {
 	public void generate(Region region, RRegionTheme theme) {
 		// kijken of er bovenop deze region al andere regions liggen
 		Collection<Region> regions = zone.getRegions(region.getBounds());
-		if(!isOnTop(region, regions)) {	// als er nog regions boven deze region liggen
+		if(!isOnTop(region, regions)) {	// if there are still regions above this region
 			decompose(region, regions, theme);
 		} else if(region.width > 100 || region.height > 100) {	// kijken of region niet te groot is
 			divide(region, theme);
-		} else {	// indien klein genoeg, region genereren
+		} else {	// if small enough, generate region
 			terrain = new String[region.height + 2][region.width + 2];	// [rijen][kolommen]
 			if(region.y > 0) {	// bovenkant van map
 				for(int i = 0; i < region.width; i++) {
@@ -453,7 +453,7 @@ public class WildernessGenerator {
 			}
 		}
 		
-		// i keer itereren
+		// iterate i times
 		for(; i > 0; i--) {
 			int x = MapUtils.random(0, width - 1);
 			int y = MapUtils.random(0, height - 1);

@@ -26,7 +26,7 @@ import java.util.Collections;
 
 public class ComplexGenerator {
 	protected static int[][] generateSparseDungeon(int width, int height, int n, int rMin, int rMax) {
-		// paar dingen aanmaken
+		// create a couple of things
 		int[][] tiles = new int[width][height];
 		ArrayList<RoomGenerator.Room> rooms = new ArrayList<RoomGenerator.Room>();
 		for(Rectangle room: BlocksGenerator.generateSparseRectangles(width - 1, height - 1, rMin, rMax, 2, n)) {
@@ -82,7 +82,7 @@ public class ComplexGenerator {
 			if(!area.isEmpty() && !wasted[rooms.indexOf(room)]) {	// tunnelen naar reeds bestaande area
 				connect(tiles, room, area);	
 			}
-			area.add(new Area(room));	// en huidige kamer dan toevoegen
+			area.add(new Area(room));	// and then add current room
 		}		
 		
 		// louche dingen weghalen
@@ -115,7 +115,7 @@ public class ComplexGenerator {
 			if(!area.isEmpty() && !wasted[rooms.indexOf(room)]) {	// tunnelen naar reeds bestaande area
 				connect(tiles, room, area);	
 			}
-			area.add(new Area(room));	// en huidige kamer dan toevoegen
+			area.add(new Area(room));	// and then add current room
 		}		
 		
 		// louche dingen weghalen
@@ -230,7 +230,7 @@ public class ComplexGenerator {
 		do {
 			Rectangle source = new Rectangle((int)room.getCenterX(), (int)room.getCenterY(), 1, 1);
 			Rectangle dest = new Rectangle(1, 1);
-			do {	// punt zoeken binnen al gedane area
+			do {	// find point within already done area
 				dest.x = MapUtils.random(1, tiles.length - 1);
 				dest.y = MapUtils.random(1, tiles[dest.x].length - 1);
 			} while(!area.contains(dest));
@@ -265,7 +265,7 @@ public class ComplexGenerator {
 			}
 		}
 		Point start = new Point(1, 1);	// startpositie
-		do {	// punt zoeken binnen dungeon
+		do {	// find point within dungeon
 			start.x = MapUtils.random(1, tiles.length - 1);
 			start.y = MapUtils.random(1, tiles[start.x].length - 1);
 		} while(tiles[start.x][start.y] != MapUtils.FLOOR);
@@ -294,7 +294,7 @@ public class ComplexGenerator {
 					tiles[x][y] = MapUtils.FLOOR;
 				}
 				
-				// twee deuren tussen aangrenzende kamers
+				// two doors between adjacent rooms
 				if(isRoomWall(tiles[x][y]) && isFloor(tiles[x][y + 1]) && isFloor(tiles[x][y - 1]) && isFloor(tiles[x + 1][y]) && isFloor(tiles[x - 1][y])) {
 					if(Math.random() < 0.5) {	// om niet altijd linkse of bovenste deur te pakken
 						if(isRoomWall(tiles[x + 2][y])) {

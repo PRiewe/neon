@@ -49,7 +49,7 @@ public class ItemSerializer implements Serializer<Item>, Serializable {
 	private static final long serialVersionUID = 2138679015831709732L;
 
 	public Item deserialize(DataInput input) throws IOException, ClassNotFoundException {
-		// item aanmaken
+		// create item
 		String id = input.readUTF();
 		long uid = input.readLong();
 		int x = input.readInt();

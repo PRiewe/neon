@@ -62,7 +62,7 @@ public class CClient extends Resource {
 	private Properties strings;
 	
 	// other settings
-	private String bigCoin = "€";
+	private String bigCoin = "\u20AC"; // Euro symbol
 	private String smallCoin = "c";
 	private String title = "";
 	

@@ -45,7 +45,7 @@ public class Topic {
 		this.questID = questID;
 		this.conversationID = conversationID;
 		
-		// id en phrase moeten altijd bestaan
+		// id and phrase must always exist
 		id = topic.getAttributeValue("id");
 		phrase = topic.getChildText("phrase");
 		

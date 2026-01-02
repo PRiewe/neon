@@ -64,7 +64,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
 		if(e.toString().equals("start")) {
 			player = Engine.getPlayer();
 			Engine.getPhysicsEngine().addListener(this);
-			// in geval spel start, moeten de events van de huidige kloktick nu uitgevoerd worden
+			// in case the game starts, the events of the current clock tick need to be executed now
 			bus.publishAsync(new TurnEvent(Engine.getTimer().getTime(), true));
 		}
 		panel.setVisible(true);
@@ -140,7 +140,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
 		}
 	}
 
-	// voorlopig alleen controleren of de player op een region staat die een script moet draaien
+	// for now only check if the player is on a region that should run a script
 	public void collisionOccured(CollisionEvent event) {
 		Object one = event.getBodyA().getUserData();
 		Object two = event.getBodyB().getUserData();
@@ -158,6 +158,10 @@ public class GameState extends State implements KeyListener, CollisionListener {
 				}
 			}
 		} catch(Exception e) { }
+	}
+
+	public void separationOccured(net.phys2d.raw.CollisionEvent event) {
+		// Empty implementation - we don't need to handle separation events
 	}
 	
 	@Handler public void handleCombat(CombatEvent ce) {

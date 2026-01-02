@@ -128,7 +128,7 @@ public class CombatHandler {
 		
 		int result;
 		
-		// verdediger kijkt of hij kan dodgen of blocken
+		// defender checks if they can dodge or block
 		if(CombatUtils.dodge(defender) < attack) {
 			if(CombatUtils.block(defender) < attack) {
 				if(weapon != null) {

@@ -38,8 +38,8 @@ public class TerrainListener implements ListSelectionListener, MouseListener {
 	}
 
 	public void valueChanged(ListSelectionEvent e) {
-		// blijkbaar worden er twee events gefired bij selectie
-		// dus: altijd checken, anders louche dingen met hashmap
+		// apparently two events are fired on selection
+		// so: always check, otherwise weird things with hashmap
 		if(e.getValueIsAdjusting()) {
 			editor.setTerrain(list.getSelectedValue().toString());
 		}
