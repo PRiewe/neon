@@ -110,7 +110,7 @@ public class MapInfoEditor implements ActionListener {
 					JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
 				data.zones.clear();
 				DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
-				for(Enumeration<MutableTreeNode> mtn = node.children(); mtn.hasMoreElements();) {
+				for(Enumeration<MutableTreeNode> mtn = (Enumeration<MutableTreeNode>) (Enumeration<?>) node.children(); mtn.hasMoreElements();) {
 					model.removeNodeFromParent(mtn.nextElement());
 				}
 				data.theme = (RDungeonTheme)themeBox.getSelectedItem();				

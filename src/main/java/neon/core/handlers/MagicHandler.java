@@ -45,10 +45,10 @@ import net.engio.mbassy.listener.References;
  */
 @Listener(references = References.Strong)	// strong, om gc te vermijden
 public class MagicHandler {
-	public static final int RANGE = 0;		// verkeerde range
+	public static final int RANGE = 0;		// wrong range
 	public static final int NULL = 1;		// geen target geselecteerd
 	public static final int MANA = 2;		// te weinig mana of charge (voor items)
-	public static final int TARGET = 3;		// verkeerd type target (item of creature)
+	public static final int TARGET = 3;		// wrong type of target (item or creature)
 	public static final int SKILL = 4;		// skill check niet gelukt
 	public static final int NONE = 5;		// geen spell equiped
 	public static final int OK = 6;			// casten ok
@@ -145,7 +145,7 @@ public class MagicHandler {
 					// skill check gefaald
 					Engine.post(new MagicEvent.Result(this, caster, SKILL));
 				} else if(caster.getMagicComponent().getMana() < MagicUtils.getMana(formula)) {
-					// genoeg mana om te casten?
+					// enough mana to cast?
 					Engine.post(new MagicEvent.Result(this, caster, MANA));
 				} else {
 					caster.getMagicComponent().addMana(-MagicUtils.getMana(formula));
@@ -157,7 +157,7 @@ public class MagicHandler {
 			Rectangle box = new Rectangle(target.x - area, target.y - area,
 					area*2 + 1, area*2 + 1);
 
-			// alle items/creatures binnen bereik
+			// all items/creatures within range
 			if(formula.effect == Effect.SCRIPTED) {
 				Engine.execute(formula.script);
 			} else if(formula.effect.getHandler().onItem()) {

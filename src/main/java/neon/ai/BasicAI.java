@@ -28,7 +28,7 @@ public class BasicAI extends AI {
 	}
 
 	public void act() {
-		// TODO: niet alleen op player letten, maar ook op andere wezens in zicht
+		// TODO: not only pay attention to player, but also to other creatures in sight
 		if(isHostile() && sees(Engine.getPlayer())){
 			HealthComponent health = creature.getHealthComponent();
 			if(100*health.getHealth()/health.getBaseHealth() < confidence) {	

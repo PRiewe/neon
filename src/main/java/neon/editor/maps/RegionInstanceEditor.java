@@ -135,7 +135,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
 		randomPanel.setBorder(new TitledBorder("Random generation"));
 
 		JPanel otherPanel = new JPanel(new BorderLayout());
-		if(!this.zone.map.isDungeon()) {	// alleen outdoor random regions
+		if(!this.zone.map.isDungeon()) {	// only outdoor random regions
 			otherPanel.add(randomPanel, BorderLayout.PAGE_START);
 		}
 		otherPanel.add(scroller, BorderLayout.CENTER);

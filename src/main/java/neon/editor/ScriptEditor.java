@@ -80,7 +80,7 @@ public class ScriptEditor implements ListSelectionListener, ActionListener, Mous
 	}
 
 	public void valueChanged(ListSelectionEvent e) {
-		// blijkbaar worden er twee events gefired bij selectie
+		// apparently two events are fired on selection
 		if(e.getValueIsAdjusting()) {
 			if(list.isSelectedIndex(e.getFirstIndex()) && !list.isSelectedIndex(e.getLastIndex())) {
 				model.elementAt(e.getLastIndex()).script = text.getText();

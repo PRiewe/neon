@@ -28,7 +28,7 @@ import neon.ui.Client;
  * @author	mdriesen
  */
 public class Main {
-	private static final String version = "0.4.2";	// huidige versie
+	private static final String version = "0.4.2";	// current version
 
 	/**
      * The application's main method. This method creates an {@code Engine} and 
@@ -37,19 +37,19 @@ public class Main {
      * @param args	the command line arguments
      */
 	public static void main(String[] args) {
-		// poorten aanmaken en verbinden
+		// create and connect ports
 		LocalPort cPort = new LocalPort();
 		LocalPort sPort = new LocalPort();
 		cPort.connect(sPort);
 		sPort.connect(cPort);
 		
-		// engine en ui aanmaken
+		// create engine and ui
 		Engine engine = new Engine(sPort);
 		Client client = new Client(cPort, version);
 		
-		// custom look and feels zijn soms wat strenger als gewone, blijkbaar
-		// is het grootste probleem dat delen van de ui buiten de swing thread 
-		// worden aangemaakt. Daarom alles maar op event-dispatch thread.
+		// custom look and feels are sometimes stricter than normal, apparently
+		// the main problem is that parts of the ui are created outside the swing thread 
+		// Therefore everything should be on the event-dispatch thread.
 		javax.swing.SwingUtilities.invokeLater(client);
 		engine.run();
 	}

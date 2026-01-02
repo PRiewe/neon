@@ -185,7 +185,7 @@ public class CCEditor implements ActionListener, ItemListener, ListSelectionList
 
 		races = new HashMap<RCreature, Boolean>();
 		for(RCreature rc : Editor.resources.getResources(RCreature.class)) {
-			// alleen humanoids of goblins
+			// only humanoids or goblins
 			if(rc.type == Type.humanoid || rc.type == Type.goblin) {
 				races.put(rc, playableRaces.contains(rc));
 			}
@@ -288,7 +288,7 @@ public class CCEditor implements ActionListener, ItemListener, ListSelectionList
 	}
 
 	public void valueChanged(ListSelectionEvent e) {
-		// blijkbaar worden er twee events gefired bij selectie
+		// apparently two events are fired on selection
 		if(e.getValueIsAdjusting()) {
 			currentRace = raceList.getSelectedValue();
 			raceBox.setSelected(races.get(currentRace));

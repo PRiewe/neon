@@ -52,12 +52,12 @@ public class TurnHandler {
 	}
 	
 	@Handler public void tick(TurnEvent te) {
-		// indien beurt gedaan is (timer krijgt extra tick): 
+		// if turn is done (timer gets extra tick): 
 		//	1) random regions controleren
 		//	2) monsters controleren
 		//	3) speler controleren
 		
-		// kijken of terrain moet gegenereerd worden
+		// check if terrain needs to be generated
 		if(Configuration.gThread) {
 			if(generator == null || !generator.isAlive()) {
 				generator = new Generator();
@@ -108,7 +108,7 @@ public class TurnHandler {
 	private class Generator extends Thread {
 		@Override
 		public void run() {
-			// enkel repainten nadat er iets gegenereerd is
+			// only repaint after something has been generated
 			if(checkRegions()) {
 				Engine.post(new UpdateEvent(this));
 			}
@@ -118,7 +118,7 @@ public class TurnHandler {
 	/*
 	 * Checks if any regions are visible that should be randomly generated.
 	 */
-	private boolean checkRegions() {	// die boolean is eigenlijk maar louche
+	private boolean checkRegions() {	// that boolean is actually rather dubious
 		Rectangle window = panel.getVisibleRectangle();
 		Zone zone = Engine.getAtlas().getCurrentZone();
 		boolean fixed = true;
@@ -132,7 +132,7 @@ public class TurnHandler {
 					generated = true;
 					fixed = false;
 					RRegionTheme theme = r.getTheme();
-					r.fix();	// vanaf hier wordt theme null
+					r.fix();	// from here on theme becomes null
 					if(theme.id.startsWith("town")) {
 						new TownGenerator(zone).generate(r.getX(), r.getY(), r.getWidth(), r.getHeight(), theme, r.getZ());
 					} else {

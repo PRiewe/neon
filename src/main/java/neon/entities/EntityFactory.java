@@ -44,7 +44,7 @@ public class EntityFactory {
 	}
 	
 	public static Item getItem(String id, int x, int y, long uid) {
-		// item aanmaken
+		// create item
 		RItem resource;
 		if(Engine.getResources().getResource(id) instanceof LItem) {
 			LItem li = (LItem)Engine.getResources().getResource(id);
@@ -83,7 +83,7 @@ public class EntityFactory {
 	}
 	
 	private static Item getItem(RItem resource, long uid) {
-		// item aanmaken
+		// create item
 		switch(resource.type) {
 		case container: return new Container(uid, (RItem.Container)resource);
 		case food: return new Item.Food(uid, resource);

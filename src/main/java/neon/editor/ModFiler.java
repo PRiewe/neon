@@ -95,7 +95,7 @@ public class ModFiler {
 
 						// kijken of er een mod is met de juist id
 						for(Element mod : ini.getRootElement().getChild("files").getChildren()) {
-							if(!mod.getText().equals(path)) {	// zien dat huidige mod niet nog eens geladen wordt
+							if(!mod.getText().equals(path)) {	// make sure current mod is not loaded again
 								System.out.println(mod.getText() + ", " + path);
 								files.mount(mod.getText());
 								Document d = files.getFile(new XMLTranslator(), mod.getText(), "main.xml");

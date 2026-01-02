@@ -108,7 +108,7 @@ public class BlocksGenerator {
 				area = new Area(r);
 			} else {	// kamer willekeurig wat rondbewegen
 				int i = 0;
-				while(area.intersects(r) && i < 100) {	// 100 keer proberen
+				while(area.intersects(r) && i < 100) {	// try 100 times
 					r.x = MapUtils.random(0, w - r.width);
 					r.y = MapUtils.random(0, h - r.height);
 					i++;

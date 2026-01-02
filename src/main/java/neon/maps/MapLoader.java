@@ -161,9 +161,9 @@ public class MapLoader {
 				int y = Integer.parseInt(i.getAttributeValue("y"));
 				Item item = null;
 				if(i.getName().equals("container")) {
-					item = loadContainer(i, id, x, y, itemUID, uid);	// omdat containers lastig zijn
+					item = loadContainer(i, id, x, y, itemUID, uid);	// because containers are tricky
 				} else if(i.getName().equals("door")) {
-					item = loadDoor(i, id, x, y, itemUID, uid);		// omdat deuren ook lastig zijn
+					item = loadDoor(i, id, x, y, itemUID, uid);		// because doors are also tricky
 				} else {
 					item = EntityFactory.getItem(id, x, y, itemUID);
 				}

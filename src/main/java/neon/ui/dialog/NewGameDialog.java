@@ -116,7 +116,7 @@ public class NewGameDialog {
 		JButton cancelButton = new JButton(cancel);
 		bottom.add(cancelButton);		
 		
-		// alles toevoegen aan main
+		// add everything to main
 		main.add(instructions, BorderLayout.PAGE_START);
 		main.add(middle, BorderLayout.CENTER);
 		main.add(bottom, BorderLayout.PAGE_END);		

@@ -312,7 +312,7 @@ public abstract class AI {
 				// eenmaal willekeurige andere richting proberen (of meerdere?)
 				wander();
 			} else if(result == MotionHandler.DOOR) {
-				// deur proberen opendoen, anders willekeurige richting
+				// try to open door, otherwise random direction
 				if(!open(p)) {
 					wander();
 				}
@@ -343,7 +343,7 @@ public abstract class AI {
 	 * hunt(range): val prooi aan zolang die binnen territorium zit
 	 */
 	protected void hunt(int range, Point home, Creature prey) {
-		// huidige positie van actor even bijhouden
+		// keep track of actor's current position
 		Rectangle bounds = creature.getShapeComponent();
 		// prooi aanvallen
 		hunt(prey);			
@@ -357,7 +357,7 @@ public abstract class AI {
 	 * wander(range): rondwandelen binnen territorium
 	 */
 	protected void wander(int range, Point home) {
-		// huidige positie creature opslaan
+		// save creature's current position
 		Rectangle bounds = creature.getShapeComponent();
 		double oldDistance = home.distance(bounds.getLocation());
 		// wandel willekeurig rond

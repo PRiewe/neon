@@ -44,7 +44,7 @@ public class PathFinder {
 		mover = creature;
 		
 		// lijstjes van nodes
-		evaluated = new HashMap<Point, Integer>();							// de bezochte nodes en hun kost vanaf from
+		evaluated = new HashMap<Point, Integer>();							// the visited nodes and their cost from from
 		Queue<Point> todo = new PriorityQueue<>(10, new NodeComparator());	// de nodes die nog moeten bekeken worden
 		HashMap<Point, Point> links = new HashMap<Point, Point>();			// om te kijken hoe een node bereikt is
 		
@@ -63,10 +63,10 @@ public class PathFinder {
 					next = null;
 					break;
 				} else if(Engine.getAtlas().getCurrentZone().getRegion(neighbour).getMovMod() == Region.Modifier.BLOCK) {
-					continue;	// als terrein geblokkeerd is, volgende punt
+					continue;	// if terrain is blocked, next point
 				}
 				int penalty = doorPenalty(neighbour) + terrainPenalty(neighbour);
-				int cost = evaluated.get(next) + manhattan(to, neighbour) + 1 + penalty;	// huidige kost van gebuur
+				int cost = evaluated.get(next) + manhattan(to, neighbour) + 1 + penalty;	// current cost of neighbor
 				// als gebuur al in todo lijst zit met hogere kost: eruit halen
 				if(todo.contains(neighbour) && cost < evaluated.get(neighbour) + manhattan(to, neighbour)) {
 					todo.remove(neighbour);
@@ -86,7 +86,7 @@ public class PathFinder {
 		
 		ArrayList<Point> path = new ArrayList<Point>();
 		if(!links.containsKey(to)) {
-			to = todo.poll();	// als path afgebroken werd, met huidige schatting voortdoen
+			to = todo.poll();	// if path was aborted, continue with current estimate
 		}						// dit geeft bijwijle wel vreemd gedrag
 		while(!from.equals(to)) {
 			path.add(0, to);

@@ -101,7 +101,7 @@ public class MainMenuState extends State {
 		main.getActionMap().put("quit", q);
 		main.getActionMap().put("esc", q);
 		
-		// versienummer
+		// version number
 		main.add(buttons, BorderLayout.CENTER);
 		main.add(new JLabel("release " + version), BorderLayout.PAGE_END);
 	}

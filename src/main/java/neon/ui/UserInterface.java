@@ -72,7 +72,7 @@ public class UserInterface {
 		panel.setPreferredSize(window.getContentPane().getSize());
 		window.setContentPane(panel);
 		window.setPreferredSize(window.getSize());	// anders resize naar minimumSize
-		window.pack();	// anders is er niet veel te zien
+		window.pack();	// otherwise there's not much to see
 		panel.requestFocus();
 	}
 	

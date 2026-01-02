@@ -65,7 +65,7 @@ public class GamePanel extends JComponent {
 		drawing = new JVectorPane();
 		drawing.setFilter(new LightFilter());
 		
-        // stats field (mottige manier om dit semi-transparant te krijgen)
+        // stats field (hacky way to make this semi-transparent)
 		stats = new JPanel(new GridLayout(0, 1)) {
 			@Override
             public void paintComponent(Graphics g) {
@@ -320,7 +320,7 @@ public class GamePanel extends JComponent {
 	}
 	
 	private class LightFilter implements BufferedImageOp {
-		private BufferedImage image;	// omdat dest altijd null is
+		private BufferedImage image;	// because dest is always null
 		
 		public BufferedImage createCompatibleDestImage(BufferedImage src, ColorModel destCM) {
 			return new BufferedImage(src.getWidth(), src.getHeight(), src.getType());

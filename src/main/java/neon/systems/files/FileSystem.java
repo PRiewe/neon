@@ -125,7 +125,7 @@ public class FileSystem {
 			JarEntry entry = entries.nextElement();
 			if(!entry.isDirectory()) {
 				String name = new String(entry.getName());
-				// dit moet blijkbaar met "/" omdat ik in een jar zit, en niet met File.separator
+				// this apparently must be with "/" because I'm in a jar, and not with File.separator
 				int separatorCount = name.length() - name.replace("/", "").length();
 				String[] pathArray = new String[separatorCount + 2];
 				pathArray[0] = modID;
@@ -298,7 +298,7 @@ public class FileSystem {
 		temp.mkdir();
 	}
 	
-	// delete werkt bij dirs enkel als die leeg zijn
+	// delete only works for dirs if they are empty
 	private void delete(File file) {
 		if(file.isDirectory()) {
 			for(File f : file.listFiles()) {

@@ -128,7 +128,7 @@ public class MapUtils {
 		int[] yPoints = new int[4*numPoints];
 		int[] buffer = new int[numPoints];
 		
-		// boven
+		// above
 		for(int i = 0; i < numPoints; i++) {
 			Point p = randomPoint(up);
 			buffer[i] = p.x;
@@ -146,7 +146,7 @@ public class MapUtils {
 		Arrays.sort(buffer);
 		System.arraycopy(buffer, 0, yPoints, numPoints, numPoints);
 		
-		// onder
+		// below
 		for(int i = 0; i < numPoints; i++) {
 			Point p = randomPoint(down);
 			buffer[i] = p.x;

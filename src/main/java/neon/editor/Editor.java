@@ -264,7 +264,7 @@ public class Editor implements Runnable, ActionListener {
 	}
 	
 	private void createMod(File file) {
-		// path is hier de naam van de dir, enkel files weet volledig path
+		// path here is the name of the dir, only files knows full path
 		String path = file.getName();	// dit wordt ook de mod id
 		try {
 			files.mount(file.getPath());
@@ -312,7 +312,7 @@ public class Editor implements Runnable, ActionListener {
 			if(chooser.showDialog(frame, "Extension") == JFileChooser.APPROVE_OPTION) {
 				// master laden
 				filer.load(master, false);
-				// extension aanmaken
+				// create extension
 				createMod(chooser.getSelectedFile());
 				enableEditing(true);
 				frame.pack();		

@@ -71,7 +71,7 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
 		panel.setBorder(new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10,10,10,10)));		
 		JPanel center = new JPanel(new java.awt.GridLayout(0,3));
         
-        // inventory panel klaarmaken
+        // prepare inventory panel
         sellList = new JList<Item>();
 		sellList.addKeyListener(this);
 		sellList.addListSelectionListener(this);
@@ -80,11 +80,11 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
     	sScroll.setBorder(new TitledBorder(new LineBorder(line.brighter(), 2), "Inventory"));
     	center.add(sScroll);
     	
-    	// description label klaarmaken
+    	// prepare description label
     	description = new DescriptionPanel(small);
     	center.add(description);
 
-        // trader panel klaarmaken
+        // prepare trader panel
         buyList = new JList<Item>();
 		buyList.addKeyListener(this);
 		buyList.addListSelectionListener(this);

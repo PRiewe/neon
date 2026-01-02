@@ -65,9 +65,10 @@ public class ObjectNode extends DefaultMutableTreeNode {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void insert(MutableTreeNode newChild, int childIndex)    {
 	    super.insert(newChild, childIndex);
-	    Collections.sort(children, nodeComparator);
+	    Collections.sort((java.util.Vector<MutableTreeNode>) (java.util.Vector<?>) children, nodeComparator);
 	}
 
 	private static class NodeComparator implements Comparator<MutableTreeNode>, Serializable {

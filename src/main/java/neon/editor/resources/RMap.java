@@ -126,7 +126,7 @@ public class RMap extends RData {
 	
 	// objecten indien nodig ook uit tree halen!!!
 	public void removeObjectUID(int uid) {
-		uids.remove((Integer)uid);	// omdat remove(int) de int'ste waarde verwijderd
+		uids.remove((Integer)uid);	// because remove(int) removes the int'th value
 	}
 	
 	// objecten niet vergeten in tree te steken!!!
@@ -176,7 +176,7 @@ public class RMap extends RData {
 	}
 
 	public void load() {
-		if(uids == null) {	// vermijden dat map twee keer geladen wordt
+		if(uids == null) {	// avoid that map is loaded twice
 			uids = new ArrayList<Integer>();
 			try {
 				String file = Editor.getStore().getMod(path[0]).getPath()[0];

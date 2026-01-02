@@ -38,7 +38,7 @@ import neon.entities.serialization.EntitySerializer;
  * @author mdriesen
  */
 public class UIDStore {	
-	// dummy uid voor objecten die eigenlijk niet bestaan
+	// dummy uid for objects that don't actually exist
 	public final static long DUMMY = 0;
 
 	// uid database 

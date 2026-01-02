@@ -86,7 +86,7 @@ public class GameSaver {
 	private Element saveEvents() {
 		Element events = new Element("events");
 		
-		// alle gewone tasks (voorlopig enkel script tasks)
+		// all normal tasks (for now only script tasks)
 		Multimap<String, Action> tasks = queue.getTasks();
 		for(String key : tasks.keySet()) {
 			for(Action action : tasks.get(key)) {
