@@ -18,9 +18,6 @@
 
 package neon.core.handlers;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 import neon.core.Engine;
 import neon.core.event.DeathEvent;
 import neon.entities.Creature;
@@ -29,6 +26,8 @@ import neon.resources.RScript;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 
 /**
  * @author mdriesen
@@ -49,15 +48,11 @@ public class DeathHandler {
 
     for (String s : sc.getScripts()) {
       RScript rs = (RScript) Engine.getResources().getResource(s, "script");
-      ScriptEngine se = Engine.getScriptEngine();
-      try {
-        se.eval(rs.script);
-        ((Invocable) se).invokeFunction("onDeath", "0");
-      } catch (ScriptException e) {
-        e.printStackTrace();
-      } catch (NoSuchMethodException e) {
-        e.printStackTrace();
-      }
+      Context se = Engine.getScriptEngine();
+
+      se.eval("js", rs.script);
+      Value processFunction = se.getBindings("js").getMember("onDeath");
+      processFunction.execute("0");
     }
   }
 }

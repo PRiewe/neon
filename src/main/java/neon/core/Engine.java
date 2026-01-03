@@ -38,6 +38,8 @@ import neon.systems.io.Port;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
 import net.engio.mbassy.bus.MBassador;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
 
 /**
  * The engine class is the core of the neon roguelike engine. It keeps track of all game elements.
@@ -47,7 +49,8 @@ import net.engio.mbassy.bus.MBassador;
 public class Engine implements Runnable {
   // wordt door engine geïnitialiseerd
   // TODO: alle global static state wegwerken
-  private static ScriptEngine engine;
+  private static Context engine;
+  private static org.graalvm.polyglot.Engine polyengine;
   private static FileSystem files; // virtual file system
   private static PhysicsSystem physics; // de physics engine
   private static Logger logger;
@@ -65,7 +68,24 @@ public class Engine implements Runnable {
   public Engine(Port port) {
     // engine componenten opzetten
     bus = port.getBus();
-    engine = new ScriptEngineManager().getEngineByName("JavaScript");
+    // Create a custom Engine with desired options or settings
+    polyengine =
+        org.graalvm.polyglot.Engine.newBuilder("js")
+            // Example: configure an engine-level option
+            .option("engine.WarnInterpreterOnly", "false")
+            .build();
+
+    // Create a Context using that engine
+    engine =
+        Context.newBuilder("js")
+            .engine(polyengine)
+            .allowHostAccess(HostAccess.ALL)
+            // allows access to all Java classes
+            .allowHostClassLookup(className -> true)
+            // Configure context-level options (e.g., host access)
+            .allowAllAccess(true)
+            .build();
+
     files = new FileSystem();
     physics = new PhysicsSystem();
     queue = new TaskQueue();
@@ -114,7 +134,8 @@ public class Engine implements Runnable {
    */
   public static Object execute(String script) {
     try {
-      return engine.eval(script);
+
+      return engine.eval("js", script);
     } catch (Exception e) {
       return null; // niet geweldig goed
     }
@@ -158,7 +179,7 @@ public class Engine implements Runnable {
   /**
    * @return the script engine
    */
-  public static ScriptEngine getScriptEngine() {
+  public static Context getScriptEngine() {
     return engine;
   }
 
@@ -194,9 +215,9 @@ public class Engine implements Runnable {
 
     // player registreren
     Player player = game.getPlayer();
-    engine.put("journal", player.getJournal());
-    engine.put("player", player);
-    engine.put("PC", player);
+    engine.getBindings("js").putMember("journal", player.getJournal());
+    engine.getBindings("js").putMember("player", player);
+    engine.getBindings("js").putMember("PC", player);
   }
 
   /** quit the game */

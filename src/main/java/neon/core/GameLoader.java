@@ -137,7 +137,7 @@ public class GameLoader {
     Rectangle bounds = player.getShapeComponent();
     bounds.setLocation(game.getStartPosition().x, game.getStartPosition().y);
     Map map = Engine.getAtlas().getMap(Engine.getStore().getMapUID(game.getStartMap()));
-    Engine.getScriptEngine().put("map", map);
+    Engine.getScriptEngine().getBindings("js").putMember("map", map);
     Engine.getAtlas().setMap(map);
     Engine.getAtlas().setCurrentZone(game.getStartZone());
   }

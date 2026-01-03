@@ -21,12 +21,12 @@ package neon.ui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import javax.script.ScriptEngine;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import neon.ui.console.JConsole;
+import org.graalvm.polyglot.Context;
 
 /**
  * Implements the main user interface of the neon engine. Any engine state can register a <code>
@@ -191,7 +191,8 @@ public class UserInterface {
   }
 
   /** Shows the console */
-  public void showConsole(ScriptEngine engine) {
+  public void showConsole(Context engine) {
+
     JConsole console = new JConsole(engine, window);
     console.show();
   }

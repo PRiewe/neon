@@ -78,7 +78,7 @@ public class QuestTracker {
     //			objects.putAll(temp.get(topic.quest).getObjects());
     //		}
     for (Map.Entry<String, Object> entry : objects.entrySet()) {
-      Engine.getScriptEngine().put(entry.getKey(), entry.getValue());
+      Engine.getScriptEngine().getBindings("js").putMember(entry.getKey(), entry.getValue());
     }
 
     if (topic.action != null) {

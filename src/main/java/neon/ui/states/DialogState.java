@@ -148,7 +148,7 @@ public class DialogState extends State implements KeyListener {
     }
     if (target != null) {
       left.setBorder(new TitledBorder(target.toString()));
-      Engine.getScriptEngine().put("NPC", target);
+      Engine.getScriptEngine().getBindings("js").putMember("NPC", target);
       initDialog();
       initServices();
       ui.showPanel(panel);

@@ -27,6 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.*;
+import org.graalvm.polyglot.Context;
 
 /**
  * This code was adapted from the following forum post:
@@ -41,12 +42,12 @@ public class JConsole extends JTextArea implements KeyListener {
   private CommandHistory history;
   private int editStart;
   private boolean running;
-  private ScriptEngine engine;
+  private Context engine;
   private ConsoleFilter filter;
   private JDialog frame;
 
   /** Initializes a console with the given <code>ScriptEngine</code> and the given parent window. */
-  public JConsole(ScriptEngine engine, JFrame parent) {
+  public JConsole(Context engine, JFrame parent) {
     frame = new JDialog(parent);
     frame.setTitle("Neon console");
     frame.setPreferredSize(new Dimension(400, 300));
@@ -58,10 +59,11 @@ public class JConsole extends JTextArea implements KeyListener {
     history = new CommandHistory();
     // setup the script engine
     this.engine = engine;
-    ScriptContext context = engine.getContext();
-    context.setReader(in);
-    context.setWriter(new ConsoleOutputStream(this));
-    context.setErrorWriter(new ConsoleOutputStream(this));
+
+    //    ScriptContext context = engine.getContext();
+    //    context.setReader(in);
+    //    context.setWriter(new ConsoleOutputStream(this));
+    //    context.setErrorWriter(new ConsoleOutputStream(this));
     setTabSize(4);
     // setup the event handlers and input processing
     addKeyListener(this);
@@ -280,9 +282,12 @@ public class JConsole extends JTextArea implements KeyListener {
     public void run() {
       running = true;
       try {
-        engine.eval(commands);
-      } catch (ScriptException e) {
-        e.printStackTrace();
+        var result = engine.eval("js", commands);
+        StringBuilder text = new StringBuilder(getText());
+        text.append(result);
+        setText(text.toString());
+      } catch (Exception e) {
+
       }
       StringBuilder text = new StringBuilder(getText());
       text.append(">>> ");

@@ -74,7 +74,7 @@ public class MotionHandler {
           }
         }
         Engine.getAtlas().setMap(map);
-        Engine.getScriptEngine().put("map", map);
+        Engine.getScriptEngine().getBindings("js").putMember("map", map);
         door.portal.setDestMap(Engine.getAtlas().getCurrentMap());
       } else if (door.portal.getDestTheme() != null) {
         Dungeon dungeon = MapLoader.loadDungeon(door.portal.getDestTheme());
