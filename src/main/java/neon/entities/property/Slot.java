@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2011 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -19,39 +19,52 @@
 package neon.entities.property;
 
 /**
- * Represents a clothing slot. These are basically all the different things
- * a character can 'wear'.
- * 
- * @author 	mdriesen
+ * Represents a clothing slot. These are basically all the different things a character can 'wear'.
+ *
+ * @author mdriesen
  */
 public enum Slot {
-	// armor (gauntlets includes bracers)
-	HELMET(0.1f), PAULDRONS(0.2f), GAUNTLETS(0.1f), 
-	CUIRASS(0.4f), CHAUSSES(0.1f), BOOTS(0.1f), SHIELD(0.2f),
-	
-	// juwelen
-	AMULET, RING, RING_LEFT, RING_RIGHT, BELT, 
-	
-	// kleding
-	SHIRT, PANTS, CLOAK, GLOVES, SHOES,
-	
-	// wapens
-	AMMO, WEAPON,
-	
-	// magic?
-	MAGIC;
-	
-	private final float mod;
-	
-	Slot() {
-		this(0);
-	}
-	
-	Slot(float mod) {
-		this.mod = mod;
-	}
-	
-	public float getArmorModifier() {
-		return mod;
-	}
+  // armor (gauntlets includes bracers)
+  HELMET(0.1f),
+  PAULDRONS(0.2f),
+  GAUNTLETS(0.1f),
+  CUIRASS(0.4f),
+  CHAUSSES(0.1f),
+  BOOTS(0.1f),
+  SHIELD(0.2f),
+
+  // juwelen
+  AMULET,
+  RING,
+  RING_LEFT,
+  RING_RIGHT,
+  BELT,
+
+  // kleding
+  SHIRT,
+  PANTS,
+  CLOAK,
+  GLOVES,
+  SHOES,
+
+  // wapens
+  AMMO,
+  WEAPON,
+
+  // magic?
+  MAGIC;
+
+  private final float mod;
+
+  Slot() {
+    this(0);
+  }
+
+  Slot(float mod) {
+    this.mod = mod;
+  }
+
+  public float getArmorModifier() {
+    return mod;
+  }
 }

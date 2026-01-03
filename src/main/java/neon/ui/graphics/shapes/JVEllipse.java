@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -21,27 +21,28 @@ package neon.ui.graphics.shapes;
 import java.awt.*;
 
 public class JVEllipse extends JVShape {
-	private int x, y, radius;
-	
-	public JVEllipse(int radius, Paint paint) {
-		this.paint = paint;
-		this.radius = radius;
-	}
-	
-	public void setX(int x) {
-		this.x = x;
-	}
+  private int x, y, radius;
 
-	public void setY(int y) {
-		this.y = y;
-	}
+  public JVEllipse(int radius, Paint paint) {
+    this.paint = paint;
+    this.radius = radius;
+  }
 
-	public void paint(Graphics2D graphics, float zoom, boolean isSelected) {
-		graphics.setPaint(paint);
-		graphics.fillOval((int)(x*zoom), (int)(y*zoom), (int)(radius*zoom), (int)(radius*zoom));
-	}
+  public void setX(int x) {
+    this.x = x;
+  }
 
-	public Rectangle getBounds() {
-		return new Rectangle(x, y, radius, radius);
-	}
+  public void setY(int y) {
+    this.y = y;
+  }
+
+  public void paint(Graphics2D graphics, float zoom, boolean isSelected) {
+    graphics.setPaint(paint);
+    graphics.fillOval(
+        (int) (x * zoom), (int) (y * zoom), (int) (radius * zoom), (int) (radius * zoom));
+  }
+
+  public Rectangle getBounds() {
+    return new Rectangle(x, y, radius, radius);
+  }
 }

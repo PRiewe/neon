@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -19,32 +19,31 @@
 package neon.core.event;
 
 import java.util.EventObject;
-
 import neon.entities.Creature;
 
 @SuppressWarnings("serial")
 public class DeathEvent extends EventObject {
-	private int time;
-	
-	/**
-	 * @param c	the creature that died
-	 * @param t	the time of death
-	 */
-	public DeathEvent(Creature c, int t) {
-		super(c);
-		time = t;
-	}
-	
-	public int getTime() {
-		return time;
-	}
-	
-	public Creature getCreature() {
-		return (Creature)source;
-	}
-	
-	@Override
-	public String toString() {
-		return "die:" + getCreature().getID();
-	}
+  private int time;
+
+  /**
+   * @param c the creature that died
+   * @param t the time of death
+   */
+  public DeathEvent(Creature c, int t) {
+    super(c);
+    time = t;
+  }
+
+  public int getTime() {
+    return time;
+  }
+
+  public Creature getCreature() {
+    return (Creature) source;
+  }
+
+  @Override
+  public String toString() {
+    return "die:" + getCreature().getID();
+  }
 }

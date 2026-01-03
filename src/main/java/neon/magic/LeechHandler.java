@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,48 +23,48 @@ import neon.entities.components.HealthComponent;
 import neon.entities.property.Damage;
 
 public class LeechHandler implements EffectHandler {
-	private Damage type;
-	
-	public LeechHandler(Damage type) {
-		this.type = type;
-	}
+  private Damage type;
 
-	public boolean isWeaponEnchantment() {
-		return true;
-	}
+  public LeechHandler(Damage type) {
+    this.type = type;
+  }
 
-	public boolean isClothingEnchantment() {
-		return false;
-	}
+  public boolean isWeaponEnchantment() {
+    return true;
+  }
 
-	public boolean onItem() {
-		return false;
-	}
+  public boolean isClothingEnchantment() {
+    return false;
+  }
 
-	public void addEffect(Spell spell) {
-		repeatEffect(spell);	// repeat doet toch niks speciaals
-	}
+  public boolean onItem() {
+    return false;
+  }
 
-	public void repeatEffect(Spell spell) {
-		Creature target = (Creature)spell.getTarget();
-		Creature caster = (Creature)spell.getCaster();
-		switch(type) {
-		case HEALTH: 
-			HealthComponent tHealth = target.getHealthComponent();
-			HealthComponent cHealth = caster.getHealthComponent();
-			tHealth.heal(-spell.getMagnitude());
-			cHealth.heal(spell.getMagnitude());
-			break;
-		case MANA: 
-			target.getMagicComponent().addMana(-spell.getMagnitude()); 
-			caster.getMagicComponent().addMana(spell.getMagnitude()); 
-			break;
-		default:
-			throw new IllegalArgumentException("The given spell does not have a leech effect.");
-		}
-	}
+  public void addEffect(Spell spell) {
+    repeatEffect(spell); // repeat doet toch niks speciaals
+  }
 
-	public void removeEffect(Spell spell) {
-		// remove stopt het drainen
-	}
+  public void repeatEffect(Spell spell) {
+    Creature target = (Creature) spell.getTarget();
+    Creature caster = (Creature) spell.getCaster();
+    switch (type) {
+      case HEALTH:
+        HealthComponent tHealth = target.getHealthComponent();
+        HealthComponent cHealth = caster.getHealthComponent();
+        tHealth.heal(-spell.getMagnitude());
+        cHealth.heal(spell.getMagnitude());
+        break;
+      case MANA:
+        target.getMagicComponent().addMana(-spell.getMagnitude());
+        caster.getMagicComponent().addMana(spell.getMagnitude());
+        break;
+      default:
+        throw new IllegalArgumentException("The given spell does not have a leech effect.");
+    }
+  }
+
+  public void removeEffect(Spell spell) {
+    // remove stopt het drainen
+  }
 }

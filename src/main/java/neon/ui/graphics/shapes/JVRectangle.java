@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2011 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,36 +23,39 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 
 public class JVRectangle extends JVShape {
-	private Rectangle bounds;
-	
-	public JVRectangle(Paint paint, Rectangle bounds) {
-		this.paint = paint;
-		this.bounds = bounds;
-	}
-	
-	public Rectangle getBounds() {
-		return bounds;
-	}
+  private Rectangle bounds;
 
-	public void paint(Graphics2D g, float zoom, boolean isSelected) {
-		g.setPaint(paint);
-		g.drawRect((int)(getBounds().x*zoom), (int)(getBounds().y*zoom), 
-				(int)(getBounds().width*zoom), (int)(getBounds().height*zoom));
-	}
+  public JVRectangle(Paint paint, Rectangle bounds) {
+    this.paint = paint;
+    this.bounds = bounds;
+  }
 
-	public int getX() {
-		return bounds.x;
-	}
+  public Rectangle getBounds() {
+    return bounds;
+  }
 
-	public int getY() {
-		return bounds.y;
-	}
+  public void paint(Graphics2D g, float zoom, boolean isSelected) {
+    g.setPaint(paint);
+    g.drawRect(
+        (int) (getBounds().x * zoom),
+        (int) (getBounds().y * zoom),
+        (int) (getBounds().width * zoom),
+        (int) (getBounds().height * zoom));
+  }
 
-	public void setX(int x) {
-		bounds.x = x;
-	}
+  public int getX() {
+    return bounds.x;
+  }
 
-	public void setY(int y) {
-		bounds.y = y;
-	}
+  public int getY() {
+    return bounds.y;
+  }
+
+  public void setX(int x) {
+    bounds.x = x;
+  }
+
+  public void setY(int y) {
+    bounds.y = y;
+  }
 }

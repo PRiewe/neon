@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2011 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -22,39 +22,39 @@ import neon.editor.resources.Instance;
 import neon.ui.graphics.Scene;
 
 public abstract class UndoAction {
-	public abstract void undo();
-	
-	public static class Drop extends UndoAction {
-		private Instance instance;
-		private Scene model;
-		
-		public Drop(Instance instance, Scene model) {
-			this.instance = instance;
-			this.model = model;
-		}
-		
-		public void undo() {
-			model.removeElement(instance);
-		}
-	}
-	
-	public static class Move extends UndoAction {
-		private Instance instance;
-		private Scene scene;
-		private int x, y;
+  public abstract void undo();
 
-		public Move(Instance instance, Scene scene, int x, int y) {
-			this.instance = instance;
-			this.scene = scene;
-			this.x = x;
-			this.y = y;
-		}
-		
-		public void undo() {
-			instance.setX(x);
-			instance.setY(y);
-			scene.removeElement(instance);
-			scene.addElement(instance, instance.getBounds(), instance.z);
-		}
-	}
+  public static class Drop extends UndoAction {
+    private Instance instance;
+    private Scene model;
+
+    public Drop(Instance instance, Scene model) {
+      this.instance = instance;
+      this.model = model;
+    }
+
+    public void undo() {
+      model.removeElement(instance);
+    }
+  }
+
+  public static class Move extends UndoAction {
+    private Instance instance;
+    private Scene scene;
+    private int x, y;
+
+    public Move(Instance instance, Scene scene, int x, int y) {
+      this.instance = instance;
+      this.scene = scene;
+      this.x = x;
+      this.y = y;
+    }
+
+    public void undo() {
+      instance.setX(x);
+      instance.setY(y);
+      scene.removeElement(instance);
+      scene.addElement(instance, instance.getBounds(), instance.z);
+    }
+  }
 }

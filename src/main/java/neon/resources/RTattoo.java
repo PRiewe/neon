@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -19,37 +19,36 @@
 package neon.resources;
 
 import neon.entities.property.Ability;
-
 import org.jdom2.Element;
 
 public class RTattoo extends RData {
-	public Ability ability;
-	public int magnitude;
-	public int cost;
+  public Ability ability;
+  public int magnitude;
+  public int cost;
 
-	public RTattoo(String id, String... path) {
-		super(id, path);
-		name = id;
-	}
+  public RTattoo(String id, String... path) {
+    super(id, path);
+    name = id;
+  }
 
-	public RTattoo(Element tattoo, String... path) {
-		super(tattoo, path);
-		ability = Ability.valueOf(tattoo.getAttributeValue("ability").toUpperCase());
-		magnitude =	Integer.parseInt(tattoo.getAttributeValue("size"));
-		cost = Integer.parseInt(tattoo.getAttributeValue("cost"));
-		if(tattoo.getAttribute("name") != null) {
-			name = tattoo.getAttributeValue("name");
-		} else {
-			name = id;
-		}
-	}
+  public RTattoo(Element tattoo, String... path) {
+    super(tattoo, path);
+    ability = Ability.valueOf(tattoo.getAttributeValue("ability").toUpperCase());
+    magnitude = Integer.parseInt(tattoo.getAttributeValue("size"));
+    cost = Integer.parseInt(tattoo.getAttributeValue("cost"));
+    if (tattoo.getAttribute("name") != null) {
+      name = tattoo.getAttributeValue("name");
+    } else {
+      name = id;
+    }
+  }
 
-	public Element toElement() {
-		Element tattoo = new Element("tattoo");
-		tattoo.setAttribute("id", id);
-		tattoo.setAttribute("ability", ability.toString());
-		tattoo.setAttribute("size", Integer.toString(magnitude));
-		tattoo.setAttribute("cost", Integer.toString(cost));
-		return tattoo;
-	}
+  public Element toElement() {
+    Element tattoo = new Element("tattoo");
+    tattoo.setAttribute("id", id);
+    tattoo.setAttribute("ability", ability.toString());
+    tattoo.setAttribute("size", Integer.toString(magnitude));
+    tattoo.setAttribute("cost", Integer.toString(cost));
+    return tattoo;
+  }
 }

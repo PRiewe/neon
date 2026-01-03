@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012-2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -28,63 +28,63 @@ import neon.entities.components.ShapeComponent;
 
 /**
  * This class represents a game entity that can be drawn on screen.
- * 
+ *
  * @author mdriesen
  */
 public abstract class Entity {
-	// components
-	public final ShapeComponent bounds;
-	
-	protected ClassToInstanceMap<Component> components = MutableClassToInstanceMap.create();
+  // components
+  public final ShapeComponent bounds;
 
-	private final long uid;
-	private final String id;
+  protected ClassToInstanceMap<Component> components = MutableClassToInstanceMap.create();
 
-	/**
-	 * @param id	the id of the resource this entity is an instance of
-	 * @param uid
-	 */
-	public Entity(String id, long uid) {
-		this.id = id;
-		this.uid = uid;
+  private final long uid;
+  private final String id;
 
-		// components
-		bounds = new ShapeComponent(this, 0, 0, 1, 1);
-		components.putInstance(PhysicsComponent.class, new PhysicsComponent(uid, bounds));
-		components.putInstance(ScriptComponent.class, new ScriptComponent(uid));
-	}
+  /**
+   * @param id the id of the resource this entity is an instance of
+   * @param uid
+   */
+  public Entity(String id, long uid) {
+    this.id = id;
+    this.uid = uid;
 
-	/**
-	 * @return	the uid of this entity
-	 */
-	public long getUID() {
-		return uid;
-	}
+    // components
+    bounds = new ShapeComponent(this, 0, 0, 1, 1);
+    components.putInstance(PhysicsComponent.class, new PhysicsComponent(uid, bounds));
+    components.putInstance(ScriptComponent.class, new ScriptComponent(uid));
+  }
 
-	/**
-	 * @return	the id of the resource this entity is an instance of
-	 */
-	public String getID() {
-		return id;
-	}
+  /**
+   * @return the uid of this entity
+   */
+  public long getUID() {
+    return uid;
+  }
 
-	public ShapeComponent getShapeComponent() {
-		return bounds;
-	}
+  /**
+   * @return the id of the resource this entity is an instance of
+   */
+  public String getID() {
+    return id;
+  }
 
-	public RenderComponent getRenderComponent() {
-		return components.getInstance(RenderComponent.class);
-	}
+  public ShapeComponent getShapeComponent() {
+    return bounds;
+  }
 
-	public void setRenderComponent(RenderComponent renderer) {
-		components.putInstance(RenderComponent.class, renderer);
-	}
+  public RenderComponent getRenderComponent() {
+    return components.getInstance(RenderComponent.class);
+  }
 
-	public PhysicsComponent getPhysicsComponent() {
-		return components.getInstance(PhysicsComponent.class);
-	}
+  public void setRenderComponent(RenderComponent renderer) {
+    components.putInstance(RenderComponent.class, renderer);
+  }
 
-	public ScriptComponent getScriptComponent() {
-		return components.getInstance(ScriptComponent.class);
-	}
+  public PhysicsComponent getPhysicsComponent() {
+    return components.getInstance(PhysicsComponent.class);
+  }
+
+  public ScriptComponent getScriptComponent() {
+    return components.getInstance(ScriptComponent.class);
+  }
 }

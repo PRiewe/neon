@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2010 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -21,6 +21,7 @@ package neon.systems.files;
 import java.io.*;
 
 public interface Translator<E> {
-	public E translate(InputStream input);
-	public ByteArrayOutputStream translate(E output);
+  public E translate(InputStream input);
+
+  public ByteArrayOutputStream translate(E output);
 }

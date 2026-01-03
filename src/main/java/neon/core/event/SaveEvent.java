@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -22,12 +22,12 @@ import java.util.EventObject;
 
 /**
  * An event to indicate that the current game should be saved.
- * 
+ *
  * @author mdriesen
  */
 @SuppressWarnings("serial")
 public class SaveEvent extends EventObject {
-	public SaveEvent(Object source) {
-		super(source);
-	}
+  public SaveEvent(Object source) {
+    super(source);
+  }
 }

@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,52 +23,52 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class CGame extends Resource {
-	private ArrayList<String> playableRaces = new ArrayList<>();
-	private ArrayList<String> startingItems = new ArrayList<>();
-	private ArrayList<String> startingSpells = new ArrayList<>();
-	private Point startPosition = new Point(0, 0);
-	private String[] startMap;
-	private int startZone = 0;	// default
-	
-	public CGame(String id, String... path) {
-		super(id, path);
-	}
+  private ArrayList<String> playableRaces = new ArrayList<>();
+  private ArrayList<String> startingItems = new ArrayList<>();
+  private ArrayList<String> startingSpells = new ArrayList<>();
+  private Point startPosition = new Point(0, 0);
+  private String[] startMap;
+  private int startZone = 0; // default
 
-	@Override
-	public void load() {}
+  public CGame(String id, String... path) {
+    super(id, path);
+  }
 
-	@Override
-	public void unload() {}
-	
-	public Collection<String> getStartingItems() {
-		return startingItems;
-	}
-	
-	public Collection<String> getStartingSpells() {
-		return startingSpells;
-	}
-	
-	public Point getStartPosition() {
-		return startPosition;
-	}
-	
-	public String[] getStartMap() {
-		return startMap;
-	}
-	
-	public void setStartMap(String[] map) {
-		startMap = map;
-	}
-	
-	public int getStartZone() {
-		return startZone;
-	}
-	
-	public void setStartZone(int zone) {
-		startZone = zone;
-	}
-	
-	public Collection<String> getPlayableRaces() {
-		return playableRaces;
-	}
+  @Override
+  public void load() {}
+
+  @Override
+  public void unload() {}
+
+  public Collection<String> getStartingItems() {
+    return startingItems;
+  }
+
+  public Collection<String> getStartingSpells() {
+    return startingSpells;
+  }
+
+  public Point getStartPosition() {
+    return startPosition;
+  }
+
+  public String[] getStartMap() {
+    return startMap;
+  }
+
+  public void setStartMap(String[] map) {
+    startMap = map;
+  }
+
+  public int getStartZone() {
+    return startZone;
+  }
+
+  public void setStartZone(int zone) {
+    startZone = zone;
+  }
+
+  public Collection<String> getPlayableRaces() {
+    return playableRaces;
+  }
 }

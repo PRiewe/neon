@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -27,53 +27,59 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 public class RentalDialog implements KeyListener {
-	private JDialog frame;
-	private JEditorPane area;
-	private JScrollPane scroller;
-	
-	public RentalDialog(JFrame parent) {
-		frame = new JDialog(parent, true);
-		frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
-		frame.setUndecorated(true);
-		
-		JPanel contents = new JPanel(new BorderLayout());
-		contents.setBorder(new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10,10,10,10)));		
-		frame.setContentPane(contents);
-		
-		area = new JEditorPane();
-		area.setContentType("text/html");
-		area.setEditable(false);
-		area.setFocusable(false);
-		area.setBackground(Color.darkGray);
-		scroller = new JScrollPane(area);
-		contents.add(scroller, BorderLayout.CENTER);
-		
-		JLabel instructions = new JLabel("<html>Press space to return to inventory.</html>");
-		instructions.setBorder(new CompoundBorder(new TitledBorder("Instructions"), new EmptyBorder(0,5,10,5)));
-		contents.add(instructions, BorderLayout.PAGE_END);
-        frame.addKeyListener(this);
-        try {
-        	frame.setOpacity(0.9f);
-        } catch(UnsupportedOperationException e) {
-        	System.out.println("setOpacity() not supported.");
-        }
-	}
-	
-	public void show(String title, String text) {
-		frame.setTitle(title);
-		area.setText(text);
-		area.setCaretPosition(0);
-		scroller.setBorder(new TitledBorder(title));
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-	}
+  private JDialog frame;
+  private JEditorPane area;
+  private JScrollPane scroller;
 
-	public void keyReleased(KeyEvent e) {}
-	public void keyTyped(KeyEvent e) {}
-	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
-		case KeyEvent.VK_SPACE: frame.dispose(); break;
-		}
-	}
+  public RentalDialog(JFrame parent) {
+    frame = new JDialog(parent, true);
+    frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
+    frame.setUndecorated(true);
+
+    JPanel contents = new JPanel(new BorderLayout());
+    contents.setBorder(
+        new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10, 10, 10, 10)));
+    frame.setContentPane(contents);
+
+    area = new JEditorPane();
+    area.setContentType("text/html");
+    area.setEditable(false);
+    area.setFocusable(false);
+    area.setBackground(Color.darkGray);
+    scroller = new JScrollPane(area);
+    contents.add(scroller, BorderLayout.CENTER);
+
+    JLabel instructions = new JLabel("<html>Press space to return to inventory.</html>");
+    instructions.setBorder(
+        new CompoundBorder(new TitledBorder("Instructions"), new EmptyBorder(0, 5, 10, 5)));
+    contents.add(instructions, BorderLayout.PAGE_END);
+    frame.addKeyListener(this);
+    try {
+      frame.setOpacity(0.9f);
+    } catch (UnsupportedOperationException e) {
+      System.out.println("setOpacity() not supported.");
+    }
+  }
+
+  public void show(String title, String text) {
+    frame.setTitle(title);
+    area.setText(text);
+    area.setCaretPosition(0);
+    scroller.setBorder(new TitledBorder(title));
+    frame.pack();
+    frame.setLocationRelativeTo(null);
+    frame.setVisible(true);
+  }
+
+  public void keyReleased(KeyEvent e) {}
+
+  public void keyTyped(KeyEvent e) {}
+
+  public void keyPressed(KeyEvent e) {
+    switch (e.getKeyCode()) {
+      case KeyEvent.VK_SPACE:
+        frame.dispose();
+        break;
+    }
+  }
 }

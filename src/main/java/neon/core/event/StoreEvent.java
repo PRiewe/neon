@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,47 +23,48 @@ import neon.entities.Entity;
 
 @SuppressWarnings("serial")
 public class StoreEvent extends EventObject {
-	public enum Mode {
-		ADD, REMOVE;
-	}
+  public enum Mode {
+    ADD,
+    REMOVE;
+  }
 
-	private Mode mode;
-	private long uid;
-	private Entity entity;
-	
-	/**
-	 * Creates a {@code StoreEvent} in {@code REMOVE} mode.
-	 * 
-	 * @param source
-	 * @param uid	the uid of the {@code Entity} to remove
-	 */
-	public StoreEvent(Object source, long uid) {
-		super(source);
-		mode = Mode.REMOVE;
-		this.uid = uid;
-	}
+  private Mode mode;
+  private long uid;
+  private Entity entity;
 
-	/**
-	 * Creates a {@code StoreEvent} in {@code ADD} mode.
-	 * 
-	 * @param source
-	 * @param entity	the {@code Entity} to add
-	 */
-	public StoreEvent(Object source, Entity entity) {
-		super(source);
-		mode = Mode.ADD;
-		this.entity = entity;
-	}
-	
-	public Mode getMode() {
-		return mode;
-	}
-	
-	public long getUID() {
-		return uid;
-	}
-	
-	public Entity getEntity() {
-		return entity;
-	}
+  /**
+   * Creates a {@code StoreEvent} in {@code REMOVE} mode.
+   *
+   * @param source
+   * @param uid the uid of the {@code Entity} to remove
+   */
+  public StoreEvent(Object source, long uid) {
+    super(source);
+    mode = Mode.REMOVE;
+    this.uid = uid;
+  }
+
+  /**
+   * Creates a {@code StoreEvent} in {@code ADD} mode.
+   *
+   * @param source
+   * @param entity the {@code Entity} to add
+   */
+  public StoreEvent(Object source, Entity entity) {
+    super(source);
+    mode = Mode.ADD;
+    this.entity = entity;
+  }
+
+  public Mode getMode() {
+    return mode;
+  }
+
+  public long getUID() {
+    return uid;
+  }
+
+  public Entity getEntity() {
+    return entity;
+  }
 }

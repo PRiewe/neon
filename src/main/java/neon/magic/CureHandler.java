@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,51 +23,58 @@ import neon.entities.property.Condition;
 import neon.resources.RSpell;
 
 /**
- * Handles all <i>cure</i> effects: cure disease, cure poison, cure blindness,
- * cure paralyzation and lift curse.
- * 
+ * Handles all <i>cure</i> effects: cure disease, cure poison, cure blindness, cure paralyzation and
+ * lift curse.
+ *
  * @author mdriesen
  */
 public class CureHandler implements EffectHandler {
-	public boolean isWeaponEnchantment() {
-		return false;
-	}
+  public boolean isWeaponEnchantment() {
+    return false;
+  }
 
-	public boolean isClothingEnchantment() {
-		return false;
-	}
+  public boolean isClothingEnchantment() {
+    return false;
+  }
 
-	public boolean onItem() {
-		return false;
-	}	
+  public boolean onItem() {
+    return false;
+  }
 
-	public void addEffect(Spell spell) {
-		Creature target = (Creature)spell.getTarget();
-		switch(spell.getEffect()) {
-		case CURE_DISEASE: MagicUtils.cure(target, RSpell.SpellType.DISEASE); break;
-		case CURE_POISON: MagicUtils.cure(target, RSpell.SpellType.POISON); break;
-		case LIFT_CURSE: MagicUtils.cure(target, RSpell.SpellType.CURSE); break;
-		case CURE_PARALYZATION:
-			for(Spell s : target.getActiveSpells()) {
-				if(s.getEffect() == Effect.PARALYZE) {
-					target.removeActiveSpell(s);
-				}
-			}
-			target.removeCondition(Condition.PARALYZED);
-			break;
-		case CURE_BLINDNESS:
-			for(Spell s : target.getActiveSpells()) {
-				if(s.getEffect() == Effect.BLIND) {
-					target.removeActiveSpell(s);
-				}
-			}
-			target.removeCondition(Condition.BLIND);
-			break;
-		default:
-			throw new IllegalArgumentException("The given spell does not have a cure effect.");
-		}		
-	}
-	
-	public void removeEffect(Spell spell) {}
-	public void repeatEffect(Spell spell) {}
+  public void addEffect(Spell spell) {
+    Creature target = (Creature) spell.getTarget();
+    switch (spell.getEffect()) {
+      case CURE_DISEASE:
+        MagicUtils.cure(target, RSpell.SpellType.DISEASE);
+        break;
+      case CURE_POISON:
+        MagicUtils.cure(target, RSpell.SpellType.POISON);
+        break;
+      case LIFT_CURSE:
+        MagicUtils.cure(target, RSpell.SpellType.CURSE);
+        break;
+      case CURE_PARALYZATION:
+        for (Spell s : target.getActiveSpells()) {
+          if (s.getEffect() == Effect.PARALYZE) {
+            target.removeActiveSpell(s);
+          }
+        }
+        target.removeCondition(Condition.PARALYZED);
+        break;
+      case CURE_BLINDNESS:
+        for (Spell s : target.getActiveSpells()) {
+          if (s.getEffect() == Effect.BLIND) {
+            target.removeActiveSpell(s);
+          }
+        }
+        target.removeCondition(Condition.BLIND);
+        break;
+      default:
+        throw new IllegalArgumentException("The given spell does not have a cure effect.");
+    }
+  }
+
+  public void removeEffect(Spell spell) {}
+
+  public void repeatEffect(Spell spell) {}
 }

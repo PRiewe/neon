@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2010 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -21,12 +21,12 @@ package neon.entities;
 import neon.resources.RCreature;
 
 public class Dragon extends neon.entities.Creature {
-	public Dragon(String type, long uid, RCreature species) {
-		super(type, uid, species);
-	}
-	
-	@Override
-	public boolean hasDialog() {
-		return true;
-	}
+  public Dragon(String type, long uid, RCreature species) {
+    super(type, uid, species);
+  }
+
+  @Override
+  public boolean hasDialog() {
+    return true;
+  }
 }

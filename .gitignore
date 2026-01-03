@@ -12,6 +12,8 @@ buildNumber.properties
 
 # Eclipse
 .settings/
+.idea/
+.serena/
 .classpath
 .project
 .metadata

@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -20,9 +20,12 @@ package neon.entities.property;
 
 /**
  * The preferred environment of a creature.
- * 
+ *
  * @author mdriesen
  */
 public enum Habitat {
-	AIR, LAND, WATER, AMPHIBIAN;
+  AIR,
+  LAND,
+  WATER,
+  AMPHIBIAN;
 }

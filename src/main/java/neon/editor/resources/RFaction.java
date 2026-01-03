@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -19,21 +19,20 @@
 package neon.editor.resources;
 
 import neon.resources.RData;
-
 import org.jdom2.Element;
 
 public class RFaction extends RData {
-	public RFaction(Element e, String... path) {
-		super(e.getAttributeValue("id"), path);
-	}
+  public RFaction(Element e, String... path) {
+    super(e.getAttributeValue("id"), path);
+  }
 
-	public RFaction(String id, String... path) {
-		super(id, path);
-	}
+  public RFaction(String id, String... path) {
+    super(id, path);
+  }
 
-	public Element toElement() {
-		Element faction = new Element("faction");
-		faction.setAttribute("id", id);
-		return faction;
-	}
+  public Element toElement() {
+    Element faction = new Element("faction");
+    faction.setAttribute("id", id);
+    return faction;
+  }
 }
