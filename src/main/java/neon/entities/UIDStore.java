@@ -20,14 +20,10 @@ package neon.entities;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.concurrent.ConcurrentMap;
+import java.io.*;
 import neon.entities.serialization.EntitySerializer;
-import org.apache.jdbm.DB;
-import org.apache.jdbm.DBMaker;
+import org.jetbrains.annotations.NotNull;
+import org.mapdb.*;
 
 /**
  * This class stores the UIDs of every object, map and mod currently in the game. It can give out
@@ -43,9 +39,9 @@ public class UIDStore {
   // uid database
   private DB db;
   // uids van alle objecten in het spel
-  private ConcurrentMap<Long, Entity> objects;
+  private HTreeMap<Long, Entity> objects;
   // uids van alle geladen mods
-  private ConcurrentMap<Short, Mod> mods;
+  private HTreeMap<Short, Mod> mods;
   // uids van alle geladen maps
   private BiMap<Integer, String> maps = HashBiMap.create();
 
@@ -55,15 +51,9 @@ public class UIDStore {
    * @param file
    */
   public UIDStore(String file) {
-    db = DBMaker.openFile(file).disableLocking().make();
-
-    if (db.getHashMap("objects") != null) {
-      objects = db.getHashMap("objects");
-      mods = db.getHashMap("mods");
-    } else {
-      objects = db.createHashMap("objects", null, new EntitySerializer());
-      mods = db.createHashMap("mods");
-    }
+    db = DBMaker.memoryDB().make();
+    objects = db.hashMap("object", Serializer.LONG, new EntitySerializer()).createOrOpen();
+    mods = db.hashMap("mods", Serializer.SHORT, new ModSerializer()).createOrOpen();
   }
 
   /**
@@ -83,6 +73,7 @@ public class UIDStore {
         return mod.uid;
       }
     }
+    System.out.println("Mod " + name + " not found");
     return 0;
   }
 
@@ -103,6 +94,7 @@ public class UIDStore {
    */
   public void addEntity(Entity entity) {
     objects.put(entity.getUID(), entity);
+    db.commit();
     if (objects.size() % 1000 == 0) { // elke 1000 entities ne commit doen
       db.commit();
     }
@@ -237,6 +229,22 @@ public class UIDStore {
     public void writeExternal(ObjectOutput output) throws IOException {
       output.writeShort(uid);
       output.writeUTF(name);
+    }
+  }
+
+  public static class ModSerializer implements Serializer<Mod>, Serializable {
+
+    @Override
+    public void serialize(@NotNull DataOutput2 out, @NotNull Mod value) throws IOException {
+      out.writeShort(value.uid);
+      out.writeUTF(value.name);
+    }
+
+    @Override
+    public Mod deserialize(@NotNull DataInput2 input, int available) throws IOException {
+      short uid = input.readShort();
+      String name = input.readUTF();
+      return new Mod(uid, name);
     }
   }
 }

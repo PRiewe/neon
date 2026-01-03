@@ -137,6 +137,7 @@ public class Engine implements Runnable {
 
       return engine.eval("js", script);
     } catch (Exception e) {
+      System.err.println(e);
       return null; // niet geweldig goed
     }
   }

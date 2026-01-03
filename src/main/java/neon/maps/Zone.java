@@ -58,6 +58,8 @@ public class Zone implements Externalizable {
     regions = new RTree<Region>(100, 40, Engine.getAtlas().getCache(), map + ":" + index);
   }
 
+  public Zone() {}
+
   /**
    * Initializes a new zone with a theme.
    *

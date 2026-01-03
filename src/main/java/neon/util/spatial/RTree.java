@@ -23,7 +23,9 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
-import org.apache.jdbm.*;
+// import org.apache.jdbm.*;
+import org.mapdb.*;
+import org.mapdb.serializer.GroupSerializer;
 
 /**
  * This class represents a primitive R-tree for spatial indexing.
@@ -70,15 +72,12 @@ public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
     min = fillFactor;
     max = nodeSize;
     root = new RNode<E>(min, max, this);
-    if (db.getTreeMap(name) != null) {
-      objects = db.getTreeMap(name);
-      boxes = db.getTreeMap(name + ":boxes");
-      for (int i : boxes.keySet()) {
-        root.add(i, boxes.get(i).getBounds());
-      }
-    } else {
-      objects = db.createTreeMap(name);
-      boxes = db.createTreeMap(name + ":boxes");
+
+    objects = db.treeMap(name, Serializer.INTEGER, Serializer.JAVA).createOrOpen();
+    boxes =
+        db.treeMap(name + ":boxes", GroupSerializer.INTEGER, GroupSerializer.JAVA).createOrOpen();
+    for (int i : boxes.keySet()) {
+      root.add(i, boxes.get(i).getBounds());
     }
   }
 

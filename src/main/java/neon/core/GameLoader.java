@@ -79,7 +79,12 @@ public class GameLoader {
         Engine.post(new LoadEvent(this));
         break;
       case NEW:
-        initGame(le.race, le.name, le.gender, le.specialisation, le.profession, le.sign);
+        try {
+          initGame(le.race, le.name, le.gender, le.specialisation, le.profession, le.sign);
+        } catch (RuntimeException re) {
+          System.out.println(re);
+          re.fillInStackTrace().printStackTrace();
+        }
         // aangeven dat laden gedaan is
         Engine.post(new LoadEvent(this));
         break;

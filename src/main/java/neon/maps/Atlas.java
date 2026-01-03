@@ -18,13 +18,11 @@
 
 package neon.maps;
 
-import java.util.concurrent.ConcurrentMap;
 import neon.core.Engine;
 import neon.entities.Door;
 import neon.entities.components.PhysicsComponent;
 import neon.systems.files.FileSystem;
-import org.apache.jdbm.DB;
-import org.apache.jdbm.DBMaker;
+import org.mapdb.*;
 
 /**
  * This class keeps track of all loaded maps and their connections.
@@ -33,7 +31,7 @@ import org.apache.jdbm.DBMaker;
  */
 public class Atlas {
   private DB db = null;
-  private ConcurrentMap<Integer, Map> maps;
+  private HTreeMap<Integer, Map> maps;
   private int currentZone = 0;
   private int currentMap = 0;
   private FileSystem files;
@@ -47,13 +45,8 @@ public class Atlas {
    */
   public Atlas(FileSystem files, String path) {
     this.files = files;
-    db = DBMaker.openFile(path).disableLocking().make();
-
-    if (db.getHashMap("maps") != null) {
-      maps = db.getHashMap("maps");
-    } else {
-      maps = db.createHashMap("maps");
-    }
+    db = DBMaker.memoryDB().make();
+    maps = (HTreeMap<Integer, Map>) db.hashMap("maps").createOrOpen();
   }
 
   public DB getCache() {
@@ -88,6 +81,7 @@ public class Atlas {
   public Map getMap(int uid) {
     if (!maps.containsKey(uid)) {
       Map map = MapLoader.loadMap(Engine.getStore().getMapPath(uid), uid, files);
+      System.out.println("Loaded map " + map.toString());
       maps.put(uid, map);
     }
     return maps.get(uid);

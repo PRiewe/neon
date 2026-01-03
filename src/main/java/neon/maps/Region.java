@@ -77,6 +77,8 @@ public class Region implements Renderable, Activator, Externalizable {
     this.terrain = terrain;
   }
 
+  public Region() {}
+
   public void setLabel(String label) {
     this.label = label;
   }

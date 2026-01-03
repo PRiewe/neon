@@ -92,6 +92,11 @@
             <version>3.0-alpha5</version>
         </dependency>
         <dependency>
+            <groupId>org.mapdb</groupId>
+            <artifactId>mapdb</artifactId>
+            <version>3.0.8</version>
+        </dependency>
+        <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom2</artifactId>
             <version>2.0.6.1</version>
@@ -113,13 +118,6 @@
             <artifactId>js-scriptengine</artifactId>
             <version>${graaljs.version}</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.graalvm.js</groupId>
-            <artifactId>js</artifactId>
-            <version>23.0.9</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>net.engio</groupId>
             <artifactId>mbassador</artifactId>
@@ -142,6 +140,12 @@
             <groupId>org.fluttercode.jtexgen</groupId>
             <artifactId>jtexgen</artifactId>
             <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.6.2</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
