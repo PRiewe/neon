@@ -1,6 +1,10 @@
 package neon.maps;
 
 import java.awt.Rectangle;
+import neon.entities.Creature;
+import neon.entities.Item;
+import neon.resources.RCreature;
+import neon.resources.RItem;
 import neon.resources.RTerrain;
 
 /**
@@ -243,5 +247,57 @@ public class MapTestFixtures {
    */
   public static Rectangle createBounds(int x, int y, int width, int height) {
     return new Rectangle(x, y, width, height);
+  }
+
+  /**
+   * Creates a test creature with basic parameters.
+   *
+   * @param id creature ID
+   * @param uid creature UID
+   * @param x x-coordinate
+   * @param y y-coordinate
+   * @return a new Creature instance
+   */
+  public static Creature createTestCreature(String id, long uid, int x, int y) {
+    RCreature species = new RCreature(id);
+    Creature creature = new Creature(id, uid, species);
+    creature.getShapeComponent().setLocation(x, y);
+    return creature;
+  }
+
+  /**
+   * Creates a test creature with default parameters.
+   *
+   * @param uid creature UID
+   * @return a new Creature instance at position (0, 0)
+   */
+  public static Creature createTestCreature(long uid) {
+    return createTestCreature("test-creature", uid, 0, 0);
+  }
+
+  /**
+   * Creates a test item with basic parameters.
+   *
+   * @param id item ID
+   * @param uid item UID
+   * @param x x-coordinate
+   * @param y y-coordinate
+   * @return a new Item instance
+   */
+  public static Item createTestItem(String id, long uid, int x, int y) {
+    RItem resource = new RItem(id, RItem.Type.item);
+    Item item = new Item(uid, resource);
+    item.getShapeComponent().setLocation(x, y);
+    return item;
+  }
+
+  /**
+   * Creates a test item with default parameters.
+   *
+   * @param uid item UID
+   * @return a new Item instance at position (0, 0)
+   */
+  public static Item createTestItem(long uid) {
+    return createTestItem("test-item", uid, 0, 0);
   }
 }
