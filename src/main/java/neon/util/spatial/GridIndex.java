@@ -25,7 +25,7 @@ import java.awt.Rectangle;
 import java.util.*;
 
 public class GridIndex<E> implements SpatialIndex<E> {
-  private Multimap<Point, E> elements = ArrayListMultimap.create();
+  private final Multimap<Point, E> elements = ArrayListMultimap.create();
 
   public List<E> getElements() {
     ArrayList<E> list = new ArrayList<E>();

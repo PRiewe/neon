@@ -46,6 +46,8 @@ public class Dungeon implements Map {
     this.uid = uid;
   }
 
+  public Dungeon() {}
+
   public Zone getZone(int i) {
     return zones.getNode(i);
   }

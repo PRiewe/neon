@@ -33,7 +33,7 @@ import neon.ui.graphics.*;
 import neon.util.spatial.*;
 
 public class Zone implements Externalizable {
-  private static ZComparator comparator = new ZComparator();
+  private static final ZComparator comparator = new ZComparator();
   private String name;
   private int map;
   private RZoneTheme theme;

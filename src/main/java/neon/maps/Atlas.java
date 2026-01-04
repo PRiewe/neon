@@ -32,10 +32,10 @@ import org.mapdb.*;
  */
 public class Atlas {
   private DB db = null;
-  private HTreeMap<Integer, Map> maps;
+  private final HTreeMap<Integer, Map> maps;
   private int currentZone = 0;
   private int currentMap = 0;
-  private FileSystem files;
+  private final FileSystem files;
 
   /**
    * Initializes this {@code Atlas} with the given {@code FileSystem} and cache path. The cache is
