@@ -20,8 +20,9 @@ package neon.maps;
 
 import neon.core.Engine;
 import neon.entities.Door;
-import neon.entities.components.PhysicsComponent;
 import neon.maps.generators.DungeonGenerator;
+import neon.maps.services.EngineEntityStore;
+import neon.maps.services.EntityStore;
 import neon.systems.files.FileSystem;
 import org.mapdb.*;
 
@@ -36,6 +37,8 @@ public class Atlas {
   private int currentZone = 0;
   private int currentMap = 0;
   private final FileSystem files;
+  private final EntityStore entityStore;
+  private final ZoneActivator zoneActivator;
 
   /**
    * Initializes this {@code Atlas} with the given {@code FileSystem} and cache path. The cache is
@@ -43,11 +46,38 @@ public class Atlas {
    *
    * @param files a {@code FileSystem}
    * @param path the path to the file used for caching
+   * @deprecated Use {@link #Atlas(FileSystem, String, EntityStore, ZoneActivator)} to avoid
+   *     dependency on Engine singleton
    */
+  @Deprecated
   public Atlas(FileSystem files, String path) {
+    this(files, path, new EngineEntityStore(), createDefaultZoneActivator());
+  }
+
+  /**
+   * Initializes this {@code Atlas} with dependency injection.
+   *
+   * @param files a {@code FileSystem}
+   * @param path the path to the file used for caching
+   * @param entityStore the entity store service
+   * @param zoneActivator the zone activator for physics management
+   */
+  public Atlas(
+      FileSystem files, String path, EntityStore entityStore, ZoneActivator zoneActivator) {
     this.files = files;
+    this.entityStore = entityStore;
+    this.zoneActivator = zoneActivator;
     db = DBMaker.memoryDB().make();
     maps = (HTreeMap<Integer, Map>) db.hashMap("maps").createOrOpen();
+  }
+
+  /**
+   * Creates a default zone activator using Engine singleton (for backward compatibility).
+   *
+   * @return a zone activator
+   */
+  private static ZoneActivator createDefaultZoneActivator() {
+    return new ZoneActivator(new neon.maps.services.EnginePhysicsManager(), Engine.getPlayer());
   }
 
   public DB getCache() {
@@ -81,7 +111,7 @@ public class Atlas {
    */
   public Map getMap(int uid) {
     if (!maps.containsKey(uid)) {
-      Map map = MapLoader.loadMap(Engine.getStore().getMapPath(uid), uid, files);
+      Map map = MapLoader.loadMap(entityStore.getMapPath(uid), uid, files);
       System.out.println("Loaded map " + map.toString());
       maps.put(uid, map);
     }
@@ -95,15 +125,7 @@ public class Atlas {
    */
   public void setCurrentZone(int i) {
     currentZone = i;
-    Engine.getPhysicsEngine().clear();
-    for (Region region : getCurrentZone().getRegions()) {
-      if (region.isActive()) {
-        Engine.getPhysicsEngine().register(region, region.getBounds(), true);
-      }
-    }
-    // niet vergeten player terug te registreren
-    PhysicsComponent physics = Engine.getPlayer().getPhysicsComponent();
-    Engine.getPhysicsEngine().register(physics);
+    zoneActivator.activateZone(getCurrentZone());
   }
 
   /**

@@ -1,10 +1,20 @@
 package neon.test;
 
+import java.awt.Rectangle;
 import java.lang.reflect.Field;
 import neon.core.Engine;
 import neon.core.Game;
+import neon.entities.Entity;
+import neon.entities.Player;
 import neon.entities.UIDStore;
+import neon.entities.components.PhysicsComponent;
+import neon.entities.property.Gender;
 import neon.maps.Atlas;
+import neon.maps.ZoneActivator;
+import neon.maps.ZoneFactory;
+import neon.maps.services.EntityStore;
+import neon.maps.services.PhysicsManager;
+import neon.resources.RCreature;
 import neon.resources.RTerrain;
 import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
@@ -24,6 +34,9 @@ public class TestEngineContext {
   private static ResourceManager testResources;
   private static Game testGame;
   private static UIDStore testStore;
+  private static ZoneFactory testZoneFactory;
+  private static EntityStore testEntityStore;
+  private static ZoneActivator testZoneActivator;
 
   /**
    * Initializes a minimal test context for Engine dependencies.
@@ -32,11 +45,12 @@ public class TestEngineContext {
    *
    * <ul>
    *   <li>ResourceManager (returns dummy resources)
-   *   <li>Atlas (uses provided test DB)
+   *   <li>Atlas (uses provided test DB with DI)
    *   <li>Game (minimal implementation for getAtlas/getStore)
    *   <li>UIDStore (in-memory)
    *   <li>FileSystem (stub)
    *   <li>PhysicsSystem (stub)
+   *   <li>ZoneFactory (for creating zones in tests)
    * </ul>
    *
    * @param db the MapDb database to use for Atlas
@@ -50,15 +64,26 @@ public class TestEngineContext {
       testResources = new StubResourceManager();
       setStaticField(Engine.class, "resources", testResources);
 
-      // Create test Atlas
-      testAtlas = new Atlas(new StubFileSystem(), "test");
-      setAtlasDb(testAtlas, db);
-
       // Create test UIDStore
       testStore = new UIDStore("test-store.dat");
 
-      // Create minimal Game instance
-      testGame = new StubGame(testAtlas, testStore);
+      // Create test EntityStore
+      testEntityStore = new StubEntityStore(testStore);
+
+      // Create stub PhysicsManager and ZoneActivator
+      PhysicsManager stubPhysicsManager = new StubPhysicsManager();
+      Player stubPlayer = new StubPlayer();
+      testZoneActivator = new ZoneActivator(stubPhysicsManager, stubPlayer);
+
+      // Create ZoneFactory for tests
+      testZoneFactory = new ZoneFactory(db);
+
+      // Create test Atlas with dependency injection (doesn't need Engine.game)
+      testAtlas = new Atlas(new StubFileSystem(), "test", testEntityStore, testZoneActivator);
+      setAtlasDb(testAtlas, db);
+
+      // Create test Game using new DI constructor
+      testGame = new Game(stubPlayer, testAtlas, testStore);
       setStaticField(Engine.class, "game", testGame);
 
       // Create stub FileSystem
@@ -109,6 +134,11 @@ public class TestEngineContext {
     return testResources;
   }
 
+  /** Gets the test ZoneFactory instance. */
+  public static ZoneFactory getTestZoneFactory() {
+    return testZoneFactory;
+  }
+
   /** Sets a static field using reflection. */
   private static void setStaticField(Class<?> clazz, String fieldName, Object value)
       throws Exception {
@@ -119,6 +149,7 @@ public class TestEngineContext {
 
   /** Sets the Atlas's DB field using reflection (it's private). */
   private static void setAtlasDb(Atlas atlas, DB db) throws Exception {
+
     Field dbField = Atlas.class.getDeclaredField("db");
     dbField.setAccessible(true);
     dbField.set(atlas, db);
@@ -141,28 +172,6 @@ public class TestEngineContext {
     }
   }
 
-  /** Stub Game that provides Atlas and UIDStore. */
-  static class StubGame extends Game {
-    private final Atlas atlas;
-    private final UIDStore store;
-
-    public StubGame(Atlas atlas, UIDStore store) {
-      super(null, new StubFileSystem());
-      this.atlas = atlas;
-      this.store = store;
-    }
-
-    @Override
-    public Atlas getAtlas() {
-      return atlas;
-    }
-
-    @Override
-    public UIDStore getStore() {
-      return store;
-    }
-  }
-
   /** Stub FileSystem (minimal implementation). */
   public static class StubFileSystem extends FileSystem {
     // Minimal stub - can be extended if needed
@@ -171,5 +180,72 @@ public class TestEngineContext {
   /** Stub PhysicsSystem (minimal implementation). */
   static class StubPhysicsSystem extends PhysicsSystem {
     // Minimal stub - can be extended if needed
+  }
+
+  /** Stub EntityStore for testing. */
+  static class StubEntityStore implements EntityStore {
+    private final UIDStore store;
+
+    public StubEntityStore(UIDStore store) {
+      this.store = store;
+    }
+
+    @Override
+    public Entity getEntity(long uid) {
+      return store.getEntity(uid);
+    }
+
+    @Override
+    public void addEntity(Entity entity) {
+      store.addEntity(entity);
+    }
+
+    @Override
+    public long createNewEntityUID() {
+      return store.createNewEntityUID();
+    }
+
+    @Override
+    public int createNewMapUID() {
+      return store.createNewMapUID();
+    }
+
+    @Override
+    public String[] getMapPath(int uid) {
+      return store.getMapPath(uid);
+    }
+  }
+
+  /** Stub PhysicsManager for testing. */
+  static class StubPhysicsManager implements PhysicsManager {
+    @Override
+    public void clear() {
+      // No-op for tests
+    }
+
+    @Override
+    public void register(neon.maps.Region region, Rectangle bounds, boolean fixed) {
+      // No-op for tests
+    }
+
+    @Override
+    public void register(PhysicsComponent component) {
+      // No-op for tests
+    }
+  }
+
+  /** Stub Player for testing. */
+  static class StubPlayer extends Player {
+    private final PhysicsComponent physicsComponent;
+
+    public StubPlayer() {
+      super(new RCreature("test"), "TestPlayer", Gender.MALE, Specialisation.combat, "Warrior");
+      this.physicsComponent = new PhysicsComponent(0L, new Rectangle(0, 0, 1, 1));
+    }
+
+    @Override
+    public PhysicsComponent getPhysicsComponent() {
+      return physicsComponent;
+    }
   }
 }

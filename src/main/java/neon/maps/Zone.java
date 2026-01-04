@@ -47,10 +47,13 @@ public class Zone implements Externalizable {
   /**
    * Initializes a new zone.
    *
-   * @param name
-   * @param map
-   * @param index
+   * @param name the zone name
+   * @param map the map UID
+   * @param index the zone index
+   * @deprecated Use {@link ZoneFactory#createZone(String, int, int)} instead to avoid constructor
+   *     side effects
    */
+  @Deprecated
   public Zone(String name, int map, int index) {
     this.map = map;
     this.name = name;
@@ -58,19 +61,67 @@ public class Zone implements Externalizable {
     regions = new RTree<Region>(100, 40, Engine.getAtlas().getCache(), map + ":" + index);
   }
 
+  /** Default constructor for serialization. */
   public Zone() {}
 
   /**
    * Initializes a new zone with a theme.
    *
-   * @param name
-   * @param map
-   * @param theme
-   * @param index
+   * @param name the zone name
+   * @param map the map UID
+   * @param theme the zone theme
+   * @param index the zone index
+   * @deprecated Use {@link ZoneFactory#createZone(String, int, RZoneTheme, int)} instead to avoid
+   *     constructor side effects
    */
+  @Deprecated
   public Zone(String name, int map, RZoneTheme theme, int index) {
     this(name, map, index);
     this.theme = theme;
+  }
+
+  /**
+   * Private constructor for factory creation.
+   *
+   * @param name the zone name
+   * @param map the map UID
+   * @param index the zone index
+   * @param cache the MapDB cache for spatial indices
+   */
+  private Zone(String name, int map, int index, org.mapdb.DB cache) {
+    this.map = map;
+    this.name = name;
+    this.index = index;
+    regions = new RTree<Region>(100, 40, cache, map + ":" + index);
+  }
+
+  /**
+   * Factory method to create a zone with dependency injection.
+   *
+   * @param name the zone name
+   * @param mapUID the map UID
+   * @param index the zone index
+   * @param cache the MapDB cache for spatial indices
+   * @return a new Zone instance
+   */
+  static Zone create(String name, int mapUID, int index, org.mapdb.DB cache) {
+    return new Zone(name, mapUID, index, cache);
+  }
+
+  /**
+   * Factory method to create a zone with a theme and dependency injection.
+   *
+   * @param name the zone name
+   * @param mapUID the map UID
+   * @param theme the zone theme
+   * @param index the zone index
+   * @param cache the MapDB cache for spatial indices
+   * @return a new Zone instance with a theme
+   */
+  static Zone create(String name, int mapUID, RZoneTheme theme, int index, org.mapdb.DB cache) {
+    Zone zone = new Zone(name, mapUID, index, cache);
+    zone.theme = theme;
+    return zone;
   }
 
   /**

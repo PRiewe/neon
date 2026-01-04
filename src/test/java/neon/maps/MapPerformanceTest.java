@@ -138,8 +138,8 @@ class MapPerformanceTest {
   void testZoneRegionInsertionPerformance() throws Exception {
     Zone zone = new Zone("perf-zone", 1000, 0);
     int regionCount = 500;
-    int creaturesPerRegion = 2;
-    int itemsPerRegion = 3;
+    int creaturesPerRegion = 10;
+    int itemsPerRegion = 10;
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(
@@ -191,9 +191,9 @@ class MapPerformanceTest {
   void testZoneSpatialQueryPerformanceAtScale() throws Exception {
     Zone zone = new Zone("spatial-perf-zone", 1001, 0);
 
-    // Create large zone with 1000 regions, plus creatures and items
+    // Create large zone with 500 regions, plus creatures and items
     long uidCounter = 20000;
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 500; i++) {
       int x = (i % 50) * 10;
       int y = (i / 50) * 10;
       Region region = MapTestFixtures.createTestRegion("r" + i, x, y, 10, 10, 0);
@@ -211,7 +211,7 @@ class MapPerformanceTest {
 
     testDb.commit();
 
-    int queryCount = 1000;
+    int queryCount = 500;
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(

@@ -28,6 +28,10 @@ import neon.entities.Item;
 import neon.entities.UIDStore;
 import neon.entities.components.Enchantment;
 import neon.entities.components.Lock;
+import neon.maps.services.EngineEntityStore;
+import neon.maps.services.EngineResourceProvider;
+import neon.maps.services.EntityStore;
+import neon.maps.services.ResourceProvider;
 import neon.resources.RDungeonTheme;
 import neon.resources.RItem;
 import neon.resources.RRegionTheme;
@@ -41,20 +45,59 @@ import org.jdom2.*;
 /**
  * This class loads a map from an xml file.
  *
+ * <p>Refactored to support dependency injection for better testability and reduced coupling.
+ *
  * @author mdriesen
  */
 public class MapLoader {
+  private final EntityStore entityStore;
+  private final ResourceProvider resourceProvider;
+
+  /**
+   * Creates a MapLoader with dependency injection.
+   *
+   * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   */
+  public MapLoader(EntityStore entityStore, ResourceProvider resourceProvider) {
+    this.entityStore = entityStore;
+    this.resourceProvider = resourceProvider;
+  }
+
+  /**
+   * Creates a MapLoader using Engine singletons (for backward compatibility).
+   *
+   * @return a new MapLoader instance
+   */
+  private static MapLoader createDefault() {
+    return new MapLoader(new EngineEntityStore(), new EngineResourceProvider());
+  }
+
   /**
    * Returns a map described in an xml file with the given name.
    *
    * @param path the pathname of a map file
    * @param uid the unique identifier of this map
+   * @param files the file system
+   * @return the <code>Map</code> described by the map file
+   * @deprecated Use instance method {@link #load(String[], int, FileSystem)} instead
+   */
+  @Deprecated
+  public static Map loadMap(String[] path, int uid, FileSystem files) {
+    return createDefault().load(path, uid, files);
+  }
+
+  /**
+   * Returns a map described in an xml file with the given name (instance method).
+   *
+   * @param path the pathname of a map file
+   * @param uid the unique identifier of this map
+   * @param files the file system
    * @return the <code>Map</code> described by the map file
    */
-  public static Map loadMap(String[] path, int uid, FileSystem files) {
+  public Map load(String[] path, int uid, FileSystem files) {
     Document doc = files.getFile(new XMLTranslator(), path);
     Element root = doc.getRootElement();
-    //		System.out.println("loadmap(" + path + ")");
     if (root.getName().equals("world")) {
       return loadWorld(root, uid);
     } else {
@@ -68,18 +111,27 @@ public class MapLoader {
    * @param theme
    * @return
    */
+  /**
+   * Loads a dungeon with a theme (static wrapper for backward compatibility).
+   *
+   * @param theme the theme ID
+   * @return a new Dungeon
+   * @deprecated Use instance method {@link #loadThemedDungeon(String, String, int)} instead
+   */
+  @Deprecated
   public static Dungeon loadDungeon(String theme) {
-    return loadThemedDungeon(theme, theme, Engine.getStore().createNewMapUID());
+    MapLoader loader = createDefault();
+    return loader.loadThemedDungeon(theme, theme, loader.entityStore.createNewMapUID());
   }
 
-  private static World loadWorld(Element root, int uid) {
+  private World loadWorld(Element root, int uid) {
     //		System.out.println("maploader: " + uid);
     World world = new World(root.getChild("header").getChildText("name"), uid);
     loadZone(root, world, 0, uid); // outdoor heeft maar 1 zone, namelijk 0
     return world;
   }
 
-  private static Dungeon loadDungeon(Element root, int uid) {
+  private Dungeon loadDungeon(Element root, int uid) {
     if (root.getChild("header").getAttribute("theme") != null) {
       String name = root.getChild("header").getChildText("name");
       return loadThemedDungeon(name, root.getChild("header").getAttributeValue("theme"), uid);
@@ -92,7 +144,7 @@ public class MapLoader {
       String name = l.getAttributeValue("name");
       if (l.getAttribute("theme") != null) {
         RZoneTheme theme =
-            (RZoneTheme) Engine.getResources().getResource(l.getAttributeValue("theme"), "theme");
+            (RZoneTheme) resourceProvider.getResource(l.getAttributeValue("theme"), "theme");
         map.addZone(level, name, theme);
         if (l.getAttribute("out") != null) {
           String[] connections = l.getAttributeValue("out").split(",");
@@ -109,9 +161,9 @@ public class MapLoader {
     return map;
   }
 
-  private static Dungeon loadThemedDungeon(String name, String dungeon, int uid) {
+  private Dungeon loadThemedDungeon(String name, String dungeon, int uid) {
     Dungeon map = new Dungeon(name, uid);
-    RDungeonTheme theme = (RDungeonTheme) Engine.getResources().getResource(dungeon, "theme");
+    RDungeonTheme theme = (RDungeonTheme) resourceProvider.getResource(dungeon, "theme");
 
     int minZ = theme.min;
     int maxZ = theme.max;
@@ -123,7 +175,7 @@ public class MapLoader {
     while (z > -1) {
       int t = MapUtils.random(0, types.length - 1);
       zones[z] = 1;
-      RZoneTheme rzt = (RZoneTheme) Engine.getResources().getResource(types[t], "theme");
+      RZoneTheme rzt = (RZoneTheme) resourceProvider.getResource(types[t], "theme");
       map.addZone(z, "zone " + z, rzt);
       z--;
     }
@@ -139,7 +191,7 @@ public class MapLoader {
     return map;
   }
 
-  private static void loadZone(Element root, Map map, int l, int uid) {
+  private void loadZone(Element root, Map map, int l, int uid) {
     for (Element region : root.getChild("regions").getChildren()) { // regions laden
       map.getZone(l).addRegion(loadRegion(region));
     }
@@ -150,7 +202,7 @@ public class MapLoader {
         int y = Integer.parseInt(c.getAttributeValue("y"));
         long creatureUID = UIDStore.getObjectUID(uid, Integer.parseInt(c.getAttributeValue("uid")));
         Creature creature = EntityFactory.getCreature(species, x, y, creatureUID);
-        Engine.getStore().addEntity(creature);
+        entityStore.addEntity(creature);
         map.getZone(l).addCreature(creature);
       }
     }
@@ -169,7 +221,7 @@ public class MapLoader {
           item = EntityFactory.getItem(id, x, y, itemUID);
         }
         map.getZone(l).addItem(item);
-        Engine.getStore().addEntity(item);
+        entityStore.addEntity(item);
       }
     }
   }
@@ -177,7 +229,7 @@ public class MapLoader {
   /*
    * dit gaat mottig worden, met ganse if-then-else mesthoop
    */
-  private static Door loadDoor(Element door, String id, int x, int y, long itemUID, int mapUID) {
+  private Door loadDoor(Element door, String id, int x, int y, long itemUID, int mapUID) {
     Door d = (Door) EntityFactory.getItem(id, x, y, itemUID);
 
     // lock difficulty
@@ -188,7 +240,7 @@ public class MapLoader {
     }
     // sleutel
     if (door.getAttribute("key") != null) {
-      RItem key = (RItem) Engine.getResources().getResource(door.getAttributeValue("key"));
+      RItem key = (RItem) resourceProvider.getResource(door.getAttributeValue("key"));
       d.lock.setKey(key);
     }
     // state van de deur (open, dicht of gesloten)
@@ -212,7 +264,7 @@ public class MapLoader {
     if (door.getAttribute("spell") != null) {
       String spell = door.getAttributeValue("spell");
       RSpell.Enchantment enchantment =
-          (RSpell.Enchantment) Engine.getResources().getResource(spell, "magic");
+          (RSpell.Enchantment) resourceProvider.getResource(spell, "magic");
       d.setMagicComponent(new Enchantment(enchantment, 0, d.getUID()));
     }
 
@@ -253,7 +305,7 @@ public class MapLoader {
     return d;
   }
 
-  private static Container loadContainer(
+  private Container loadContainer(
       Element container, String id, int x, int y, long itemUID, int mapUID) {
     Container cont = (Container) EntityFactory.getItem(id, x, y, itemUID);
 
@@ -266,7 +318,7 @@ public class MapLoader {
     // sleutel
     RItem key = null;
     if (container.getAttribute("key") != null) {
-      key = (RItem) Engine.getResources().getResource(container.getAttributeValue("key"));
+      key = (RItem) resourceProvider.getResource(container.getAttributeValue("key"));
       cont.lock.setKey(key);
     }
 
@@ -280,7 +332,7 @@ public class MapLoader {
     if (container.getAttribute("spell") != null) {
       String spell = container.getAttributeValue("spell");
       RSpell.Enchantment enchantment =
-          (RSpell.Enchantment) Engine.getResources().getResource(spell, "magic");
+          (RSpell.Enchantment) resourceProvider.getResource(spell, "magic");
       cont.setMagicComponent(new Enchantment(enchantment, 0, cont.getUID()));
     }
 
@@ -288,13 +340,13 @@ public class MapLoader {
       for (Element e : container.getChildren("item")) {
         long contentUID =
             UIDStore.getObjectUID(mapUID, Integer.parseInt(e.getAttributeValue("uid")));
-        Engine.getStore().addEntity(EntityFactory.getItem(e.getAttributeValue("id"), contentUID));
+        entityStore.addEntity(EntityFactory.getItem(e.getAttributeValue("id"), contentUID));
         cont.addItem(contentUID);
       }
     } else { // en anders default items
       for (String s : ((RItem.Container) cont.resource).contents) {
-        Item i = EntityFactory.getItem(s, Engine.getStore().createNewEntityUID());
-        Engine.getStore().addEntity(i);
+        Item i = EntityFactory.getItem(s, entityStore.createNewEntityUID());
+        entityStore.addEntity(i);
         cont.addItem(i.getUID());
       }
     }
@@ -302,7 +354,7 @@ public class MapLoader {
     return cont;
   }
 
-  private static Region loadRegion(Element element) {
+  private Region loadRegion(Element element) {
     int x = Integer.parseInt(element.getAttributeValue("x"));
     int y = Integer.parseInt(element.getAttributeValue("y"));
     int w = Integer.parseInt(element.getAttributeValue("w"));
@@ -311,10 +363,9 @@ public class MapLoader {
 
     String text = element.getAttributeValue("text");
     RRegionTheme theme =
-        (RRegionTheme)
-            Engine.getResources().getResource(element.getAttributeValue("random"), "theme");
+        (RRegionTheme) resourceProvider.getResource(element.getAttributeValue("random"), "theme");
 
-    RTerrain rt = (RTerrain) Engine.getResources().getResource(text, "terrain");
+    RTerrain rt = (RTerrain) resourceProvider.getResource(text, "terrain");
     Region r = new Region(text, x, y, w, h, theme, order, rt);
     r.setLabel(element.getAttributeValue("label"));
     for (Element e : element.getChildren("script")) {

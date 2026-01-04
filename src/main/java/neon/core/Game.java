@@ -36,6 +36,19 @@ public class Game {
     this.player = player;
   }
 
+  /**
+   * Constructor with dependency injection for testing.
+   *
+   * @param player the player
+   * @param atlas the atlas
+   * @param store the UID store
+   */
+  public Game(Player player, Atlas atlas, UIDStore store) {
+    this.player = player;
+    this.atlas = atlas;
+    this.store = store;
+  }
+
   public Player getPlayer() {
     return player;
   }

@@ -6,6 +6,7 @@ import neon.entities.Item;
 import neon.resources.RCreature;
 import neon.resources.RItem;
 import neon.resources.RTerrain;
+import neon.test.TestEngineContext;
 
 /**
  * Test fixture builders for creating map-related test objects.
@@ -64,8 +65,8 @@ public class MapTestFixtures {
   /**
    * Creates a test zone with the given parameters.
    *
-   * <p>Note: Requires TestEngineContext to be initialized first, as Zone constructor accesses
-   * Engine.getAtlas().getCache().
+   * <p>Note: Requires TestEngineContext to be initialized first, as this method uses the
+   * TestEngineContext's ZoneFactory.
    *
    * @param name zone name
    * @param mapUID map UID
@@ -73,7 +74,12 @@ public class MapTestFixtures {
    * @return a new Zone instance
    */
   public static Zone createTestZone(String name, int mapUID, int index) {
-    return new Zone(name, mapUID, index);
+    ZoneFactory factory = TestEngineContext.getTestZoneFactory();
+    if (factory == null) {
+      throw new IllegalStateException(
+          "TestEngineContext must be initialized before creating test zones");
+    }
+    return factory.createZone(name, mapUID, index);
   }
 
   /**
@@ -87,7 +93,7 @@ public class MapTestFixtures {
    */
   public static Zone createTestZoneWithRegions(
       String name, int mapUID, int index, Region... regions) {
-    Zone zone = new Zone(name, mapUID, index);
+    Zone zone = createTestZone(name, mapUID, index);
     for (Region region : regions) {
       zone.addRegion(region);
     }
@@ -102,7 +108,7 @@ public class MapTestFixtures {
    * @return a new Zone with regionCount regions
    */
   public static Zone createLargeZone(int mapUID, int regionCount) {
-    Zone zone = new Zone("large-zone", mapUID, 0);
+    Zone zone = createTestZone("large-zone", mapUID, 0);
 
     // Create a grid of regions
     int gridSize = (int) Math.ceil(Math.sqrt(regionCount));
