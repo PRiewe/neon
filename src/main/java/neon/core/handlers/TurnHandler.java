@@ -31,6 +31,8 @@ import neon.entities.property.Condition;
 import neon.entities.property.Habitat;
 import neon.maps.*;
 import neon.maps.Region.Modifier;
+import neon.maps.generators.TownGenerator;
+import neon.maps.generators.WildernessGenerator;
 import neon.resources.CServer;
 import neon.resources.RRegionTheme;
 import neon.ui.GamePanel;

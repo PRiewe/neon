@@ -16,7 +16,7 @@
  *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package neon.maps;
+package neon.maps.generators;
 
 import java.awt.Point;
 import java.awt.Polygon;
@@ -27,6 +27,10 @@ import java.util.Collection;
 import neon.core.Engine;
 import neon.entities.*;
 import neon.entities.property.Habitat;
+import neon.maps.Decomposer;
+import neon.maps.MapUtils;
+import neon.maps.Region;
+import neon.maps.Zone;
 import neon.resources.RItem;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
@@ -73,43 +77,52 @@ public class WildernessGenerator {
     Collection<Region> regions = zone.getRegions(region.getBounds());
     if (!isOnTop(region, regions)) { // als er nog regions boven deze region liggen
       decompose(region, regions, theme);
-    } else if (region.width > 100 || region.height > 100) { // kijken of region niet te groot is
+    } else if (region.getWidth() > 100
+        || region.getHeight() > 100) { // kijken of region niet te groot is
       divide(region, theme);
     } else { // indien klein genoeg, region genereren
-      terrain = new String[region.height + 2][region.width + 2]; // [rijen][kolommen]
-      if (region.y > 0) { // bovenkant van map
-        for (int i = 0; i < region.width; i++) {
+      terrain = new String[region.getHeight() + 2][region.getWidth() + 2]; // [rijen][kolommen]
+      if (region.getY() > 0) { // bovenkant van map
+        for (int i = 0; i < region.getWidth(); i++) {
           terrain[0][i + 1] =
-              zone.getRegion(new Point(region.x + i, region.y - 1)).getTextureType();
+              zone.getRegion(new Point(region.getX() + i, region.getY() - 1)).getTextureType();
         }
       }
-      if (region.y + region.height < zone.getHeight() - 1) { // onderkant
-        for (int i = 0; i < region.width; i++) {
-          terrain[region.height + 1][i + 1] =
-              zone.getRegion(new Point(region.x + i, region.y + region.height)).getTextureType();
+      if (region.getY() + region.getHeight() < zone.getHeight() - 1) { // onderkant
+        for (int i = 0; i < region.getWidth(); i++) {
+          terrain[region.getHeight() + 1][i + 1] =
+              zone.getRegion(new Point(region.getX() + i, region.getY() + region.getHeight()))
+                  .getTextureType();
         }
       }
-      if (region.x > 0) { // links
-        for (int i = 0; i < region.height; i++) {
+      if (region.getX() > 0) { // links
+        for (int i = 0; i < region.getHeight(); i++) {
           terrain[i + 1][0] =
-              zone.getRegion(new Point(region.x - 1, region.y + i)).getTextureType();
+              zone.getRegion(new Point(region.getX() - 1, region.getY() + i)).getTextureType();
         }
       }
-      if (region.x + region.width < zone.getWidth() - 1) { // rechts
-        for (int i = 0; i < region.height; i++) {
-          terrain[i + 1][region.width + 1] =
-              zone.getRegion(new Point(region.x + region.width, region.y + i)).getTextureType();
+      if (region.getX() + region.getWidth() < zone.getWidth() - 1) { // rechts
+        for (int i = 0; i < region.getHeight(); i++) {
+          terrain[i + 1][region.getWidth() + 1] =
+              zone.getRegion(new Point(region.getX() + region.getWidth(), region.getY() + i))
+                  .getTextureType();
         }
       }
 
       // terrain genereren
-      generateTerrain(region.width, region.height, theme, region.getTextureType());
+      generateTerrain(region.getWidth(), region.getHeight(), theme, region.getTextureType());
 
       // planten toevoegen indien nodig
-      addVegetation(region.width, region.height, theme, region.id);
+      addVegetation(region.getWidth(), region.getHeight(), theme, region.getTextureType());
 
       // creatures toevoegen
-      addCreatures(region.x, region.y, region.width, region.height, theme, region.id);
+      addCreatures(
+          region.getX(),
+          region.getY(),
+          region.getWidth(),
+          region.getHeight(),
+          theme,
+          region.getTextureType());
 
       // alle info in terrain omzetten in regions
       generateEngineContent(region);
@@ -127,7 +140,7 @@ public class WildernessGenerator {
 
   private boolean isOnTop(Region region, Collection<Region> regions) {
     for (Region r : regions) {
-      if (r.z > region.z) {
+      if (r.getZ() > region.getZ()) {
         return false;
       }
     }
@@ -139,7 +152,7 @@ public class WildernessGenerator {
     zone.removeRegion(region);
     Area area = new Area(region.getBounds());
     for (Region r : regions) {
-      if (r.z > region.z) {
+      if (r.getZ() > region.getZ()) {
         area.subtract(new Area(r.getBounds()));
       }
     }
@@ -154,7 +167,7 @@ public class WildernessGenerator {
               (RTerrain) Engine.getResources().getResource(region.getTextureType(), "terrain");
           zone.addRegion(
               new Region(
-                  region.getTextureType(), r.x, r.y, r.width, r.height, theme, region.z, rt));
+                  region.getTextureType(), r.x, r.y, r.width, r.height, theme, region.getZ(), rt));
           area.subtract(new Area(r));
         }
       }
@@ -165,38 +178,41 @@ public class WildernessGenerator {
     String texture = region.getTextureType();
 
     // in kleinere non-fixed stukken van zelfde grootte splitsen
-    int newWidth = (region.width > region.height) ? region.width / 2 : region.width;
-    int newHeight = (region.width > region.height) ? region.height : region.height / 2;
+    int newWidth =
+        (region.getWidth() > region.getHeight()) ? region.getWidth() / 2 : region.getWidth();
+    int newHeight =
+        (region.getWidth() > region.getHeight()) ? region.getHeight() : region.getHeight() / 2;
     zone.removeRegion(region);
 
     RTerrain rt = (RTerrain) Engine.getResources().getResource(texture, "terrain");
     zone.addRegion(
-        new Region(texture, region.x, region.y, newWidth, newHeight, theme, region.z, rt));
+        new Region(
+            texture, region.getX(), region.getY(), newWidth, newHeight, theme, region.getZ(), rt));
 
-    int dw = region.width % 2;
-    int dh = region.height % 2;
+    int dw = region.getWidth() % 2;
+    int dh = region.getHeight() % 2;
 
-    if (region.width > region.height) {
+    if (region.getWidth() > region.getHeight()) {
       zone.addRegion(
           new Region(
               texture,
-              region.x + newWidth,
-              region.y,
+              region.getX() + newWidth,
+              region.getY(),
               newWidth + dw,
               newHeight,
               theme,
-              region.z,
+              region.getZ(),
               rt));
     } else {
       zone.addRegion(
           new Region(
               texture,
-              region.x,
-              region.y + newHeight,
+              region.getX(),
+              region.getY() + newHeight,
               newWidth,
               newHeight + dh,
               theme,
-              region.z,
+              region.getZ(),
               rt));
     }
   }
@@ -289,7 +305,7 @@ public class WildernessGenerator {
             if (entry.startsWith("i:")) {
               String id = entry.replace("i:", "");
               long uid = Engine.getStore().createNewEntityUID();
-              Item item = EntityFactory.getItem(id, region.x + i, region.y + j, uid);
+              Item item = EntityFactory.getItem(id, region.getX() + i, region.getY() + j, uid);
               Engine.getStore().addEntity(item);
               if (item instanceof Container) {
                 for (String s : ((RItem.Container) item.resource).contents) {
@@ -302,13 +318,22 @@ public class WildernessGenerator {
             } else if (entry.startsWith("c:")) {
               String id = entry.replace("c:", "");
               long uid = Engine.getStore().createNewEntityUID();
-              Creature creature = EntityFactory.getCreature(id, region.x + i, region.y + j, uid);
+              Creature creature =
+                  EntityFactory.getCreature(id, region.getX() + i, region.getY() + j, uid);
               Engine.getStore().addEntity(creature);
               zone.addCreature(creature);
             } else if (!entry.isEmpty() && !entry.equals(region.getTextureType())) {
               RTerrain terrain = (RTerrain) Engine.getResources().getResource(entry, "terrain");
               zone.addRegion(
-                  new Region(entry, region.x + i, region.y + j, 1, 1, null, region.z + 1, terrain));
+                  new Region(
+                      entry,
+                      region.getX() + i,
+                      region.getY() + j,
+                      1,
+                      1,
+                      null,
+                      region.getZ() + 1,
+                      terrain));
             }
           }
         }

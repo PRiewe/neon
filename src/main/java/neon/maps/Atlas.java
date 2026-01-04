@@ -21,6 +21,7 @@ package neon.maps;
 import neon.core.Engine;
 import neon.entities.Door;
 import neon.entities.components.PhysicsComponent;
+import neon.maps.generators.DungeonGenerator;
 import neon.systems.files.FileSystem;
 import org.mapdb.*;
 

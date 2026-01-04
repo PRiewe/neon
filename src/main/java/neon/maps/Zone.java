@@ -108,15 +108,15 @@ public class Zone implements Externalizable {
     return theme != null;
   }
 
-  protected void fix() {
+  public void fix() {
     theme = null;
   }
 
-  protected RZoneTheme getTheme() {
+  public RZoneTheme getTheme() {
     return theme;
   }
 
-  protected int getMap() {
+  public int getMap() {
     return map;
   }
 
@@ -249,7 +249,7 @@ public class Zone implements Externalizable {
    *
    * @param r the region to add
    */
-  protected void addRegion(Region r) {
+  public void addRegion(Region r) {
     regions.insert(r, r.getBounds());
   }
 

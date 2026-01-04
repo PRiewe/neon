@@ -24,16 +24,16 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 
 public class MapUtils {
-  protected static final int WALL = 0;
-  protected static final int FLOOR = 1;
-  protected static final int DOOR = 2;
-  protected static final int DOOR_CLOSED = 3;
-  protected static final int DOOR_LOCKED = 4;
-  protected static final int CORRIDOR = 5;
-  protected static final int WALL_ROOM = 6;
-  protected static final int ENTRY = 7;
-  protected static final int CORNER = 8;
-  protected static final int TEMP = 9;
+  public static final int WALL = 0;
+  public static final int FLOOR = 1;
+  public static final int DOOR = 2;
+  public static final int DOOR_CLOSED = 3;
+  public static final int DOOR_LOCKED = 4;
+  public static final int CORRIDOR = 5;
+  public static final int WALL_ROOM = 6;
+  public static final int ENTRY = 7;
+  public static final int CORNER = 8;
+  public static final int TEMP = 9;
 
   /**
    * Returns a rectangle with the given min/max width and height.

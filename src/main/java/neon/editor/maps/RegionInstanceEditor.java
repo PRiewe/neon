@@ -29,7 +29,7 @@ import neon.editor.Editor;
 import neon.editor.resources.IRegion;
 import neon.editor.resources.Instance;
 import neon.editor.resources.RZone;
-import neon.maps.WildernessGenerator;
+import neon.maps.generators.WildernessGenerator;
 import neon.resources.RRegionTheme;
 import neon.resources.RScript;
 import neon.resources.RTerrain;

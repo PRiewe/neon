@@ -27,7 +27,7 @@ import neon.editor.resources.IRegion;
 import neon.editor.resources.Instance;
 import neon.editor.resources.RMap;
 import neon.editor.resources.RZone;
-import neon.maps.DungeonGenerator;
+import neon.maps.generators.DungeonGenerator;
 import neon.resources.RCreature;
 import neon.resources.RItem;
 import neon.resources.RTerrain;
