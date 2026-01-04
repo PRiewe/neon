@@ -186,12 +186,12 @@ class RegionSerializationTest {
         "[PERF] %d regions serialization round-trip: %d ms%n", regionCount, durationMillis);
 
     // Lenient assertion
-    assertTrue(
-        durationMillis < 1000, regionCount + " regions should serialize within 1 second");
+    assertTrue(durationMillis < 1000, regionCount + " regions should serialize within 1 second");
   }
 
   /** Helper method to serialize and deserialize a region. */
-  private static Region serializeAndDeserialize(Region original) throws IOException, ClassNotFoundException {
+  private static Region serializeAndDeserialize(Region original)
+      throws IOException, ClassNotFoundException {
     // Serialize
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(baos);

@@ -16,8 +16,7 @@ import org.mapdb.DB;
  * Tests for Map implementations (World and Dungeon) serialization and deserialization.
  *
  * <p>Verifies that World and Dungeon objects can be correctly serialized and deserialized,
- * preserving their structure including zones, zone connections (for dungeons), and all nested
- * data.
+ * preserving their structure including zones, zone connections (for dungeons), and all nested data.
  */
 class MapSerializationTest {
 
@@ -273,8 +272,7 @@ class MapSerializationTest {
     assertEquals(100, result.getResult().getZone(0).getRegions().size());
 
     assertTrue(
-        result.getDurationMillis() < 500,
-        "World serialization should complete within 500ms");
+        result.getDurationMillis() < 500, "World serialization should complete within 500ms");
   }
 
   @Test
@@ -306,8 +304,7 @@ class MapSerializationTest {
     assertEquals(10, result.getResult().getZones().size());
 
     assertTrue(
-        result.getDurationMillis() < 1000,
-        "Dungeon serialization should complete within 1 second");
+        result.getDurationMillis() < 1000, "Dungeon serialization should complete within 1 second");
   }
 
   // ==================== Helper Methods ====================

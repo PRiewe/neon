@@ -16,8 +16,8 @@ import org.mapdb.DB;
 /**
  * Tests for Zone serialization and deserialization.
  *
- * <p>Verifies that Zone objects can be correctly serialized and deserialized, with special focus
- * on RTree spatial index persistence through MapDb. This is critical for map loading performance.
+ * <p>Verifies that Zone objects can be correctly serialized and deserialized, with special focus on
+ * RTree spatial index persistence through MapDb. This is critical for map loading performance.
  */
 class ZoneSerializationTest {
 
@@ -110,8 +110,8 @@ class ZoneSerializationTest {
     // Create a 10x10 grid of regions
     for (int y = 0; y < 10; y++) {
       for (int x = 0; x < 10; x++) {
-        Region region = MapTestFixtures.createTestRegion(
-            "r-" + x + "-" + y, x * 10, y * 10, 10, 10, 0);
+        Region region =
+            MapTestFixtures.createTestRegion("r-" + x + "-" + y, x * 10, y * 10, 10, 10, 0);
         original.addRegion(region);
       }
     }
@@ -190,9 +190,7 @@ class ZoneSerializationTest {
     assertEquals(50, result.getResult().getRegions().size());
 
     // Lenient performance assertion
-    assertTrue(
-        result.getDurationMillis() < 500,
-        "Zone serialization should complete within 500ms");
+    assertTrue(result.getDurationMillis() < 500, "Zone serialization should complete within 500ms");
   }
 
   @Test
@@ -214,8 +212,7 @@ class ZoneSerializationTest {
       long endTime = System.nanoTime();
       long durationMillis = (endTime - startTime) / 1_000_000;
 
-      System.out.printf(
-          "[PERF] Zone with %d regions: %d ms%n", size, durationMillis);
+      System.out.printf("[PERF] Zone with %d regions: %d ms%n", size, durationMillis);
 
       assertEquals(size, deserialized.getRegions().size());
     }
@@ -269,8 +266,7 @@ class ZoneSerializationTest {
   }
 
   /** Helper method to serialize and deserialize a zone. */
-  private Zone serializeAndDeserialize(Zone original)
-      throws IOException, ClassNotFoundException {
+  private Zone serializeAndDeserialize(Zone original) throws IOException, ClassNotFoundException {
     // Serialize
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(baos);

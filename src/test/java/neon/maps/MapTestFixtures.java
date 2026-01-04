@@ -35,7 +35,8 @@ public class MapTestFixtures {
    * @param zOrder z-order layer
    * @return a new Region instance
    */
-  public static Region createTestRegion(String id, int x, int y, int width, int height, int zOrder) {
+  public static Region createTestRegion(
+      String id, int x, int y, int width, int height, int zOrder) {
     RTerrain terrain = new RTerrain("grass");
     return new Region(id, x, y, width, height, null, zOrder, terrain);
   }
@@ -109,8 +110,7 @@ public class MapTestFixtures {
       int x = gridX * regionSize;
       int y = gridY * regionSize;
 
-      Region region =
-          createTestRegion("region-" + i, x, y, regionSize, regionSize, 0);
+      Region region = createTestRegion("region-" + i, x, y, regionSize, regionSize, 0);
       zone.addRegion(region);
     }
 

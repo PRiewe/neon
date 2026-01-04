@@ -217,8 +217,7 @@ public class PerformanceHarness {
    * @param result the measured result to print
    */
   public static void printResult(String label, MeasuredResult<?> result) {
-    System.out.printf(
-        "[PERF] %s: %s%n", label, formatDuration(result.getDurationNanos()));
+    System.out.printf("[PERF] %s: %s%n", label, formatDuration(result.getDurationNanos()));
   }
 
   /**

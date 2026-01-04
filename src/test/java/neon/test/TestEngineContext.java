@@ -5,10 +5,8 @@ import neon.core.Engine;
 import neon.core.Game;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
-import neon.resources.ResourceManager;
-import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
-import neon.resources.RZoneTheme;
+import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import org.mapdb.DB;
@@ -166,7 +164,7 @@ public class TestEngineContext {
   }
 
   /** Stub FileSystem (minimal implementation). */
-  static class StubFileSystem extends FileSystem {
+  public static class StubFileSystem extends FileSystem {
     // Minimal stub - can be extended if needed
   }
 
