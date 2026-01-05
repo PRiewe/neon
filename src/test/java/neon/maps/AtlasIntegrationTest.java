@@ -1,9 +1,11 @@
 package neon.maps;
 
+import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
 import java.util.Collection;
+import neon.maps.services.EngineEntityStore;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
 import org.h2.mvstore.MVStore;
@@ -22,10 +24,15 @@ class AtlasIntegrationTest {
   private Atlas atlas;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
-    atlas = new Atlas(new TestEngineContext.StubFileSystem(), "integration-test");
+    atlas =
+        new Atlas(
+            TestEngineContext.getStubFileSystem(),
+            testDb,
+            new EngineEntityStore(),
+            createDefaultZoneActivator());
   }
 
   @AfterEach

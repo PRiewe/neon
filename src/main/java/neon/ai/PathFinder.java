@@ -47,8 +47,7 @@ public class PathFinder {
     evaluated = new HashMap<Point, Integer>(); // the visited nodes and their cost from 'from'
     Queue<Point> todo =
         new PriorityQueue<>(10, new NodeComparator()); // the nodes that still need to be examined
-    HashMap<Point, Point> links =
-        new HashMap<Point, Point>(); // to track how a node was reached
+    HashMap<Point, Point> links = new HashMap<Point, Point>(); // to track how a node was reached
 
     // starting point
     todo.add(from);
@@ -70,7 +69,10 @@ public class PathFinder {
         }
         int penalty = doorPenalty(neighbour) + terrainPenalty(neighbour);
         int cost =
-            evaluated.get(next) + manhattan(to, neighbour) + 1 + penalty; // current cost of neighbor
+            evaluated.get(next)
+                + manhattan(to, neighbour)
+                + 1
+                + penalty; // current cost of neighbor
         // if neighbor is already in todo list with higher cost: remove it
         if (todo.contains(neighbour)
             && cost < evaluated.get(neighbour) + manhattan(to, neighbour)) {

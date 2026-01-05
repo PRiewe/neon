@@ -19,7 +19,6 @@
 package neon.core.handlers;
 
 import java.awt.Rectangle;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.CombatEvent;
@@ -50,7 +49,7 @@ import net.engio.mbassy.listener.References;
 public class CombatHandler {
   @Handler
   public void handleCombat(CombatEvent ce) {
-    log.trace("handleCombat {}",ce);
+    log.trace("handleCombat {}", ce);
     if (!ce.isFinished()) {
       int result = 0;
       switch (ce.getType()) {

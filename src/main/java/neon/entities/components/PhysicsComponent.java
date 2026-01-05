@@ -20,7 +20,6 @@ package neon.entities.components;
 
 import java.awt.Rectangle;
 import java.io.Serializable;
-
 import net.phys2d.raw.Body;
 import net.phys2d.raw.shapes.Box;
 
@@ -30,7 +29,7 @@ public class PhysicsComponent implements Component, Serializable {
   private final int height;
   private final double centerX;
   private final double centerY;
-  transient private Body theBody;
+  private transient Body theBody;
 
   public PhysicsComponent(long uid, Rectangle bounds) {
     this.width = bounds.width;
@@ -46,8 +45,8 @@ public class PhysicsComponent implements Component, Serializable {
   }
 
   public synchronized Body getTheBody() {
-    if(theBody == null) {
-      theBody = new Body(new Box(width,height),1);
+    if (theBody == null) {
+      theBody = new Body(new Box(width, height), 1);
       theBody.setUserData(uid);
       theBody.setEnabled(true);
       theBody.setPosition((float) centerX, (float) centerY);

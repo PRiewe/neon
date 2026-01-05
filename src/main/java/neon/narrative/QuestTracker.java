@@ -19,7 +19,6 @@
 package neon.narrative;
 
 import java.util.*;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.TurnEvent;
@@ -147,7 +146,7 @@ public class QuestTracker {
 
   @Handler
   public void start(TurnEvent te) {
-    log.trace("start {}",te);
+    log.trace("start {}", te);
     if (te.isStart()) {
       for (RQuest quest : Engine.getResources().getResources(RQuest.class)) {
         if (quest.initial) {

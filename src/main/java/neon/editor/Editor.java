@@ -61,7 +61,7 @@ public class Editor implements Runnable, ActionListener {
   private ScriptEditor scriptEditor;
   private EventEditor eventEditor;
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     try { // set directly here to avoid problems
       javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (ClassNotFoundException
@@ -70,10 +70,11 @@ public class Editor implements Runnable, ActionListener {
         | UnsupportedLookAndFeelException e) {
       e.printStackTrace();
     }
-    javax.swing.SwingUtilities.invokeLater(new Editor());
+    Editor editor = new Editor();
+    javax.swing.SwingUtilities.invokeLater(editor);
   }
 
-  public Editor() {
+  public Editor() throws IOException {
     // main window
     frame = new JFrame("Neon Editor");
     frame.getContentPane().setLayout(new BorderLayout());

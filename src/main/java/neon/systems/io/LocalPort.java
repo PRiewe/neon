@@ -22,7 +22,6 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
-
 import lombok.extern.slf4j.Slf4j;
 import net.engio.mbassy.bus.config.BusConfiguration;
 import net.engio.mbassy.bus.config.IBusConfiguration;
@@ -61,7 +60,7 @@ public class LocalPort extends Port {
   @Override
   @Handler
   public void receive(EventObject event) {
-    log.trace("{} received {}",this.name,event);
+    log.trace("{} received {}", this.name, event);
     // ensure that already processed events are not sent back again
     if (!buffer.remove(event)) {
       peer.write(event);

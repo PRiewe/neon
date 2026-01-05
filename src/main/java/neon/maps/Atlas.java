@@ -18,6 +18,9 @@
 
 package neon.maps;
 
+import java.io.Closeable;
+import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.entities.Door;
 import neon.maps.generators.DungeonGenerator;
@@ -32,8 +35,9 @@ import org.h2.mvstore.MVStore;
  *
  * @author mdriesen
  */
-public class Atlas {
-  private MVStore db = null;
+@Slf4j
+public class Atlas implements Closeable {
+  private final MVStore db;
   private final MVMap<Integer, Map> maps;
   private int currentZone = 0;
   private int currentMap = 0;
@@ -52,26 +56,34 @@ public class Atlas {
    */
   @Deprecated
   public Atlas(FileSystem files, String path) {
-    this(files, path, new EngineEntityStore(), createDefaultZoneActivator());
+    this(files, getMVStore(files, path), new EngineEntityStore(), createDefaultZoneActivator());
   }
 
   /**
    * Initializes this {@code Atlas} with dependency injection.
    *
-   * @param files a {@code FileSystem}
-   * @param path the path to the file used for caching
    * @param entityStore the entity store service
    * @param zoneActivator the zone activator for physics management
    */
-  public Atlas(
-      FileSystem files, String path, EntityStore entityStore, ZoneActivator zoneActivator) {
+  public Atlas(FileSystem files, MVStore db, EntityStore entityStore, ZoneActivator zoneActivator) {
     this.files = files;
     this.entityStore = entityStore;
     this.zoneActivator = zoneActivator;
-    files.delete(path);
+    this.db = db;
+    // files.delete(path);
+    // String fileName = files.getFullPath(path);
+    // log.warn("Creating new MVStore at {}", fileName);
 
-    db = MVStore.open(path);
+    // db = MVStore.open(fileName);
     maps = db.openMap("maps");
+  }
+
+  private static MVStore getMVStore(FileSystem files, String path) {
+    files.delete(path);
+    String fileName = files.getFullPath(path);
+    log.warn("Creating new MVStore at {}", fileName);
+
+    return MVStore.open(fileName);
   }
 
   /**
@@ -79,7 +91,7 @@ public class Atlas {
    *
    * @return a zone activator
    */
-  private static ZoneActivator createDefaultZoneActivator() {
+  static ZoneActivator createDefaultZoneActivator() {
     return new ZoneActivator(new neon.maps.services.EnginePhysicsManager(), Engine::getPlayer);
   }
 
@@ -160,5 +172,10 @@ public class Atlas {
       maps.put(map.getUID(), map);
     }
     currentMap = map.getUID();
+  }
+
+  @Override
+  public void close() throws IOException {
+    db.close();
   }
 }

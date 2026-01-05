@@ -42,26 +42,26 @@ public class RQuest extends RData {
   public RQuest(String id, Element properties, String... path) {
     super(id, path);
     try {
-    name = properties.getAttributeValue("name");
-    if (properties.getChild("pre") != null) {
-      for (Element condition : properties.getChild("pre").getChildren()) {
-        conditions.add(condition.getTextTrim());
+      name = properties.getAttributeValue("name");
+      if (properties.getChild("pre") != null) {
+        for (Element condition : properties.getChild("pre").getChildren()) {
+          conditions.add(condition.getTextTrim());
+        }
       }
-    }
-    if (properties.getChild("objects") != null) {
-      variables = properties.getChild("objects").detach();
-    }
-    repeat = properties.getName().equals("repeat");
-    if (repeat) {
-      frequency = Integer.parseInt(properties.getAttributeValue("f"));
-    }
-    initial = (properties.getAttribute("init") != null);
+      if (properties.getChild("objects") != null) {
+        variables = properties.getChild("objects").detach();
+      }
+      repeat = properties.getName().equals("repeat");
+      if (repeat) {
+        frequency = Integer.parseInt(properties.getAttributeValue("f"));
+      }
+      initial = (properties.getAttribute("init") != null);
 
-    if (properties.getChild("dialog") != null) {
-      initDialog(properties.getChild("dialog"));
-    }
+      if (properties.getChild("dialog") != null) {
+        initDialog(properties.getChild("dialog"));
+      }
     } catch (RuntimeException re) {
-      System.out.printf("%s%n%s",re,properties);
+      System.out.printf("%s%n%s", re, properties);
     }
   }
 

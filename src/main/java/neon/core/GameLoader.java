@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.event.LoadEvent;
 import neon.core.event.MagicTask;
@@ -74,7 +73,7 @@ public class GameLoader {
 
   @Handler
   public void loadGame(LoadEvent le) {
-    log.trace("loadGame {}",le);
+    log.trace("loadGame {}", le);
     System.out.println("Event source: " + le.getSource().toString());
     // load game
     switch (le.getMode()) {
@@ -339,7 +338,7 @@ public class GameLoader {
           int uid = UIDStore.getMapUID(Engine.getStore().getModUID(path[0]), mapUID);
           Engine.getStore().addMap(uid, path);
         } catch (Exception e) {
-          log.info("Map error in mod {}",path[0]);
+          log.info("Map error in mod {}", path[0]);
         }
     }
   }

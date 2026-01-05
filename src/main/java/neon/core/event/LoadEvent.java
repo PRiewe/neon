@@ -19,7 +19,6 @@
 package neon.core.event;
 
 import java.util.EventObject;
-
 import lombok.ToString;
 import neon.entities.Player.Specialisation;
 import neon.entities.property.Gender;

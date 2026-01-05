@@ -23,7 +23,6 @@ import java.awt.Rectangle;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import neon.core.Engine;
 import neon.entities.Armor;
 import neon.entities.Container;
@@ -37,7 +36,6 @@ import neon.entities.components.Portal;
 import neon.entities.components.Trap;
 import neon.magic.SpellFactory;
 import neon.resources.RItem;
-
 
 /**
  * This class takes care of (de)serialization of {@code Item}s.

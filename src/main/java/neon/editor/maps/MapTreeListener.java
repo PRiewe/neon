@@ -123,6 +123,7 @@ public class MapTreeListener implements MouseListener {
 
   private void generateZone(RZone zone) {
     RZoneTheme theme = zone.theme;
+
     String[][] terrain = new DungeonGenerator(theme).generateTiles();
     int width = terrain.length;
     int height = terrain[0].length;

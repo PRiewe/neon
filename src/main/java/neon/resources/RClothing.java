@@ -18,13 +18,12 @@
 
 package neon.resources;
 
+import java.io.Serializable;
 import neon.entities.property.Slot;
 import neon.magic.Effect;
 import org.jdom2.Element;
 
-import java.io.Serializable;
-
-public class RClothing extends RItem  implements Serializable {
+public class RClothing extends RItem implements Serializable {
   public enum ArmorType {
     LIGHT,
     MEDIUM,

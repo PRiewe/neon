@@ -155,7 +155,7 @@ public class RItem extends RData implements Serializable {
     }
   }
 
-  public static class Potion extends RItem implements Serializable{
+  public static class Potion extends RItem implements Serializable {
     public Potion(Element potion, String... path) {
       super(potion, path);
     }
@@ -172,7 +172,7 @@ public class RItem extends RData implements Serializable {
     }
   }
 
-  public static class Text extends RItem implements Serializable{
+  public static class Text extends RItem implements Serializable {
     public String content;
 
     public Text(Element text, String... path) {

@@ -20,13 +20,12 @@ package neon.entities;
 
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
+import java.io.Serializable;
 import neon.entities.components.Component;
 import neon.entities.components.PhysicsComponent;
 import neon.entities.components.RenderComponent;
 import neon.entities.components.ScriptComponent;
 import neon.entities.components.ShapeComponent;
-
-import java.io.Serializable;
 
 /**
  * This class represents a game entity that can be drawn on screen.

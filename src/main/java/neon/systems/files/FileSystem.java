@@ -19,8 +19,10 @@
 package neon.systems.files;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.jar.*;
+import lombok.extern.slf4j.Slf4j;
 import neon.util.trees.PathTree;
 
 /*
@@ -49,20 +51,22 @@ import neon.util.trees.PathTree;
  * 2. load game:
  * 		- everything the same, only dir already created and don't modify saves.xml
  */
+@Slf4j
 public class FileSystem {
-  private HashMap<String, String> jars;
+  private HashMap<String, String> jars = new HashMap<String, String>();
   private File temp;
-  private PathTree<String, String> files;
-  private HashMap<String, String> paths; // to keep track of absolute paths to a dir or jar
+  private PathTree<String, String> files = new PathTree<String, String>();
+  private HashMap<String, String> paths =
+      new HashMap<String, String>(); // to keep track of absolute paths to a dir or jar
 
-  public FileSystem() {
-    this("temp");
+  public FileSystem() throws IOException {
+    String tmpdir = Files.createTempDirectory("neon_").toFile().getAbsolutePath();
+    log.info("Storing temp file in {}", tmpdir);
+    this.temp = new File(tmpdir);
+    clearTemp();
   }
 
   public FileSystem(String temp) {
-    files = new PathTree<String, String>();
-    paths = new HashMap<String, String>();
-    jars = new HashMap<String, String>();
     this.temp = new File(temp);
     clearTemp();
   }
@@ -253,13 +257,19 @@ public class FileSystem {
   private String toString(String... path) {
     StringBuffer buffer = new StringBuffer();
     for (int i = 0; i < path.length; i++) {
-      if(path[i] == null) {
+      if (path[i] == null) {
         continue;
       }
       buffer.append(File.separator);
       buffer.append(path[i]);
     }
     return buffer.toString();
+  }
+
+  public String getFullPath(String filename) {
+    var path = temp.toPath().toString();
+    var filePath = toString(path, filename);
+    return filePath;
   }
 
   /*

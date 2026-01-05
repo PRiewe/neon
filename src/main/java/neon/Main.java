@@ -18,6 +18,7 @@
 
 package neon;
 
+import java.io.IOException;
 import neon.core.Engine;
 import neon.systems.io.LocalPort;
 import neon.ui.Client;
@@ -36,7 +37,7 @@ public class Main {
    *
    * @param args the command line arguments
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     // create and connect ports
     LocalPort cPort = new LocalPort("Client");
     LocalPort sPort = new LocalPort("Server");

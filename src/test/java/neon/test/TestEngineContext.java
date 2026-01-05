@@ -1,7 +1,9 @@
 package neon.test;
 
 import java.awt.Rectangle;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import lombok.Getter;
 import neon.core.Engine;
 import neon.core.Game;
 import neon.entities.Entity;
@@ -37,6 +39,15 @@ public class TestEngineContext {
   private static ZoneFactory testZoneFactory;
   private static EntityStore testEntityStore;
   private static ZoneActivator testZoneActivator;
+  @Getter private static StubFileSystem stubFileSystem;
+
+  static {
+    try {
+      stubFileSystem = new StubFileSystem();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   /**
    * Initializes a minimal test context for Engine dependencies.
@@ -56,45 +67,39 @@ public class TestEngineContext {
    * @param db the MapDb database to use for Atlas
    * @throws RuntimeException if reflection fails
    */
-  public static void initialize(MVStore db) {
+  public static void initialize(MVStore db) throws Exception {
     testDb = db;
 
-    try {
-      // Create stub ResourceManager
-      testResources = new StubResourceManager();
-      setStaticField(Engine.class, "resources", testResources);
+    // Create stub ResourceManager
+    testResources = new StubResourceManager();
+    setStaticField(Engine.class, "resources", testResources);
 
-      // Create test UIDStore
-      testStore = new UIDStore("test-store.dat");
+    // Create test UIDStore
+    testStore = new UIDStore("test-store.dat");
 
-      // Create test EntityStore
-      testEntityStore = new StubEntityStore(testStore);
+    // Create test EntityStore
+    testEntityStore = new StubEntityStore(testStore);
 
-      // Create stub PhysicsManager and ZoneActivator
-      PhysicsManager stubPhysicsManager = new StubPhysicsManager();
-      Player stubPlayer = new StubPlayer();
-      testZoneActivator = new ZoneActivator(stubPhysicsManager, () -> stubPlayer);
+    // Create stub PhysicsManager and ZoneActivator
+    PhysicsManager stubPhysicsManager = new StubPhysicsManager();
+    Player stubPlayer = new StubPlayer();
+    testZoneActivator = new ZoneActivator(stubPhysicsManager, () -> stubPlayer);
 
-      // Create ZoneFactory for tests
-      testZoneFactory = new ZoneFactory(db);
+    // Create ZoneFactory for tests
+    testZoneFactory = new ZoneFactory(db);
 
-      // Create test Atlas with dependency injection (doesn't need Engine.game)
-      testAtlas = new Atlas(new StubFileSystem(), "test", testEntityStore, testZoneActivator);
-      setAtlasDb(testAtlas, db);
+    // Create test Atlas with dependency injection (doesn't need Engine.game)
+    testAtlas = new Atlas(getStubFileSystem(), db, testEntityStore, testZoneActivator);
 
-      // Create test Game using new DI constructor
-      testGame = new Game(stubPlayer, testAtlas, testStore);
-      setStaticField(Engine.class, "game", testGame);
+    // Create test Game using new DI constructor
+    testGame = new Game(stubPlayer, testAtlas, testStore);
+    setStaticField(Engine.class, "game", testGame);
 
-      // Create stub FileSystem
-      setStaticField(Engine.class, "files", new StubFileSystem());
+    // Create stub FileSystem
+    setStaticField(Engine.class, "files", new StubFileSystem());
 
-      // Create stub PhysicsSystem
-      setStaticField(Engine.class, "physics", new StubPhysicsSystem());
-
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to initialize test engine context", e);
-    }
+    // Create stub PhysicsSystem
+    setStaticField(Engine.class, "physics", new StubPhysicsSystem());
   }
 
   /**
@@ -107,14 +112,17 @@ public class TestEngineContext {
       if (testStore != null) {
         testStore.getCache().close();
       }
-
+      if (testAtlas != null) {
+        testAtlas.close();
+      }
+      if (testDb != null) {
+        testDb.close();
+      }
       setStaticField(Engine.class, "resources", null);
       setStaticField(Engine.class, "game", null);
       setStaticField(Engine.class, "files", null);
       setStaticField(Engine.class, "physics", null);
 
-      testDb = null;
-      testAtlas = null;
       testResources = null;
       testGame = null;
       testStore = null;
@@ -174,7 +182,12 @@ public class TestEngineContext {
 
   /** Stub FileSystem (minimal implementation). */
   public static class StubFileSystem extends FileSystem {
-    // Minimal stub - can be extended if needed
+
+    private StubFileSystem() throws IOException {}
+  }
+
+  public static StubFileSystem createNewStubFileSystem() throws IOException {
+    return new StubFileSystem();
   }
 
   /** Stub PhysicsSystem (minimal implementation). */

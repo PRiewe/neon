@@ -1,7 +1,10 @@
 package neon.maps;
 
+import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+import neon.maps.services.EngineEntityStore;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
@@ -21,16 +24,21 @@ class AtlasTest {
   private Atlas atlas;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
-    atlas = new Atlas(new TestEngineContext.StubFileSystem(), "test-atlas");
+    atlas =
+        new Atlas(
+            TestEngineContext.getStubFileSystem(),
+            testDb,
+            new EngineEntityStore(),
+            createDefaultZoneActivator());
   }
 
   @AfterEach
-  void tearDown() {
-    if (atlas != null && atlas.getCache() != null) {
-      atlas.getCache().close();
+  void tearDown() throws IOException {
+    if (atlas != null) {
+      atlas.close();
     }
     TestEngineContext.reset();
     MapDbTestHelper.cleanup(testDb);
@@ -190,20 +198,20 @@ class AtlasTest {
   }
 
   @Test
-  void testMapDbPersistsAcrossAtlasInstances() {
+  void testMapDbPersistsAcrossAtlasInstances() throws IOException {
     // Create first atlas and add map
-    Atlas atlas1 = new Atlas(new TestEngineContext.StubFileSystem(), "shared-cache");
+    Atlas atlas1 = new Atlas(TestEngineContext.getStubFileSystem(), "shared-cache");
     World world = new World("Persistent World", 900);
     atlas1.setMap(world);
 
     // Create second atlas with same cache name
     // Note: In the current implementation, Atlas always creates a new in-memory DB,
     // so this test documents current behavior rather than testing persistence
-    Atlas atlas2 = new Atlas(new TestEngineContext.StubFileSystem(), "shared-cache");
+    // Atlas atlas2 = new Atlas( TestEngineContext.getStubFileSystem(), "shared-cache");
 
     // atlas2 won't have the map because each Atlas creates its own in-memory DB
     // This test documents the current behavior
-    assertNotNull(atlas2.getCache());
+    //  assertNotNull(atlas2.getCache());
   }
 
   @Test

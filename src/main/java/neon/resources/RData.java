@@ -18,9 +18,8 @@
 
 package neon.resources;
 
-import org.jdom2.Element;
-
 import java.io.Serializable;
+import org.jdom2.Element;
 
 /**
  * A resource that is loaded from/saved to an XML data file.

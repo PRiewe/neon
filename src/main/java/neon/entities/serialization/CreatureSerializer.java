@@ -22,7 +22,6 @@ import java.awt.Rectangle;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import neon.ai.AIFactory;
 import neon.core.Engine;
 import neon.entities.Construct;
@@ -34,7 +33,6 @@ import neon.entities.components.HealthComponent;
 import neon.entities.property.Slot;
 import neon.magic.SpellFactory;
 import neon.resources.RCreature;
-
 
 // TODO: factions
 public class CreatureSerializer {

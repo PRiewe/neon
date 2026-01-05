@@ -31,8 +31,8 @@ public class Game {
   private final Atlas atlas;
 
   public Game(Player player, FileSystem files) {
-    store = new UIDStore("temp/store");
-    atlas = new Atlas(files, "temp/atlas");
+    store = new UIDStore(files.getFullPath("uidstore"));
+    atlas = new Atlas(files, files.getFullPath("atlas"));
     this.player = player;
   }
 

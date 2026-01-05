@@ -22,11 +22,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.io.*;
 import java.util.Map;
-
-import neon.entities.serialization.EntitySerializer;
 import org.h2.mvstore.MVStore;
-import org.jetbrains.annotations.NotNull;
-
 
 /**
  * This class stores the UIDs of every object, map and mod currently in the game. It can give out
@@ -215,6 +211,5 @@ public class UIDStore {
     return (mod << 16) | ((map << 16) >>> 16);
   }
 
-  private record Mod(short uid,String name) implements Serializable {
-  }
+  private record Mod(short uid, String name) implements Serializable {}
 }

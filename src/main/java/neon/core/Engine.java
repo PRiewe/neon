@@ -18,10 +18,9 @@
 
 package neon.core;
 
+import java.io.IOException;
 import java.util.EventObject;
-import java.util.logging.Logger;
 import javax.script.*;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.event.*;
 import neon.core.handlers.CombatHandler;
@@ -67,7 +66,7 @@ public class Engine implements Runnable {
   private static Game game;
 
   /** Initializes the engine. */
-  public Engine(Port port) {
+  public Engine(Port port) throws IOException {
     // set up engine components
     bus = port.getBus();
     // Create a custom Engine with desired options or settings

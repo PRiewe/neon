@@ -20,7 +20,6 @@ package neon.core.handlers;
 
 import java.awt.Rectangle;
 import java.util.Collection;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
 import neon.core.Engine;
@@ -58,7 +57,7 @@ public class TurnHandler {
 
   @Handler
   public void tick(TurnEvent te) {
-    log.trace("tick {}",te);
+    log.trace("tick {}", te);
     // if turn is done (timer gets extra tick):
     //	1) check random regions
     //	2) check monsters
