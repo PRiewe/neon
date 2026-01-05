@@ -18,6 +18,8 @@
 
 package neon.util;
 
+import java.util.Random;
+
 /**
  * Interface for random number generation that can be implemented with deterministic behavior for
  * testing purposes.
@@ -40,4 +42,6 @@ public interface RandomSource {
    * @return a random double in the range [0.0, 1.0)
    */
   double nextDouble();
+
+  Random getRandom();
 }

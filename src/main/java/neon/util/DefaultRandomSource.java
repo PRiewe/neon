@@ -18,6 +18,8 @@
 
 package neon.util;
 
+import lombok.Getter;
+
 import java.util.Random;
 
 /**
@@ -26,6 +28,7 @@ import java.util.Random;
  *
  * @author mdriesen
  */
+@Getter
 public class DefaultRandomSource implements RandomSource {
   private final Random random;
 
