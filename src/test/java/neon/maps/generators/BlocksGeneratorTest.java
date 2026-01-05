@@ -12,10 +12,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 /** Unit tests for BlocksGenerator with deterministic seeded random behavior. */
 class BlocksGeneratorTest {
 
-  private static final char[] MARKERS = {'#', '@', '*', '+', '%', '&', '=', '~'};
+  private static final char[] MARKERS = {'#', '@', '*', '+', '%', '&', '=', '~', 'o', 'x'};
+
+  // ==================== Scenario Records ====================
 
   /**
-   * Test scenario parameters for sparse rectangle generation.
+   * Test scenario for sparse and packed rectangle generation.
    *
    * @param seed random seed for deterministic behavior
    * @param width bounding area width
@@ -25,7 +27,7 @@ class BlocksGeneratorTest {
    * @param ratio maximum aspect ratio
    * @param numRectangles number of rectangles to generate
    */
-  record SparseScenario(
+  record RectangleScenario(
       long seed, int width, int height, int minSize, int maxSize, double ratio, int numRectangles) {
 
     @Override
@@ -36,18 +38,55 @@ class BlocksGeneratorTest {
     }
   }
 
-  static Stream<SparseScenario> sparseRectangleScenarios() {
-    return Stream.of(
-        new SparseScenario(42L, 20, 10, 3, 5, 2.0, 4),
-        new SparseScenario(264L, 20, 10, 3, 5, 2.0, 4),
-        new SparseScenario(264L, 20, 10, 3, 6, 1.5, 4),
-        new SparseScenario(999L, 30, 15, 4, 8, 2.0, 6),
-        new SparseScenario(123L, 15, 15, 10, 10, 1.0, 8));
+  /**
+   * Test scenario for BSP rectangle generation (no ratio or count - BSP fills the space).
+   *
+   * @param seed random seed for deterministic behavior
+   * @param width bounding area width
+   * @param height bounding area height
+   * @param minSize minimum rectangle dimension
+   * @param maxSize maximum rectangle dimension
+   */
+  record BSPScenario(long seed, int width, int height, int minSize, int maxSize) {
+
+    @Override
+    public String toString() {
+      return String.format("seed=%d, %dx%d, size=[%d-%d]", seed, width, height, minSize, maxSize);
+    }
   }
 
-  @ParameterizedTest(name = "{0}")
+  // ==================== Scenario Providers ====================
+
+  static Stream<RectangleScenario> sparseRectangleScenarios() {
+    return Stream.of(
+        new RectangleScenario(42L, 20, 10, 3, 5, 2.0, 4),
+        new RectangleScenario(264L, 20, 10, 3, 5, 2.0, 4),
+        new RectangleScenario(264L, 20, 10, 3, 6, 1.5, 4),
+        new RectangleScenario(999L, 30, 15, 4, 8, 2.0, 6),
+        new RectangleScenario(123L, 15, 15, 2, 4, 1.0, 8));
+  }
+
+  static Stream<RectangleScenario> packedRectangleScenarios() {
+    return Stream.of(
+        new RectangleScenario(42L, 20, 10, 3, 5, 2.0, 4),
+        new RectangleScenario(264L, 20, 10, 3, 5, 2.0, 4),
+        new RectangleScenario(999L, 30, 15, 4, 8, 2.0, 6),
+        new RectangleScenario(777L, 25, 25, 3, 6, 1.5, 10));
+  }
+
+  static Stream<BSPScenario> bspRectangleScenarios() {
+    return Stream.of(
+        new BSPScenario(42L, 20, 10, 3, 8),
+        new BSPScenario(264L, 20, 10, 4, 10),
+        new BSPScenario(999L, 30, 15, 5, 12),
+        new BSPScenario(123L, 24, 24, 4, 8));
+  }
+
+  // ==================== Sparse Rectangle Tests ====================
+
+  @ParameterizedTest(name = "sparse: {0}")
   @MethodSource("sparseRectangleScenarios")
-  void createSparseRectangles_generatesValidNonOverlappingRectangles(SparseScenario scenario) {
+  void createSparseRectangles_generatesValidNonOverlappingRectangles(RectangleScenario scenario) {
     // Given
     BlocksGenerator generator = new BlocksGenerator(MapUtils.withSeed(scenario.seed()));
 
@@ -62,7 +101,7 @@ class BlocksGeneratorTest {
             scenario.numRectangles());
 
     // Then: visualize
-    System.out.println("Scenario: " + scenario);
+    System.out.println("Sparse: " + scenario);
     System.out.println(visualize(rectangles, scenario.width(), scenario.height()));
     System.out.println();
 
@@ -75,9 +114,9 @@ class BlocksGeneratorTest {
         () -> assertRectanglesDoNotOverlap(rectangles));
   }
 
-  @ParameterizedTest(name = "{0}")
+  @ParameterizedTest(name = "sparse determinism: {0}")
   @MethodSource("sparseRectangleScenarios")
-  void createSparseRectangles_isDeterministic(SparseScenario scenario) {
+  void createSparseRectangles_isDeterministic(RectangleScenario scenario) {
     // Given: two generators with the same seed
     BlocksGenerator generator1 = new BlocksGenerator(MapUtils.withSeed(scenario.seed()));
     BlocksGenerator generator2 = new BlocksGenerator(MapUtils.withSeed(scenario.seed()));
@@ -101,13 +140,123 @@ class BlocksGeneratorTest {
             scenario.numRectangles());
 
     // Then
+    assertResultsMatch(result1, result2);
+  }
+
+  // ==================== Packed Rectangle Tests ====================
+
+  @ParameterizedTest(name = "packed: {0}")
+  @MethodSource("packedRectangleScenarios")
+  void createPackedRectangles_generatesValidNonOverlappingRectangles(RectangleScenario scenario) {
+    // Given
+    BlocksGenerator generator = new BlocksGenerator(MapUtils.withSeed(scenario.seed()));
+
+    // When
+    ArrayList<Rectangle> rectangles =
+        generator.createPackedRectangles(
+            scenario.width(),
+            scenario.height(),
+            scenario.minSize(),
+            scenario.maxSize(),
+            scenario.ratio(),
+            scenario.numRectangles());
+
+    // Then: visualize
+    System.out.println("Packed: " + scenario);
+    System.out.println(visualize(rectangles, scenario.width(), scenario.height()));
+    System.out.println();
+
+    // Verify
+    assertAll(
+        () -> assertFalse(rectangles.isEmpty(), "Should generate at least one rectangle"),
+        () -> assertRectanglesWithinBounds(rectangles, scenario.width(), scenario.height()),
+        () ->
+            assertRectanglesMeetSizeConstraints(rectangles, scenario.minSize(), scenario.maxSize()),
+        () -> assertRectanglesDoNotOverlap(rectangles));
+  }
+
+  @ParameterizedTest(name = "packed determinism: {0}")
+  @MethodSource("packedRectangleScenarios")
+  void createPackedRectangles_isDeterministic(RectangleScenario scenario) {
+    // Given: two generators with the same seed
+    BlocksGenerator generator1 = new BlocksGenerator(MapUtils.withSeed(scenario.seed()));
+    BlocksGenerator generator2 = new BlocksGenerator(MapUtils.withSeed(scenario.seed()));
+
+    // When
+    ArrayList<Rectangle> result1 =
+        generator1.createPackedRectangles(
+            scenario.width(),
+            scenario.height(),
+            scenario.minSize(),
+            scenario.maxSize(),
+            scenario.ratio(),
+            scenario.numRectangles());
+    ArrayList<Rectangle> result2 =
+        generator2.createPackedRectangles(
+            scenario.width(),
+            scenario.height(),
+            scenario.minSize(),
+            scenario.maxSize(),
+            scenario.ratio(),
+            scenario.numRectangles());
+
+    // Then
+    assertResultsMatch(result1, result2);
+  }
+
+  // ==================== BSP Rectangle Tests ====================
+
+  @ParameterizedTest(name = "BSP: {0}")
+  @MethodSource("bspRectangleScenarios")
+  void createBSPRectangles_generatesValidNonOverlappingRectangles(BSPScenario scenario) {
+    // Given
+    BlocksGenerator generator = new BlocksGenerator(MapUtils.withSeed(scenario.seed()));
+
+    // When
+    ArrayList<Rectangle> rectangles =
+        generator.createBSPRectangles(
+            scenario.width(), scenario.height(), scenario.minSize(), scenario.maxSize());
+
+    // Then: visualize
+    System.out.println("BSP: " + scenario);
+    System.out.println(visualize(rectangles, scenario.width(), scenario.height()));
+    System.out.println();
+
+    // Verify
+    assertAll(
+        () -> assertFalse(rectangles.isEmpty(), "Should generate at least one rectangle"),
+        () -> assertRectanglesWithinBounds(rectangles, scenario.width(), scenario.height()),
+        () -> assertRectanglesDoNotOverlap(rectangles),
+        () -> assertBSPCoversEntireArea(rectangles, scenario.width(), scenario.height()));
+  }
+
+  @ParameterizedTest(name = "BSP determinism: {0}")
+  @MethodSource("bspRectangleScenarios")
+  void createBSPRectangles_isDeterministic(BSPScenario scenario) {
+    // Given: two generators with the same seed
+    BlocksGenerator generator1 = new BlocksGenerator(MapUtils.withSeed(scenario.seed()));
+    BlocksGenerator generator2 = new BlocksGenerator(MapUtils.withSeed(scenario.seed()));
+
+    // When
+    ArrayList<Rectangle> result1 =
+        generator1.createBSPRectangles(
+            scenario.width(), scenario.height(), scenario.minSize(), scenario.maxSize());
+    ArrayList<Rectangle> result2 =
+        generator2.createBSPRectangles(
+            scenario.width(), scenario.height(), scenario.minSize(), scenario.maxSize());
+
+    // Then
+    assertResultsMatch(result1, result2);
+  }
+
+  // ==================== Assertion Helpers ====================
+
+  private void assertResultsMatch(ArrayList<Rectangle> result1, ArrayList<Rectangle> result2) {
     assertEquals(result1.size(), result2.size(), "Same seed should produce same count");
     for (int i = 0; i < result1.size(); i++) {
       assertEquals(result1.get(i), result2.get(i), "Rectangle " + i + " should match");
     }
   }
-
-  // --- Assertion helpers ---
 
   private void assertRectanglesWithinBounds(
       ArrayList<Rectangle> rectangles, int width, int height) {
@@ -148,7 +297,14 @@ class BlocksGeneratorTest {
     }
   }
 
-  // --- Visualization ---
+  private void assertBSPCoversEntireArea(ArrayList<Rectangle> rectangles, int width, int height) {
+    // BSP should tile the entire area - total area of rectangles should equal bounding area
+    int totalArea = rectangles.stream().mapToInt(r -> r.width * r.height).sum();
+    int expectedArea = width * height;
+    assertEquals(expectedArea, totalArea, "BSP rectangles should cover entire area");
+  }
+
+  // ==================== Visualization ====================
 
   /**
    * Visualizes rectangles as an ASCII grid.
