@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.h2.mvstore.MVStore;
 import org.jetbrains.annotations.NotNull;
 
-
 /**
  * This class represents a primitive R-tree for spatial indexing.
  *

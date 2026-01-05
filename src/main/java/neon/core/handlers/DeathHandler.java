@@ -40,7 +40,7 @@ public class DeathHandler {
 
   @Handler
   public void handle(DeathEvent de) {
-    log.trace("handle {}",de);
+    log.trace("handle {}", de);
     Creature creature = de.getCreature();
 
     // creature laten doodgaan

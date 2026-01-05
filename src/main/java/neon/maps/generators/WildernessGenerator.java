@@ -51,7 +51,7 @@ import org.jdom2.Element;
  */
 public class WildernessGenerator {
   private Zone zone;
-  private String[][] terrain; // algemene terrain info
+  private String[][] terrain; // general terrain info
 
   /**
    * Constuctor used by the engine.
@@ -73,35 +73,35 @@ public class WildernessGenerator {
 
   /** Generates a piece of wilderness using the supplied parameters. */
   public void generate(Region region, RRegionTheme theme) {
-    // kijken of er bovenop deze region al andere regions liggen
+    // check if other regions are already on top of this region
     Collection<Region> regions = zone.getRegions(region.getBounds());
-    if (!isOnTop(region, regions)) { // als er nog regions boven deze region liggen
+    if (!isOnTop(region, regions)) { // if there are still regions above this region
       decompose(region, regions, theme);
     } else if (region.getWidth() > 100
-        || region.getHeight() > 100) { // kijken of region niet te groot is
+        || region.getHeight() > 100) { // check if region is not too large
       divide(region, theme);
-    } else { // indien klein genoeg, region genereren
-      terrain = new String[region.getHeight() + 2][region.getWidth() + 2]; // [rijen][kolommen]
-      if (region.getY() > 0) { // bovenkant van map
+    } else { // if small enough, generate region
+      terrain = new String[region.getHeight() + 2][region.getWidth() + 2]; // [rows][columns]
+      if (region.getY() > 0) { // top of map
         for (int i = 0; i < region.getWidth(); i++) {
           terrain[0][i + 1] =
               zone.getRegion(new Point(region.getX() + i, region.getY() - 1)).getTextureType();
         }
       }
-      if (region.getY() + region.getHeight() < zone.getHeight() - 1) { // onderkant
+      if (region.getY() + region.getHeight() < zone.getHeight() - 1) { // bottom
         for (int i = 0; i < region.getWidth(); i++) {
           terrain[region.getHeight() + 1][i + 1] =
               zone.getRegion(new Point(region.getX() + i, region.getY() + region.getHeight()))
                   .getTextureType();
         }
       }
-      if (region.getX() > 0) { // links
+      if (region.getX() > 0) { // left
         for (int i = 0; i < region.getHeight(); i++) {
           terrain[i + 1][0] =
               zone.getRegion(new Point(region.getX() - 1, region.getY() + i)).getTextureType();
         }
       }
-      if (region.getX() + region.getWidth() < zone.getWidth() - 1) { // rechts
+      if (region.getX() + region.getWidth() < zone.getWidth() - 1) { // right
         for (int i = 0; i < region.getHeight(); i++) {
           terrain[i + 1][region.getWidth() + 1] =
               zone.getRegion(new Point(region.getX() + region.getWidth(), region.getY() + i))
@@ -109,13 +109,13 @@ public class WildernessGenerator {
         }
       }
 
-      // terrain genereren
+      // generate terrain
       generateTerrain(region.getWidth(), region.getHeight(), theme, region.getTextureType());
 
-      // planten toevoegen indien nodig
+      // add vegetation if needed
       addVegetation(region.getWidth(), region.getHeight(), theme, region.getTextureType());
 
-      // creatures toevoegen
+      // add creatures
       addCreatures(
           region.getX(),
           region.getY(),
@@ -124,16 +124,16 @@ public class WildernessGenerator {
           theme,
           region.getTextureType());
 
-      // alle info in terrain omzetten in regions
+      // convert all info in terrain to regions
       generateEngineContent(region);
     }
   }
 
   public String[][] generate(Rectangle r, RRegionTheme theme, String base) {
-    // terrain genereren
+    // generate terrain
     generateTerrain(r.width, r.height, theme, base);
 
-    // fauna genereren
+    // generate fauna
     addVegetation(r.width, r.height, theme, base);
     return terrain;
   }
@@ -148,7 +148,7 @@ public class WildernessGenerator {
   }
 
   private void decompose(Region region, Collection<Region> regions, RRegionTheme theme) {
-    // region in stukjes knippen die niet overlappen met bovenliggende regions
+    // cut region into pieces that don't overlap with overlying regions
     zone.removeRegion(region);
     Area area = new Area(region.getBounds());
     for (Region r : regions) {
@@ -159,7 +159,7 @@ public class WildernessGenerator {
 
     int i = 0;
     while (i < 5 && !area.isEmpty()) {
-      i++; // hopen dat de area niet al te ingewikkeld is
+      i++; // hope that the area is not too complicated
       Collection<Rectangle> pieces = Decomposer.split(area);
       for (Rectangle r : pieces) {
         if (area.contains(r)) {
@@ -177,7 +177,7 @@ public class WildernessGenerator {
   private void divide(Region region, RRegionTheme theme) {
     String texture = region.getTextureType();
 
-    // in kleinere non-fixed stukken van zelfde grootte splitsen
+    // split into smaller non-fixed pieces of same size
     int newWidth =
         (region.getWidth() > region.getHeight()) ? region.getWidth() / 2 : region.getWidth();
     int newHeight =
@@ -218,7 +218,7 @@ public class WildernessGenerator {
   }
 
   private void generateTerrain(int width, int height, RRegionTheme theme, String base) {
-    // terrain en beplanting maken
+    // create terrain and vegetation
     switch (theme.type) {
       case CHAOTIC:
         generateSwamp(width, height, theme);
@@ -236,10 +236,10 @@ public class WildernessGenerator {
         break;
     }
 
-    // laten overvloeien in naburig region
+    // blend into neighboring region
     makeBorder(base);
 
-    // features toevoegen
+    // add features
     addFeatures(width, height, theme);
   }
 
@@ -252,13 +252,13 @@ public class WildernessGenerator {
       } else {
         n = (MapUtils.random(0, (int) (n * ratio)) > 50) ? 1 : 0;
       }
-      if (feature.getText().equals("lake")) { // grote patch die gewoon alles overschrijft
+      if (feature.getText().equals("lake")) { // large patch that just overwrites everything
         int size = 100 / Integer.parseInt(feature.getAttributeValue("s"));
         ArrayList<Rectangle> lakes =
             BlocksGenerator.generateSparseRectangles(
                 width, height, width / size, height / size, 2, n);
         for (Rectangle r : lakes) {
-          // meer inkwakken
+          // place lake
           Polygon lake = MapUtils.randomPolygon(r, (r.width + r.height) / 2);
           for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -295,7 +295,7 @@ public class WildernessGenerator {
   }
 
   private void generateEngineContent(Region region) {
-    // kleinere stukken terrein
+    // smaller pieces of terrain
     for (int i = 0; i < region.getWidth(); i++) {
       for (int j = 0; j < region.getHeight(); j++) {
         if (terrain[j + 1][i + 1] != null) {
@@ -404,8 +404,8 @@ public class WildernessGenerator {
     int width = terrain[0].length - 2;
     int height = terrain.length - 2;
 
-    if (terrain[0][1] != null) { // bovenkant
-      // overlappen
+    if (terrain[0][1] != null) { // top
+      // overlap
       int h = 0;
       for (int i = 0; i < width; i++) {
         if (!terrain[0][i + 1].equals(type)) {
@@ -423,8 +423,8 @@ public class WildernessGenerator {
       }
     }
 
-    if (terrain[height + 1][1] != null) { // onderkant
-      // overlappen
+    if (terrain[height + 1][1] != null) { // bottom
+      // overlap
       int h = 0;
       for (int i = 0; i < width; i++) {
         if (!terrain[height + 1][i + 1].equals(type)) {
@@ -442,8 +442,8 @@ public class WildernessGenerator {
       }
     }
 
-    if (terrain[1][0] != null) { // links
-      // overlappen
+    if (terrain[1][0] != null) { // left
+      // overlap
       int w = 0;
       for (int i = 0; i < height; i++) {
         if (!terrain[i + 1][0].equals(type)) {
@@ -461,8 +461,8 @@ public class WildernessGenerator {
       }
     }
 
-    if (terrain[1][width + 1] != null) { // rechts
-      // overlappen
+    if (terrain[1][width + 1] != null) { // right
+      // overlap
       int w = 0;
       for (int i = 0; i < height; i++) {
         if (!type.equals(terrain[i][width + 1])) {
@@ -489,22 +489,22 @@ public class WildernessGenerator {
     }
   }
 
-  // uit http://www.evilscience.co.uk/?p=53
+  // from http://www.evilscience.co.uk/?p=53
   private boolean[][] generateIslands(int width, int height, int p, int n, int i) {
     boolean[][] map = new boolean[width][height];
 
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
-        // p: initiële kans dat een vakje iets bevat
+        // p: initial chance that a cell contains something
         map[x][y] = (MapUtils.random(0, 100) < p);
       }
     }
 
-    // i keer itereren
+    // iterate i times
     for (; i > 0; i--) {
       int x = MapUtils.random(0, width - 1);
       int y = MapUtils.random(0, height - 1);
-      // ongeveer conways game of life met n buren
+      // approximately Conway's game of life with n neighbors
       map[x][y] = (filledNeighbours(x, y, map) > n);
     }
 

@@ -191,7 +191,7 @@ public class CCEditor
     DataStore store = Editor.getStore();
     RMod mod = store.getActive();
     List<RCreature> playableRaces = new ArrayList<RCreature>();
-    // als species niet bestaat, automatisch verwijderen
+    // if species does not exist, automatically remove it
     for (String race : mod.getList("races")) {
       if (Editor.resources.getResource(race) instanceof RCreature) {
         playableRaces.add((RCreature) Editor.resources.getResource(race));
@@ -200,7 +200,7 @@ public class CCEditor
       }
     }
     itemListModel.clear();
-    // als item niet bestaat, automatisch verwijderen
+    // if item does not exist, automatically remove it
     for (String item : mod.getList("items")) {
       if (Editor.resources.getResource(item) instanceof RItem) {
         itemListModel.addElement((RItem) Editor.resources.getResource(item));
@@ -209,7 +209,7 @@ public class CCEditor
       }
     }
     spellListModel.clear();
-    // als spell niet bestaat, automatisch verwijderen
+    // if spell does not exist, automatically remove it
     for (String spell : mod.getList("spells")) {
       if (Editor.resources.getResource(spell, "magic") != null) {
         spellListModel.addElement((RSpell) Editor.resources.getResource(spell, "magic"));
@@ -220,7 +220,7 @@ public class CCEditor
 
     races = new HashMap<RCreature, Boolean>();
     for (RCreature rc : Editor.resources.getResources(RCreature.class)) {
-      // alleen humanoids of goblins
+      // only humanoids or goblins
       if (rc.type == Type.humanoid || rc.type == Type.goblin) {
         races.put(rc, playableRaces.contains(rc));
       }
@@ -228,14 +228,14 @@ public class CCEditor
     raceList.setListData(races.keySet().toArray(new RCreature[0]));
 
     for (RMap map : Editor.resources.getResources(RMap.class)) {
-      if (map.theme == null) { // geen random maps toelaten
+      if (map.theme == null) { // do not allow random maps
         mapBox.addItem(map);
       }
     }
     RMap map = (RMap) Editor.resources.getResource(mod.get("map"), "maps");
     mapBox.setSelectedItem(map);
     for (RZone zone : map.zones.values()) {
-      if (zone.theme == null) { // geen random zones toelaten
+      if (zone.theme == null) { // do not allow random zones
         zoneBox.addItem(zone);
       }
     }
@@ -327,7 +327,7 @@ public class CCEditor
   }
 
   public void valueChanged(ListSelectionEvent e) {
-    // blijkbaar worden er twee events gefired bij selectie
+    // apparently two events are fired on selection
     if (e.getValueIsAdjusting()) {
       currentRace = raceList.getSelectedValue();
       raceBox.setSelected(races.get(currentRace));
@@ -337,12 +337,12 @@ public class CCEditor
 
   public void itemStateChanged(ItemEvent e) {
     if (mapBox.equals(e.getSource())) {
-      // zones laden
+      // load zones
       zoneBox.setModel(new DefaultComboBoxModel<RZone>());
       RMap map = (RMap) mapBox.getSelectedItem();
       if (map != null) {
         for (RZone zone : map.zones.values()) {
-          if (zone.theme == null) { // geen random zones toelaten
+          if (zone.theme == null) { // do not allow random zones
             zoneBox.addItem(zone);
           }
         }

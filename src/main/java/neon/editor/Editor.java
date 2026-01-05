@@ -36,7 +36,7 @@ import neon.resources.quest.RQuest;
 import neon.systems.files.*;
 import neon.ui.HelpWindow;
 
-// TODO: mbassador gebruiken voor events
+// TODO: use mbassador for events
 public class Editor implements Runnable, ActionListener {
   public static JCheckBoxMenuItem tShow, tEdit, oShow, oEdit;
   public static FileSystem files;
@@ -61,8 +61,8 @@ public class Editor implements Runnable, ActionListener {
   private ScriptEditor scriptEditor;
   private EventEditor eventEditor;
 
-  public static void main(String[] args) {
-    try { // hier direct setten om problemen te voorkomen
+  public static void main(String[] args) throws IOException {
+    try { // set directly here to avoid problems
       javax.swing.UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (ClassNotFoundException
         | InstantiationException
@@ -70,21 +70,22 @@ public class Editor implements Runnable, ActionListener {
         | UnsupportedLookAndFeelException e) {
       e.printStackTrace();
     }
-    javax.swing.SwingUtilities.invokeLater(new Editor());
+    Editor editor = new Editor();
+    javax.swing.SwingUtilities.invokeLater(editor);
   }
 
-  public Editor() {
+  public Editor() throws IOException {
     // main window
     frame = new JFrame("Neon Editor");
     frame.getContentPane().setLayout(new BorderLayout());
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setPreferredSize(new Dimension(1280, 800));
 
-    // dingen
+    // stuff
     files = new FileSystem();
     store = new DataStore();
 
-    // menubalk
+    // menu bar
     menuBar = new JMenuBar();
     JMenu file = new JMenu("File");
     make = new JMenu("New");
@@ -191,7 +192,7 @@ public class Editor implements Runnable, ActionListener {
     toolPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     frame.add(toolPanel, BorderLayout.PAGE_START);
 
-    // objecten
+    // objects
     objectTree = new JTree();
     objectTree.setRootVisible(false);
     objectTree.setShowsRootHandles(true);
@@ -199,12 +200,12 @@ public class Editor implements Runnable, ActionListener {
     resourceTree.setRootVisible(false);
     resourceTree.setShowsRootHandles(true);
 
-    // panels met maps
+    // panels with maps
     mapTabbedPane = new JTabbedPane();
     JPanel mapPanel = new JPanel(new BorderLayout());
     mapEditor = new MapEditor(mapTabbedPane, mapPanel);
 
-    // panel met objecten en terrein
+    // panel with objects and terrain
     JTabbedPane editPanel = new JTabbedPane();
     objectPanel = new JPanel(new BorderLayout());
     objectPanel.setBorder(new TitledBorder("Objects"));
@@ -216,7 +217,7 @@ public class Editor implements Runnable, ActionListener {
     resourcePanel.setBorder(new TitledBorder("Resources"));
     editPanel.add(resourcePanel, "Resources");
 
-    // gefoefel met JSplitPanes om drie kolommen te krijgen
+    // fiddling with JSplitPanes to get three columns
     JSplitPane bigSplitPane = new JSplitPane();
     JSplitPane smallSplitPane = new JSplitPane();
     smallSplitPane.setLeftComponent(mapPanel);
@@ -224,12 +225,12 @@ public class Editor implements Runnable, ActionListener {
     bigSplitPane.setLeftComponent(smallSplitPane);
     bigSplitPane.setRightComponent(editPanel);
 
-    // dit kan beter
+    // this could be better
     smallSplitPane.setDividerLocation(200);
     bigSplitPane.setDividerLocation(1000);
     frame.add(bigSplitPane, BorderLayout.CENTER);
 
-    // statusbar
+    // status bar
     status = new StatusBar();
     frame.add(status, BorderLayout.SOUTH);
   }
@@ -253,20 +254,20 @@ public class Editor implements Runnable, ActionListener {
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     chooser.setDialogTitle("Choose module directory");
     if (chooser.showDialog(frame, "Choose") == JFileChooser.APPROVE_OPTION) {
-      // mod maken
+      // create mod
       createMod(chooser.getSelectedFile());
-      // editing enablen
+      // enable editing
       enableEditing(true);
       frame.pack();
     }
   }
 
   private void createMod(File file) {
-    // path is hier de naam van de dir, enkel files weet volledig path
-    String path = file.getName(); // dit wordt ook de mod id
+    // path here is the name of the dir, only files knows the full path
+    String path = file.getName(); // this also becomes the mod id
     try {
       files.mount(file.getPath());
-      // dirs genereren
+      // generate directories
       File objects = new File(file, "objects");
       objects.mkdir();
       File maps = new File(file, "maps");
@@ -276,7 +277,7 @@ public class Editor implements Runnable, ActionListener {
       File themes = new File(file, "themes");
       themes.mkdir();
 
-      // load zorgt dat alle resources e.d. geïnitialiseerd zijn
+      // load ensures that all resources etc. are initialized
       store.loadData(path, true, false);
       mapEditor.loadMaps(resources.getResources(RMap.class), path);
     } catch (IOException e) {
@@ -285,7 +286,7 @@ public class Editor implements Runnable, ActionListener {
   }
 
   protected void enableEditing(boolean unpacked) {
-    // menu items enablen
+    // enable menu items
     pack.setEnabled(unpacked);
     unpack.setEnabled(!unpacked);
     make.setEnabled(false);
@@ -294,7 +295,7 @@ public class Editor implements Runnable, ActionListener {
     load.setEnabled(false);
     save.setEnabled(true);
 
-    // lijstjes klaarmaken
+    // prepare lists
     initObjects();
     initResources();
     initTerrain();
@@ -308,9 +309,9 @@ public class Editor implements Runnable, ActionListener {
       File master = chooser.getSelectedFile();
       chooser.setDialogTitle("Choose extension directory");
       if (chooser.showDialog(frame, "Extension") == JFileChooser.APPROVE_OPTION) {
-        // master laden
+        // load master
         filer.load(master, false);
-        // extension aanmaken
+        // create extension
         createMod(chooser.getSelectedFile());
         enableEditing(true);
         frame.pack();

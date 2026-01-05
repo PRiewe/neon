@@ -18,10 +18,9 @@
 
 package neon.entities;
 
+import java.io.Serializable;
 import neon.entities.property.Slot;
 import neon.resources.RClothing;
-
-import java.io.Serializable;
 
 public class Clothing extends Item implements Serializable {
   public Clothing(long uid, RClothing resource) {

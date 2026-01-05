@@ -41,7 +41,7 @@ import neon.ui.graphics.event.VectorSelectionListener;
 public class JVectorPane extends JComponent implements MouseListener {
   public static final int DEFAULT_ZOOM = 14; // default zoom level
 
-  private HashSet<Renderable> selection; // snelle look-up
+  private HashSet<Renderable> selection; // fast look-up
   private boolean editable = false;
   private ZComparator comparator;
   private float zoom = DEFAULT_ZOOM;
@@ -95,7 +95,7 @@ public class JVectorPane extends JComponent implements MouseListener {
   public void paintComponent(Graphics g) {
     synchronized (renderables) {
       Rectangle view = g.getClipBounds();
-      // cx wordt 0 als pane in jscrollpane zit, view.x wordt 0 indien niet
+      // cx becomes 0 if pane is in jscrollpane, view.x becomes 0 if not
       int x = (cx == 0 ? view.x : cx);
       int y = (cy == 0 ? view.y : cy);
 

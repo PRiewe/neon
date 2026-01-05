@@ -50,7 +50,7 @@ public class ChargeDialog implements KeyListener {
         new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10, 10, 10, 10)));
     frame.setContentPane(contents);
 
-    // lijst met recepten
+    // list of items
     items = new JList<Item>();
     items.setFocusable(false);
     scroller = new JScrollPane(items);

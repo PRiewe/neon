@@ -115,9 +115,9 @@ public class RSpell extends RData {
     return spell;
   }
 
-  // scrolls/books hebben een gewone spell
+  // scrolls/books have a regular spell
   public static class Enchantment extends RSpell {
-    public String item; // geldig: clothing/armor, weapon, container/door, food/potion
+    public String item; // valid: clothing/armor, weapon, container/door, food/potion
 
     public Enchantment(Element enchantment, String... path) {
       super(enchantment, path);

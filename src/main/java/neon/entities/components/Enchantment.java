@@ -28,7 +28,7 @@ import neon.resources.RSpell;
  */
 public class Enchantment implements Serializable, Component {
   private static final long serialVersionUID = 1L;
-  private final RSpell spell; // niet RSpell.Enchantment vanwege scrolls
+  private final RSpell spell; // not RSpell.Enchantment because of scrolls
   private final int mana;
   private float modifier = 0;
   private final long uid;
@@ -82,7 +82,7 @@ public class Enchantment implements Serializable, Component {
    * @param amount
    */
   public void addMana(float amount) {
-    // modifier moet altijd kleiner zijn als 0
+    // modifier must always be less than 0
     modifier = Math.min(0, modifier + amount);
   }
 

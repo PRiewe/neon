@@ -98,12 +98,12 @@ public abstract class AI implements Serializable {
   public byte getDisposition(Creature other) {
     byte disposition = (byte) (40 + other.getStatsComponent().getCha());
     if (creature.species.id.equals(other.species.id)) {
-      disposition += 5; // zelfde soort is ok
+      disposition += 5; // same species is ok
     }
     FactionComponent factions = creature.getFactionComponent();
     for (String faction : factions.getFactions().keySet()) {
       if (factions.isMember(faction)) {
-        disposition += 10; // zelfde faction is nog meer ok
+        disposition += 10; // same faction is even better
       }
     }
     if (dispositions.containsKey(other.getUID())) {
@@ -145,7 +145,7 @@ public abstract class AI implements Serializable {
     if (creature.hasCondition(Condition.BLIND)) {
       return false;
     } else {
-      // TODO: rekening houden met sneaken en lichtjes
+      // TODO: take into account sneaking and lights
       Rectangle cBounds = creature.getShapeComponent();
       Rectangle oBounds = other.getShapeComponent();
       return Point.distance(cBounds.x, cBounds.y, oBounds.x, oBounds.y) < 16;
@@ -168,10 +168,10 @@ public abstract class AI implements Serializable {
   }
 
   /*
-   * heal: kijken of er spells/scrolls/potions zijn om te healen
+   * heal: check if there are spells/scrolls/potions to heal with
    */
   protected boolean heal() {
-    // eerst potions en scrolls bekijken?
+    // first check potions and scrolls?
     for (long uid : creature.getInventoryComponent()) {
       Item item = (Item) Engine.getStore().getEntity(uid);
       if (item instanceof Item.Scroll || item instanceof Item.Potion) {
@@ -203,7 +203,7 @@ public abstract class AI implements Serializable {
   }
 
   /*
-   * cure: kijken of er iets gecured moet worden
+   * cure: check if anything needs to be cured
    */
   protected boolean cure() {
     if (creature.hasCondition(Condition.CURSED) && cure(Effect.LIFT_CURSE)) {
@@ -221,10 +221,10 @@ public abstract class AI implements Serializable {
   }
 
   /*
-   * cure(effect): disease, curse of poison selectief healen
+   * cure(effect): selectively heal disease, curse or poison
    */
   private boolean cure(Effect effect) {
-    // eerst potions en scrolls bekijken?
+    // first check potions and scrolls?
     for (long uid : creature.getInventoryComponent()) {
       Item item = (Item) Engine.getStore().getEntity(uid);
       if (item instanceof Item.Scroll || item instanceof Item.Potion) {
@@ -255,7 +255,7 @@ public abstract class AI implements Serializable {
   }
 
   /*
-   * equip(slot): proberen iets te equipen dat in dit slot past
+   * equip(slot): try to equip something that fits in this slot
    */
   private boolean equip(Slot slot) {
     for (long uid : creature.getInventoryComponent()) {
@@ -286,7 +286,7 @@ public abstract class AI implements Serializable {
   }
 
   /*
-   * flee: wegvluchten van de jager
+   * flee: run away from the hunter
    */
   protected void flee(Creature hunter) {
     Rectangle cBounds = creature.getShapeComponent();
@@ -309,10 +309,10 @@ public abstract class AI implements Serializable {
     if (Engine.getAtlas().getCurrentZone().getCreature(p) == null) {
       byte result = MotionHandler.move(creature, p);
       if (result == MotionHandler.BLOCKED) {
-        // eenmaal willekeurige andere richting proberen (of meerdere?)
+        // try a random direction once (or multiple times?)
         wander();
       } else if (result == MotionHandler.DOOR) {
-        // deur proberen opendoen, anders willekeurige richting
+        // try to open door, otherwise random direction
         if (!open(p)) {
           wander();
         }
@@ -342,29 +342,29 @@ public abstract class AI implements Serializable {
   }
 
   /*
-   * hunt(range): val prooi aan zolang die binnen territorium zit
+   * hunt(range): attack prey as long as it stays within territory
    */
   protected void hunt(int range, Point home, Creature prey) {
-    // huidige positie van actor even bijhouden
+    // keep track of current position of actor
     Rectangle bounds = creature.getShapeComponent();
-    // prooi aanvallen
+    // attack prey
     hunt(prey);
-    // indien te ver verwijderd van home, terugkeren
+    // if too far from home, return
     if (home.distance(bounds.getLocation()) > range) {
       MotionHandler.move(creature, bounds.getLocation());
     }
   }
 
   /*
-   * wander(range): rondwandelen binnen territorium
+   * wander(range): walk around within territory
    */
   protected void wander(int range, Point home) {
-    // huidige positie creature opslaan
+    // save current creature position
     Rectangle bounds = creature.getShapeComponent();
     double oldDistance = home.distance(bounds.getLocation());
-    // wandel willekeurig rond
+    // wander randomly
     wander();
-    // indien te ver verwijderd van home, terugkeren
+    // if too far from home, return
     double newDistance = home.distance(bounds.getLocation());
     if (newDistance > range && newDistance > oldDistance) {
       MotionHandler.move(creature, bounds.getLocation());
@@ -372,7 +372,7 @@ public abstract class AI implements Serializable {
   }
 
   /*
-   * wander: wandel gewoon wat rond
+   * wander: just walk around
    */
   protected void wander() {
     Rectangle cBounds = creature.getShapeComponent();
@@ -389,7 +389,7 @@ public abstract class AI implements Serializable {
   }
 
   /*
-   * wander(point): naar een bepaald punt wandelen
+   * wander(point): walk to a specific point
    */
   protected void wander(Point destination) {
     Rectangle pBounds = Engine.getPlayer().getShapeComponent();
@@ -403,7 +403,7 @@ public abstract class AI implements Serializable {
   }
 
   /*
-   * hunt: jaag op een prooi
+   * hunt: chase a prey
    */
   protected void hunt(Creature prey) {
     int dice = neon.util.Dice.roll(1, 2, 0);
@@ -419,7 +419,7 @@ public abstract class AI implements Serializable {
           creature.getMagicComponent().equipSpell(power);
           Rectangle bounds = prey.getShapeComponent();
           Engine.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
-          return; // hunt afbreken van zodra er een spell is gecast
+          return; // abort hunt as soon as a spell is cast
         }
       }
       for (RSpell spell : creature.getMagicComponent().getSpells()) {
@@ -428,14 +428,14 @@ public abstract class AI implements Serializable {
           creature.getMagicComponent().equipSpell(spell);
           Rectangle bounds = prey.getShapeComponent();
           Engine.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
-          return; // hunt afbreken van zodra er een spell is gecast
+          return; // abort hunt as soon as a spell is cast
         }
       }
     }
 
     Point p;
     if (creature.getStatsComponent().getInt()
-        < 5) { // als wezen lomp is, gewoon kortste weg proberen
+        < 5) { // if creature is clumsy, just try the shortest path
       int dx = 0;
       int dy = 0;
       if (creaturePos.x < preyPos.x) {
@@ -449,7 +449,7 @@ public abstract class AI implements Serializable {
         dy = -1;
       }
       p = new Point(creaturePos.x + dx, creaturePos.y + dy);
-    } else { // als wezen slimmer is, A* proberen
+    } else { // if creature is smarter, try A*
       Rectangle cBounds = creature.getShapeComponent();
       Rectangle pBounds = prey.getShapeComponent();
       p = PathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
@@ -468,9 +468,9 @@ public abstract class AI implements Serializable {
       Engine.post(new CombatEvent(creature, prey));
     } else if (Engine.getAtlas().getCurrentZone().getCreature(p) == null) {
       if (MotionHandler.move(creature, p) == MotionHandler.DOOR) {
-        open(p); // deur opendoen indien nodig
+        open(p); // open door if necessary
       }
-    } else { // als een ander creature in de weg staat
+    } else { // if another creature is in the way
       wander();
     }
   }

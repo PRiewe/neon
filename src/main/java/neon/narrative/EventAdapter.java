@@ -34,17 +34,17 @@ public class EventAdapter {
 
   @Handler
   public void handleSkill(SkillEvent se) {
-    log.trace("handleSkill {}",se);
+    log.trace("handleSkill {}", se);
   }
 
   @Handler
   public void handleCombat(CombatEvent ce) {
-    log.trace("handleCombat {}",ce);
+    log.trace("handleCombat {}", ce);
   }
 
   @Handler
   public void transition(TransitionEvent event) {
-    log.trace("transition {}",event);
+    log.trace("transition {}", event);
     if (event.toString().equals("dialog")) {
       tracker.checkTransition(event);
     }

@@ -37,7 +37,7 @@ public class State {
     this(parent, null);
   }
 
-  // methodes overriden indien nodig
+  // methods overridden if necessary
   public void enter(TransitionEvent e) {}
 
   public void exit(TransitionEvent e) {}

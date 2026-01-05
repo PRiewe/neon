@@ -51,14 +51,14 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   private MBassador<EventObject> bus;
   private UserInterface ui;
 
-  // onderdelen van het JPanel
+  // components of the JPanel
   private JPanel panel;
   private JList<Item> iList;
   private JList<Entity> cList;
   private JScrollPane cScroll, iScroll;
   private DescriptionPanel description;
 
-  // lijstjes
+  // lists
   private HashMap<String, Integer> cData, iData;
 
   public ContainerState(State parent, MBassador<EventObject> bus, UserInterface ui) {
@@ -147,12 +147,12 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
         break;
       case KeyEvent.VK_SPACE:
         try {
-          if (iList.hasFocus()) { // iets dumpen
+          if (iList.hasFocus()) { // drop something
             Item item = (Item) iList.getSelectedValue();
             InventoryHandler.removeItem(player, item.getUID());
-            if (container instanceof Container) { // verandering registreren
+            if (container instanceof Container) { // register change
               ((Container) container).addItem(item.getUID());
-            } else if (container instanceof Zone) { // itempositie aanpassen
+            } else if (container instanceof Zone) { // adjust item position
               Rectangle pBounds = player.getShapeComponent();
               Rectangle iBounds = item.getShapeComponent();
               iBounds.setLocation(pBounds.x, pBounds.y);
@@ -161,7 +161,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
               InventoryHandler.addItem(((Creature) container), item.getUID());
             }
             update();
-          } else { // iets oppakken
+          } else { // pick up something
             Entity item = (Entity) cList.getSelectedValue();
             if (item instanceof Container) {
               bus.publishAsync(new TransitionEvent("return"));

@@ -58,8 +58,8 @@ import net.engio.mbassy.bus.MBassador;
 import org.jdom2.Element;
 
 /*
- * Klasse die een lijst met onderwerpen toont om te praten. De getoonde lijst hangt
- * af van de precondities die in quests staan.
+ * Class that shows a list of topics to talk about. The displayed list depends
+ * on the preconditions defined in quests.
  */
 public class DialogState extends State implements KeyListener {
   private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();

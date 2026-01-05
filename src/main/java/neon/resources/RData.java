@@ -18,9 +18,8 @@
 
 package neon.resources;
 
-import org.jdom2.Element;
-
 import java.io.Serializable;
+import org.jdom2.Element;
 
 /**
  * A resource that is loaded from/saved to an XML data file.
@@ -28,7 +27,7 @@ import java.io.Serializable;
  * @author mdriesen
  */
 public abstract class RData extends Resource implements Serializable {
-  // dit dient eigenlijk alleen voor items en creatures
+  // this is actually only for items and creatures
   public String text = "x";
   public String color = "white";
   public String name;
@@ -64,8 +63,8 @@ public abstract class RData extends Resource implements Serializable {
   public abstract Element toElement();
 
   @Override
-  public void load() {} // RData heeft niets om te laden buiten wat er in de constructor staat
+  public void load() {} // RData has nothing to load beyond what is in the constructor
 
   @Override
-  public void unload() {} // RData heeft niets om te ontladen
+  public void unload() {} // RData has nothing to unload
 }

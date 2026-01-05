@@ -20,7 +20,6 @@ package neon.core.handlers;
 
 import java.awt.Rectangle;
 import java.util.Collection;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
 import neon.core.Engine;
@@ -42,7 +41,7 @@ import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
 
-@Listener(references = References.Strong) // strong, om gc te vermijden
+@Listener(references = References.Strong) // strong, to avoid gc
 @Slf4j
 public class TurnHandler {
   private GamePanel panel;
@@ -58,13 +57,13 @@ public class TurnHandler {
 
   @Handler
   public void tick(TurnEvent te) {
-    log.trace("tick {}",te);
-    // indien beurt gedaan is (timer krijgt extra tick):
-    //	1) random regions controleren
-    //	2) monsters controleren
-    //	3) speler controleren
+    log.trace("tick {}", te);
+    // if turn is done (timer gets extra tick):
+    //	1) check random regions
+    //	2) check monsters
+    //	3) check player
 
-    // kijken of terrain moet gegenereerd worden
+    // check if terrain should be generated
     if (Configuration.gThread) {
       if (generator == null || !generator.isAlive()) {
         generator = new Generator();
@@ -74,7 +73,7 @@ public class TurnHandler {
       checkRegions();
     }
 
-    // monsters controleren
+    // check monsters
     Player player = Engine.getPlayer();
     for (long uid : Engine.getAtlas().getCurrentZone().getCreatures()) {
       Creature creature = (Creature) Engine.getStore().getEntity(uid);
@@ -88,10 +87,10 @@ public class TurnHandler {
           int spd = getSpeed(creature);
           Region region = Engine.getAtlas().getCurrentZone().getRegion(cBounds.getLocation());
           if (creature.species.habitat == Habitat.LAND && region.getMovMod() == Modifier.SWIM) {
-            spd = spd / 4; // zwemmende creatures hebben penalty
+            spd = spd / 4; // swimming creatures have penalty
           }
           if (player.isSneaking()) {
-            spd = spd * 2; // player krijgt penalty bij sneaken
+            spd = spd * 2; // player gets penalty when sneaking
           }
 
           while (spd > getSpeed(player) * Math.random()) {
@@ -102,12 +101,12 @@ public class TurnHandler {
       }
     }
 
-    // player in gereedheid brengen voor volgende beurt
+    // prepare player for next turn
     HealthComponent health = player.getHealthComponent();
     health.heal(player.getStatsComponent().getCon() / 100f);
     player.getMagicComponent().addMana(player.getStatsComponent().getWis() / 100f);
 
-    // en systems updaten
+    // and update systems
     Engine.getPhysicsEngine().update();
     Engine.post(new UpdateEvent(this));
   }
@@ -115,7 +114,7 @@ public class TurnHandler {
   private class Generator extends Thread {
     @Override
     public void run() {
-      // enkel repainten nadat er iets gegenereerd is
+      // only repaint after something has been generated
       if (checkRegions()) {
         Engine.post(new UpdateEvent(this));
       }
@@ -125,11 +124,11 @@ public class TurnHandler {
   /*
    * Checks if any regions are visible that should be randomly generated.
    */
-  private boolean checkRegions() { // die boolean is eigenlijk maar louche
+  private boolean checkRegions() { // this boolean is actually just sketchy
     Rectangle window = panel.getVisibleRectangle();
     Zone zone = Engine.getAtlas().getCurrentZone();
     boolean fixed = true;
-    boolean generated = false; // om aan te geven dat er iets gegenereerd werd
+    boolean generated = false; // to indicate that something was generated
 
     do {
       Collection<Region> buffer = zone.getRegions(window);
@@ -139,7 +138,7 @@ public class TurnHandler {
           generated = true;
           fixed = false;
           RRegionTheme theme = r.getTheme();
-          r.fix(); // vanaf hier wordt theme null
+          r.fix(); // from here theme becomes null
           if (theme.id.startsWith("town")) {
             new TownGenerator(zone)
                 .generate(r.getX(), r.getY(), r.getWidth(), r.getHeight(), theme, r.getZ());

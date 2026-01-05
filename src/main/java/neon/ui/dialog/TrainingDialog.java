@@ -39,7 +39,7 @@ public class TrainingDialog implements KeyListener {
   private JDialog frame;
   private Player player;
   private JList<Skill> skills;
-  private Creature trainer; // uw trainer
+  private Creature trainer; // your trainer
   private JScrollPane scroller;
   private MBassador<EventObject> bus;
   private UserInterface ui;
@@ -57,7 +57,7 @@ public class TrainingDialog implements KeyListener {
         new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10, 10, 10, 10)));
     frame.setContentPane(contents);
 
-    // lijst met recepten
+    // list of skills
     skills = new JList<Skill>();
     skills.setFocusable(false);
     skills.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -110,7 +110,7 @@ public class TrainingDialog implements KeyListener {
         try {
           train(skills.getSelectedValue());
           ui.showMessage("Training finished.", 2);
-          // terug naar gameModule
+          // return to gameModule
           frame.dispose();
           bus.publishAsync(new TransitionEvent("return"));
         } catch (ArrayIndexOutOfBoundsException f) {

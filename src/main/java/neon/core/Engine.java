@@ -18,10 +18,9 @@
 
 package neon.core;
 
+import java.io.IOException;
 import java.util.EventObject;
-import java.util.logging.Logger;
 import javax.script.*;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.event.*;
 import neon.core.handlers.CombatHandler;
@@ -50,12 +49,12 @@ import org.graalvm.polyglot.HostAccess;
  */
 @Slf4j
 public class Engine implements Runnable {
-  // wordt door engine geïnitialiseerd
-  // TODO: alle global static state wegwerken
+  // initialized by engine
+  // TODO: remove all global static state
   private static Context engine;
   private static org.graalvm.polyglot.Engine polyengine;
   private static FileSystem files; // virtual file system
-  private static PhysicsSystem physics; // de physics engine
+  private static PhysicsSystem physics; // the physics engine
   private static QuestTracker quests;
   private static MBassador<EventObject> bus; // event bus
   private static ResourceManager resources;
@@ -63,12 +62,12 @@ public class Engine implements Runnable {
   private TaskQueue queue;
   private Configuration config;
 
-  // wordt extern geset
+  // set externally
   private static Game game;
 
   /** Initializes the engine. */
-  public Engine(Port port) {
-    // engine componenten opzetten
+  public Engine(Port port) throws IOException {
+    // set up engine components
     bus = port.getBus();
     // Create a custom Engine with desired options or settings
     polyengine =
@@ -97,7 +96,7 @@ public class Engine implements Runnable {
     // we use an IniBuilder to add all resources to the manager
     new IniBuilder("neon.ini.xml", files, queue).build(resources);
 
-    // nog engine componenten opzetten
+    // set up remaining engine components
     quests = new QuestTracker();
     config = new Configuration(resources);
   }
@@ -125,7 +124,7 @@ public class Engine implements Runnable {
   }
 
   /*
-   * alle scriptbrol
+   * all script stuff
    */
   /**
    * Executes a script.
@@ -139,12 +138,12 @@ public class Engine implements Runnable {
       return engine.eval("js", script);
     } catch (Exception e) {
       System.err.println(e);
-      return null; // niet geweldig goed
+      return null; // not very good
     }
   }
 
   /*
-   * alle getters
+   * all getters
    */
   /**
    * @return the player
@@ -208,10 +207,10 @@ public class Engine implements Runnable {
     System.out.printf("Engine.startGame() start game %s%n", game);
     Engine.game = game;
 
-    // ontbrekende systemen opzetten
+    // set up missing systems
     bus.subscribe(new MagicHandler(queue, game));
 
-    // player registreren
+    // register player
     Player player = game.getPlayer();
     engine.getBindings("js").putMember("journal", player.getJournal());
     engine.getBindings("js").putMember("player", player);

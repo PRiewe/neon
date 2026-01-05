@@ -32,7 +32,7 @@ public class ColorFactory {
 
   static {
     colors = new LinkedHashMap<String, Color>();
-    // al deze kleuren zijn de zogenaamde 'webcolors' (zie bv. wikipedia)
+    // all these colors are the so-called 'web colors' (see e.g. wikipedia)
     // red colors
     colors.put("indianRed", new Color(205, 92, 92));
     colors.put("lightCoral", new Color(240, 128, 128));

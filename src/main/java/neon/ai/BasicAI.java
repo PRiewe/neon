@@ -28,11 +28,11 @@ public class BasicAI extends AI {
   }
 
   public void act() {
-    // TODO: niet alleen op player letten, maar ook op andere wezens in zicht
+    // TODO: not only pay attention to player, but also to other creatures in sight
     if (isHostile() && sees(Engine.getPlayer())) {
       HealthComponent health = creature.getHealthComponent();
       if (100 * health.getHealth() / health.getBaseHealth() < confidence) {
-        // 80% kans om gewoon te vluchten, 20% kans om te healen; als geen heal spell, toch vluchten
+        // 80% chance to just flee, 20% chance to heal; if no heal spell, flee anyway
         if (Math.random() > 0.2 || !(cure() || heal())) {
           flee(Engine.getPlayer());
         }

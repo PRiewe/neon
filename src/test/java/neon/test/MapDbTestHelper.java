@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.h2.mvstore.MVStore;
 
-
 /**
  * Utility class for managing MapDb databases in tests.
  *

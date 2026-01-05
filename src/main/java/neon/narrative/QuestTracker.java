@@ -19,7 +19,6 @@
 package neon.narrative;
 
 import java.util.*;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.TurnEvent;
@@ -34,7 +33,7 @@ import net.engio.mbassy.listener.Handler;
 public class QuestTracker {
   private LinkedList<String> objects = new LinkedList<>();
   private HashMap<String, Quest> quests = new HashMap<>();
-  // tijdelijke map voor quests die voor dialogmodule zijn geladen
+  // temporary map for quests that have been loaded for the dialog module
   private HashMap<String, Quest> temp = new HashMap<>();
 
   public QuestTracker() {}
@@ -114,7 +113,7 @@ public class QuestTracker {
       Quest quest = quests.get(id);
       quest.finish();
       if (quest.template.repeat) {
-        // repeat quests worden verwijderd om opnieuw kunnen starten
+        // repeat quests are removed so they can be started again
         quests.remove(id);
       }
     }
@@ -147,7 +146,7 @@ public class QuestTracker {
 
   @Handler
   public void start(TurnEvent te) {
-    log.trace("start {}",te);
+    log.trace("start {}", te);
     if (te.isStart()) {
       for (RQuest quest : Engine.getResources().getResources(RQuest.class)) {
         if (quest.initial) {

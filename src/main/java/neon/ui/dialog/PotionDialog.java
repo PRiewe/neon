@@ -53,7 +53,7 @@ public class PotionDialog implements KeyListener {
     panel.setBorder(
         new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10, 10, 10, 10)));
 
-    // lijst met recepten
+    // list of recipes
     potions = new JList<RRecipe>();
     potions.setFocusable(false);
     potions.setCellRenderer(new PotionCellRenderer());
@@ -62,7 +62,7 @@ public class PotionDialog implements KeyListener {
     scroller.setBorder(new TitledBorder("Recipes"));
     panel.add(scroller, BorderLayout.CENTER);
 
-    // instructies geven
+    // provide instructions
     JLabel instructions =
         new JLabel("Use arrow keys to select potion, press enter to brew, esc to exit.");
     instructions.setBorder(

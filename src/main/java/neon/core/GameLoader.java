@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.event.LoadEvent;
 import neon.core.event.MagicTask;
@@ -74,13 +73,13 @@ public class GameLoader {
 
   @Handler
   public void loadGame(LoadEvent le) {
-    log.trace("loadGame {}",le);
+    log.trace("loadGame {}", le);
     System.out.println("Event source: " + le.getSource().toString());
-    // spel laden
+    // load game
     switch (le.getMode()) {
       case LOAD:
         loadGame(le.getSaveName());
-        // aangeven dat laden gedaan is
+        // indicate that loading is complete
         Engine.post(new LoadEvent(this));
         break;
       case NEW:
@@ -90,7 +89,7 @@ public class GameLoader {
           System.out.println(re);
           re.fillInStackTrace().printStackTrace();
         }
-        // aangeven dat laden gedaan is
+        // indicate that loading is complete
         Engine.post(new LoadEvent(this));
         break;
       default:
@@ -117,7 +116,7 @@ public class GameLoader {
       RSign sign) {
     try {
       System.out.println("Engine.initGame() start");
-      // speler initialiseren
+      // initialize player
       RCreature species =
           new RCreature(((RCreature) Engine.getResources().getResource(race)).toElement());
       Player player = new Player(species, name, gender, spec, profession);
@@ -128,7 +127,7 @@ public class GameLoader {
         SkillHandler.checkFeat(skill, player);
       }
 
-      // maps initialiseren
+      // initialize maps
       initMaps();
 
       CGame game = (CGame) Engine.getResources().getResource("game", "config");
@@ -144,7 +143,7 @@ public class GameLoader {
         player.getMagicComponent().addSpell(SpellFactory.getSpell(i));
       }
 
-      // player in positie brengen
+      // position player
       Rectangle bounds = player.getShapeComponent();
       bounds.setLocation(game.getStartPosition().x, game.getStartPosition().y);
       Map map = Engine.getAtlas().getMap(Engine.getStore().getMapUID(game.getStartMap()));
@@ -188,18 +187,18 @@ public class GameLoader {
     }
     Element root = doc.getRootElement();
 
-    // save map naar temp kopi�ren
+    // copy save map to temp
     Path savePath = Paths.get("saves", save);
     Path tempPath = Paths.get("temp");
     FileUtils.copy(savePath, tempPath);
 
-    // maps initialiseren
+    // initialize maps
     initMaps();
 
-    // tijd juist zetten (met setTime(), anders worden listeners aangeroepen)
+    // set time correctly (using setTime(), otherwise listeners would be called)
     Engine.getTimer().setTime(Integer.parseInt(root.getChild("timer").getAttributeValue("ticks")));
 
-    // player aanmaken
+    // create player
     loadPlayer(root.getChild("player"));
 
     // events
@@ -221,7 +220,7 @@ public class GameLoader {
   }
 
   private void loadEvents(Element events) {
-    // gewone tasks
+    // normal tasks
     for (Element event : events.getChildren("task")) {
       String description = event.getAttributeValue("desc");
       if (event.getAttribute("script") != null) {
@@ -230,7 +229,7 @@ public class GameLoader {
       }
     }
 
-    // getimede tasks
+    // timed tasks
     for (Element event : events.getChildren("timer")) {
       String[] ticks = event.getAttributeValue("tick").split(":");
       int start = Integer.parseInt(ticks[0]);
@@ -262,7 +261,7 @@ public class GameLoader {
   }
 
   private void loadPlayer(Element playerData) {
-    // player aanmaken
+    // create player
     RCreature species =
         (RCreature) Engine.getResources().getResource(playerData.getAttributeValue("race"));
     Player player =
@@ -322,24 +321,24 @@ public class GameLoader {
       player.getCharacteristicsComponent().addFeat(Feat.valueOf(e.getText()));
     }
 
-    // geld
+    // money
     player.getInventoryComponent().addMoney(Integer.parseInt(playerData.getChildText("money")));
   }
 
   private void initMaps() {
-    // mods en maps in uidstore steken
+    // put mods and maps in uidstore
     for (RMod mod : Engine.getResources().getResources(RMod.class)) {
       if (Engine.getStore().getModUID(mod.id) == 0) {
         Engine.getStore().addMod(mod.id);
       }
       for (String[] path : mod.getMaps())
-        try { // maps zitten in twowaymap, en worden dus niet in cache opgeslagen
+        try { // maps are in twowaymap, and are therefore not stored in cache
           Element map = Engine.getFileSystem().getFile(new XMLTranslator(), path).getRootElement();
           short mapUID = Short.parseShort(map.getChild("header").getAttributeValue("uid"));
           int uid = UIDStore.getMapUID(Engine.getStore().getModUID(path[0]), mapUID);
           Engine.getStore().addMap(uid, path);
         } catch (Exception e) {
-          log.info("Map error in mod {}",path[0]);
+          log.info("Map error in mod {}", path[0]);
         }
     }
   }

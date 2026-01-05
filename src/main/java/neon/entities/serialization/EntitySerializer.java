@@ -21,11 +21,9 @@ package neon.entities.serialization;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import neon.entities.Creature;
 import neon.entities.Entity;
 import neon.entities.Item;
-
 
 public class EntitySerializer {
   private static final long serialVersionUID = 4682346337753485512L;

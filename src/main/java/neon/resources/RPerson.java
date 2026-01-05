@@ -92,7 +92,7 @@ public class RPerson extends RData {
       }
     }
 
-    // nieuwe arraylist om concurrentmodificationexceptions te vermijden
+    // new arraylist to avoid ConcurrentModificationExceptions
     for (Element service : new ArrayList<Element>(person.getChildren("service"))) {
       services.add(service.detach());
     }
@@ -112,7 +112,7 @@ public class RPerson extends RData {
     npc.setAttribute("id", id);
 
     for (Element service : services) {
-      service.detach(); // anders fout bij 2de keer saven
+      service.detach(); // otherwise error on 2nd save
       npc.addContent(service);
     }
 

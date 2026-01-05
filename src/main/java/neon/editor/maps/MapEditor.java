@@ -133,7 +133,7 @@ public class MapEditor {
   }
 
   public void deleteMap(String id) {
-    // TODO: activeMaps is <RMap>, niet <String>!
+    // TODO: activeMaps is <RMap>, not <String>!
     activeMaps.remove(id);
     Editor.resources.removeResource(id);
   }

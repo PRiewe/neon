@@ -19,56 +19,60 @@
 package neon.systems.files;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.jar.*;
+import lombok.extern.slf4j.Slf4j;
 import neon.util.trees.PathTree;
 
 /*
- * structuur van VFS:
+ * VFS structure:
  * root
  * 	|- mod1
  * 	|- mod2
  * 	|- ...
  *
- * Alle onveranderlijke data steekt in modX. Alles wat tijdens het spelen gegenereerd
- * wordt, komt in temp. Alles in temp wordt gekopieerd naar saves als het spel wordt
- * afgesloten. In elke savegame directory wordt de structuur van data overgenomen.
+ * All immutable data is in modX. Everything that is generated during gameplay
+ * goes into temp. Everything in temp is copied to saves when the game is
+ * closed. In each savegame directory, the structure of data is replicated.
  *
- * Als een file opgevraagd wordt: eerst kijken in temp, dan kijken in save, dan kijken
- * in mod. Klasses hoeven niet te weten dat dit gebeurt.
- * Als een file gesaved wordt: in temp steken. (eventueel later path met writable bit maken)
- * Als spel gesaved wordt: gewijzigde bestanden op een of andere manier opvragen en in
- * save dir steken.
+ * When a file is requested: first check in temp, then check in save, then check
+ * in mod. Classes don't need to know this is happening.
+ * When a file is saved: put in temp. (possibly later make path with writable bit)
+ * When game is saved: somehow retrieve modified files and put them in
+ * save dir.
  *
- * verloop filegebuik tijdens spel:
+ * file usage flow during game:
  * 1. new game:
- * 		- alles in temp saven
- * 		- laden eerst proberen uit temp, dan uit save, dan uit data
- * 		- game over: temp clearen
- * 		- game saven: dir maken, saves.xml aanpassen, temp naar dir cut-pasten
+ * 		- save everything in temp
+ * 		- load first from temp, then from save, then from data
+ * 		- game over: clear temp
+ * 		- save game: create dir, modify saves.xml, cut-paste temp to dir
  * 2. load game:
- * 		- alles hetzelfde, alleen dir al gemaakt en saves.xml niet aanpassen
+ * 		- everything the same, only dir already created and don't modify saves.xml
  */
+@Slf4j
 public class FileSystem {
-  private HashMap<String, String> jars;
+  private HashMap<String, String> jars = new HashMap<String, String>();
   private File temp;
-  private PathTree<String, String> files;
-  private HashMap<String, String> paths; // om de absolute paths naar een dir of jar bij te houden
+  private PathTree<String, String> files = new PathTree<String, String>();
+  private HashMap<String, String> paths =
+      new HashMap<String, String>(); // to keep track of absolute paths to a dir or jar
 
-  public FileSystem() {
-    this("temp");
+  public FileSystem() throws IOException {
+    String tmpdir = Files.createTempDirectory("neon_").toFile().getAbsolutePath();
+    log.info("Storing temp file in {}", tmpdir);
+    this.temp = new File(tmpdir);
+    clearTemp();
   }
 
   public FileSystem(String temp) {
-    files = new PathTree<String, String>();
-    paths = new HashMap<String, String>();
-    jars = new HashMap<String, String>();
     this.temp = new File(temp);
     clearTemp();
   }
 
   /*
-   * Specifieke VFS methodes
+   * Specific VFS methods
    */
   /**
    * Adds a directory or jar archive to this virtual file system
@@ -78,17 +82,17 @@ public class FileSystem {
    * @throws IOException
    */
   public String mount(String path) throws IOException {
-    // file separator miserie
+    // file separator issues
     String root = path.replace("/", File.separator);
-    // het probleem is dat in neon.ini.xml een / wordt gebruikt, waardoor windows van slag raakt
+    // the problem is that a / is used in neon.ini.xml, which confuses Windows
 
-    // dan laden
+    // then load
     root = root.substring(0, root.lastIndexOf(File.separator) + 1);
-    if (new File(path).isDirectory()) { // directory toevoegen
+    if (new File(path).isDirectory()) { // add directory
       String dir = addDirectory(path, root);
       paths.put(dir, path);
       return dir;
-    } else if (new File(path).exists()) { // kijken of jar bestaat
+    } else if (new File(path).exists()) { // check if jar exists
       String dir = addArchive(path, root);
       jars.put(dir, path);
       return dir;
@@ -125,7 +129,7 @@ public class FileSystem {
       JarEntry entry = entries.nextElement();
       if (!entry.isDirectory()) {
         String name = new String(entry.getName());
-        // dit moet blijkbaar met "/" omdat ik in een jar zit, en niet met File.separator
+        // this apparently must use "/" because I'm in a jar, and not File.separator
         int separatorCount = name.length() - name.replace("/", "").length();
         String[] pathArray = new String[separatorCount + 2];
         pathArray[0] = modID;
@@ -142,8 +146,8 @@ public class FileSystem {
   }
 
   /*
-   * directory bijvoegen en alle subdirs en bestanden in tree steken. Het absolute path wordt afgekapt:
-   * 'c:\games\neon\mod1' wordt toegevoegd als 'mod1'
+   * Add directory and put all subdirs and files in tree. The absolute path is trimmed:
+   * 'c:\games\neon\mod1' is added as 'mod1'
    */
   private String addDirectory(String path, String root) {
     File dir = new File(path);
@@ -163,7 +167,7 @@ public class FileSystem {
         files.add(file.getPath(), pathArray);
       }
     }
-    // mottige return methode
+    // messy return method
     return path.replace("/", File.separator).replace(root, "");
   }
 
@@ -205,7 +209,7 @@ public class FileSystem {
       if (new File(temp.getPath() + toString(path)).exists()) {
         InputStream stream = new FileInputStream(temp.getPath() + toString(path));
         return translator.translate(stream);
-      } else if (jars.containsKey(path[0])) { // path[0] is de naam van de mod
+      } else if (jars.containsKey(path[0])) { // path[0] is the name of the mod
         JarFile jar = new JarFile(new File(jars.get(path[0])));
         InputStream stream = jar.getInputStream(jar.getEntry(files.get(path)));
         T t = translator.translate(stream);
@@ -253,7 +257,7 @@ public class FileSystem {
   private String toString(String... path) {
     StringBuffer buffer = new StringBuffer();
     for (int i = 0; i < path.length; i++) {
-      if(path[i] == null) {
+      if (path[i] == null) {
         continue;
       }
       buffer.append(File.separator);
@@ -262,8 +266,14 @@ public class FileSystem {
     return buffer.toString();
   }
 
+  public String getFullPath(String filename) {
+    var path = temp.toPath().toString();
+    var filePath = toString(path, filename);
+    return filePath;
+  }
+
   /*
-   * Algemene methodes
+   * General methods
    */
   private void makeDir(String path) throws IOException {
     File file = new File(path);
@@ -300,7 +310,7 @@ public class FileSystem {
     temp.mkdir();
   }
 
-  // delete werkt bij dirs enkel als die leeg zijn
+  // delete only works for directories if they are empty
   private void delete(File file) {
     if (file.isDirectory()) {
       for (File f : file.listFiles()) {

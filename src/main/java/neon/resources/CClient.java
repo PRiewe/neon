@@ -68,7 +68,7 @@ public class CClient extends Resource {
   public CClient(String... path) {
     super("client", path);
 
-    // file inladen
+    // load file
     Document doc = new Document();
     try (FileInputStream in = new FileInputStream(path[0])) {
       doc = new SAXBuilder().build(in);
@@ -80,8 +80,8 @@ public class CClient extends Resource {
     // keyboard
     setKeys(root.getChild("keys"));
 
-    // taal
-    Properties defaults = new Properties(); // locale.en laden als default
+    // language
+    Properties defaults = new Properties(); // load locale.en as default
     try (FileInputStream stream = new FileInputStream("data/locale/locale.en");
         InputStreamReader reader = new InputStreamReader(stream, Charset.forName("UTF-8"))) {
       defaults.load(reader);
@@ -90,7 +90,7 @@ public class CClient extends Resource {
     }
 
     String lang = root.getChild("lang").getText();
-    strings = new Properties(defaults); // locale initialiseren met 'en' defaults
+    strings = new Properties(defaults); // initialize locale with 'en' defaults
     try (FileInputStream stream = new FileInputStream("data/locale/locale." + lang);
         InputStreamReader reader = new InputStreamReader(stream, Charset.forName("UTF-8"))) {
       strings.load(reader);
@@ -158,7 +158,7 @@ public class CClient extends Resource {
           break;
       }
 
-      // andere keys
+      // other keys
       if (settings.getAttribute("map") != null) {
         map = getKeyCode(settings.getAttributeValue("map"));
       }

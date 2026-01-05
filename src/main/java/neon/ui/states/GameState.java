@@ -22,7 +22,6 @@ import java.awt.event.*;
 import java.io.InputStream;
 import java.util.EventObject;
 import java.util.Scanner;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.*;
 import neon.core.event.*;
@@ -56,7 +55,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
     panel = new GamePanel();
     setVariable("panel", panel);
 
-    // maakt functies beschikbaar voor scripting:
+    // makes functions available for scripting:
     Engine.getScriptEngine().getBindings("js").putMember("engine", new ScriptInterface(panel));
     bus.subscribe(new TurnHandler(panel));
   }
@@ -67,7 +66,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
     if (e.toString().equals("start")) {
       player = Engine.getPlayer();
       Engine.getPhysicsEngine().addListener(this);
-      // in geval spel start, moeten de events van de huidige kloktick nu uitgevoerd worden
+      // in case game starts, the events of the current clock tick must be executed now
       bus.publishAsync(new TurnEvent(Engine.getTimer().getTime(), true));
     }
     panel.setVisible(true);
@@ -150,7 +149,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
     }
   }
 
-  // voorlopig alleen controleren of de player op een region staat die een script moet draaien
+  // for now only check if the player is on a region that should run a script
   public void collisionOccured(CollisionEvent event) {
     Object one = event.getBodyA().getUserData();
     Object two = event.getBodyB().getUserData();
@@ -177,7 +176,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
 
   @Handler
   public void handleCombat(CombatEvent ce) {
-    log.trace("handleCombat {}",ce);
+    log.trace("handleCombat {}", ce);
     if (ce.isFinished()) {
       if (ce.getDefender() == player) {
         panel.print("You were attacked!");
@@ -204,7 +203,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
 
   @Handler
   public void handleSkill(SkillEvent se) {
-    log.trace("handleSkill {}",se);
+    log.trace("handleSkill {}", se);
     if (se.getStat() != Attribute.NONE) {
       panel.print("Stat raised: " + se.getSkill().stat);
     } else if (se.hasLevelled()) {

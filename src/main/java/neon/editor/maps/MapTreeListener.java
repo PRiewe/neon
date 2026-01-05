@@ -59,8 +59,8 @@ public class MapTreeListener implements MouseListener {
         if (tree.getSelectionPath() != null && selection instanceof ZoneTreeNode) {
           ZoneTreeNode node = (ZoneTreeNode) selection;
           RMap map = node.getZone().map;
-          int choice = JOptionPane.NO_OPTION; // standaard gewoon zone op het scherm zetten
-          if (node.getZone().theme != null) { // tenzij er een theme is gezet
+          int choice = JOptionPane.NO_OPTION; // default just put zone on screen
+          if (node.getZone().theme != null) { // unless a theme is set
             String question =
                 "A zone theme was set for this zone. Do you wish to generate the zone "
                     + "content from this theme?";
@@ -69,11 +69,11 @@ public class MapTreeListener implements MouseListener {
                     Editor.getFrame(), question, "Theme warning", JOptionPane.YES_NO_CANCEL_OPTION);
           }
 
-          if (choice == JOptionPane.YES_OPTION) { // content moet gegenereerd worden
+          if (choice == JOptionPane.YES_OPTION) { // content needs to be generated
             generateZone(node.getZone());
           }
 
-          if (choice != JOptionPane.CANCEL_OPTION) { // en op scherm zetten
+          if (choice != JOptionPane.CANCEL_OPTION) { // and put on screen
             node.getZone().theme = null;
             if (node.getPane() == null) {
               node.setPane(new EditablePane(node, tabs.getWidth(), tabs.getHeight()));
@@ -123,6 +123,7 @@ public class MapTreeListener implements MouseListener {
 
   private void generateZone(RZone zone) {
     RZoneTheme theme = zone.theme;
+
     String[][] terrain = new DungeonGenerator(theme).generateTiles();
     int width = terrain.length;
     int height = terrain[0].length;
@@ -142,7 +143,7 @@ public class MapTreeListener implements MouseListener {
     byte layer = 1;
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
-        if (terrain[x][y] != null) { // kijken of hier items en creatures moeten komen
+        if (terrain[x][y] != null) { // check if items and creatures should be placed here
           String[] content = terrain[x][y].split(";");
 
           Instance region =

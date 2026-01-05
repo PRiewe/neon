@@ -21,7 +21,7 @@ class ZoneIntegrationTest {
   private MVStore testDb;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
   }

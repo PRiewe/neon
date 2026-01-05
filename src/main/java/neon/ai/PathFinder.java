@@ -38,19 +38,18 @@ public class PathFinder {
   private static Creature mover;
 
   public static Point[] findPath(Creature creature, Point origin, Point destination) {
-    // punten
+    // points
     Point from = origin;
     to = destination;
     mover = creature;
 
-    // lijstjes van nodes
-    evaluated = new HashMap<Point, Integer>(); // de bezochte nodes en hun kost vanaf from
+    // lists of nodes
+    evaluated = new HashMap<Point, Integer>(); // the visited nodes and their cost from 'from'
     Queue<Point> todo =
-        new PriorityQueue<>(10, new NodeComparator()); // de nodes die nog moeten bekeken worden
-    HashMap<Point, Point> links =
-        new HashMap<Point, Point>(); // om te kijken hoe een node bereikt is
+        new PriorityQueue<>(10, new NodeComparator()); // the nodes that still need to be examined
+    HashMap<Point, Point> links = new HashMap<Point, Point>(); // to track how a node was reached
 
-    // startpunt
+    // starting point
     todo.add(from);
     evaluated.put(from, 0);
 
@@ -66,22 +65,25 @@ public class PathFinder {
           break;
         } else if (Engine.getAtlas().getCurrentZone().getRegion(neighbour).getMovMod()
             == Region.Modifier.BLOCK) {
-          continue; // als terrein geblokkeerd is, volgende punt
+          continue; // if terrain is blocked, skip to next point
         }
         int penalty = doorPenalty(neighbour) + terrainPenalty(neighbour);
         int cost =
-            evaluated.get(next) + manhattan(to, neighbour) + 1 + penalty; // huidige kost van gebuur
-        // als gebuur al in todo lijst zit met hogere kost: eruit halen
+            evaluated.get(next)
+                + manhattan(to, neighbour)
+                + 1
+                + penalty; // current cost of neighbor
+        // if neighbor is already in todo list with higher cost: remove it
         if (todo.contains(neighbour)
             && cost < evaluated.get(neighbour) + manhattan(to, neighbour)) {
           todo.remove(neighbour);
         }
-        // als gebuur al evaluated is met hogere kost: eruit halen
+        // if neighbor is already evaluated with higher cost: remove it
         if (evaluated.containsKey(neighbour)
             && cost < evaluated.get(neighbour) + manhattan(to, neighbour)) {
           evaluated.remove(neighbour);
         }
-        // als gebuur nog nergens in zit (of er juist uitgehaald is): in todo steken
+        // if neighbor is not in any list yet (or was just removed): add to todo
         if (!todo.contains(neighbour) && !evaluated.containsKey(neighbour)) {
           links.put(neighbour, next);
           evaluated.put(neighbour, evaluated.get(next) + 1 + penalty);
@@ -92,8 +94,8 @@ public class PathFinder {
 
     ArrayList<Point> path = new ArrayList<Point>();
     if (!links.containsKey(to)) {
-      to = todo.poll(); // als path afgebroken werd, met huidige schatting voortdoen
-    } // dit geeft bijwijle wel vreemd gedrag
+      to = todo.poll(); // if path was interrupted, continue with current estimate
+    } // this can sometimes give strange behavior
     while (!from.equals(to)) {
       path.add(0, to);
       to = links.get(to);
@@ -115,14 +117,14 @@ public class PathFinder {
   }
 
   /*
-   * manhattan distance tussen punten
+   * manhattan distance between points
    */
   private static int manhattan(Point one, Point two) {
     return Math.abs(one.x - two.x) + Math.abs(one.y - two.y);
   }
 
   private static int terrainPenalty(Point neighbour) {
-    // betere modifiers?
+    // better modifiers?
     switch (Engine.getAtlas().getCurrentZone().getRegion(neighbour).getMovMod()) {
       case SWIM:
         return (100 - mover.getSkill(Skill.SWIMMING)) / 5;

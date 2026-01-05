@@ -80,7 +80,7 @@ public class TownGenerator {
   }
 
   private void makeDoor(Region r, RRegionTheme theme) {
-    // ergens deur tussen moffelen
+    // sneak in a door somewhere
     int x = 0, y = 0;
 
     switch ((int) (Math.random() * 4)) {

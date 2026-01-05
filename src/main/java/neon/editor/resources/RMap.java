@@ -28,11 +28,11 @@ import neon.ui.graphics.Renderable;
 import org.jdom2.*;
 
 /*
- * levensloop van een map:
- * 	A. bestaande map:
- * 		1. map laden
- * 		2. zones laden
- * 	B. nieuwe map:
+ * life cycle of a map:
+ * 	A. existing map:
+ * 		1. load map
+ * 		2. load zones
+ * 	B. new map:
  * 		a. dungeon
  * 		b. random dungeon
  * 		c. outdoor
@@ -46,7 +46,7 @@ public class RMap extends RData {
   private boolean type;
   private ArrayList<Integer> uids;
 
-  // voor reeds bestaande maps tijdens loadMod
+  // for already existing maps during loadMod
   public RMap(String id, Element properties, String... path) {
     super(id, path);
     uid = Short.parseShort(properties.getChild("header").getAttributeValue("uid"));
@@ -69,14 +69,14 @@ public class RMap extends RData {
     }
   }
 
-  // voor nieuwe aan te maken maps
+  // for new maps to be created
   public RMap(short uid, String mod, MapDialog.Properties props) {
     super(props.getID(), mod);
     this.uid = uid;
     type = props.isDungeon();
     name = props.getName();
 
-    if (!props.isDungeon()) { // bij outdoor altijd zone en base region instellen
+    if (!props.isDungeon()) { // always set zone and base region for outdoor
       Element region = new Element("region");
       region.setAttribute("x", "0");
       region.setAttribute("y", "0");
@@ -126,12 +126,12 @@ public class RMap extends RData {
     return name;
   }
 
-  // objecten indien nodig ook uit tree halen!!!
+  // also remove objects from tree if needed!!!
   public void removeObjectUID(int uid) {
-    uids.remove((Integer) uid); // omdat remove(int) de int'ste waarde verwijderd
+    uids.remove((Integer) uid); // because remove(int) removes the int'th value
   }
 
-  // objecten niet vergeten in tree te steken!!!
+  // don't forget to add objects to the tree!!!
   public int createUID(Element e) {
     int hash = e.hashCode();
     while (uids.contains(hash)) {
@@ -180,7 +180,7 @@ public class RMap extends RData {
   }
 
   public void load() {
-    if (uids == null) { // vermijden dat map twee keer geladen wordt
+    if (uids == null) { // avoid loading map twice
       uids = new ArrayList<Integer>();
       try {
         String file = Editor.getStore().getMod(path[0]).getPath()[0];
@@ -210,9 +210,9 @@ public class RMap extends RData {
   public void removeZone(int level) {
     for (Renderable r : zones.get(level).getScene().getElements()) {
       Instance instance = (Instance) r;
-      if (instance instanceof IObject) { // uids verwijderen
+      if (instance instanceof IObject) { // remove uids
         uids.remove(Integer.parseInt(instance.toElement().getAttributeValue("uid")));
-        if (instance.toElement().getName().equals("container")) { // container inhoud verwijderen
+        if (instance.toElement().getName().equals("container")) { // remove container contents
           for (Element e : instance.toElement().getChildren()) {
             uids.remove(Integer.parseInt(e.getAttributeValue("uid")));
           }

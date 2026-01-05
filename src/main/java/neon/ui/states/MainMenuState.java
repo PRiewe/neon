@@ -48,7 +48,7 @@ public class MainMenuState extends State {
     this.bus = bus;
     this.ui = ui;
 
-    // het main menu JPanel zelf
+    // the main menu JPanel itself
     main = new JPanel(new BorderLayout());
 
     JPanel buttons = new JPanel(new GridLayout(0, 1));
@@ -59,7 +59,7 @@ public class MainMenuState extends State {
     JLabel title =
         new JLabel("<html><font size=\"18\">" + ini.getTitle() + "</font></html>", JLabel.CENTER);
 
-    // de knoppen op het menu
+    // the buttons on the menu
     String newString = ini.getString("$newGame");
     Action n = new ButtonAction(newString, "n");
     JButton newGame = new JButton(n);
@@ -80,7 +80,7 @@ public class MainMenuState extends State {
         new JLabel("<html><u>http://sourceforge.net/projects/neon/</u></html>", JLabel.CENTER);
     contact.addMouseListener(new LabelListener());
 
-    // knoppen aan menu toevoegen
+    // add buttons to menu
     buttons.add(title);
     buttons.add(newGame);
     buttons.add(load);
@@ -101,7 +101,7 @@ public class MainMenuState extends State {
     main.getActionMap().put("quit", q);
     main.getActionMap().put("esc", q);
 
-    // versienummer
+    // version number
     main.add(buttons, BorderLayout.CENTER);
     main.add(new JLabel("release " + version), BorderLayout.PAGE_END);
   }
@@ -111,7 +111,7 @@ public class MainMenuState extends State {
     ui.showPanel(main);
   }
 
-  // knop action
+  // button action
   @SuppressWarnings("serial")
   private class ButtonAction extends AbstractAction {
     public ButtonAction(String text, String command) {

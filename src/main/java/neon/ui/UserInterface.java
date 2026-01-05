@@ -57,7 +57,7 @@ public class UserInterface {
     window.setVisible(true);
     window.requestFocus();
 
-    // centreren op scherm
+    // center on screen
     window.setLocationRelativeTo(null);
   }
 
@@ -69,8 +69,8 @@ public class UserInterface {
   public void showPanel(JComponent panel) {
     panel.setPreferredSize(window.getContentPane().getSize());
     window.setContentPane(panel);
-    window.setPreferredSize(window.getSize()); // anders resize naar minimumSize
-    window.pack(); // anders is er niet veel te zien
+    window.setPreferredSize(window.getSize()); // otherwise resize to minimumSize
+    window.pack(); // otherwise there's not much to see
     panel.requestFocus();
   }
 
@@ -92,7 +92,7 @@ public class UserInterface {
     label.setBorder(
         new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(5, 10, 10, 10)));
     JDialog dialog = new JDialog(window, false);
-    dialog.setFocusableWindowState(false); // anders focus op dialog, niet op contentpane
+    dialog.setFocusableWindowState(false); // otherwise focus on dialog, not on contentpane
     dialog.add(label);
     dialog.setUndecorated(true);
 

@@ -60,9 +60,9 @@ public class DungeonGenerator {
   private final QuestProvider questProvider;
   private final Atlas atlas;
 
-  // dingen
-  private int[][] tiles; // informatie over het soort terrain
-  private String[][] terrain; // terrain op die positie
+  // things
+  private int[][] tiles; // information about the type of terrain
+  private String[][] terrain; // terrain at that position
 
   /**
    * Creates a dungeon generator with a theme (for standalone generation).
@@ -151,21 +151,21 @@ public class DungeonGenerator {
    * @param previous the zone that contains the door used to enter this zone
    */
   public void generate(Door door, Zone previous) {
-    // de map die deze zone bevat
+    // the map that contains this zone
     Dungeon map = (Dungeon) atlas.getMap(zone.getMap());
 
-    // terrain genereren
+    // generate terrain
     generateTiles();
 
-    // hoogte en breedte van gegenereerde zone
+    // width and height of generated zone
     int width = tiles.length;
     int height = tiles[0].length;
 
-    // regions maken van terrain
+    // create regions from terrain
     generateEngineContent(width, height);
     zone.fix();
 
-    // deurtje zetten naar previous zone
+    // place door to previous zone
     Point p = new Point(0, 0);
     do {
       p.x = Dice.roll(1, width, -1);
@@ -185,7 +185,7 @@ public class DungeonGenerator {
     zone.addItem(tdoor);
     door.portal.setDestPos(p);
 
-    // kijken of er een deur naar andere zone nodig is
+    // check if a door to another zone is needed
     Collection<Integer> connections = map.getConnections(zone.getIndex());
     if (connections != null) {
       for (int to : connections) {
@@ -207,7 +207,7 @@ public class DungeonGenerator {
           toDoor.lock.open();
           toDoor.portal.setDestination(null, to, 0);
           zone.addItem(toDoor);
-        } else { // meerdere deuren tussen twee zones
+        } else { // multiple doors between two zones
           for (long uid : previous.getItems()) {
             if (entityStore.getEntity(uid) instanceof Door) {
               Door fromDoor = (Door) entityStore.getEntity(uid);
@@ -243,7 +243,7 @@ public class DungeonGenerator {
       }
     }
 
-    // effen kijken of er een random quest object moet aangemaakt worden
+    // just check if a random quest object needs to be created
     String object = questProvider.getNextRequestedObject();
     if (object != null) {
       Point p1 = new Point(0, 0);
@@ -266,15 +266,15 @@ public class DungeonGenerator {
 
   /** Generates a single zone from a given theme. */
   public String[][] generateTiles() {
-    // hoogte en breedte van dungeon
+    // width and height of dungeon
     int width = MapUtils.random(theme.min, theme.max);
     int height = MapUtils.random(theme.min, theme.max);
 
-    // basis terrein zonder features
+    // base terrain without features
     tiles = generateBaseTiles(theme.type, width, height);
     terrain = makeTerrain(tiles, theme.floor.split(","));
 
-    // schaalfactor voor genereren van features, creatures en items
+    // scale factor for generating features, creatures and items
     double ratio = (width * height) / Math.pow(MapUtils.average(theme.min, theme.max), 2);
 
     // features
@@ -353,16 +353,16 @@ public class DungeonGenerator {
         n = (MapUtils.random(0, (int) (n * ratio)) > 50) ? 1 : 0;
       }
 
-      if (feature[1].equals("lake")) { // grote patch die gewoon alles overschrijft
+      if (feature[1].equals("lake")) { // large patch that just overwrites everything
         int size = 100 / s;
         ArrayList<Rectangle> lakes =
             BlocksGenerator.generateSparseRectangles(
                 width, height, width / size, height / size, 2, n);
-        for (Rectangle r : lakes) { // meer inkwakken
+        for (Rectangle r : lakes) { // place lake
           FeatureGenerator.generateLake(terrain, t, r);
         }
-      } else if (feature[1].equals("patch")) { // patch die enkel floor tiles overschrijft
-        // stukken inkwakken
+      } else if (feature[1].equals("patch")) { // patch that only overwrites floor tiles
+        // place patches
         ArrayList<Rectangle> patches =
             BlocksGenerator.generateSparseRectangles(width, height, s, s, 2, n);
         for (Rectangle r : patches) {
@@ -375,7 +375,7 @@ public class DungeonGenerator {
             }
           }
         }
-      } else if (feature[1].equals("chunk")) { // patch die enkel wall tiles overschrijft
+      } else if (feature[1].equals("chunk")) { // patch that only overwrites wall tiles
         ArrayList<Rectangle> chunks =
             BlocksGenerator.generateSparseRectangles(width, height, s, s, 2, n);
         for (Rectangle chunk : chunks) {
@@ -390,7 +390,7 @@ public class DungeonGenerator {
             }
           }
         }
-      } else if (feature[1].equals("stain")) { // patch die enkel exposed wall tiles overschrijft
+      } else if (feature[1].equals("stain")) { // patch that only overwrites exposed wall tiles
         ArrayList<Rectangle> stains =
             BlocksGenerator.generateSparseRectangles(width, height, s, s, 2, n);
         for (Rectangle stain : stains) {
@@ -407,7 +407,7 @@ public class DungeonGenerator {
           }
         }
       } else if (feature[1].equals("river")) {
-        while (n-- > 0) { // blijkbaar eerst >, dan --
+        while (n-- > 0) { // apparently first >, then --
           FeatureGenerator.generateRiver(terrain, tiles, t, s);
         }
       }
@@ -430,7 +430,7 @@ public class DungeonGenerator {
     return false;
   }
 
-  // om een string[][] in regions, items en creatures om te zetten
+  // to convert a string[][] into regions, items and creatures
   private void generateEngineContent(int width, int height) {
     byte layer = 0;
     int d = 0;
@@ -441,7 +441,7 @@ public class DungeonGenerator {
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         String id;
-        switch (tiles[x][y]) { // juiste terrein leggen
+        switch (tiles[x][y]) { // place correct terrain
             //				case WALL_ROOM: zone.addRegion(new Region("wall_blood", x, y, 1, 1, null, layer +
             // 1)); break;
             //				case CORNER: zone.addRegion(new Region("ore_iron", x, y, 1, 1, null, layer + 1));
@@ -464,7 +464,7 @@ public class DungeonGenerator {
             break;
         }
 
-        if (terrain[x][y] != null) { // kijken of hier items en creatures moeten komen
+        if (terrain[x][y] != null) { // check if items and creatures should be placed here
           String[] content = terrain[x][y].split(";");
           if (content.length > 1) {
             for (int j = 1; j < content.length; j++) {
@@ -497,12 +497,12 @@ public class DungeonGenerator {
   private void addCreature(String description, int x, int y) {
     String id = description.replace("c:", "");
     Creature creature = EntityFactory.getCreature(id, x, y, entityStore.createNewEntityUID());
-    // geen land creatures in water
+    // no land creatures in water
     Rectangle bounds = creature.getShapeComponent();
     Modifier modifier = zone.getRegion(bounds.getLocation()).getMovMod();
     Habitat habitat = creature.species.habitat;
     if (habitat == Habitat.LAND && !(modifier == Modifier.NONE || modifier == Modifier.ICE)) {
-      return; // landdieren alleen op land zetten
+      return; // place land animals only on land
     }
     entityStore.addEntity(creature);
     zone.addCreature(creature);

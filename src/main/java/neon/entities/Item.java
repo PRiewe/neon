@@ -18,6 +18,7 @@
 
 package neon.entities;
 
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 import neon.entities.components.Enchantment;
@@ -25,13 +26,9 @@ import neon.entities.components.ItemRenderComponent;
 import neon.entities.components.RenderComponent;
 import neon.resources.RItem;
 
-import java.io.Serializable;
-
 public class Item extends Entity implements Serializable {
   public final RItem resource;
-  @Getter
-  @Setter
-  protected long owner = 0;
+  @Getter @Setter protected long owner = 0;
 
   public Item(long uid, RItem resource) {
     super(resource.id, uid);

@@ -484,13 +484,13 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     if (travelBox.isSelected()) {
       Element travel = new Element("service");
       travel.setAttribute("id", "travel");
-      // effen wat magic om laatst aangepaste waarde toch nog in destMap te frommelen
+      // a bit of magic to still get the last modified value into destMap
       if (currentDest != null) {
         currentDest.setAttribute("x", destX.getValue().toString());
         currentDest.setAttribute("y", destY.getValue().toString());
         currentDest.setAttribute("cost", destCost.getValue().toString());
       }
-      // magic gedaan
+      // magic done
       for (Element d : destMap.values()) {
         d.detach();
         travel.addContent(d);
@@ -629,7 +629,7 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     }
 
     public void valueChanged(ListSelectionEvent e) {
-      try { // in geval npc geen travel agent is
+      try { // in case npc is not a travel agent
         if (currentDest != null) {
           currentDest.setAttribute("x", destX.getValue().toString());
           currentDest.setAttribute("y", destY.getValue().toString());

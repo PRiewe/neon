@@ -39,7 +39,7 @@ public class CServer extends Resource {
   public CServer(String... path) {
     super("ini", path);
 
-    // file inladen
+    // load file
     Document doc = new Document();
     try (FileInputStream in = new FileInputStream(path[0])) {
       doc = new SAXBuilder().build(in);
@@ -65,10 +65,10 @@ public class CServer extends Resource {
   }
 
   @Override
-  public void load() {} // loaden niet mogelijk
+  public void load() {} // loading not possible
 
   @Override
-  public void unload() {} // unloaden niet mogelijk
+  public void unload() {} // unloading not possible
 
   public String getLogLevel() {
     return log;

@@ -21,7 +21,6 @@ package neon.core.handlers;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.Game;
@@ -72,7 +71,7 @@ public class MagicHandler {
    */
   @Handler
   public void cast(MagicEvent.OnCreature me) {
-    log.trace("cast OnCreature {}",me);
+    log.trace("cast OnCreature {}", me);
     castSpell(me.getTarget(), null, me.getSpell());
   }
 
@@ -83,7 +82,7 @@ public class MagicHandler {
    */
   @Handler
   public void cast(MagicEvent.OnPoint me) {
-    log.trace("cast OnPoint {}",me);
+    log.trace("cast OnPoint {}", me);
     RSpell spell = me.getSpell();
     Point target = me.getTarget();
 
@@ -118,7 +117,7 @@ public class MagicHandler {
    */
   @Handler
   public void cast(MagicEvent.CreatureOnPoint me) {
-    log.trace("cast CreatureOnPoint {}",me);
+    log.trace("cast CreatureOnPoint {}", me);
     Creature caster = me.getCaster();
     Point target = me.getTarget();
     Rectangle bounds = caster.getShapeComponent();
@@ -196,7 +195,7 @@ public class MagicHandler {
    */
   @Handler
   public void cast(MagicEvent.ItemOnPoint me) {
-    log.trace("cast ItemOnPoint {}",me);
+    log.trace("cast ItemOnPoint {}", me);
     Creature caster = me.getCaster();
     Item item = me.getItem();
     Point target = me.getTarget();
@@ -258,7 +257,7 @@ public class MagicHandler {
    */
   @Handler
   public void cast(MagicEvent.ItemOnSelf me) {
-    log.trace("cast ItemOnSelf {}",me);
+    log.trace("cast ItemOnSelf {}", me);
     Item item = me.getItem();
     Creature caster = me.getCaster();
 
@@ -293,7 +292,7 @@ public class MagicHandler {
    */
   @Handler
   public void cast(MagicEvent.OnSelf me) {
-    log.trace("cast OnSelf {}",me);
+    log.trace("cast OnSelf {}", me);
     Creature caster = me.getCaster();
     RSpell spell = me.getSpell();
 

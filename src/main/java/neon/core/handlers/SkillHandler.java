@@ -30,15 +30,15 @@ import neon.entities.property.Trait;
 import neon.util.Dice;
 
 /*
- * Huidig levelling mechanisme:
+ * Current leveling mechanism:
  * 	- 10 skill increases => stat increase
- * 	- 10 increases in dex of con => spd increase
+ * 	- 10 increases in dex or con => spd increase
  */
 public class SkillHandler {
   public static int check(Creature creature, Skill skill) {
     int check = getStatValue(skill, creature) + Dice.roll(1, creature.getSkill(skill), 0);
     Characteristics characteristics = creature.getCharacteristicsComponent();
-    switch (skill) { // bonussen
+    switch (skill) { // bonuses
       case ALTERATION:
         if (characteristics.hasTrait(Trait.MAGICAL_APTITUDE_ALTERATION)) {
           check += 2;
@@ -189,17 +189,17 @@ public class SkillHandler {
   private static void used(Skill skill, Player player) {
     int value = player.getSkill(skill);
     //		System.out.println("skill check: " + skill + ", " + player.getSkill(skill));
-    // snelheid van skills leren hangt af van INT
+    // speed of learning skills depends on INT
     player.trainSkill(skill, skill.increase * (float) player.getStatsComponent().getInt() / 10);
 
-    if (value < player.getSkill(skill)) { // skill is met 1 gestegen
+    if (value < player.getSkill(skill)) { // skill has increased by 1
       Engine.post(new SkillEvent(skill));
-      // kijken of er een feat unlocked wordt
+      // check if a feat is unlocked
       checkFeat(skill, player);
 
       int level = player.getLevel();
       int stat = getStatValue(skill, player);
-      // kijken welke stat er stijgt
+      // check which stat increases
       switch (skill.stat) {
         case STRENGTH:
           player.addBaseStr(0.1f);
@@ -224,10 +224,10 @@ public class SkillHandler {
         default:
           break;
       }
-      if (stat < getStatValue(skill, player)) { // stat is met 1 gestegen
+      if (stat < getStatValue(skill, player)) { // stat has increased by 1
         Engine.post(new SkillEvent(skill, skill.stat));
       }
-      if (level < player.getLevel()) { // level is met 1 gestegen
+      if (level < player.getLevel()) { // level has increased by 1
         HealthComponent health = player.getHealthComponent();
         health.addBaseHealth(Dice.roll(player.species.hit));
         Engine.post(new SkillEvent(skill, true));

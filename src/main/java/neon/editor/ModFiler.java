@@ -62,7 +62,7 @@ public class ModFiler {
   }
 
   void loadMod() {
-    // louche manier om de filechooser in de game dir te laten beginnen
+    // hacky way to make the filechooser start in the game dir
     JFileChooser chooser = new JFileChooser(new File("neon.ini.xml"));
     chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     chooser.setDialogTitle("Choose module");
@@ -75,25 +75,25 @@ public class ModFiler {
     String path = file.getPath();
     try {
       path = files.mount(path);
-      if (!isMod(path)) { // kijken of dit wel mod is
+      if (!isMod(path)) { // check if this is a mod
         JOptionPane.showMessageDialog(frame, "Selected file is not a valid mod.");
         files.removePath(path);
       } else {
-        if (isExtension(path)) { // als extensie: alle masters laden
+        if (isExtension(path)) { // if extension: load all masters
           Document doc = files.getFile(new XMLTranslator(), path, "main.xml");
           for (Object master : doc.getRootElement().getChildren("master")) {
             String id = ((Element) master).getText();
             Document ini = new Document();
-            try { // kijken in neon.ini.xml welke mods er zijn
+            try { // check in neon.ini.xml which mods exist
               FileInputStream in = new FileInputStream("neon.ini.xml");
               ini = new SAXBuilder().build(in);
               in.close();
             } catch (JDOMException e) {
             }
 
-            // kijken of er een mod is met de juist id
+            // check if there is a mod with the correct id
             for (Element mod : ini.getRootElement().getChild("files").getChildren()) {
-              if (!mod.getText().equals(path)) { // zien dat huidige mod niet nog eens geladen wordt
+              if (!mod.getText().equals(path)) { // make sure current mod is not loaded again
                 System.out.println(mod.getText() + ", " + path);
                 files.mount(mod.getText());
                 Document d = files.getFile(new XMLTranslator(), mod.getText(), "main.xml");
@@ -179,7 +179,7 @@ public class ModFiler {
   private void saveMaps() {
     for (String name : files.listFiles(store.getActive().getPath()[0], "maps")) {
       String map =
-          name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 voor ".xml"
+          name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 for ".xml"
       if (Editor.resources.getResource(map, "maps") == null) {
         files.delete(name);
       }
@@ -193,7 +193,7 @@ public class ModFiler {
   private void saveQuests() {
     for (String name : files.listFiles(store.getActive().getPath()[0], "quests")) {
       String quest =
-          name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 voor ".xml"
+          name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 for ".xml"
       if (Editor.resources.getResource(quest, "quest") == null) {
         files.delete(name);
       }
@@ -206,7 +206,7 @@ public class ModFiler {
   private void saveScripts() {
     for (String name : files.listFiles(store.getActive().getPath()[0], "scripts")) {
       String script =
-          name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 3); // -3 voor ".js"
+          name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 3); // -3 for ".js"
       if (!store.getScripts().containsKey(script)) {
         files.delete(name);
       }
@@ -236,7 +236,7 @@ public class ModFiler {
   }
 
   private boolean isMod(String path) {
-    try { // main.xml moet bestaan en valid xml zijn
+    try { // main.xml must exist and be valid xml
       return files.getFile(new XMLTranslator(), path, "main.xml") != null;
     } catch (NullPointerException e) {
       return false;

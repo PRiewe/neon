@@ -31,9 +31,9 @@ import org.jdom2.Element;
 public class RQuest extends RData {
   public Element variables;
   public int frequency;
-  // repeat quests kunnen meer als eens draaien
+  // repeat quests can run more than once
   public boolean repeat = false;
-  // initial quest wordt toegevoegd van zodra spel start
+  // initial quest is added as soon as game starts
   public boolean initial = false;
 
   private ArrayList<String> conditions = new ArrayList<String>();
@@ -42,26 +42,26 @@ public class RQuest extends RData {
   public RQuest(String id, Element properties, String... path) {
     super(id, path);
     try {
-    name = properties.getAttributeValue("name");
-    if (properties.getChild("pre") != null) {
-      for (Element condition : properties.getChild("pre").getChildren()) {
-        conditions.add(condition.getTextTrim());
+      name = properties.getAttributeValue("name");
+      if (properties.getChild("pre") != null) {
+        for (Element condition : properties.getChild("pre").getChildren()) {
+          conditions.add(condition.getTextTrim());
+        }
       }
-    }
-    if (properties.getChild("objects") != null) {
-      variables = properties.getChild("objects").detach();
-    }
-    repeat = properties.getName().equals("repeat");
-    if (repeat) {
-      frequency = Integer.parseInt(properties.getAttributeValue("f"));
-    }
-    initial = (properties.getAttribute("init") != null);
+      if (properties.getChild("objects") != null) {
+        variables = properties.getChild("objects").detach();
+      }
+      repeat = properties.getName().equals("repeat");
+      if (repeat) {
+        frequency = Integer.parseInt(properties.getAttributeValue("f"));
+      }
+      initial = (properties.getAttribute("init") != null);
 
-    if (properties.getChild("dialog") != null) {
-      initDialog(properties.getChild("dialog"));
-    }
+      if (properties.getChild("dialog") != null) {
+        initDialog(properties.getChild("dialog"));
+      }
     } catch (RuntimeException re) {
-      System.out.printf("%s%n%s",re,properties);
+      System.out.printf("%s%n%s", re, properties);
     }
   }
 
@@ -84,7 +84,7 @@ public class RQuest extends RData {
   private void initTopic(Conversation conversation, Topic parent, Element te) {
     Topic topic = new Topic(id, conversation.id, te);
     conversation.addSubTopic(parent, topic);
-    // recursief alle child topics toevoegen
+    // recursively add all child topics
     for (Element ce : te.getChildren("topic")) {
       initTopic(conversation, topic, ce);
     }

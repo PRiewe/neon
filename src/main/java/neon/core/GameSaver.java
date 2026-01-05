@@ -55,10 +55,10 @@ public class GameSaver {
     doc.setRootElement(root);
 
     Player player = Engine.getPlayer();
-    root.addContent(savePlayer(player)); // player data saven
-    root.addContent(saveJournal(player)); // journal saven
-    root.addContent(saveEvents()); // events saven
-    root.addContent(saveQuests()); // quests saven
+    root.addContent(savePlayer(player)); // save player data
+    root.addContent(saveJournal(player)); // save journal
+    root.addContent(saveEvents()); // save events
+    root.addContent(saveQuests()); // save quests
     Element timer = new Element("timer");
     timer.setAttribute("ticks", String.valueOf(Engine.getTimer().getTime()));
     root.addContent(timer);
@@ -73,7 +73,7 @@ public class GameSaver {
       dir.mkdir();
     }
 
-    // eerst alles vanuit temp naar save kopiëren, zodat savedoc zeker niet overschreven wordt
+    // first copy everything from temp to save, to ensure savedoc is not overwritten
     Engine.getAtlas().getCache().commit();
     Engine.getStore().getCache().commit();
     Engine.getFileSystem().storeTemp(dir);
@@ -84,7 +84,7 @@ public class GameSaver {
   private Element saveEvents() {
     Element events = new Element("events");
 
-    // alle gewone tasks (voorlopig enkel script tasks)
+    // all normal tasks (for now only script tasks)
     Multimap<String, Action> tasks = queue.getTasks();
     for (String key : tasks.keySet()) {
       for (Action action : tasks.get(key)) {
@@ -98,7 +98,7 @@ public class GameSaver {
       }
     }
 
-    // alle timer tasks
+    // all timer tasks
     Multimap<Integer, TaskQueue.RepeatEntry> repeats = queue.getTimerTasks();
     for (Integer key : repeats.keySet()) {
       for (TaskQueue.RepeatEntry entry : repeats.get(key)) {
@@ -132,7 +132,7 @@ public class GameSaver {
 
   private Element saveQuests() {
     Element quests = new Element("quests");
-    // TODO: random quests saven
+    // TODO: save random quests
     return quests;
   }
 

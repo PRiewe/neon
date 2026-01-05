@@ -18,9 +18,8 @@
 
 package neon.entities.components;
 
-import neon.util.Dice;
-
 import java.io.Serializable;
+import neon.util.Dice;
 
 public class HealthComponent implements Component, Serializable {
   private int health; // health/hit points

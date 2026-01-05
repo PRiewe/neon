@@ -62,13 +62,13 @@ public class GridIndex<E> implements SpatialIndex<E> {
   }
 
   public synchronized void remove(E e) {
-    Collection<Map.Entry<Point,E>> forRemoval = new ArrayList<>();
+    Collection<Map.Entry<Point, E>> forRemoval = new ArrayList<>();
     for (var entry : elements.entries()) {
       if (entry.getValue() != null && entry.getValue().equals(e)) {
         forRemoval.add(entry);
       }
     }
-    forRemoval.forEach(x->elements.remove(x.getKey(),x.getValue()));
+    forRemoval.forEach(x -> elements.remove(x.getKey(), x.getValue()));
   }
 
   public synchronized void clear() {

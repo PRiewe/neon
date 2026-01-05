@@ -41,7 +41,7 @@ public class TravelDialog implements KeyListener {
   private JDialog frame;
   private Player player;
   private JList<String> destinations;
-  private Creature agent; // uw reisagent
+  private Creature agent; // your travel agent
   private HashMap<String, Point> listData;
   private HashMap<String, Integer> costData;
   private JScrollPane scroller;
@@ -61,7 +61,7 @@ public class TravelDialog implements KeyListener {
         new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10, 10, 10, 10)));
     frame.setContentPane(contents);
 
-    // lijst met bestemmingen
+    // list of destinations
     destinations = new JList<String>();
     destinations.setFocusable(false);
     scroller = new JScrollPane(destinations);

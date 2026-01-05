@@ -63,14 +63,14 @@ public class RoomGenerator {
    * Makes a simple rectangular room.
    */
   protected static Room makeRoom(int[][] tiles, Rectangle room) {
-    // kamer zelf bevloeren
+    // floor the room itself
     for (int x = room.x + 1; x < room.x + room.width; x++) {
       for (int y = room.y + 1; y < room.y + room.height; y++) {
         tiles[x][y] = MapUtils.FLOOR;
       }
     }
 
-    // outline: hierlangs mogen tunnels binnenkomen
+    // outline: tunnels may enter along here
     for (int x = room.x; x < room.x + room.width + 1; x++) {
       if (tiles[x][room.y] != MapUtils.CORNER) {
         tiles[x][room.y] = MapUtils.WALL_ROOM;
@@ -88,13 +88,13 @@ public class RoomGenerator {
       }
     }
 
-    // hoeken: hierlangs mogen tunnels niet binnenkomen
+    // corners: tunnels may not enter along here
     tiles[room.x][room.y] = MapUtils.CORNER;
     tiles[room.x][room.y + room.height] = MapUtils.CORNER;
     tiles[room.x + room.width][room.y] = MapUtils.CORNER;
     tiles[room.x + room.width][room.y + room.height] = MapUtils.CORNER;
 
-    // om ervoor te zorgen dat de buitenmuur ook deel uitmaakt van de room
+    // to ensure the outer wall is also part of the room
     room.width++;
     room.height++;
 

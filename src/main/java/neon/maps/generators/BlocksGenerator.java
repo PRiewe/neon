@@ -109,11 +109,11 @@ public class BlocksGenerator {
 
       r.x = MapUtils.random(0, w - r.width);
       r.y = MapUtils.random(0, h - r.height);
-      if (rooms.size() == 0) { // gewoon kamer in midden vlammen
+      if (rooms.size() == 0) { // just throw room in the middle
         area = new Area(r);
-      } else { // kamer willekeurig wat rondbewegen
+      } else { // move room around randomly
         int i = 0;
-        while (area.intersects(r) && i < 100) { // 100 keer proberen
+        while (area.intersects(r) && i < 100) { // try 100 times
           r.x = MapUtils.random(0, w - r.width);
           r.y = MapUtils.random(0, h - r.height);
           i++;
@@ -209,9 +209,9 @@ public class BlocksGenerator {
 
       r.x = w / 2 - r.width / 2;
       r.y = h / 2 - r.height / 2;
-      if (rooms.size() == 0) { // gewoon kamer in midden vlammen
+      if (rooms.size() == 0) { // just throw room in the middle
         area = new Area(r);
-      } else { // kamer in spiraal rondbewegen
+      } else { // move room around in a spiral
         int i = 0;
         while (area.intersects(r) && i < 9 * w * h) {
           r.x = w / 2 - r.width / 2 + (int) (i / 3 * Math.cos(i / 3));
@@ -220,7 +220,7 @@ public class BlocksGenerator {
           i++;
         }
         if (r.x < 0 || r.y < 0 || r.x + r.width > w || r.y + r.height > h) {
-          return null; // als het niet lukt, opgeven
+          return null; // if it doesn't work, give up
         }
         area.add(new Area(r));
       }

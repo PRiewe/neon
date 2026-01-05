@@ -18,9 +18,8 @@
 
 package neon.resources;
 
-import org.jdom2.Element;
-
 import java.io.Serializable;
+import org.jdom2.Element;
 
 public class RWeapon extends RItem implements Serializable {
   public enum WeaponType {
@@ -49,7 +48,7 @@ public class RWeapon extends RItem implements Serializable {
     }
   }
 
-  // algemene dingen
+  // general properties
   public String damage;
   public WeaponType weaponType;
 

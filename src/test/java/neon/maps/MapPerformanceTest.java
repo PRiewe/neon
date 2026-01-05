@@ -1,5 +1,6 @@
 package neon.maps;
 
+import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
@@ -8,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import neon.entities.Creature;
 import neon.entities.Item;
+import neon.maps.services.EngineEntityStore;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
@@ -26,7 +28,7 @@ class MapPerformanceTest {
   private MVStore testDb;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
   }
@@ -403,8 +405,12 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasMapCachingPerformance() throws Exception {
-    Atlas atlas = new Atlas(new TestEngineContext.StubFileSystem(), "perf-atlas");
-
+    Atlas atlas =
+        new Atlas(
+            TestEngineContext.getStubFileSystem(),
+            testDb,
+            new EngineEntityStore(),
+            createDefaultZoneActivator());
     int mapCount = 100;
 
     PerformanceHarness.MeasuredResult<Integer> result =
@@ -428,7 +434,7 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasMapSwitchingPerformance() throws Exception {
-    Atlas atlas = new Atlas(new TestEngineContext.StubFileSystem(), "switch-perf-atlas");
+    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "switch-perf-atlas");
 
     // Create and cache 50 maps
     List<World> worlds = new ArrayList<>();
@@ -464,7 +470,7 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasZoneAccessPerformance() throws Exception {
-    Atlas atlas = new Atlas(new TestEngineContext.StubFileSystem(), "zone-access-atlas");
+    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "zone-access-atlas");
 
     World world = new World("Zone Access World", 4000);
     atlas.setMap(world);
@@ -505,7 +511,7 @@ class MapPerformanceTest {
 
   @Test
   void testFullMapLoadAndQueryPerformance() throws Exception {
-    Atlas atlas = new Atlas(new TestEngineContext.StubFileSystem(), "full-perf-atlas");
+    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "full-perf-atlas");
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(
@@ -572,7 +578,7 @@ class MapPerformanceTest {
 
   @Test
   void testMemoryEfficiencyWithLargeMaps() throws Exception {
-    Atlas atlas = new Atlas(new TestEngineContext.StubFileSystem(), "memory-test-atlas");
+    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "memory-test-atlas");
 
     Runtime runtime = Runtime.getRuntime();
     runtime.gc();

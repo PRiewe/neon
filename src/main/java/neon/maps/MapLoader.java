@@ -127,7 +127,7 @@ public class MapLoader {
   private World loadWorld(Element root, int uid) {
     //		System.out.println("maploader: " + uid);
     World world = new World(root.getChild("header").getChildText("name"), uid);
-    loadZone(root, world, 0, uid); // outdoor heeft maar 1 zone, namelijk 0
+    loadZone(root, world, 0, uid); // outdoor has only 1 zone, namely 0
     return world;
   }
 
@@ -182,7 +182,7 @@ public class MapLoader {
 
     zones[0] = 0;
     for (z = 1; z < zones.length; z++) {
-      // verbinden met reeds bezocht zone
+      // connect to already visited zone
       int to = MapUtils.random((int) Math.max(0, z - branch), z - 1);
       map.addConnection(z, to);
       zones[z] = 0;
@@ -192,10 +192,10 @@ public class MapLoader {
   }
 
   private void loadZone(Element root, Map map, int l, int uid) {
-    for (Element region : root.getChild("regions").getChildren()) { // regions laden
+    for (Element region : root.getChild("regions").getChildren()) { // load regions
       map.getZone(l).addRegion(loadRegion(region));
     }
-    if (root.getChild("creatures") != null) { // creatures laden
+    if (root.getChild("creatures") != null) { // load creatures
       for (Element c : root.getChild("creatures").getChildren()) {
         String species = c.getAttributeValue("id");
         int x = Integer.parseInt(c.getAttributeValue("x"));
@@ -206,7 +206,7 @@ public class MapLoader {
         map.getZone(l).addCreature(creature);
       }
     }
-    if (root.getChild("items") != null) { // items laden
+    if (root.getChild("items") != null) { // load items
       for (Element i : root.getChild("items").getChildren()) {
         long itemUID = UIDStore.getObjectUID(uid, Integer.parseInt(i.getAttributeValue("uid")));
         String id = i.getAttributeValue("id");
@@ -214,9 +214,9 @@ public class MapLoader {
         int y = Integer.parseInt(i.getAttributeValue("y"));
         Item item = null;
         if (i.getName().equals("container")) {
-          item = loadContainer(i, id, x, y, itemUID, uid); // omdat containers lastig zijn
+          item = loadContainer(i, id, x, y, itemUID, uid); // because containers are complicated
         } else if (i.getName().equals("door")) {
-          item = loadDoor(i, id, x, y, itemUID, uid); // omdat deuren ook lastig zijn
+          item = loadDoor(i, id, x, y, itemUID, uid); // because doors are complicated too
         } else {
           item = EntityFactory.getItem(id, x, y, itemUID);
         }
@@ -227,7 +227,7 @@ public class MapLoader {
   }
 
   /*
-   * dit gaat mottig worden, met ganse if-then-else mesthoop
+   * this is going to get messy, with a whole if-then-else heap
    */
   private Door loadDoor(Element door, String id, int x, int y, long itemUID, int mapUID) {
     Door d = (Door) EntityFactory.getItem(id, x, y, itemUID);
@@ -238,16 +238,16 @@ public class MapLoader {
       lock = Integer.parseInt(door.getAttributeValue("lock"));
       d.lock.setLockDC(lock);
     }
-    // sleutel
+    // key
     if (door.getAttribute("key") != null) {
       RItem key = (RItem) resourceProvider.getResource(door.getAttributeValue("key"));
       d.lock.setKey(key);
     }
-    // state van de deur (open, dicht of gesloten)
+    // state of the door (open, closed or locked)
     if (door.getAttributeValue("state").equals("locked")) {
       if (lock > 0) {
         d.lock.setState(Lock.LOCKED);
-      } else { // als er geen lock is, state in closed veranderen
+      } else { // if there's no lock, change state to closed
         d.lock.setState(Lock.CLOSED);
       }
     } else if (door.getAttributeValue("state").equals("closed")) {
@@ -268,7 +268,7 @@ public class MapLoader {
       d.setMagicComponent(new Enchantment(enchantment, 0, d.getUID()));
     }
 
-    // bestemming van de deur
+    // destination of the door
     Element dest = door.getChild("dest");
     Point destPos = null;
     int destLevel = 0;
@@ -315,7 +315,7 @@ public class MapLoader {
       cont.lock.setLockDC(lock);
       cont.lock.setState(Lock.LOCKED);
     }
-    // sleutel
+    // key
     RItem key = null;
     if (container.getAttribute("key") != null) {
       key = (RItem) resourceProvider.getResource(container.getAttributeValue("key"));
@@ -336,14 +336,14 @@ public class MapLoader {
       cont.setMagicComponent(new Enchantment(enchantment, 0, cont.getUID()));
     }
 
-    if (!container.getChildren("item").isEmpty()) { // indien items in map file
+    if (!container.getChildren("item").isEmpty()) { // if items in map file
       for (Element e : container.getChildren("item")) {
         long contentUID =
             UIDStore.getObjectUID(mapUID, Integer.parseInt(e.getAttributeValue("uid")));
         entityStore.addEntity(EntityFactory.getItem(e.getAttributeValue("id"), contentUID));
         cont.addItem(contentUID);
       }
-    } else { // en anders default items
+    } else { // otherwise default items
       for (String s : ((RItem.Container) cont.resource).contents) {
         Item i = EntityFactory.getItem(s, entityStore.createNewEntityUID());
         entityStore.addEntity(i);
