@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -18,40 +18,41 @@
 
 package neon.entities.components;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ScriptComponent implements Component {
-	private final long uid;
-	private ArrayList<String> scripts = new ArrayList<>();
-	
-	public ScriptComponent(long uid) {
-		this.uid = uid;
-	}
-	
-	@Override
-	public long getUID() {
-		return uid;
-	}
-	
-	public void addScript(String script) {
-		scripts.add(script);
-	}
-	
-	public Collection<String> getScripts() {
-		return scripts;
-	}
-	
-	/*
-	 * TODO: script object voor entities
-	 * 
-	 * in javascript: 
-	 * function entity() {
-	 * 	bounds = entity.getShapeComponent();
-	 *  social = entity.getFactionComponent();
-	 *  ...
-	 * }
-	 * 
-	 * kijken hoe in java de juiste entity aan script gehangen moet worden
-	 */
+public class ScriptComponent implements Component, Serializable {
+  private final long uid;
+  private ArrayList<String> scripts = new ArrayList<>();
+
+  public ScriptComponent(long uid) {
+    this.uid = uid;
+  }
+
+  @Override
+  public long getUID() {
+    return uid;
+  }
+
+  public void addScript(String script) {
+    scripts.add(script);
+  }
+
+  public Collection<String> getScripts() {
+    return scripts;
+  }
+
+  /*
+   * TODO: script object voor entities
+   *
+   * in javascript:
+   * function entity() {
+   * 	bounds = entity.getShapeComponent();
+   *  social = entity.getFactionComponent();
+   *  ...
+   * }
+   *
+   * kijken hoe in java de juiste entity aan script gehangen moet worden
+   */
 }

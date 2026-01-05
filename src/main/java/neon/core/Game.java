@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -25,30 +25,43 @@ import neon.systems.files.FileSystem;
 import neon.systems.timing.Timer;
 
 public class Game {
-	private final UIDStore store;
-	private final Player player;
-	private final Timer timer = new Timer();
-	private final Atlas atlas;
-	
-	public Game(Player player, FileSystem files) {
-		store = new UIDStore("temp/store");
-		atlas = new Atlas(files, "temp/atlas");
-		this.player = player;
-	}
-	
-	public Player getPlayer() {
-		return player;
-	}
-	
-	public Timer getTimer() {
-		return timer;
-	}
-	
-	public UIDStore getStore() {
-		return store;
-	}
-	
-	public Atlas getAtlas() {
-		return atlas;
-	}
+  private final UIDStore store;
+  private final Player player;
+  private final Timer timer = new Timer();
+  private final Atlas atlas;
+
+  public Game(Player player, FileSystem files) {
+    store = new UIDStore("temp/store");
+    atlas = new Atlas(files, "temp/atlas");
+    this.player = player;
+  }
+
+  /**
+   * Constructor with dependency injection for testing.
+   *
+   * @param player the player
+   * @param atlas the atlas
+   * @param store the UID store
+   */
+  public Game(Player player, Atlas atlas, UIDStore store) {
+    this.player = player;
+    this.atlas = atlas;
+    this.store = store;
+  }
+
+  public Player getPlayer() {
+    return player;
+  }
+
+  public Timer getTimer() {
+    return timer;
+  }
+
+  public UIDStore getStore() {
+    return store;
+  }
+
+  public Atlas getAtlas() {
+    return atlas;
+  }
 }

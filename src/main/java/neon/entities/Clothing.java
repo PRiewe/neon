@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -21,15 +21,17 @@ package neon.entities;
 import neon.entities.property.Slot;
 import neon.resources.RClothing;
 
-public class Clothing extends Item {
-	public Clothing(long uid, RClothing resource) {
-		super(uid, resource);
-	}
-	
-	/**
-	 * @return	the equipment slot this clothing item occupies when worn
-	 */
-	public Slot getSlot() {
-		return ((RClothing)resource).slot;
-	}
+import java.io.Serializable;
+
+public class Clothing extends Item implements Serializable {
+  public Clothing(long uid, RClothing resource) {
+    super(uid, resource);
+  }
+
+  /**
+   * @return the equipment slot this clothing item occupies when worn
+   */
+  public Slot getSlot() {
+    return ((RClothing) resource).slot;
+  }
 }

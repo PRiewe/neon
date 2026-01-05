@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2010 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -19,18 +19,24 @@
 package neon.entities.property;
 
 /**
- * Different abilities a creature can have. Abilities function like a constant effect spell with a certain magnitude. 
- * 
+ * Different abilities a creature can have. Abilities function like a constant effect spell with a
+ * certain magnitude.
+ *
  * @author mdriesen
  */
 public enum Ability {
-	DARKVISION("darkvision"), SPELL_ABSORPTION("spell absorption"), COLD_RESISTANCE("cold resistance"), FIRE_RESISTANCE("fire resistance"),
-	SPELL_RESISTANCE("spell resistance"), SHOCK_RESISTANCE("shock resistance"), FAST_HEALING("fast healing"), 
-	TURN_RESISTANCE("turn resistance");
-	
-	public String text;
+  DARKVISION("darkvision"),
+  SPELL_ABSORPTION("spell absorption"),
+  COLD_RESISTANCE("cold resistance"),
+  FIRE_RESISTANCE("fire resistance"),
+  SPELL_RESISTANCE("spell resistance"),
+  SHOCK_RESISTANCE("shock resistance"),
+  FAST_HEALING("fast healing"),
+  TURN_RESISTANCE("turn resistance");
 
-	private Ability(String text) {
-		this.text = text;
-	}
+  public String text;
+
+  private Ability(String text) {
+    this.text = text;
+  }
 }

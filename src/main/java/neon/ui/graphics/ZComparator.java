@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2011 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,11 +23,11 @@ import java.util.Comparator;
 
 @SuppressWarnings("serial")
 public class ZComparator implements Comparator<Renderable>, Serializable {
-	public int compare(Renderable one, Renderable two) {
-		if(one == null || two == null) {
-			return 0;
-		} else {
-			return one.getZ() - two.getZ();
-		}
-	}
+  public int compare(Renderable one, Renderable two) {
+    if (one == null || two == null) {
+      return 0;
+    } else {
+      return one.getZ() - two.getZ();
+    }
+  }
 }

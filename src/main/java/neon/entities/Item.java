@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012-2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -18,128 +18,118 @@
 
 package neon.entities;
 
+import lombok.Getter;
+import lombok.Setter;
 import neon.entities.components.Enchantment;
 import neon.entities.components.ItemRenderComponent;
 import neon.entities.components.RenderComponent;
 import neon.resources.RItem;
 
-public class Item extends Entity {
-	public final RItem resource;
-	protected long owner = 0;
-		
-	public Item(long uid, RItem resource) {
-		super(resource.id, uid);
-		this.resource = resource;
-		components.putInstance(RenderComponent.class, new ItemRenderComponent(this));
-	}
-	
-	public Enchantment getMagicComponent() {
-		return components.getInstance(Enchantment.class);
-	}
-	
-	public Enchantment setMagicComponent(Enchantment enchantment) {
-		return components.putInstance(Enchantment.class, enchantment);
-	}
-	
-	@Override
-	public String toString() {
-		if(resource.name != null) {
-			return resource.name;
-		} else {
-			return resource.id;
-		}
-	}
-	
-	/**
-	 * Sets the owner of this item.
-	 * 
-	 * @param owner
-	 */
-	public void setOwner(long owner) {
-		this.owner = owner;
-	}
-	
-	/**
-	 * @return	the owner of this item
-	 */
-	public long getOwner() {
-		return owner;
-	}
-	
-	/**
-	 * A light source.
-	 * 
-	 * @author mdriesen
-	 */
-	public static class Light extends Item {
-		public Light(long uid, RItem resource) {
-			super(uid, resource);
-		}
-	}
+import java.io.Serializable;
 
-	/**
-	 * A first aid item.
-	 * 
-	 * @author mdriesen
-	 */
-	public static class Aid extends Item {
-		public Aid(long uid, RItem resource) {
-			super(uid, resource);
-		}
-	}
-	
-	/**
-	 * An edible item.
-	 * 
-	 * @author mdriesen
-	 */
-	public static class Food extends Item {	
-		public Food(long uid, RItem resource) {
-			super(uid, resource);
-		}
-	}
-	
-	/**
-	 * Money.
-	 * 
-	 * @author mdriesen
-	 */
-	public static class Coin extends Item {
-		public Coin(long uid, RItem resource) {
-			super(uid, resource);
-		}
-	}
-	
-	/**
-	 * A magic potion.
-	 * 
-	 * @author mdriesen
-	 */
-	public static class Potion extends Item {
-		public Potion(long uid, RItem resource) {
-			super(uid, resource);
-		}
-	}
-	
-	/**
-	 * A magic scroll.
-	 * 
-	 * @author mdriesen
-	 */
-	public static class Scroll extends Item.Book {
-		public Scroll(long uid, RItem.Text resource) {
-			super(uid, resource);
-		}
-	}
-	
-	/**
-	 * A readable item.
-	 * 
-	 * @author mdriesen
-	 */
-	public static class Book extends Item {
-		public Book(long uid, RItem.Text resource) {
-			super(uid, resource);
-		}
-	}
+public class Item extends Entity implements Serializable {
+  public final RItem resource;
+  @Getter
+  @Setter
+  protected long owner = 0;
+
+  public Item(long uid, RItem resource) {
+    super(resource.id, uid);
+    this.resource = resource;
+    components.putInstance(RenderComponent.class, new ItemRenderComponent(this));
+  }
+
+  public Enchantment getMagicComponent() {
+    return components.getInstance(Enchantment.class);
+  }
+
+  public Enchantment setMagicComponent(Enchantment enchantment) {
+    return components.putInstance(Enchantment.class, enchantment);
+  }
+
+  @Override
+  public String toString() {
+    if (resource.name != null) {
+      return resource.name;
+    } else {
+      return resource.id;
+    }
+  }
+
+  /**
+   * A light source.
+   *
+   * @author mdriesen
+   */
+  public static class Light extends Item {
+    public Light(long uid, RItem resource) {
+      super(uid, resource);
+    }
+  }
+
+  /**
+   * A first aid item.
+   *
+   * @author mdriesen
+   */
+  public static class Aid extends Item {
+    public Aid(long uid, RItem resource) {
+      super(uid, resource);
+    }
+  }
+
+  /**
+   * An edible item.
+   *
+   * @author mdriesen
+   */
+  public static class Food extends Item {
+    public Food(long uid, RItem resource) {
+      super(uid, resource);
+    }
+  }
+
+  /**
+   * Money.
+   *
+   * @author mdriesen
+   */
+  public static class Coin extends Item {
+    public Coin(long uid, RItem resource) {
+      super(uid, resource);
+    }
+  }
+
+  /**
+   * A magic potion.
+   *
+   * @author mdriesen
+   */
+  public static class Potion extends Item {
+    public Potion(long uid, RItem resource) {
+      super(uid, resource);
+    }
+  }
+
+  /**
+   * A magic scroll.
+   *
+   * @author mdriesen
+   */
+  public static class Scroll extends Item.Book {
+    public Scroll(long uid, RItem.Text resource) {
+      super(uid, resource);
+    }
+  }
+
+  /**
+   * A readable item.
+   *
+   * @author mdriesen
+   */
+  public static class Book extends Item {
+    public Book(long uid, RItem.Text resource) {
+      super(uid, resource);
+    }
+  }
 }

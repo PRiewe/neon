@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -22,16 +22,16 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 public class NeonFormat {
-	private static NumberFormat intFormat = NumberFormat.getIntegerInstance();
-	private static NumberFormat floatFormat = NumberFormat.getInstance(Locale.ENGLISH);
+  private static NumberFormat intFormat = NumberFormat.getIntegerInstance();
+  private static NumberFormat floatFormat = NumberFormat.getInstance(Locale.ENGLISH);
 
-	public static NumberFormat getIntegerInstance() {
-		intFormat.setGroupingUsed(false);
-		return intFormat;
-	}
+  public static NumberFormat getIntegerInstance() {
+    intFormat.setGroupingUsed(false);
+    return intFormat;
+  }
 
-	public static NumberFormat getFloatInstance() {
-		floatFormat.setGroupingUsed(false);
-		return floatFormat;
-	}
+  public static NumberFormat getFloatInstance() {
+    floatFormat.setGroupingUsed(false);
+    return floatFormat;
+  }
 }

@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -27,40 +27,40 @@ import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 
 public class IniBuilder extends Builder {
-	private String ini;
-	private TaskQueue queue;
-	
-	/**
-	 * Initializes this {@code Builder}.
-	 * 
-	 * @param ini	a neon.ini file
-	 * @param files
-	 * @param queue
-	 */
-	public IniBuilder(String ini, FileSystem files, TaskQueue queue) {
-		super(files);
-		this.ini = ini;
-		this.queue = queue;
-	}
+  private String ini;
+  private TaskQueue queue;
 
-	@Override
-	public void build(ResourceManager resources) {
-		// server instellingen inlezen
-		CServer server = new CServer(ini);
-		resources.addResource(server, "config");
-		
-		// client instellingen inlezen
-		CClient client = new CClient(ini);
-		resources.addResource(client, "config");
-		
-		// spelgerelateerde instellingen
-		CGame game = new CGame("game");
-		resources.addResource(game, "config");
+  /**
+   * Initializes this {@code Builder}.
+   *
+   * @param ini a neon.ini.xml file
+   * @param files
+   * @param queue
+   */
+  public IniBuilder(String ini, FileSystem files, TaskQueue queue) {
+    super(files);
+    this.ini = ini;
+    this.queue = queue;
+  }
 
-		// alle data dirs en jars afgaan
-		for(String file : server.getMods()) {
-			RMod mod = new ModLoader(file, queue, files).loadMod(game, client);
-			resources.addResource(mod, "mods");
-		}		
-	}
+  @Override
+  public void build(ResourceManager resources) {
+    // server instellingen inlezen
+    CServer server = new CServer(ini);
+    resources.addResource(server, "config");
+
+    // client instellingen inlezen
+    CClient client = new CClient(ini);
+    resources.addResource(client, "config");
+
+    // spelgerelateerde instellingen
+    CGame game = new CGame("game");
+    resources.addResource(game, "config");
+
+    // alle data dirs en jars afgaan
+    for (String file : server.getMods()) {
+      RMod mod = new ModLoader(file, queue, files).loadMod(game, client);
+      resources.addResource(mod, "mods");
+    }
+  }
 }

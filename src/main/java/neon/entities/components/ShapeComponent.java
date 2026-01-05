@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,47 +23,47 @@ import neon.entities.Entity;
 
 @SuppressWarnings("serial")
 public class ShapeComponent extends Rectangle implements Component {
-	private Entity entity;
-	
-	public ShapeComponent(Entity entity, int x, int y, int width, int height) {
-		super(x, y, width, height);
-		this.entity = entity;
-	}
-	
-	public void setWidth(int width) {
-		this.width = width;
-		PhysicsComponent physics = entity.getPhysicsComponent();
-		physics.move(x + width/2, y + height/2);	
-	}
+  private Entity entity;
 
-	public void setHeight(int height) {
-		this.height = height;
-		PhysicsComponent physics = entity.getPhysicsComponent();
-		physics.move(x + width/2, y + height/2);	
-	}
-	
-	public void setX(int x) {
-		this.x = x;
-		PhysicsComponent physics = entity.getPhysicsComponent();
-		physics.move(x + width/2, y + height/2);	
-	}
+  public ShapeComponent(Entity entity, int x, int y, int width, int height) {
+    super(x, y, width, height);
+    this.entity = entity;
+  }
 
-	public void setY(int y) {
-		this.y = y;
-		PhysicsComponent physics = entity.getPhysicsComponent();
-		physics.move(x + width/2, y + height/2);	
-	}
-	
-	@Override
-	public void setLocation(int x, int y) {
-		this.x = x;
-		this.y = y;
-		PhysicsComponent physics = entity.getPhysicsComponent();
-		physics.move(x + width/2, y + height/2);		
-	}
+  public void setWidth(int width) {
+    this.width = width;
+    PhysicsComponent physics = entity.getPhysicsComponent();
+    physics.getTheBody().move(x + width / 2, y + height / 2);
+  }
 
-	@Override
-	public long getUID() {
-		return entity.getUID();
-	}
+  public void setHeight(int height) {
+    this.height = height;
+    PhysicsComponent physics = entity.getPhysicsComponent();
+    physics.getTheBody().move(x + width / 2, y + height / 2);
+  }
+
+  public void setX(int x) {
+    this.x = x;
+    PhysicsComponent physics = entity.getPhysicsComponent();
+    physics.getTheBody().move(x + width / 2, y + height / 2);
+  }
+
+  public void setY(int y) {
+    this.y = y;
+    PhysicsComponent physics = entity.getPhysicsComponent();
+    physics.getTheBody().move(x + width / 2, y + height / 2);
+  }
+
+  @Override
+  public void setLocation(int x, int y) {
+    this.x = x;
+    this.y = y;
+    PhysicsComponent physics = entity.getPhysicsComponent();
+    physics.getTheBody().move(x + width / 2, y + height / 2);
+  }
+
+  @Override
+  public long getUID() {
+    return entity.getUID();
+  }
 }

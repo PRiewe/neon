@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,57 +23,58 @@ import neon.resources.RWeapon;
 import neon.resources.RWeapon.WeaponType;
 
 public class Weapon extends Item {
-	private int state = 100;
-	
-	public Weapon(long uid, RWeapon resource) {
-		super(uid, resource);
-	}
-	
-	/**
-	 * @return	the damage this weapon does
-	 */
-	public String getDamage() {
-		return ((RWeapon)resource).damage;
-	}
-	
-	/**
-	 * @return	the type of this weapon
-	 */
-	public WeaponType getWeaponType() {
-		return ((RWeapon)resource).weaponType;
-	}
-	
-	/**
-	 * @return	the state this weapon is in
-	 */
-	public int getState() {
-		return state;
-	}
-	
-	/**
-	 * Sets the state this weapon is in.
-	 * 
-	 * @param state
-	 */
-	public void setState(int state) {
-		this.state = state;
-	}
-	
-	/**
-	 * @return	the item slot this weapon occupies when equiped
-	 */
-	public Slot getSlot() {
-		if(((RWeapon)resource).weaponType.equals(WeaponType.ARROW) || ((RWeapon)resource).weaponType.equals(WeaponType.BOLT)) {
-			return Slot.AMMO;
-		} else {
-			return Slot.WEAPON;
-		}
-	}
-	
-	/**
-	 * @return	whether this weapon is ranged or not
-	 */
-	public boolean isRanged() {
-		return ((RWeapon)resource).isRanged();
-	}
+  private int state = 100;
+
+  public Weapon(long uid, RWeapon resource) {
+    super(uid, resource);
+  }
+
+  /**
+   * @return the damage this weapon does
+   */
+  public String getDamage() {
+    return ((RWeapon) resource).damage;
+  }
+
+  /**
+   * @return the type of this weapon
+   */
+  public WeaponType getWeaponType() {
+    return ((RWeapon) resource).weaponType;
+  }
+
+  /**
+   * @return the state this weapon is in
+   */
+  public int getState() {
+    return state;
+  }
+
+  /**
+   * Sets the state this weapon is in.
+   *
+   * @param state
+   */
+  public void setState(int state) {
+    this.state = state;
+  }
+
+  /**
+   * @return the item slot this weapon occupies when equiped
+   */
+  public Slot getSlot() {
+    if (((RWeapon) resource).weaponType.equals(WeaponType.ARROW)
+        || ((RWeapon) resource).weaponType.equals(WeaponType.BOLT)) {
+      return Slot.AMMO;
+    } else {
+      return Slot.WEAPON;
+    }
+  }
+
+  /**
+   * @return whether this weapon is ranged or not
+   */
+  public boolean isRanged() {
+    return ((RWeapon) resource).isRanged();
+  }
 }

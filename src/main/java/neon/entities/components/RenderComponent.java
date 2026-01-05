@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -20,21 +20,23 @@ package neon.entities.components;
 
 import neon.ui.graphics.Renderable;
 
-public abstract class RenderComponent implements Renderable, Component {
-	private int z = Byte.MAX_VALUE - 1;
-	
-	@Override
-	public long getUID() {
-		return 0;
-	}
+import java.io.Serializable;
 
-	@Override
-	public int getZ() {
-		return z;
-	}
+public abstract class RenderComponent implements Renderable, Component, Serializable {
+  private int z = Byte.MAX_VALUE - 1;
 
-	@Override
-	public void setZ(int z) {
-		this.z = z;
-	}
+  @Override
+  public long getUID() {
+    return 0;
+  }
+
+  @Override
+  public int getZ() {
+    return z;
+  }
+
+  @Override
+  public void setZ(int z) {
+    this.z = z;
+  }
 }

@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -18,9 +18,7 @@
 
 package neon.core.handlers;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.DeathEvent;
 import neon.entities.Creature;
@@ -29,36 +27,35 @@ import neon.resources.RScript;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 
 /**
- * 
- * 
  * @author mdriesen
  */
-@Listener(references = References.Strong)	// strong, om gc te vermijden
+@Listener(references = References.Strong) // strong, om gc te vermijden
+@Slf4j
 public class DeathHandler {
-	public DeathHandler() {}
-	
-	@Handler public void handle(DeathEvent de) {
-		Creature creature = de.getCreature();
-		
-		// creature laten doodgaan
-		creature.die(de.getTime());
-		
-		// scripts draaien op creature
-		ScriptComponent sc = creature.getScriptComponent();
-		
-		for(String s : sc.getScripts()) {
-			RScript rs = (RScript) Engine.getResources().getResource(s, "script");
-			ScriptEngine se = Engine.getScriptEngine();
-			try {
-				se.eval(rs.script);
-				((Invocable) se).invokeFunction("onDeath", "0");
-			} catch (ScriptException e) {
-				e.printStackTrace();
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+  public DeathHandler() {}
+
+  @Handler
+  public void handle(DeathEvent de) {
+    log.trace("handle {}",de);
+    Creature creature = de.getCreature();
+
+    // creature laten doodgaan
+    creature.die(de.getTime());
+
+    // scripts draaien op creature
+    ScriptComponent sc = creature.getScriptComponent();
+
+    for (String s : sc.getScripts()) {
+      RScript rs = (RScript) Engine.getResources().getResource(s, "script");
+      Context se = Engine.getScriptEngine();
+
+      se.eval("js", rs.script);
+      Value processFunction = se.getBindings("js").getMember("onDeath");
+      processFunction.execute("0");
+    }
+  }
 }

@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2012 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -23,17 +23,17 @@ import neon.core.Engine;
 import neon.util.fsm.Action;
 
 public class ScriptAction implements Action {
-	private String script;
-	
-	public ScriptAction(String script) {
-		this.script = script;
-	}
-	
-	public String getScript() {
-		return script;
-	}
-	
-	public void run(EventObject e) {
-		Engine.execute(script);
-	}
+  private String script;
+
+  public ScriptAction(String script) {
+    this.script = script;
+  }
+
+  public String getScript() {
+    return script;
+  }
+
+  public void run(EventObject e) {
+    Engine.execute(script);
+  }
 }

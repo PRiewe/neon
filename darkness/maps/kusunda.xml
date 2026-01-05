@@ -5,12 +5,12 @@
   </header>
   <level name="Gwilym's house" l="0">
     <creatures>
-      <creature x="3" y="2" uid="0" id="Gwilym" />
+      <creature x="3" y="2" id="Gwilym" uid="0" />
     </creatures>
     <items>
       <item x="2" y="3" id="platinum" uid="1" />
-      <door x="5" y="3" state="locked" lock="1" id="door" uid="2">
-        <dest x="34012" y="15163" map="1" />
+      <door x="5" y="3" id="door" uid="2" state="open">
+        <dest x="34012" y="15163" z="0" map="1" />
       </door>
     </items>
     <regions>
@@ -22,16 +22,16 @@
   <level name="temple of Furun" l="1">
     <creatures />
     <items>
-      <door x="3" y="6" state="closed" id="door" uid="4">
-        <dest x="34021" y="15177" map="1" />
+      <door x="3" y="6" id="door" uid="4" state="closed">
+        <dest x="34021" y="15177" z="0" map="1" />
       </door>
       <container x="4" y="1" id="altar" uid="17">
-      	<item id="copper" uid="3" />
-    	<item id="silver" uid="6" />
-    	<item id="gold" uid="7" />
+        <item id="copper" uid="3" />
+        <item id="silver" uid="6" />
+        <item id="gold" uid="7" />
       </container>
-      <door x="1" y="1" state="open" lock="1" id="door_stone" uid="5">
-      	<dest theme="tengri_tomb" sign="temple catacombs" />
+      <door x="1" y="1" id="door_stone" uid="5" state="open" lock="1">
+        <dest sign="temple catacombs" theme="tengri_tomb" />
       </door>
     </items>
     <regions>
@@ -43,8 +43,8 @@
   <level name="harbor master" l="2">
     <creatures />
     <items>
-      <door x="5" y="3" state="closed" id="door" uid="8">
-        <dest x="34013" y="15150" map="1" />
+      <door x="5" y="3" id="door" uid="8" state="closed">
+        <dest x="34013" y="15150" z="0" map="1" />
       </door>
     </items>
     <regions>
@@ -56,8 +56,8 @@
   <level name="Kasku's house" l="3">
     <creatures />
     <items>
-      <door x="5" y="3" state="locked" lock="1" id="door" uid="9">
-        <dest x="34013" y="15157" map="1" />
+      <door x="5" y="3" id="door" uid="9" state="locked" lock="1">
+        <dest x="34013" y="15157" z="0" map="1" />
       </door>
     </items>
     <regions>
@@ -68,11 +68,11 @@
   </level>
   <level name="Zari's pawn shop" l="4">
     <creatures>
-      <creature x="3" y="2" uid="10" id="Zari" />
+      <creature x="3" y="2" id="Zari" uid="10" />
     </creatures>
     <items>
-      <door x="5" y="3" state="locked" lock="1" id="door" uid="11">
-        <dest x="34012" y="15183" map="1" />
+      <door x="5" y="3" id="door" uid="11" state="locked" lock="1">
+        <dest x="34012" y="15183" z="0" map="1" />
       </door>
     </items>
     <regions>
@@ -83,11 +83,11 @@
   </level>
   <level name="Os'cues's house" l="5">
     <creatures>
-      <creature x="3" y="2" uid="12" id="Os'cues" />
+      <creature x="3" y="2" id="Os'cues" uid="12" />
     </creatures>
     <items>
-      <door x="3" y="5" state="locked" lock="1" id="door" uid="13">
-        <dest x="34006" y="15174" map="1" />
+      <door x="3" y="5" id="door" uid="13" state="locked" lock="1">
+        <dest x="34006" y="15174" z="0" map="1" />
       </door>
     </items>
     <regions>
@@ -98,11 +98,11 @@
   </level>
   <level name="Uenia's house" l="6">
     <creatures>
-      <creature x="3" y="2" uid="14" id="Uenia" />
+      <creature x="3" y="2" id="Uenia" uid="14" />
     </creatures>
     <items>
-      <door x="3" y="5" state="locked" lock="1" id="door" uid="15">
-        <dest x="34034" y="15181" map="1" />
+      <door x="3" y="5" id="door" uid="15" state="locked" lock="1">
+        <dest x="34034" y="15181" z="0" map="1" />
       </door>
     </items>
     <regions>
@@ -113,11 +113,11 @@
   </level>
   <level name="Ares Talo's house" l="7">
     <creatures>
-      <creature x="3" y="2" uid="16" id="Ares Talo" />
+      <creature x="3" y="2" id="Ares Talo" uid="16" />
     </creatures>
     <items>
-      <door x="4" y="5" state="locked" lock="1" id="door" uid="18">
-        <dest x="34041" y="15183" map="1" />
+      <door x="4" y="5" id="door" uid="18" state="locked" lock="1">
+        <dest x="34041" y="15183" z="0" map="1" />
       </door>
     </items>
     <regions>

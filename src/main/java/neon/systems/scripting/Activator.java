@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2007 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -19,7 +19,9 @@
 package neon.systems.scripting;
 
 public interface Activator {
-	public java.util.Collection<String> getScripts();
-	public void addScript(String id, boolean once);
-	public void removeScript(String id);
+  public java.util.Collection<String> getScripts();
+
+  public void addScript(String id, boolean once);
+
+  public void removeScript(String id);
 }

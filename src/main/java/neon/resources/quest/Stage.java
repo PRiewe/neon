@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2013 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -20,30 +20,29 @@ package neon.resources.quest;
 
 /**
  * A quest stage.
- * 
- * @author mdriesen
  *
+ * @author mdriesen
  */
 public class Stage {
-	/** The resource ID of the quest this stage belongs to. */
-	public final String questID;
-	
-	private int index;
-	
-	/**
-	 * Initializes a quest stage.
-	 * 
-	 * @param questID	the resouce ID of the quest this stage belongs to
-	 */
-	public Stage(String questID, int index) {
-		this.questID = questID;
-		this.index = index;
-	}
-	
-	/**
-	 * @return	the stage index
-	 */
-	public int getIndex() {
-		return index;
-	}
+  /** The resource ID of the quest this stage belongs to. */
+  public final String questID;
+
+  private int index;
+
+  /**
+   * Initializes a quest stage.
+   *
+   * @param questID the resouce ID of the quest this stage belongs to
+   */
+  public Stage(String questID, int index) {
+    this.questID = questID;
+    this.index = index;
+  }
+
+  /**
+   * @return the stage index
+   */
+  public int getIndex() {
+    return index;
+  }
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <files>
+    <file>darkness4.zip</file>
+  </files>
+  <log>finest</log>
+  <threads generate="on" />
+  <ai>10</ai>
+  <lang>en</lang>
+  <keys>qwerty</keys>
+</root>

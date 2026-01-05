@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2010 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -26,34 +26,34 @@ import neon.entities.components.ShapeComponent;
 
 // TODO: schedule in editor
 public class ScheduleAI extends AI {
-	private Point[] schedule;
-	private int current = 0;
-	
-	public ScheduleAI(Creature creature, byte aggression, byte confidence, Point[] schedule) {
-		super(creature, aggression, confidence);
-		this.schedule = schedule;
-	}
+  private Point[] schedule;
+  private int current = 0;
 
-	public void act() { 
-		if(isHostile() && sees(Engine.getPlayer())){
-			HealthComponent health = creature.getHealthComponent();
-			if(100*health.getHealth()/health.getBaseHealth() < confidence) {	
-				// 80% kans om gewoon te vluchten, 20% kans om te healen; als geen heal spell, toch vluchten
-				if(Math.random() > 0.2 || !(cure() || heal())) {	
-					flee(Engine.getPlayer());
-				} 
-			} else {
-				hunt(Engine.getPlayer());
-			} 
-		} else {
-			ShapeComponent bounds = creature.getShapeComponent();
-			if(bounds.getLocation().equals(schedule[current])) {
-				current++;
-				if(current >= schedule.length) {
-					current = 0;
-				}
-			}
-			wander(schedule[current]);
-		}
-	}
+  public ScheduleAI(Creature creature, byte aggression, byte confidence, Point[] schedule) {
+    super(creature, aggression, confidence);
+    this.schedule = schedule;
+  }
+
+  public void act() {
+    if (isHostile() && sees(Engine.getPlayer())) {
+      HealthComponent health = creature.getHealthComponent();
+      if (100 * health.getHealth() / health.getBaseHealth() < confidence) {
+        // 80% kans om gewoon te vluchten, 20% kans om te healen; als geen heal spell, toch vluchten
+        if (Math.random() > 0.2 || !(cure() || heal())) {
+          flee(Engine.getPlayer());
+        }
+      } else {
+        hunt(Engine.getPlayer());
+      }
+    } else {
+      ShapeComponent bounds = creature.getShapeComponent();
+      if (bounds.getLocation().equals(schedule[current])) {
+        current++;
+        if (current >= schedule.length) {
+          current = 0;
+        }
+      }
+      wander(schedule[current]);
+    }
+  }
 }

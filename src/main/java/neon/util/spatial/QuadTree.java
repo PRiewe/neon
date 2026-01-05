@@ -1,7 +1,7 @@
 /*
  *	Neon, a roguelike engine.
  *	Copyright (C) 2011 - Maarten Driesen
- * 
+ *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; either version 3 of the License, or
@@ -25,70 +25,57 @@ import java.util.List;
 
 /**
  * This is a Quadtree version of a {@code SpatialIndex}.
- * 
- * @author mdriesen
  *
+ * @author mdriesen
  * @param <E>
  */
 public class QuadTree<E> implements SpatialIndex<E> {
-	private Node root;
-	private Rectangle bounds;
-	private int capacity;
-	
-	public QuadTree(int capacity, Rectangle bounds) {
-		this.capacity = capacity;
-		this.bounds = bounds;
-		root = new Node(bounds);
-	}
-	
-	public List<E> getElements() {
-		return null;
-	}
+  private final Node root;
+  private final Rectangle bounds;
+  private int capacity;
 
-	public List<E> getElements(Rectangle bounds) {
-		return null;
-	}
+  public QuadTree(int capacity, Rectangle bounds) {
+    this.capacity = capacity;
+    this.bounds = bounds;
+    root = new Node(bounds);
+  }
 
-	public void insert(E e, Rectangle bounds) {
-		root.insert(e, bounds);
-	}
+  public List<E> getElements() {
+    return null;
+  }
 
-	public void remove(E e) {
-		
-	}
+  public List<E> getElements(Rectangle bounds) {
+    return null;
+  }
 
-	public void move(E e, Point p) {
-		
-	}
-	
-	public void resize(E e, Dimension d) {
-		
-	}
-	
-	public void clear() {
-		
-	}
+  public void insert(E e, Rectangle bounds) {
+    root.insert(e, bounds);
+  }
 
-	public int getWidth() {
-		return bounds.width;
-	}
+  public void remove(E e) {}
 
-	public int getHeight() {
-		return bounds.height;
-	}
-	
-	private class Node {
-		private Node NW;
-		private Node NE;
-		private Node SW;
-		private Node SE;
-		
-		private Node(Rectangle bounds) {
-			
-		}
-		
-		private void insert(E e, Rectangle bounds) {
-			
-		}
-	}
+  public void move(E e, Point p) {}
+
+  public void resize(E e, Dimension d) {}
+
+  public void clear() {}
+
+  public int getWidth() {
+    return bounds.width;
+  }
+
+  public int getHeight() {
+    return bounds.height;
+  }
+
+  private class Node {
+    private Node NW;
+    private Node NE;
+    private Node SW;
+    private Node SE;
+
+    private Node(Rectangle bounds) {}
+
+    private void insert(E e, Rectangle bounds) {}
+  }
 }

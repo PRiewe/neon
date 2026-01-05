@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Neon is a roguelike game engine written in Java 1.7, consisting of:
+Neon is a roguelike game engine written in Java 21, consisting of:
 - **neon**: The main game engine and editor
 - **darkness**: A sample game built with the engine
+
+The project is currently being migrated from Java 1.7 to Java 21, with recent changes including upgrading from Nashorn to GraalVM for JavaScript scripting support.
 
 ## Build and Development Commands
 
@@ -15,10 +17,14 @@ Neon is a roguelike game engine written in Java 1.7, consisting of:
 mvn clean compile
 ```
 
-### Installing Dependencies
-The project uses Maven for dependency management. Some dependencies (like JTexGen) require special setup:
+### Packaging
+Create an executable JAR with all dependencies:
 ```bash
-./setup.sh
+mvn package
+```
+This creates `target/neon-<version>-jar-with-dependencies.jar` which can be run with:
+```bash
+java -jar target/neon-<version>-jar-with-dependencies.jar
 ```
 
 ### Running Tests
@@ -55,9 +61,18 @@ Client client = new Client(cPort, version);
 The engine uses **MBassador** event bus for event-driven architecture:
 - Event handlers are annotated with `@Handler`
 - Events are posted to the bus and distributed to all registered handlers
-- Key event types: `TurnEvent`, `CombatEvent`, `MagicEvent`, `SkillEvent`, `LoadEvent`, `SaveEvent`, `UpdateEvent`, `MessageEvent`
+- Key event types: `TurnEvent`, `CombatEvent`, `MagicEvent`, `SkillEvent`, `LoadEvent`, `SaveEvent`, `UpdateEvent`, `MessageEvent`, `DeathEvent`, `StoreEvent`
 - Events flow through `TaskQueue` for deferred execution
 - The event system integrates with the quest/narrative system through `EventAdapter`
+
+Handler classes in `neon.core.handlers`:
+- **TurnHandler**: Processes game turns and creature actions
+- **CombatHandler**: Manages combat resolution
+- **MagicHandler**: Routes magic effects to appropriate effect handlers
+- **InventoryHandler**: Manages item transactions
+- **SkillHandler**: Handles skill checks and applications
+- **DeathHandler**: Processes entity death
+- **MotionHandler**: Handles entity movement
 
 ### Component-Based Entity System
 Entities use a **component-based architecture**:
@@ -71,10 +86,12 @@ Entities use a **component-based architecture**:
 The `Engine` orchestrates several subsystems:
 - **FileSystem** (`neon.systems.files`): Manages file I/O with XML/INI translators
 - **PhysicsSystem** (`neon.systems.physics`): 2D physics using Phys2d library
-- **ScriptInterface** (`neon.core.ScriptInterface`): JavaScript scripting support
+- **ScriptInterface** (`neon.core.ScriptInterface`): JavaScript scripting support using GraalVM Polyglot
 - **QuestTracker** (`neon.narrative`): Quest and dialog management
 - **ResourceManager** (`neon.resources`): Loads and manages game resources
 - **Atlas** (`neon.maps`): Map and world management
+- **TaskQueue** (`neon.core.TaskQueue`): Deferred execution of events
+- **UIDStore** (`neon.entities.UIDStore`): Central registry for all game entities
 
 ### Resource System
 Resources are defined in XML files and managed by `ResourceManager`:
@@ -104,6 +121,19 @@ NPC behavior controlled by AI classes:
 - `Behaviour` system for modular AI behaviors (e.g., `HuntBehaviour`)
 - Pathfinding: `PathFinder` with A* implementation
 - AI created by `AIFactory`
+
+### UI System
+The client uses a state-based UI architecture (`neon.ui.states`):
+- **GameState**: Main game loop and rendering
+- **MainMenuState**: Main menu navigation
+- **DialogState**: NPC conversation and quest dialogs
+- **InventoryState**: Player inventory management
+- **ContainerState**: Container and loot management
+- **JournalState**: Quest journal and character stats
+- **AimState**: Targeting for ranged attacks and spells
+- **MoveState**, **BumpState**, **DoorState**, **LockState**: Various interaction states
+
+UI states handle user input and post events to the client port for the engine to process.
 
 ### Editor
 The editor (`neon.editor.Editor`) provides tools for:
@@ -140,16 +170,35 @@ When adding features that involve game state changes:
 ## Dependencies
 Key external libraries:
 - **Guava**: Enhanced Java collections
-- **JDBM**: Disk-backed collections
+- **MapDb**: Disk-backed collections
+- **JDBM**: Java database for persistent collections
 - **JDOM 2**: XML reading/writing
 - **JTexGen**: Procedural texture generation
-- **MBassador**: Fast event bus
+- **MBassador**: Fast event bus for event-driven architecture
 - **Phys2d**: 2D physics engine
 - **TinyLAF**: Look-and-feel
+- **GraalVM Polyglot/JS**: JavaScript scripting engine (replaces Nashorn)
 
 ## Data Files
 Game content stored in `darkness/` directory:
 - Maps: `darkness/maps/*.xml`
 - Quests: `darkness/quests/*.xml`
 - Resource definitions: `darkness/*.xml` (spells, factions, terrain, etc.)
-- Scripts: `darkness/scripts/`
+- Scripts: `darkness/scripts/` (JavaScript files executed by GraalVM)
+
+Configuration stored in `neon.ini.xml` at the project root.
+
+## Scripting System
+The engine uses **GraalVM Polyglot** for JavaScript scripting:
+- Script engine initialized in `Engine` constructor with host access enabled
+- Scripts can access Java classes and engine components through `ScriptInterface`
+- Script context provides access to entities via `get(uid)` and player via `getPlayer()`
+- Scripts are loaded and executed through `Engine.execute()`
+- Located in `darkness/scripts/` directory
+
+## Java 21 Migration Notes
+The project is migrating from Java 1.7 to Java 21:
+- **Branch**: `feature/java21` (main development branch for migration)
+- **Scripting engine**: Migrated from Nashorn (removed in Java 15+) to GraalVM Polyglot
+- **Compiler**: Now uses Java 21 source/target with `maven.compiler.source/target` set to 21
+- Some legacy code may still exist from the Java 1.7 era and should be modernized as needed
