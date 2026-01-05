@@ -21,7 +21,6 @@ package neon.core;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
-
 import lombok.extern.slf4j.Slf4j;
 import neon.resources.CServer;
 import neon.resources.ResourceManager;

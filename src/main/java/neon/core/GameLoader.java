@@ -73,7 +73,7 @@ public class GameLoader {
 
   @Handler
   public void loadGame(LoadEvent le) {
-    log.trace("loadGame from {}: {}",le.getSource(), le);
+    log.trace("loadGame from {}: {}", le.getSource(), le);
     // load game
     switch (le.getMode()) {
       case LOAD:
@@ -151,7 +151,7 @@ public class GameLoader {
       Engine.getAtlas().setMap(map);
       Engine.getAtlas().setCurrentZone(game.getStartZone());
     } catch (RuntimeException re) {
-      log.error("Error during initGame",re);
+      log.error("Error during initGame", re);
     }
     log.debug("Engine.initGame() exit");
   }

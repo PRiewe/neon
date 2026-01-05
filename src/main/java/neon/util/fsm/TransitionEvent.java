@@ -20,16 +20,17 @@ package neon.util.fsm;
 
 import java.util.EventObject;
 import java.util.HashMap;
+import lombok.Getter;
 
 @SuppressWarnings("serial")
 public class TransitionEvent extends EventObject {
-  private String eventID;
-  private HashMap<String, Object> parameters;
-  private boolean consumed;
+  private final String eventID;
+  private final HashMap<String, Object> parameters;
+  @Getter private boolean consumed;
 
   public TransitionEvent(String id) {
     super(id);
-    parameters = new HashMap<String, Object>();
+    parameters = new HashMap<>();
     consumed = false;
     eventID = id;
   }
@@ -58,9 +59,5 @@ public class TransitionEvent extends EventObject {
 
   public void consume() {
     consumed = true;
-  }
-
-  public boolean isConsumed() {
-    return consumed;
   }
 }
