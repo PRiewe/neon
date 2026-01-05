@@ -29,9 +29,6 @@ import neon.entities.Item;
 import neon.entities.property.Habitat;
 import neon.maps.*;
 import neon.maps.Region.Modifier;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
 import neon.maps.services.EntityStore;
 import neon.maps.services.QuestProvider;
 import neon.maps.services.ResourceProvider;
@@ -57,45 +54,10 @@ public class DungeonGenerator {
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
   private final QuestProvider questProvider;
-  private final Atlas atlas;
 
   // things
   private int[][] tiles; // information about the type of terrain
   private String[][] terrain; // terrain at that position
-
-  /**
-   * Creates a dungeon generator with a theme (for standalone generation).
-   *
-   * @param theme the zone theme
-   * @deprecated Use {@link #DungeonGenerator(RZoneTheme, EntityStore, ResourceProvider,
-   *     QuestProvider, Atlas)} instead
-   */
-  @Deprecated
-  public DungeonGenerator(RZoneTheme theme) {
-    this.theme = theme;
-    this.zone = null;
-    this.entityStore = new EngineEntityStore();
-    this.resourceProvider = new EngineResourceProvider();
-    this.questProvider = new EngineQuestProvider();
-    this.atlas = null; // Atlas not available in deprecated constructor
-  }
-
-  /**
-   * Creates a dungeon generator for a specific zone.
-   *
-   * @param zone the zone to generate
-   * @deprecated Use {@link #DungeonGenerator(Zone, EntityStore, ResourceProvider, QuestProvider,
-   *     Atlas)} instead
-   */
-  @Deprecated
-  public DungeonGenerator(Zone zone) {
-    this.zone = zone;
-    this.theme = zone.getTheme();
-    this.entityStore = new EngineEntityStore();
-    this.resourceProvider = new EngineResourceProvider();
-    this.questProvider = new EngineQuestProvider();
-    this.atlas = null; // Atlas not available in deprecated constructor
-  }
 
   /**
    * Creates a dungeon generator with dependency injection.
@@ -104,20 +66,17 @@ public class DungeonGenerator {
    * @param entityStore the entity store service
    * @param resourceProvider the resource provider service
    * @param questProvider the quest provider service
-   * @param atlas the map atlas
    */
   public DungeonGenerator(
       RZoneTheme theme,
       EntityStore entityStore,
       ResourceProvider resourceProvider,
-      QuestProvider questProvider,
-      Atlas atlas) {
+      QuestProvider questProvider) {
     this.theme = theme;
     this.zone = null;
     this.entityStore = entityStore;
     this.resourceProvider = resourceProvider;
     this.questProvider = questProvider;
-    this.atlas = atlas;
   }
 
   /**
@@ -127,20 +86,17 @@ public class DungeonGenerator {
    * @param entityStore the entity store service
    * @param resourceProvider the resource provider service
    * @param questProvider the quest provider service
-   * @param atlas the map atlas
    */
   public DungeonGenerator(
       Zone zone,
       EntityStore entityStore,
       ResourceProvider resourceProvider,
-      QuestProvider questProvider,
-      Atlas atlas) {
+      QuestProvider questProvider) {
     this.zone = zone;
     this.theme = zone.getTheme();
     this.entityStore = entityStore;
     this.resourceProvider = resourceProvider;
     this.questProvider = questProvider;
-    this.atlas = atlas;
   }
 
   /**
@@ -149,7 +105,7 @@ public class DungeonGenerator {
    * @param door the door used to enter this zone
    * @param previous the zone that contains the door used to enter this zone
    */
-  public void generate(Door door, Zone previous) {
+  public void generate(Door door, Zone previous, Atlas atlas) {
     // the map that contains this zone
     Dungeon map = (Dungeon) atlas.getMap(zone.getMap());
 

@@ -18,6 +18,7 @@
 
 package neon.core;
 
+import java.util.EventObject;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
@@ -108,4 +109,11 @@ public interface GameContext {
 
   /** Quits the application. */
   void quit();
+
+  /**
+   * Posts an event to the event bus asynchronously.
+   *
+   * @param event the event to post
+   */
+  void post(EventObject event);
 }

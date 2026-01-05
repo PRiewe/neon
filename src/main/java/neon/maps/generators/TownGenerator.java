@@ -24,8 +24,6 @@ import neon.entities.Door;
 import neon.entities.EntityFactory;
 import neon.maps.Region;
 import neon.maps.Zone;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineResourceProvider;
 import neon.maps.services.EntityStore;
 import neon.maps.services.ResourceProvider;
 import neon.resources.RRegionTheme;
@@ -37,22 +35,9 @@ import neon.resources.RTerrain;
  * @author mdriesen
  */
 public class TownGenerator {
-  private Zone zone;
+  private final Zone zone;
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
-
-  /**
-   * Creates a town generator for a specific zone.
-   *
-   * @param zone the zone to generate
-   * @deprecated Use {@link #TownGenerator(Zone, EntityStore, ResourceProvider)} instead
-   */
-  @Deprecated
-  public TownGenerator(Zone zone) {
-    this.zone = zone;
-    this.entityStore = new EngineEntityStore();
-    this.resourceProvider = new EngineResourceProvider();
-  }
 
   /**
    * Creates a town generator with dependency injection.

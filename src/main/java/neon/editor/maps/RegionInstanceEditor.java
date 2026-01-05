@@ -29,6 +29,7 @@ import neon.editor.Editor;
 import neon.editor.resources.IRegion;
 import neon.editor.resources.Instance;
 import neon.editor.resources.RZone;
+import neon.editor.services.EditorResourceProvider;
 import neon.maps.generators.WildernessGenerator;
 import neon.resources.RRegionTheme;
 import neon.resources.RScript;
@@ -243,7 +244,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
           }
         }
         String[][] content =
-            new WildernessGenerator(terrain)
+            new WildernessGenerator(terrain, null, new EditorResourceProvider())
                 .generate(region.getBounds(), region.theme, region.resource.id);
         makeContent(content);
       }

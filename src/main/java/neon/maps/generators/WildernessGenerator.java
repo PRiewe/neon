@@ -30,8 +30,6 @@ import neon.maps.Decomposer;
 import neon.maps.MapUtils;
 import neon.maps.Region;
 import neon.maps.Zone;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineResourceProvider;
 import neon.maps.services.EntityStore;
 import neon.maps.services.ResourceProvider;
 import neon.resources.RItem;
@@ -57,32 +55,6 @@ public class WildernessGenerator {
   private String[][] terrain; // general terrain info
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
-
-  /**
-   * Constructor used by the engine.
-   *
-   * @param zone the zone to generate
-   * @deprecated Use {@link #WildernessGenerator(Zone, EntityStore, ResourceProvider)} instead
-   */
-  @Deprecated
-  public WildernessGenerator(Zone zone) {
-    this.zone = zone;
-    this.entityStore = new EngineEntityStore();
-    this.resourceProvider = new EngineResourceProvider();
-  }
-
-  /**
-   * Constructor used by the editor.
-   *
-   * @param terrain the terrain array
-   * @deprecated Use {@link #WildernessGenerator(String[][], EntityStore, ResourceProvider)} instead
-   */
-  @Deprecated
-  public WildernessGenerator(String[][] terrain) {
-    this.terrain = terrain;
-    this.entityStore = new EngineEntityStore();
-    this.resourceProvider = new EngineResourceProvider();
-  }
 
   /**
    * Creates a wilderness generator with dependency injection for engine use.

@@ -114,6 +114,7 @@ public class Engine implements Runnable {
     context.setQuestTracker(quests);
     context.setPhysicsEngine(physics);
     context.setScriptEngine(engine);
+    context.setBus(bus);
   }
 
   /** This method is the run method of the gamethread. It sets up the event system. */

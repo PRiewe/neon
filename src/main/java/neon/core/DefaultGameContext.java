@@ -18,6 +18,7 @@
 
 package neon.core;
 
+import java.util.EventObject;
 import lombok.Setter;
 import neon.entities.Player;
 import neon.entities.UIDStore;
@@ -26,6 +27,7 @@ import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
+import net.engio.mbassy.bus.MBassador;
 import org.graalvm.polyglot.Context;
 
 /**
@@ -45,6 +47,7 @@ public class DefaultGameContext implements GameContext {
   @Setter private QuestTracker questTracker;
   @Setter private PhysicsSystem physicsEngine;
   @Setter private Context scriptEngine;
+  @Setter private MBassador<EventObject> bus;
 
   // Game-level state (set when a game starts)
   @Setter private Game game;
@@ -102,5 +105,10 @@ public class DefaultGameContext implements GameContext {
   @Override
   public void quit() {
     System.exit(0);
+  }
+
+  @Override
+  public void post(EventObject event) {
+    bus.publishAsync(event);
   }
 }

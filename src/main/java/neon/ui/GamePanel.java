@@ -27,6 +27,7 @@ import java.util.Collection;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.text.DefaultCaret;
+import lombok.Getter;
 import neon.core.GameContext;
 import neon.core.handlers.CombatUtils;
 import neon.entities.Player;
@@ -53,7 +54,7 @@ public class GamePanel extends JComponent {
   private DefaultRenderable cursor;
   private TitledBorder sBorder, aBorder, cBorder;
   private JVectorPane drawing;
-  private final GameContext context;
+  @Getter private final GameContext context;
 
   // components of the stats panel
   private JLabel intLabel, conLabel, dexLabel, strLabel, wisLabel, chaLabel;

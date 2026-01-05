@@ -28,6 +28,7 @@ import neon.maps.services.EngineEntityStore;
 import neon.maps.services.EngineQuestProvider;
 import neon.maps.services.EngineResourceProvider;
 import neon.maps.services.EntityStore;
+import neon.maps.services.MapAtlas;
 import neon.maps.services.QuestProvider;
 import neon.maps.services.ResourceProvider;
 import neon.systems.files.FileSystem;
@@ -40,7 +41,7 @@ import org.h2.mvstore.MVStore;
  * @author mdriesen
  */
 @Slf4j
-public class Atlas implements Closeable {
+public class Atlas implements Closeable, MapAtlas {
   private final MVStore db;
   private final MVMap<Integer, Map> maps;
   private int currentZone = 0;
@@ -148,6 +149,7 @@ public class Atlas implements Closeable {
    * @param uid the unique identifier of a map
    * @return the map with the given uid
    */
+  @Override
   public Map getMap(int uid) {
     if (!maps.containsKey(uid)) {
       Map map = MapLoader.loadMap(entityStore.getMapPath(uid), uid, files);
@@ -181,8 +183,8 @@ public class Atlas implements Closeable {
     }
 
     if (getCurrentMap() instanceof Dungeon && getCurrentZone().isRandom()) {
-      new DungeonGenerator(getCurrentZone(), entityStore, resourceProvider, questProvider, this)
-          .generate(door, previousZone);
+      new DungeonGenerator(getCurrentZone(), entityStore, resourceProvider, questProvider)
+          .generate(door, previousZone, this);
     }
   }
 
