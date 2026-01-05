@@ -207,29 +207,29 @@ public class DialogState extends State implements KeyListener {
         } else {
           String value = list.getSelectedValue().toString();
           if (value.equals("travel")) {
-            new TravelDialog(ui, bus).show(context.getPlayer(), target);
+            new TravelDialog(ui, bus, context).show(context.getPlayer(), target);
           } else if (value.equals("training")) {
-            new TrainingDialog(ui, bus).show(context.getPlayer(), target);
+            new TrainingDialog(ui, bus, context).show(context.getPlayer(), target);
           } else if (value.equals("spells")) {
             new SpellTradeDialog(ui, big, small).show(context.getPlayer(), target);
           } else if (value.equals("trade")) {
-            new TradeDialog(ui, big, small).show(context.getPlayer(), target);
+            new TradeDialog(ui, big, small, context).show(context.getPlayer(), target);
           } else if (value.equals("spell maker")) {
             new SpellMakerDialog(ui).show(context.getPlayer(), target);
           } else if (value.equals("potion maker")) {
-            new PotionDialog(ui, small).show(context.getPlayer(), target);
+            new PotionDialog(ui, small, context).show(context.getPlayer(), target);
           } else if (value.equals("healer")) {
             heal();
           } else if (value.equals("charge")) {
-            new ChargeDialog(ui).show(context.getPlayer());
+            new ChargeDialog(ui, context).show(context.getPlayer());
           } else if (value.equals("craft")) {
-            new CrafterDialog(ui, small, bus).show(context.getPlayer(), target);
+            new CrafterDialog(ui, small, bus, context).show(context.getPlayer(), target);
           } else if (value.equals("enchant")) {
-            new EnchantDialog(ui).show(context.getPlayer(), target);
+            new EnchantDialog(ui, context).show(context.getPlayer(), target);
           } else if (value.equals("repair")) {
-            new RepairDialog(ui).show(context.getPlayer(), target);
+            new RepairDialog(ui, context).show(context.getPlayer(), target);
           } else if (value.equals("tattoos")) {
-            new TattooDialog(ui, small).show(context.getPlayer(), target);
+            new TattooDialog(ui, small, context).show(context.getPlayer(), target);
           } else {
             System.out.println("not implemented");
           }

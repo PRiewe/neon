@@ -21,7 +21,7 @@ package neon.ui;
 import java.awt.*;
 import java.util.*;
 import javax.swing.JComponent;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.maps.Region;
 import neon.maps.Zone;
 import neon.ui.graphics.ZComparator;
@@ -37,9 +37,11 @@ public class MapPanel extends JComponent {
   private float zoom;
   private boolean fill;
   private ZComparator comparator;
+  private final GameContext context;
 
   /** Initializes this <code>MapPanel</code>. */
-  public MapPanel(Zone zone) {
+  public MapPanel(Zone zone, GameContext context) {
+    this.context = context;
     setBackground(Color.black);
     this.zone = zone;
     fill = true;
@@ -60,7 +62,7 @@ public class MapPanel extends JComponent {
     drawTerrain(new ArrayList<Region>(zone.getRegions()), (Graphics2D) g);
     g.setColor(Color.white);
     try {
-      Rectangle bounds = Engine.getPlayer().getShapeComponent();
+      Rectangle bounds = context.getPlayer().getShapeComponent();
       g.drawString("x", (int) (zoom * (bounds.x + 0.5)), (int) (zoom * (bounds.y + 0.9)));
     } catch (NullPointerException e) {
     }

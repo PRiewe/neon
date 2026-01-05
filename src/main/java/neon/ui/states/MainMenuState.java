@@ -128,11 +128,11 @@ public class MainMenuState extends State {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("n")) {
-        new NewGameDialog(ui, bus).show();
+        new NewGameDialog(ui, bus, context).show();
       } else if (e.getActionCommand().equals("l")) {
         new LoadGameDialog(ui.getWindow(), bus).show();
       } else if (e.getActionCommand().equals("o")) {
-        new OptionDialog(ui.getWindow()).show();
+        new OptionDialog(ui.getWindow(), context).show();
       } else if (e.getActionCommand().equals("q")) {
         System.exit(0);
       }

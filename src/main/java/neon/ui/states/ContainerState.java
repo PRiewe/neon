@@ -79,7 +79,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     iList.addListSelectionListener(this);
     iScroll = new JScrollPane(iList);
     iData = new HashMap<String, Integer>();
-    iList.setCellRenderer(new InventoryCellRenderer(iData));
+    iList.setCellRenderer(new InventoryCellRenderer(iData, context));
     iList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     iScroll.setBorder(new TitledBorder(new LineBorder(line.brighter(), 2), "Inventory"));
     center.add(iScroll);
@@ -95,7 +95,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     cList.addListSelectionListener(this);
     cScroll = new JScrollPane(cList);
     cData = new HashMap<String, Integer>();
-    cList.setCellRenderer(new InventoryCellRenderer(cData));
+    cList.setCellRenderer(new InventoryCellRenderer(cData, context));
     cList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     center.add(cScroll);
     panel.add(center, BorderLayout.CENTER);

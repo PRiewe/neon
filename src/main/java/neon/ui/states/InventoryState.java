@@ -77,7 +77,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     inventory.addMouseListener(this);
     JScrollPane scroller = new JScrollPane(inventory);
     listData = new HashMap<String, Integer>();
-    inventory.setCellRenderer(new neon.ui.InventoryCellRenderer(listData));
+    inventory.setCellRenderer(new neon.ui.InventoryCellRenderer(listData, context));
     inventory.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     scroller.setBorder(new TitledBorder("Inventory"));
     contents.add(scroller);

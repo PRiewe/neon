@@ -25,7 +25,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.event.LoadEvent;
 import neon.entities.Player;
 import neon.entities.property.Gender;
@@ -46,10 +46,12 @@ public class NewGameDialog {
   private HashMap<String, String> raceList;
   private MBassador<EventObject> bus;
   private UserInterface ui;
+  private final GameContext context;
 
-  public NewGameDialog(UserInterface ui, MBassador<EventObject> bus) {
+  public NewGameDialog(UserInterface ui, MBassador<EventObject> bus, GameContext context) {
     this.bus = bus;
     this.ui = ui;
+    this.context = context;
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, false);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -81,9 +83,9 @@ public class NewGameDialog {
     // race
     JPanel racePanel = new JPanel();
     raceList = new HashMap<String, String>();
-    CGame game = (CGame) Engine.getResources().getResource("game", "config");
+    CGame game = (CGame) context.getResources().getResource("game", "config");
     for (String s : game.getPlayableRaces()) {
-      raceList.put(((RCreature) Engine.getResources().getResource(s)).getName(), s);
+      raceList.put(((RCreature) context.getResources().getResource(s)).getName(), s);
     }
     race = new JComboBox<String>(raceList.keySet().toArray(new String[raceList.size()]));
     racePanel.add(race);
@@ -104,7 +106,7 @@ public class NewGameDialog {
 
     // birthsign
     JPanel signPanel = new JPanel();
-    signBox = new JComboBox<RSign>(Engine.getResources().getResources(RSign.class));
+    signBox = new JComboBox<RSign>(context.getResources().getResources(RSign.class));
     signPanel.add(signBox);
     signPanel.setBorder(new TitledBorder("Birthsign"));
     middle.add(signPanel);
