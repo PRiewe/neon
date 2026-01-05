@@ -21,10 +21,13 @@ package neon.core.event;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.EventObject;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.util.fsm.Action;
 import net.engio.mbassy.listener.Handler;
 
+@Slf4j
 public class TaskQueue {
   private Multimap<String, Action> tasks;
   private Multimap<Integer, RepeatEntry> repeat;
@@ -36,6 +39,7 @@ public class TaskQueue {
 
   @Handler
   public void check(EventObject e) {
+    log.trace("check {}",e);
     if (tasks.containsKey(e.toString())) {
       for (Action task : tasks.get(e.toString())) {
         task.run(e);
@@ -67,6 +71,7 @@ public class TaskQueue {
 
   @Handler
   public void tick(TurnEvent te) {
+    log.trace("tick {}",te);
     int time = te.getTime();
 
     if (repeat.containsKey(time)) {

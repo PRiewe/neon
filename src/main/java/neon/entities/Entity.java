@@ -26,12 +26,14 @@ import neon.entities.components.RenderComponent;
 import neon.entities.components.ScriptComponent;
 import neon.entities.components.ShapeComponent;
 
+import java.io.Serializable;
+
 /**
  * This class represents a game entity that can be drawn on screen.
  *
  * @author mdriesen
  */
-public abstract class Entity {
+public abstract class Entity implements Serializable {
   // components
   public final ShapeComponent bounds;
 

@@ -22,6 +22,8 @@ import de.muntjak.tinylookandfeel.Theme;
 import java.io.File;
 import java.util.EventObject;
 import javax.swing.UIManager;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.LoadEvent;
 import neon.core.event.MagicEvent;
@@ -40,6 +42,7 @@ import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
 
+@Slf4j
 public class Client implements Runnable {
   private UserInterface ui;
   private final FiniteStateMachine fsm;
@@ -65,7 +68,7 @@ public class Client implements Runnable {
       Theme.loadTheme(new File("data/neon.theme"));
       UIManager.setLookAndFeel("de.muntjak.tinylookandfeel.TinyLookAndFeel");
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("initUI",e);
     }
 
     // UI dingen
@@ -131,24 +134,29 @@ public class Client implements Runnable {
   }
 
   @Listener(references = References.Strong)
+
   private class BusAdapter {
     @Handler
     public void transition(TransitionEvent te) {
+      log.trace("transition {}",te);
       fsm.transition(te);
     }
 
     @Handler
     public void update(UpdateEvent ue) {
+      log.trace("update {}",ue);
       ui.update();
     }
 
     @Handler
     public void message(MessageEvent me) {
+      log.trace("message {}",me);
       ui.showMessage(me.toString(), me.getDuration());
     }
 
     @Handler
     public void load(LoadEvent le) {
+      log.trace("load {}",le);
       if (le.getMode() == LoadEvent.Mode.DONE) {
         fsm.transition(new TransitionEvent("start"));
       }
@@ -156,6 +164,7 @@ public class Client implements Runnable {
 
     @Handler
     public void result(MagicEvent.Result me) {
+      log.trace("result {}",me);
       if (me.getCaster() instanceof Player) {
         switch (me.getResult()) {
           case MagicHandler.MANA:

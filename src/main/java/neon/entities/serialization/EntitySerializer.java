@@ -18,32 +18,32 @@
 
 package neon.entities.serialization;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import neon.entities.Creature;
 import neon.entities.Entity;
 import neon.entities.Item;
-import org.mapdb.DataInput2;
-import org.mapdb.DataOutput2;
-import org.mapdb.Serializer;
 
-public class EntitySerializer implements Serializer<Entity>, Serializable {
+
+public class EntitySerializer {
   private static final long serialVersionUID = 4682346337753485512L;
   private ItemSerializer itemSerializer = new ItemSerializer();
   private CreatureSerializer creatureSerializer = new CreatureSerializer();
 
-  public Entity deserialize(DataInput2 input, int i) throws IOException {
+  public Entity deserialize(DataInput input) throws IOException {
     switch (input.readUTF()) {
       case "item":
-        return itemSerializer.deserialize(input, i);
+        return itemSerializer.deserialize(input);
       case "creature":
-        return creatureSerializer.deserialize(input, i);
+        return creatureSerializer.deserialize(input);
       default:
         return null;
     }
   }
 
-  public void serialize(DataOutput2 output, Entity entity) throws IOException {
+  public void serialize(DataOutput output, Entity entity) throws IOException {
     if (entity instanceof Item) {
       output.writeUTF("item");
       itemSerializer.serialize(output, (Item) entity);

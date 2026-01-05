@@ -26,6 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.swing.*;
 import javax.swing.border.*;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
 import neon.core.Engine;
 import neon.resources.CClient;
@@ -35,6 +37,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+@Slf4j
 public class OptionDialog {
   private JCheckBox audioBox;
   private JRadioButton numpad, qwerty, azerty, qwertz;
@@ -194,7 +197,7 @@ public class OptionDialog {
         doc = new SAXBuilder().build(in);
         in.close();
       } catch (Exception e) {
-        Engine.getLogger().severe(e.getMessage());
+        log.error("Error on save",e);
       }
 
       Configuration.audio = audioBox.isSelected();
@@ -220,7 +223,7 @@ public class OptionDialog {
         outputter.output(doc, out);
         out.close();
       } catch (IOException e) {
-        Engine.getLogger().severe(e.getMessage());
+        log.error("Error on save",e);
       }
     }
   }

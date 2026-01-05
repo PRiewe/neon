@@ -18,6 +18,7 @@
 
 package neon.entities.components;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -26,7 +27,7 @@ import neon.entities.property.Ability;
 import neon.entities.property.Feat;
 import neon.entities.property.Trait;
 
-public class Characteristics implements Component {
+public class Characteristics implements Component, Serializable {
   private final long uid;
   private Set<Feat> feats = EnumSet.noneOf(Feat.class);
   private Set<Trait> traits = EnumSet.noneOf(Trait.class);

@@ -21,6 +21,8 @@ package neon.resources.builder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.TaskQueue;
 import neon.resources.*;
@@ -30,6 +32,7 @@ import neon.systems.files.StringTranslator;
 import neon.systems.files.XMLTranslator;
 import org.jdom2.*;
 
+@Slf4j
 public class ModLoader {
   private String path;
   private TaskQueue queue;
@@ -42,7 +45,7 @@ public class ModLoader {
     try {
       path = files.mount(mod);
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error("IOE during contruction",e);
     }
   }
 
@@ -63,7 +66,7 @@ public class ModLoader {
     if (mod.getName().equals("extension")) {
       ResourceManager resources = Engine.getResources();
       if (!resources.hasResource(mod.getChild("master").getText(), "mods")) {
-        System.err.println("Extension master not found: " + path + ".");
+        log.error("Extension master not found: {}.",path);
       }
     }
 
@@ -142,8 +145,7 @@ public class ModLoader {
         Engine.getResources().addResource(new RQuest(quest, doc.getRootElement()), "quest");
       }
     } catch (Exception e) { // gebeurt bij .svn directory
-      e.printStackTrace();
-      Engine.getLogger().fine("Error loading quest in mod " + path);
+      log.error("Error loading quest in mod {}",path,e);
     }
   }
 
@@ -156,7 +158,7 @@ public class ModLoader {
         Engine.getResources().addResource(book, "text");
       }
     } catch (Exception e) {
-      Engine.getLogger().fine("No books in mod " + path);
+      log.info("No books in mod {}",path);
     }
   }
 
@@ -302,7 +304,7 @@ public class ModLoader {
         Engine.getResources().addResource(script, "script");
       }
     } catch (Exception e) {
-      Engine.getLogger().fine("No scripts in mod " + path);
+     log.info("No scripts in mod {}",path);
     }
   }
 

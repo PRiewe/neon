@@ -19,12 +19,13 @@
 package neon.resources;
 
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
-public class RItem extends RData {
+public class RItem extends RData implements Serializable {
   public enum Type {
     aid,
     armor,
@@ -111,7 +112,7 @@ public class RItem extends RData {
     return item;
   }
 
-  public static class Door extends RItem {
+  public static class Door extends RItem implements Serializable {
     public String closed = " ";
     public String locked = " ";
 
@@ -154,13 +155,13 @@ public class RItem extends RData {
     }
   }
 
-  public static class Potion extends RItem {
+  public static class Potion extends RItem implements Serializable{
     public Potion(Element potion, String... path) {
       super(potion, path);
     }
   }
 
-  public static class Container extends RItem {
+  public static class Container extends RItem implements Serializable {
     public ArrayList<String> contents = new ArrayList<String>();
 
     public Container(Element container, String... path) {
@@ -171,7 +172,7 @@ public class RItem extends RData {
     }
   }
 
-  public static class Text extends RItem {
+  public static class Text extends RItem implements Serializable{
     public String content;
 
     public Text(Element text, String... path) {

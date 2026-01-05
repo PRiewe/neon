@@ -18,7 +18,9 @@
 
 package neon.entities.components;
 
-public interface Component {
+import java.io.Serializable;
+
+public interface Component extends Serializable {
   /**
    * @return the uid of the entity this component belongs to
    */

@@ -22,17 +22,17 @@ import java.awt.Rectangle;
 import java.util.Collection;
 
 public interface SpatialIndex<E> {
-  public Collection<E> getElements();
+  Collection<E> getElements();
 
-  public Collection<E> getElements(Rectangle bounds);
+  Collection<E> getElements(Rectangle bounds);
 
-  public void insert(E e, Rectangle bounds);
+  void insert(E e, Rectangle bounds);
 
-  public void remove(E e);
+  void remove(E e);
 
-  public void clear();
+  void clear();
 
-  public int getWidth();
+  int getWidth();
 
-  public int getHeight();
+  int getHeight();
 }

@@ -21,9 +21,12 @@ package neon.entities;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.io.*;
+import java.util.Map;
+
 import neon.entities.serialization.EntitySerializer;
+import org.h2.mvstore.MVStore;
 import org.jetbrains.annotations.NotNull;
-import org.mapdb.*;
+
 
 /**
  * This class stores the UIDs of every object, map and mod currently in the game. It can give out
@@ -37,11 +40,11 @@ public class UIDStore {
   public static final long DUMMY = 0;
 
   // uid database
-  private DB db;
+  private MVStore db;
   // uids van alle objecten in het spel
-  private HTreeMap<Long, Entity> objects;
+  private Map<Long, Entity> objects;
   // uids van alle geladen mods
-  private HTreeMap<Short, Mod> mods;
+  private Map<Short, Mod> mods;
   // uids van alle geladen maps
   private BiMap<Integer, String> maps = HashBiMap.create();
 
@@ -51,15 +54,15 @@ public class UIDStore {
    * @param file
    */
   public UIDStore(String file) {
-    db = DBMaker.memoryDB().make();
-    objects = db.hashMap("object", Serializer.LONG, new EntitySerializer()).createOrOpen();
-    mods = db.hashMap("mods", Serializer.SHORT, new ModSerializer()).createOrOpen();
+    db = MVStore.open(file);
+    objects = db.openMap("object");
+    mods = db.openMap("mods");
   }
 
   /**
    * @return the jdbm3 cache used by this UIDStore
    */
-  public DB getCache() {
+  public MVStore getCache() {
     return db;
   }
 
@@ -212,39 +215,6 @@ public class UIDStore {
     return (mod << 16) | ((map << 16) >>> 16);
   }
 
-  private static class Mod implements Externalizable {
-    private short uid;
-    private String name;
-
-    private Mod(short uid, String name) {
-      this.uid = uid;
-      this.name = name;
-    }
-
-    public void readExternal(ObjectInput input) throws IOException, ClassNotFoundException {
-      uid = input.readShort();
-      name = input.readUTF();
-    }
-
-    public void writeExternal(ObjectOutput output) throws IOException {
-      output.writeShort(uid);
-      output.writeUTF(name);
-    }
-  }
-
-  public static class ModSerializer implements Serializer<Mod>, Serializable {
-
-    @Override
-    public void serialize(@NotNull DataOutput2 out, @NotNull Mod value) throws IOException {
-      out.writeShort(value.uid);
-      out.writeUTF(value.name);
-    }
-
-    @Override
-    public Mod deserialize(@NotNull DataInput2 input, int available) throws IOException {
-      short uid = input.readShort();
-      String name = input.readUTF();
-      return new Mod(uid, name);
-    }
+  private record Mod(short uid,String name) implements Serializable {
   }
 }

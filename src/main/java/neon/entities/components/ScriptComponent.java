@@ -18,10 +18,11 @@
 
 package neon.entities.components;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ScriptComponent implements Component {
+public class ScriptComponent implements Component, Serializable {
   private final long uid;
   private ArrayList<String> scripts = new ArrayList<>();
 

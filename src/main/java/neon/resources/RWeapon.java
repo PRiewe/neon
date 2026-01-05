@@ -20,7 +20,9 @@ package neon.resources;
 
 import org.jdom2.Element;
 
-public class RWeapon extends RItem {
+import java.io.Serializable;
+
+public class RWeapon extends RItem implements Serializable {
   public enum WeaponType {
     BOW("bow"),
     CROSSBOW("crossbow"),

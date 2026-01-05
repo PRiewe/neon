@@ -38,8 +38,8 @@ public class Main {
    */
   public static void main(String[] args) {
     // poorten aanmaken en verbinden
-    LocalPort cPort = new LocalPort();
-    LocalPort sPort = new LocalPort();
+    LocalPort cPort = new LocalPort("Client");
+    LocalPort sPort = new LocalPort("Server");
     cPort.connect(sPort);
     sPort.connect(cPort);
 

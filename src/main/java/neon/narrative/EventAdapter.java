@@ -18,11 +18,13 @@
 
 package neon.narrative;
 
+import lombok.extern.slf4j.Slf4j;
 import neon.core.event.CombatEvent;
 import neon.core.event.SkillEvent;
 import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.listener.Handler;
 
+@Slf4j
 public class EventAdapter {
   private QuestTracker tracker;
 
@@ -31,13 +33,18 @@ public class EventAdapter {
   }
 
   @Handler
-  public void handleSkill(SkillEvent se) {}
+  public void handleSkill(SkillEvent se) {
+    log.trace("handleSkill {}",se);
+  }
 
   @Handler
-  public void handleCombat(CombatEvent ce) {}
+  public void handleCombat(CombatEvent ce) {
+    log.trace("handleCombat {}",ce);
+  }
 
   @Handler
   public void transition(TransitionEvent event) {
+    log.trace("transition {}",event);
     if (event.toString().equals("dialog")) {
       tracker.checkTransition(event);
     }

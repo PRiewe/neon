@@ -19,20 +19,42 @@
 package neon.entities.components;
 
 import java.awt.Rectangle;
+import java.io.Serializable;
+
 import net.phys2d.raw.Body;
 import net.phys2d.raw.shapes.Box;
 
-public class PhysicsComponent extends Body implements Component {
-  private long uid;
+public class PhysicsComponent implements Component, Serializable {
+  private final long uid;
+  private final int width;
+  private final int height;
+  private final double centerX;
+  private final double centerY;
+  transient private Body theBody;
 
   public PhysicsComponent(long uid, Rectangle bounds) {
-    super(new Box(bounds.width, bounds.height), 1);
-    setUserData(uid);
-    setEnabled(true);
-    setPosition((float) bounds.getCenterX(), (float) bounds.getCenterY());
+    this.width = bounds.width;
+    this.height = bounds.height;
+    this.centerX = bounds.getCenterX();
+    this.centerY = bounds.getCenterY();
+    this.uid = uid;
+    theBody = new Body(new Box(bounds.width, bounds.height), 1);
+
+    theBody.setUserData(uid);
+    theBody.setEnabled(true);
+    theBody.setPosition((float) bounds.getCenterX(), (float) bounds.getCenterY());
   }
 
-  @Override
+  public synchronized Body getTheBody() {
+    if(theBody == null) {
+      theBody = new Body(new Box(width,height),1);
+      theBody.setUserData(uid);
+      theBody.setEnabled(true);
+      theBody.setPosition((float) centerX, (float) centerY);
+    }
+    return theBody;
+  }
+
   public boolean isStatic() {
     return false;
   }

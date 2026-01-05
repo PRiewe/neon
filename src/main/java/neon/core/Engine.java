@@ -21,6 +21,8 @@ package neon.core;
 import java.util.EventObject;
 import java.util.logging.Logger;
 import javax.script.*;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.event.*;
 import neon.core.handlers.CombatHandler;
 import neon.core.handlers.DeathHandler;
@@ -46,6 +48,7 @@ import org.graalvm.polyglot.HostAccess;
  *
  * @author mdriesen
  */
+@Slf4j
 public class Engine implements Runnable {
   // wordt door engine geïnitialiseerd
   // TODO: alle global static state wegwerken
@@ -53,7 +56,6 @@ public class Engine implements Runnable {
   private static org.graalvm.polyglot.Engine polyengine;
   private static FileSystem files; // virtual file system
   private static PhysicsSystem physics; // de physics engine
-  private static Logger logger;
   private static QuestTracker quests;
   private static MBassador<EventObject> bus; // event bus
   private static ResourceManager resources;
@@ -89,7 +91,6 @@ public class Engine implements Runnable {
     files = new FileSystem();
     physics = new PhysicsSystem();
     queue = new TaskQueue();
-    logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     // create a resourcemanager to keep track of all the resources
     resources = new ResourceManager();
@@ -149,7 +150,9 @@ public class Engine implements Runnable {
    * @return the player
    */
   public static Player getPlayer() {
-    return game.getPlayer();
+    if (game != null) {
+      return game.getPlayer();
+    } else return null;
   }
 
   public static QuestTracker getQuestTracker() {
@@ -184,13 +187,6 @@ public class Engine implements Runnable {
     return engine;
   }
 
-  /**
-   * @return the logger
-   */
-  public static Logger getLogger() {
-    return logger;
-  }
-
   public static UIDStore getStore() {
     return game.getStore();
   }
@@ -209,6 +205,7 @@ public class Engine implements Runnable {
 
   /** Starts a new game. */
   public void startGame(Game game) {
+    System.out.printf("Engine.startGame() start game %s%n", game);
     Engine.game = game;
 
     // ontbrekende systemen opzetten
@@ -219,6 +216,7 @@ public class Engine implements Runnable {
     engine.getBindings("js").putMember("journal", player.getJournal());
     engine.getBindings("js").putMember("player", player);
     engine.getBindings("js").putMember("PC", player);
+    System.out.println("Engine.startGame() exit");
   }
 
   /** quit the game */

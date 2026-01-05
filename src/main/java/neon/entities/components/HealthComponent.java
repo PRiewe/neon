@@ -20,7 +20,9 @@ package neon.entities.components;
 
 import neon.util.Dice;
 
-public class HealthComponent implements Component {
+import java.io.Serializable;
+
+public class HealthComponent implements Component, Serializable {
   private int health; // health/hit points
   private float healthMod, baseHealthMod; // verschil t.o.v. base health
   private final long uid;

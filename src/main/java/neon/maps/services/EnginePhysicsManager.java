@@ -42,6 +42,6 @@ public class EnginePhysicsManager implements PhysicsManager {
 
   @Override
   public void register(PhysicsComponent component) {
-    Engine.getPhysicsEngine().register(component);
+    Engine.getPhysicsEngine().register(component.getTheBody());
   }
 }

@@ -6,10 +6,10 @@ import java.awt.Rectangle;
 import java.util.Collection;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
+import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapdb.DB;
 
 /**
  * Integration tests for Atlas focusing on MapDb sharing and full workflows.
@@ -18,7 +18,7 @@ import org.mapdb.DB;
  */
 class AtlasIntegrationTest {
 
-  private DB testDb;
+  private MVStore testDb;
   private Atlas atlas;
 
   @BeforeEach

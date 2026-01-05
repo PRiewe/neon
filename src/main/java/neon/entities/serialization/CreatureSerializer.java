@@ -19,6 +19,8 @@
 package neon.entities.serialization;
 
 import java.awt.Rectangle;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import neon.ai.AIFactory;
@@ -32,16 +34,14 @@ import neon.entities.components.HealthComponent;
 import neon.entities.property.Slot;
 import neon.magic.SpellFactory;
 import neon.resources.RCreature;
-import org.mapdb.DataInput2;
-import org.mapdb.DataOutput2;
-import org.mapdb.Serializer;
+
 
 // TODO: factions
-public class CreatureSerializer implements Serializer<Creature>, Serializable {
+public class CreatureSerializer {
   private static final long serialVersionUID = -2452444993764883434L;
   private static AIFactory aiFactory = new AIFactory();
 
-  public Creature deserialize(DataInput2 in, int bytes) throws IOException {
+  public Creature deserialize(DataInput in) throws IOException {
     String id = in.readUTF();
     String species = in.readUTF();
     int x = in.readInt();
@@ -87,7 +87,7 @@ public class CreatureSerializer implements Serializer<Creature>, Serializable {
     return creature;
   }
 
-  public void serialize(DataOutput2 out, Creature creature) throws IOException {
+  public void serialize(DataOutput out, Creature creature) throws IOException {
     out.writeUTF(creature.getID());
     out.writeUTF(creature.species.id);
     Rectangle bounds = creature.getShapeComponent();

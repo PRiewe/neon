@@ -8,10 +8,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
+import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapdb.DB;
 
 /**
  * Tests for RTree spatial index persistence through MapDb.
@@ -21,7 +21,7 @@ import org.mapdb.DB;
  */
 class RTreePersistenceTest {
 
-  private DB testDb;
+  private MVStore testDb;
 
   @BeforeEach
   void setUp() {
@@ -35,7 +35,7 @@ class RTreePersistenceTest {
 
   @Test
   void testInMemoryRTreeBasicOperations() {
-    RTree<TestItem> tree = new RTree<>(10, 2);
+    RTree<TestItem> tree = new RTree<>(100, 40);
 
     TestItem item1 = new TestItem("item1");
     tree.insert(item1, new Rectangle(0, 0, 10, 10));
@@ -189,7 +189,7 @@ class RTreePersistenceTest {
     PerformanceHarness.MeasuredResult<RTree<TestItem>> inMemoryResult =
         PerformanceHarness.measure(
             () -> {
-              RTree<TestItem> tree = new RTree<>(10, 2);
+              RTree<TestItem> tree = new RTree<>(100, 40);
               for (int i = 0; i < itemCount; i++) {
                 tree.insert(new TestItem("item-" + i), new Rectangle(i * 5, i * 5, 10, 10));
               }

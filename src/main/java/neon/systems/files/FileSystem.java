@@ -253,6 +253,9 @@ public class FileSystem {
   private String toString(String... path) {
     StringBuffer buffer = new StringBuffer();
     for (int i = 0; i < path.length; i++) {
+      if(path[i] == null) {
+        continue;
+      }
       buffer.append(File.separator);
       buffer.append(path[i]);
     }

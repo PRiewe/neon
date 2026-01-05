@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
+import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapdb.DB;
 
 /**
  * Unit tests for Atlas class focusing on MapDb caching behavior.
@@ -17,7 +17,7 @@ import org.mapdb.DB;
  */
 class AtlasTest {
 
-  private DB testDb;
+  private MVStore testDb;
   private Atlas atlas;
 
   @BeforeEach

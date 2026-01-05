@@ -6,10 +6,10 @@ import java.awt.Rectangle;
 import java.util.Collection;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
+import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapdb.DB;
 
 /**
  * Integration tests for Zone covering remaining methods.
@@ -18,7 +18,7 @@ import org.mapdb.DB;
  */
 class ZoneIntegrationTest {
 
-  private DB testDb;
+  private MVStore testDb;
 
   @BeforeEach
   void setUp() {

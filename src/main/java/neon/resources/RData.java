@@ -20,12 +20,14 @@ package neon.resources;
 
 import org.jdom2.Element;
 
+import java.io.Serializable;
+
 /**
  * A resource that is loaded from/saved to an XML data file.
  *
  * @author mdriesen
  */
-public abstract class RData extends Resource {
+public abstract class RData extends Resource implements Serializable {
   // dit dient eigenlijk alleen voor items en creatures
   public String text = "x";
   public String color = "white";

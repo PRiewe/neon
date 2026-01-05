@@ -24,7 +24,8 @@ import neon.maps.generators.DungeonGenerator;
 import neon.maps.services.EngineEntityStore;
 import neon.maps.services.EntityStore;
 import neon.systems.files.FileSystem;
-import org.mapdb.*;
+import org.h2.mvstore.MVMap;
+import org.h2.mvstore.MVStore;
 
 /**
  * This class keeps track of all loaded maps and their connections.
@@ -32,8 +33,8 @@ import org.mapdb.*;
  * @author mdriesen
  */
 public class Atlas {
-  private DB db = null;
-  private final HTreeMap<Integer, Map> maps;
+  private MVStore db = null;
+  private final MVMap<Integer, Map> maps;
   private int currentZone = 0;
   private int currentMap = 0;
   private final FileSystem files;
@@ -67,8 +68,10 @@ public class Atlas {
     this.files = files;
     this.entityStore = entityStore;
     this.zoneActivator = zoneActivator;
-    db = DBMaker.memoryDB().make();
-    maps = (HTreeMap<Integer, Map>) db.hashMap("maps").createOrOpen();
+    files.delete(path);
+
+    db = MVStore.open(path);
+    maps = db.openMap("maps");
   }
 
   /**
@@ -77,10 +80,10 @@ public class Atlas {
    * @return a zone activator
    */
   private static ZoneActivator createDefaultZoneActivator() {
-    return new ZoneActivator(new neon.maps.services.EnginePhysicsManager(), Engine.getPlayer());
+    return new ZoneActivator(new neon.maps.services.EnginePhysicsManager(), Engine::getPlayer);
   }
 
-  public DB getCache() {
+  public MVStore getCache() {
     return db;
   }
 

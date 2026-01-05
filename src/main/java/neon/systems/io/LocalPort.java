@@ -22,6 +22,10 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
+
+import lombok.extern.slf4j.Slf4j;
+import net.engio.mbassy.bus.config.BusConfiguration;
+import net.engio.mbassy.bus.config.IBusConfiguration;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
@@ -32,12 +36,16 @@ import net.engio.mbassy.listener.References;
  * @author mdriesen
  */
 @Listener(references = References.Strong) // strong, om gc te vermijden
+@Slf4j
 public class LocalPort extends Port {
   private Collection<EventObject> buffer =
       Collections.synchronizedCollection(new ArrayDeque<EventObject>());
   private LocalPort peer;
+  private final String name;
 
-  public LocalPort() {
+  public LocalPort(String name) {
+    super(new BusConfiguration().setProperty(IBusConfiguration.Properties.BusId, name));
+    this.name = name;
     bus.subscribe(this);
   }
 
@@ -53,6 +61,7 @@ public class LocalPort extends Port {
   @Override
   @Handler
   public void receive(EventObject event) {
+    log.trace("{} received {}",this.name,event);
     // zorgen dat al behandelde events niet nog eens worden teruggestuurd
     if (!buffer.remove(event)) {
       peer.write(event);

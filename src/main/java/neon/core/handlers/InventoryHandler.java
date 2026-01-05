@@ -20,6 +20,8 @@ package neon.core.handlers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.StoreEvent;
 import neon.entities.Clothing;
@@ -37,6 +39,7 @@ import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
 
 @Listener(references = References.Strong)
+@Slf4j
 public class InventoryHandler {
   /**
    * Adds or removes an {@code Entity} from the {@code UIDStore}.
@@ -45,6 +48,7 @@ public class InventoryHandler {
    */
   @Handler
   public void handle(StoreEvent event) {
+    log.trace("handle {}",event);
     switch (event.getMode()) {
       case ADD:
         Engine.getStore().addEntity(event.getEntity());

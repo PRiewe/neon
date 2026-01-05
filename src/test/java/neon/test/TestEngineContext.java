@@ -19,7 +19,7 @@ import neon.resources.RTerrain;
 import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
-import org.mapdb.DB;
+import org.h2.mvstore.MVStore;
 
 /**
  * Test utility for managing Engine singleton dependencies in tests.
@@ -29,7 +29,7 @@ import org.mapdb.DB;
  */
 public class TestEngineContext {
 
-  private static DB testDb;
+  private static MVStore testDb;
   private static Atlas testAtlas;
   private static ResourceManager testResources;
   private static Game testGame;
@@ -56,7 +56,7 @@ public class TestEngineContext {
    * @param db the MapDb database to use for Atlas
    * @throws RuntimeException if reflection fails
    */
-  public static void initialize(DB db) {
+  public static void initialize(MVStore db) {
     testDb = db;
 
     try {
@@ -73,7 +73,7 @@ public class TestEngineContext {
       // Create stub PhysicsManager and ZoneActivator
       PhysicsManager stubPhysicsManager = new StubPhysicsManager();
       Player stubPlayer = new StubPlayer();
-      testZoneActivator = new ZoneActivator(stubPhysicsManager, stubPlayer);
+      testZoneActivator = new ZoneActivator(stubPhysicsManager, () -> stubPlayer);
 
       // Create ZoneFactory for tests
       testZoneFactory = new ZoneFactory(db);
@@ -148,7 +148,7 @@ public class TestEngineContext {
   }
 
   /** Sets the Atlas's DB field using reflection (it's private). */
-  private static void setAtlasDb(Atlas atlas, DB db) throws Exception {
+  private static void setAtlasDb(Atlas atlas, MVStore db) throws Exception {
 
     Field dbField = Atlas.class.getDeclaredField("db");
     dbField.setAccessible(true);
@@ -157,7 +157,7 @@ public class TestEngineContext {
     // Also need to recreate the maps HTreeMap with the new DB
     Field mapsField = Atlas.class.getDeclaredField("maps");
     mapsField.setAccessible(true);
-    mapsField.set(atlas, db.hashMap("maps").createOrOpen());
+    mapsField.set(atlas, db.openMap("maps"));
   }
 
   /** Stub ResourceManager that returns dummy resources. */

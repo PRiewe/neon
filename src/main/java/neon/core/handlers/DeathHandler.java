@@ -18,6 +18,7 @@
 
 package neon.core.handlers;
 
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.DeathEvent;
 import neon.entities.Creature;
@@ -33,11 +34,13 @@ import org.graalvm.polyglot.Value;
  * @author mdriesen
  */
 @Listener(references = References.Strong) // strong, om gc te vermijden
+@Slf4j
 public class DeathHandler {
   public DeathHandler() {}
 
   @Handler
   public void handle(DeathEvent de) {
+    log.trace("handle {}",de);
     Creature creature = de.getCreature();
 
     // creature laten doodgaan

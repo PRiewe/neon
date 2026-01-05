@@ -18,13 +18,19 @@
 
 package neon.entities;
 
+import lombok.Getter;
+import lombok.Setter;
 import neon.entities.components.Enchantment;
 import neon.entities.components.ItemRenderComponent;
 import neon.entities.components.RenderComponent;
 import neon.resources.RItem;
 
-public class Item extends Entity {
+import java.io.Serializable;
+
+public class Item extends Entity implements Serializable {
   public final RItem resource;
+  @Getter
+  @Setter
   protected long owner = 0;
 
   public Item(long uid, RItem resource) {
@@ -48,22 +54,6 @@ public class Item extends Entity {
     } else {
       return resource.id;
     }
-  }
-
-  /**
-   * Sets the owner of this item.
-   *
-   * @param owner
-   */
-  public void setOwner(long owner) {
-    this.owner = owner;
-  }
-
-  /**
-   * @return the owner of this item
-   */
-  public long getOwner() {
-    return owner;
   }
 
   /**

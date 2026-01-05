@@ -18,6 +18,7 @@
 
 package neon.entities.components;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +32,7 @@ import neon.resources.RSpell;
  *
  * @author mdriesen
  */
-public class Animus implements Component {
+public class Animus implements Component, Serializable {
   private float baseManaMod = 0;
   private float manaMod = 0;
   private RSpell spell; // geëquipte spell

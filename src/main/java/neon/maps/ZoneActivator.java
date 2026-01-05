@@ -18,6 +18,7 @@
 
 package neon.maps;
 
+import java.util.function.Supplier;
 import neon.entities.Player;
 import neon.maps.services.PhysicsManager;
 
@@ -29,7 +30,7 @@ import neon.maps.services.PhysicsManager;
  */
 public class ZoneActivator {
   private final PhysicsManager physicsManager;
-  private final Player player;
+  private final Supplier<Player> player;
 
   /**
    * Creates a new ZoneActivator with the given dependencies.
@@ -37,7 +38,7 @@ public class ZoneActivator {
    * @param physicsManager the physics system manager
    * @param player the player entity
    */
-  public ZoneActivator(PhysicsManager physicsManager, Player player) {
+  public ZoneActivator(PhysicsManager physicsManager, Supplier<Player> player) {
     this.physicsManager = physicsManager;
     this.player = player;
   }
@@ -59,6 +60,6 @@ public class ZoneActivator {
     }
 
     // Re-register the player
-    physicsManager.register(player.getPhysicsComponent());
+    physicsManager.register(player.get().getPhysicsComponent());
   }
 }

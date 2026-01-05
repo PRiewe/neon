@@ -3,8 +3,8 @@ package neon.test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
+import org.h2.mvstore.MVStore;
+
 
 /**
  * Utility class for managing MapDb databases in tests.
@@ -16,15 +16,15 @@ public class MapDbTestHelper {
 
   /** Represents a test database with its associated file path (if file-backed). */
   public static class TestDatabase {
-    private final DB db;
+    private final MVStore db;
     private final Path filePath;
 
-    public TestDatabase(DB db, Path filePath) {
+    public TestDatabase(MVStore db, Path filePath) {
       this.db = db;
       this.filePath = filePath;
     }
 
-    public DB getDb() {
+    public MVStore getDb() {
       return db;
     }
 
@@ -44,8 +44,8 @@ public class MapDbTestHelper {
    *
    * @return an in-memory DB instance
    */
-  public static DB createInMemoryDB() {
-    return DBMaker.memoryDB().make();
+  public static MVStore createInMemoryDB() {
+    return MVStore.open(null);
   }
 
   /**
@@ -58,7 +58,8 @@ public class MapDbTestHelper {
    */
   public static TestDatabase createTempFileDB() throws IOException {
     Path tempFile = Files.createTempFile("neon-test-db-", ".dat");
-    DB db = DBMaker.fileDB(tempFile.toFile()).make();
+    MVStore db = MVStore.open(tempFile.toString());
+
     return new TestDatabase(db, tempFile);
   }
 
@@ -71,7 +72,7 @@ public class MapDbTestHelper {
    */
   public static TestDatabase createTempFileDB(String prefix) throws IOException {
     Path tempFile = Files.createTempFile(prefix, ".dat");
-    DB db = DBMaker.fileDB(tempFile.toFile()).make();
+    MVStore db = MVStore.open(tempFile.toString());
     return new TestDatabase(db, tempFile);
   }
 
@@ -82,7 +83,7 @@ public class MapDbTestHelper {
    *
    * @param db the database to cleanup
    */
-  public static void cleanup(DB db) {
+  public static void cleanup(MVStore db) {
     if (db != null && !db.isClosed()) {
       db.close();
     }
@@ -121,7 +122,7 @@ public class MapDbTestHelper {
    * @param db the database to check
    * @throws IllegalStateException if the database is null or closed
    */
-  public static void assertDbOpen(DB db) {
+  public static void assertDbOpen(MVStore db) {
     if (db == null) {
       throw new IllegalStateException("Database is null");
     }
@@ -137,9 +138,9 @@ public class MapDbTestHelper {
    * @param collectionName the name of the collection
    * @throws IllegalStateException if the collection doesn't exist
    */
-  public static void assertCollectionExists(DB db, String collectionName) {
+  public static void assertCollectionExists(MVStore db, String collectionName) {
     assertDbOpen(db);
-    if (!db.exists(collectionName)) {
+    if (!db.getMapNames().contains(collectionName)) {
       throw new IllegalStateException("Collection '" + collectionName + "' does not exist");
     }
   }
@@ -151,11 +152,8 @@ public class MapDbTestHelper {
    * @param collectionName the name of the collection
    * @return the number of entries, or -1 if collection doesn't exist
    */
-  public static int getCollectionSize(DB db, String collectionName) {
-    if (!db.exists(collectionName)) {
-      return -1;
-    }
-    var map = db.hashMap(collectionName).open();
+  public static int getCollectionSize(MVStore db, String collectionName) {
+    var map = db.openMap(collectionName);
     return map.size();
   }
 
@@ -164,7 +162,7 @@ public class MapDbTestHelper {
    *
    * @param db the database to commit
    */
-  public static void commit(DB db) {
+  public static void commit(MVStore db) {
     if (db != null && !db.isClosed()) {
       db.commit();
     }

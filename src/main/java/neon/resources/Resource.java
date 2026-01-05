@@ -18,6 +18,8 @@
 
 package neon.resources;
 
+import java.io.Serializable;
+
 /**
  * A class that represents a resource that is loaded from disk. Two abstract methods are provided to
  * {@code load()} and {@code unload()} a resource. Beware that some resources are not read from disk
@@ -25,7 +27,7 @@ package neon.resources;
  *
  * @author mdriesen
  */
-public abstract class Resource {
+public abstract class Resource implements Serializable {
   public final String id;
   protected String[] path;
 

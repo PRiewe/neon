@@ -27,7 +27,7 @@ import java.util.*;
 public class GridIndex<E> implements SpatialIndex<E> {
   private final Multimap<Point, E> elements = ArrayListMultimap.create();
 
-  public List<E> getElements() {
+  public synchronized List<E> getElements() {
     ArrayList<E> list = new ArrayList<E>();
     for (Point p : elements.keySet()) {
       list.addAll(elements.get(p));
@@ -45,9 +45,9 @@ public class GridIndex<E> implements SpatialIndex<E> {
     return list;
   }
 
-  public Collection<E> getElements(Point point) {
+  public synchronized Collection<E> getElements(Point point) {
     if (elements.get(point) != null) {
-      return elements.get(point);
+      return Collections.unmodifiableCollection(elements.get(point));
     } else {
       return new ArrayList<E>();
     }
@@ -61,17 +61,21 @@ public class GridIndex<E> implements SpatialIndex<E> {
     }
   }
 
-  public void remove(E e) {
-    for (Point p : elements.keySet()) {
-      elements.get(p).remove(e);
+  public synchronized void remove(E e) {
+    Collection<Map.Entry<Point,E>> forRemoval = new ArrayList<>();
+    for (var entry : elements.entries()) {
+      if (entry.getValue() != null && entry.getValue().equals(e)) {
+        forRemoval.add(entry);
+      }
     }
+    forRemoval.forEach(x->elements.remove(x.getKey(),x.getValue()));
   }
 
-  public void clear() {
+  public synchronized void clear() {
     elements.clear();
   }
 
-  public int getWidth() {
+  public synchronized int getWidth() {
     int w = 0;
     for (Point p : elements.keySet()) {
       w = Math.max(w, p.x);
@@ -79,7 +83,7 @@ public class GridIndex<E> implements SpatialIndex<E> {
     return w;
   }
 
-  public int getHeight() {
+  public synchronized int getHeight() {
     int h = 0;
     for (Point p : elements.keySet()) {
       h = Math.max(h, p.y);

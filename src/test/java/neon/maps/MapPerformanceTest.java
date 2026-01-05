@@ -11,10 +11,10 @@ import neon.entities.Item;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
+import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapdb.DB;
 
 /**
  * Comprehensive performance tests for map system.
@@ -23,7 +23,7 @@ import org.mapdb.DB;
  */
 class MapPerformanceTest {
 
-  private DB testDb;
+  private MVStore testDb;
 
   @BeforeEach
   void setUp() {

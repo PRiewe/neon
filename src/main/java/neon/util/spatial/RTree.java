@@ -23,10 +23,10 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
-// import org.apache.jdbm.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.h2.mvstore.MVStore;
 import org.jetbrains.annotations.NotNull;
-import org.mapdb.*;
-import org.mapdb.serializer.GroupSerializer;
+
 
 /**
  * This class represents a primitive R-tree for spatial indexing.
@@ -34,11 +34,12 @@ import org.mapdb.serializer.GroupSerializer;
  * @author mdriesen
  */
 public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
-  private final NavigableMap<Integer, E> objects;
+  private final Map<Integer, E> objects;
   private final Map<Integer, Rectangle2D> boxes;
   private RNode<E> root;
   private final int max;
   private final int min;
+  private AtomicInteger objectsMaxIndex = new AtomicInteger(0);
 
   /**
    * Initializes a new R-tree with the given maximum node size and minimum fill factor.
@@ -55,7 +56,7 @@ public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
     boxes = new HashMap<Integer, Rectangle2D>();
     min = fillFactor;
     max = nodeSize;
-    root = new RNode<E>(min, max, this);
+    root = new RNode<E>(max, min, this);
   }
 
   /**
@@ -65,18 +66,21 @@ public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
    * @param nodeSize the requested node size
    * @param fillFactor the requested fill factor
    */
-  public RTree(int nodeSize, int fillFactor, DB db, String name) throws IllegalArgumentException {
+  public RTree(int nodeSize, int fillFactor, MVStore db, String name)
+      throws IllegalArgumentException {
     if (fillFactor > nodeSize / 2) {
       throw new IllegalArgumentException("Fill factor too high.");
     }
 
     min = fillFactor;
     max = nodeSize;
-    root = new RNode<E>(min, max, this);
+    root = new RNode<E>(max, min, this);
 
-    objects = db.treeMap(name, Serializer.INTEGER, Serializer.JAVA).createOrOpen();
-    boxes =
-        db.treeMap(name + ":boxes", GroupSerializer.INTEGER, GroupSerializer.JAVA).createOrOpen();
+    objects = db.openMap(name);
+    if (!objects.isEmpty()) {
+      objectsMaxIndex.set(objects.keySet().stream().mapToInt(x -> x).max().orElse(0));
+    }
+    boxes = db.openMap(name + ":boxes");
     for (int i : boxes.keySet()) {
       root.add(i, boxes.get(i).getBounds());
     }
@@ -166,7 +170,7 @@ public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
    */
   public void insert(E object, Rectangle box) {
     Rectangle2D box2D = new Rectangle2D.Double(box.x, box.y, box.width, box.height);
-    int index = (!objects.isEmpty()) ? objects.lastKey() + 1 : 0;
+    int index = objectsMaxIndex.addAndGet(1);
     boxes.put(index, box2D);
     root.add(index, box);
     objects.put(index, object);

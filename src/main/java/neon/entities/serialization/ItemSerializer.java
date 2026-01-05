@@ -37,19 +37,17 @@ import neon.entities.components.Portal;
 import neon.entities.components.Trap;
 import neon.magic.SpellFactory;
 import neon.resources.RItem;
-import org.mapdb.DataInput2;
-import org.mapdb.DataOutput2;
-import org.mapdb.Serializer;
+
 
 /**
  * This class takes care of (de)serialization of {@code Item}s.
  *
  * @author mdriesen
  */
-public class ItemSerializer implements Serializer<Item>, Serializable {
+public class ItemSerializer {
   private static final long serialVersionUID = 2138679015831709732L;
 
-  public Item deserialize(DataInput2 input, int i) throws IOException {
+  public Item deserialize(DataInput input) throws IOException {
     // item aanmaken
     String id = input.readUTF();
     long uid = input.readLong();
@@ -82,7 +80,7 @@ public class ItemSerializer implements Serializer<Item>, Serializable {
     return item;
   }
 
-  public void serialize(DataOutput2 output, Item item) throws IOException {
+  public void serialize(DataOutput output, Item item) throws IOException {
     output.writeUTF(item.resource.id);
     output.writeLong(item.getUID());
     Rectangle bounds = item.getShapeComponent();

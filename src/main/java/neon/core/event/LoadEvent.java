@@ -19,11 +19,14 @@
 package neon.core.event;
 
 import java.util.EventObject;
+
+import lombok.ToString;
 import neon.entities.Player.Specialisation;
 import neon.entities.property.Gender;
 import neon.resources.RSign;
 
 @SuppressWarnings("serial")
+@ToString
 public class LoadEvent extends EventObject {
   public enum Mode {
     LOAD,

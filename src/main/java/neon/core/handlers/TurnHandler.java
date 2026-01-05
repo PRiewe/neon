@@ -20,6 +20,8 @@ package neon.core.handlers;
 
 import java.awt.Rectangle;
 import java.util.Collection;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
 import neon.core.Engine;
 import neon.core.event.TurnEvent;
@@ -41,6 +43,7 @@ import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
 
 @Listener(references = References.Strong) // strong, om gc te vermijden
+@Slf4j
 public class TurnHandler {
   private GamePanel panel;
   private Generator generator;
@@ -55,6 +58,7 @@ public class TurnHandler {
 
   @Handler
   public void tick(TurnEvent te) {
+    log.trace("tick {}",te);
     // indien beurt gedaan is (timer krijgt extra tick):
     //	1) random regions controleren
     //	2) monsters controleren

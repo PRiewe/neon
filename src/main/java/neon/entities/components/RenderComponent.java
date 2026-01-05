@@ -20,7 +20,9 @@ package neon.entities.components;
 
 import neon.ui.graphics.Renderable;
 
-public abstract class RenderComponent implements Renderable, Component {
+import java.io.Serializable;
+
+public abstract class RenderComponent implements Renderable, Component, Serializable {
   private int z = Byte.MAX_VALUE - 1;
 
   @Override

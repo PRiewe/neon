@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.event.LoadEvent;
 import neon.core.event.MagicTask;
 import neon.core.event.ScriptAction;
@@ -58,6 +60,7 @@ import org.jdom2.*;
 import org.jdom2.input.SAXBuilder;
 
 @Listener(references = References.Strong)
+@Slf4j
 public class GameLoader {
   private Engine engine;
   private TaskQueue queue;
@@ -71,6 +74,8 @@ public class GameLoader {
 
   @Handler
   public void loadGame(LoadEvent le) {
+    log.trace("loadGame {}",le);
+    System.out.println("Event source: " + le.getSource().toString());
     // spel laden
     switch (le.getMode()) {
       case LOAD:
@@ -110,41 +115,47 @@ public class GameLoader {
       Player.Specialisation spec,
       String profession,
       RSign sign) {
+    try {
+      System.out.println("Engine.initGame() start");
+      // speler initialiseren
+      RCreature species =
+          new RCreature(((RCreature) Engine.getResources().getResource(race)).toElement());
+      Player player = new Player(species, name, gender, spec, profession);
+      player.species.text = "@";
+      engine.startGame(new Game(player, Engine.getFileSystem()));
+      setSign(player, sign);
+      for (Skill skill : Skill.values()) {
+        SkillHandler.checkFeat(skill, player);
+      }
 
-    // speler initialiseren
-    RCreature species =
-        new RCreature(((RCreature) Engine.getResources().getResource(race)).toElement());
-    Player player = new Player(species, name, gender, spec, profession);
-    player.species.text = "@";
-    engine.startGame(new Game(player, Engine.getFileSystem()));
-    setSign(player, sign);
-    for (Skill skill : Skill.values()) {
-      SkillHandler.checkFeat(skill, player);
+      // maps initialiseren
+      initMaps();
+
+      CGame game = (CGame) Engine.getResources().getResource("game", "config");
+
+      // starting items
+      for (String i : game.getStartingItems()) {
+        Item item = EntityFactory.getItem(i, Engine.getStore().createNewEntityUID());
+        Engine.getStore().addEntity(item);
+        InventoryHandler.addItem(player, item.getUID());
+      }
+      // starting spells
+      for (String i : game.getStartingSpells()) {
+        player.getMagicComponent().addSpell(SpellFactory.getSpell(i));
+      }
+
+      // player in positie brengen
+      Rectangle bounds = player.getShapeComponent();
+      bounds.setLocation(game.getStartPosition().x, game.getStartPosition().y);
+      Map map = Engine.getAtlas().getMap(Engine.getStore().getMapUID(game.getStartMap()));
+      Engine.getScriptEngine().getBindings("js").putMember("map", map);
+      Engine.getAtlas().setMap(map);
+      Engine.getAtlas().setCurrentZone(game.getStartZone());
+    } catch (RuntimeException re) {
+      System.out.println(re);
+      re.printStackTrace();
     }
-
-    // maps initialiseren
-    initMaps();
-
-    CGame game = (CGame) Engine.getResources().getResource("game", "config");
-
-    // starting items
-    for (String i : game.getStartingItems()) {
-      Item item = EntityFactory.getItem(i, Engine.getStore().createNewEntityUID());
-      Engine.getStore().addEntity(item);
-      InventoryHandler.addItem(player, item.getUID());
-    }
-    // starting spells
-    for (String i : game.getStartingSpells()) {
-      player.getMagicComponent().addSpell(SpellFactory.getSpell(i));
-    }
-
-    // player in positie brengen
-    Rectangle bounds = player.getShapeComponent();
-    bounds.setLocation(game.getStartPosition().x, game.getStartPosition().y);
-    Map map = Engine.getAtlas().getMap(Engine.getStore().getMapUID(game.getStartMap()));
-    Engine.getScriptEngine().getBindings("js").putMember("map", map);
-    Engine.getAtlas().setMap(map);
-    Engine.getAtlas().setCurrentZone(game.getStartZone());
+    System.out.println("Engine.initGame() exit");
   }
 
   private void setSign(Player player, RSign sign) {
@@ -196,11 +207,16 @@ public class GameLoader {
 
     // quests
     Element journal = root.getChild("journal");
-    for (Element e : journal.getChildren()) {
-      Engine.getPlayer().getJournal().addQuest(e.getAttributeValue("id"), e.getText());
-      Engine.getPlayer()
-          .getJournal()
-          .updateQuest(e.getAttributeValue("id"), Integer.parseInt(e.getAttributeValue("stage")));
+    Player player = Engine.getPlayer();
+    if (player != null) {
+      for (Element e : journal.getChildren()) {
+        Engine.getPlayer().getJournal().addQuest(e.getAttributeValue("id"), e.getText());
+        Engine.getPlayer()
+            .getJournal()
+            .updateQuest(e.getAttributeValue("id"), Integer.parseInt(e.getAttributeValue("stage")));
+      }
+    } else {
+      System.out.println("Skipping journal update");
     }
   }
 
@@ -323,7 +339,7 @@ public class GameLoader {
           int uid = UIDStore.getMapUID(Engine.getStore().getModUID(path[0]), mapUID);
           Engine.getStore().addMap(uid, path);
         } catch (Exception e) {
-          Engine.getLogger().fine("Map error in mod " + path[0]);
+          log.info("Map error in mod {}",path[0]);
         }
     }
   }

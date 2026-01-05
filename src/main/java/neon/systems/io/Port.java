@@ -20,6 +20,8 @@ package neon.systems.io;
 
 import java.util.EventObject;
 import net.engio.mbassy.bus.MBassador;
+import net.engio.mbassy.bus.config.Feature;
+import net.engio.mbassy.bus.config.IBusConfiguration;
 import net.engio.mbassy.listener.Handler;
 
 /**
@@ -30,6 +32,18 @@ import net.engio.mbassy.listener.Handler;
  */
 public abstract class Port {
   protected MBassador<EventObject> bus = new MBassador<EventObject>();
+
+  public Port() {
+    bus = new MBassador<>();
+  }
+
+  public Port(IBusConfiguration config) {
+    config
+        .addFeature(Feature.SyncPubSub.Default())
+        .addFeature(Feature.AsynchronousHandlerInvocation.Default())
+        .addFeature(Feature.AsynchronousMessageDispatch.Default());
+    bus = new MBassador<>(config);
+  }
 
   @Handler
   public abstract void receive(EventObject event);

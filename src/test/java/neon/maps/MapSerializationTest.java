@@ -7,10 +7,10 @@ import java.util.Collection;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
+import org.h2.mvstore.MVStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapdb.DB;
 
 /**
  * Tests for Map implementations (World and Dungeon) serialization and deserialization.
@@ -20,7 +20,7 @@ import org.mapdb.DB;
  */
 class MapSerializationTest {
 
-  private DB testDb;
+  private MVStore testDb;
 
   @BeforeEach
   void setUp() {

@@ -19,6 +19,8 @@
 package neon.core.handlers;
 
 import java.awt.Rectangle;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
@@ -44,9 +46,11 @@ import net.engio.mbassy.listener.References;
  * @author mdriesen
  */
 @Listener(references = References.Strong) // strong, om gc te vermijden
+@Slf4j
 public class CombatHandler {
   @Handler
   public void handleCombat(CombatEvent ce) {
+    log.trace("handleCombat {}",ce);
     if (!ce.isFinished()) {
       int result = 0;
       switch (ce.getType()) {

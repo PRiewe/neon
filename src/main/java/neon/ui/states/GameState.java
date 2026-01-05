@@ -22,6 +22,8 @@ import java.awt.event.*;
 import java.io.InputStream;
 import java.util.EventObject;
 import java.util.Scanner;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.*;
 import neon.core.event.*;
 import neon.core.handlers.TurnHandler;
@@ -38,6 +40,7 @@ import net.engio.mbassy.listener.Handler;
 import net.phys2d.raw.CollisionEvent;
 import net.phys2d.raw.CollisionListener;
 
+@Slf4j
 public class GameState extends State implements KeyListener, CollisionListener {
   private Player player;
   private GamePanel panel;
@@ -174,6 +177,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
 
   @Handler
   public void handleCombat(CombatEvent ce) {
+    log.trace("handleCombat {}",ce);
     if (ce.isFinished()) {
       if (ce.getDefender() == player) {
         panel.print("You were attacked!");
@@ -200,6 +204,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
 
   @Handler
   public void handleSkill(SkillEvent se) {
+    log.trace("handleSkill {}",se);
     if (se.getStat() != Attribute.NONE) {
       panel.print("Stat raised: " + se.getSkill().stat);
     } else if (se.hasLevelled()) {

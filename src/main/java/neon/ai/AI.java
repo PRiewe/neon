@@ -20,6 +20,7 @@ package neon.ai;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.io.Serializable;
 import java.util.HashMap;
 import neon.core.Engine;
 import neon.core.event.CombatEvent;
@@ -44,7 +45,7 @@ import neon.resources.RWeapon.WeaponType;
  *
  * @author mdriesen
  */
-public abstract class AI {
+public abstract class AI implements Serializable {
   protected byte aggression;
   protected byte confidence;
   protected Creature creature;

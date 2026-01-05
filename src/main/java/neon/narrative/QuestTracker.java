@@ -19,6 +19,8 @@
 package neon.narrative;
 
 import java.util.*;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.TurnEvent;
 import neon.entities.Creature;
@@ -28,6 +30,7 @@ import neon.resources.quest.Topic;
 import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.listener.Handler;
 
+@Slf4j
 public class QuestTracker {
   private LinkedList<String> objects = new LinkedList<>();
   private HashMap<String, Quest> quests = new HashMap<>();
@@ -144,6 +147,7 @@ public class QuestTracker {
 
   @Handler
   public void start(TurnEvent te) {
+    log.trace("start {}",te);
     if (te.isStart()) {
       for (RQuest quest : Engine.getResources().getResources(RQuest.class)) {
         if (quest.initial) {
