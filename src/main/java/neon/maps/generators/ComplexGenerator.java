@@ -77,7 +77,7 @@ public class ComplexGenerator {
     }
 
     // connect rooms: choose starting room, then take room and tunnel, etc.
-    Collections.shuffle(rooms); // shuffle a bit first
+    Collections.shuffle(rooms, mapUtils.getRandomSource().getRandom()); // shuffle a bit first
     Area area = null;
     for (RoomGenerator.Room room : rooms) {
       if (area == null) {
@@ -105,7 +105,7 @@ public class ComplexGenerator {
   protected int[][] generateBSPDungeon(int width, int height, int rMin, int rMax) {
     ArrayList<Rectangle> rooms =
         blocksGenerator.createBSPRectangles(width - 1, height - 1, rMin, rMax);
-    Collections.shuffle(rooms);
+    Collections.shuffle(rooms, mapUtils.getRandomSource().getRandom());
     int[][] tiles = new int[width][height];
     Area area = new Area();
 

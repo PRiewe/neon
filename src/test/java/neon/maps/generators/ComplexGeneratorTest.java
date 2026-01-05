@@ -4,16 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.stream.Stream;
 import neon.maps.MapUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/**
- * Unit tests for ComplexGenerator.
- *
- * <p>Note: Determinism tests are disabled because ComplexGenerator uses Collections.shuffle()
- * without a seeded Random, making the output non-deterministic even with seeded MapUtils.
- */
+/** Unit tests for ComplexGenerator with deterministic seeded random behavior. */
 class ComplexGeneratorTest {
 
   // ==================== Scenario Records ====================
@@ -111,7 +105,6 @@ class ComplexGeneratorTest {
         () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
   }
 
-  @Disabled("ComplexGenerator uses Collections.shuffle() without seeded Random - not deterministic")
   @ParameterizedTest(name = "sparse determinism: {0}")
   @MethodSource("sparseDungeonScenarios")
   void generateSparseDungeon_isDeterministic(DungeonScenario scenario) {
@@ -165,7 +158,6 @@ class ComplexGeneratorTest {
         () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
   }
 
-  @Disabled("ComplexGenerator uses Collections.shuffle() without seeded Random - not deterministic")
   @ParameterizedTest(name = "BSP determinism: {0}")
   @MethodSource("bspDungeonScenarios")
   void generateBSPDungeon_isDeterministic(BSPDungeonScenario scenario) {
@@ -215,7 +207,6 @@ class ComplexGeneratorTest {
         () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
   }
 
-  @Disabled("ComplexGenerator uses Collections.shuffle() without seeded Random - not deterministic")
   @ParameterizedTest(name = "packed determinism: {0}")
   @MethodSource("packedDungeonScenarios")
   void generatePackedDungeon_isDeterministic(DungeonScenario scenario) {

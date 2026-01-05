@@ -18,9 +18,8 @@
 
 package neon.util;
 
-import lombok.Getter;
-
 import java.util.Random;
+import lombok.Getter;
 
 /**
  * Default implementation of {@link RandomSource} using {@link java.util.Random}. Can be

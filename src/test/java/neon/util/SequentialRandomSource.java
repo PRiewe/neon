@@ -18,6 +18,8 @@
 
 package neon.util;
 
+import java.util.Random;
+
 /**
  * A test implementation of {@link RandomSource} that returns values from a predetermined sequence.
  * This allows for fully deterministic testing of random-dependent code.
@@ -79,5 +81,11 @@ public class SequentialRandomSource implements RandomSource {
    */
   public int getIndex() {
     return index;
+  }
+
+  @Override
+  public Random getRandom() {
+    throw new UnsupportedOperationException(
+        "SequentialRandomSource does not support getRandom() - use a seeded DefaultRandomSource instead");
   }
 }
