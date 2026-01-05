@@ -21,7 +21,6 @@ package neon.maps.generators;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
-import neon.core.Engine;
 import neon.entities.Container;
 import neon.entities.Creature;
 import neon.entities.Door;
@@ -78,7 +77,7 @@ public class DungeonGenerator {
     this.entityStore = new EngineEntityStore();
     this.resourceProvider = new EngineResourceProvider();
     this.questProvider = new EngineQuestProvider();
-    this.atlas = Engine.getAtlas();
+    this.atlas = null; // Atlas not available in deprecated constructor
   }
 
   /**
@@ -95,7 +94,7 @@ public class DungeonGenerator {
     this.entityStore = new EngineEntityStore();
     this.resourceProvider = new EngineResourceProvider();
     this.questProvider = new EngineQuestProvider();
-    this.atlas = Engine.getAtlas();
+    this.atlas = null; // Atlas not available in deprecated constructor
   }
 
   /**

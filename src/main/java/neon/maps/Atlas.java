@@ -25,7 +25,11 @@ import neon.core.Engine;
 import neon.entities.Door;
 import neon.maps.generators.DungeonGenerator;
 import neon.maps.services.EngineEntityStore;
+import neon.maps.services.EngineQuestProvider;
+import neon.maps.services.EngineResourceProvider;
 import neon.maps.services.EntityStore;
+import neon.maps.services.QuestProvider;
+import neon.maps.services.ResourceProvider;
 import neon.systems.files.FileSystem;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -43,6 +47,8 @@ public class Atlas implements Closeable {
   private int currentMap = 0;
   private final FileSystem files;
   private final EntityStore entityStore;
+  private final ResourceProvider resourceProvider;
+  private final QuestProvider questProvider;
   private final ZoneActivator zoneActivator;
 
   /**
@@ -56,19 +62,36 @@ public class Atlas implements Closeable {
    */
   @Deprecated
   public Atlas(FileSystem files, String path) {
-    this(files, getMVStore(files, path), new EngineEntityStore(), createDefaultZoneActivator());
+    this(
+        files,
+        getMVStore(files, path),
+        new EngineEntityStore(),
+        new EngineResourceProvider(),
+        new EngineQuestProvider(),
+        createDefaultZoneActivator());
   }
 
   /**
    * Initializes this {@code Atlas} with dependency injection.
    *
+   * @param files the file system
+   * @param atlasStore the MVStore for caching
    * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   * @param questProvider the quest provider service
    * @param zoneActivator the zone activator for physics management
    */
   public Atlas(
-      FileSystem files, MVStore atlasStore, EntityStore entityStore, ZoneActivator zoneActivator) {
+      FileSystem files,
+      MVStore atlasStore,
+      EntityStore entityStore,
+      ResourceProvider resourceProvider,
+      QuestProvider questProvider,
+      ZoneActivator zoneActivator) {
     this.files = files;
     this.entityStore = entityStore;
+    this.resourceProvider = resourceProvider;
+    this.questProvider = questProvider;
     this.zoneActivator = zoneActivator;
     this.db = atlasStore;
     // files.delete(path);
@@ -158,7 +181,8 @@ public class Atlas implements Closeable {
     }
 
     if (getCurrentMap() instanceof Dungeon && getCurrentZone().isRandom()) {
-      new DungeonGenerator(getCurrentZone()).generate(door, previousZone);
+      new DungeonGenerator(getCurrentZone(), entityStore, resourceProvider, questProvider, this)
+          .generate(door, previousZone);
     }
   }
 

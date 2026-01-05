@@ -20,11 +20,14 @@ package neon.maps.generators;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import neon.core.Engine;
 import neon.entities.Door;
 import neon.entities.EntityFactory;
 import neon.maps.Region;
 import neon.maps.Zone;
+import neon.maps.services.EngineEntityStore;
+import neon.maps.services.EngineResourceProvider;
+import neon.maps.services.EntityStore;
+import neon.maps.services.ResourceProvider;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
 
@@ -35,9 +38,33 @@ import neon.resources.RTerrain;
  */
 public class TownGenerator {
   private Zone zone;
+  private final EntityStore entityStore;
+  private final ResourceProvider resourceProvider;
 
+  /**
+   * Creates a town generator for a specific zone.
+   *
+   * @param zone the zone to generate
+   * @deprecated Use {@link #TownGenerator(Zone, EntityStore, ResourceProvider)} instead
+   */
+  @Deprecated
   public TownGenerator(Zone zone) {
     this.zone = zone;
+    this.entityStore = new EngineEntityStore();
+    this.resourceProvider = new EngineResourceProvider();
+  }
+
+  /**
+   * Creates a town generator with dependency injection.
+   *
+   * @param zone the zone to generate
+   * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   */
+  public TownGenerator(Zone zone, EntityStore entityStore, ResourceProvider resourceProvider) {
+    this.zone = zone;
+    this.entityStore = entityStore;
+    this.resourceProvider = resourceProvider;
   }
 
   /**
@@ -62,7 +89,7 @@ public class TownGenerator {
 
     for (Rectangle r : temp1) {
       if (r != null) {
-        RTerrain wall = (RTerrain) Engine.getResources().getResource(theme.wall, "terrain");
+        RTerrain wall = (RTerrain) resourceProvider.getResource(theme.wall, "terrain");
         Region house =
             new Region(
                 wall.id,
@@ -102,12 +129,12 @@ public class TownGenerator {
         break;
     }
 
-    long uid = Engine.getStore().createNewEntityUID();
+    long uid = entityStore.createNewEntityUID();
     Door door = (Door) EntityFactory.getItem(theme.door, x, y, uid);
-    Engine.getStore().addEntity(door);
+    entityStore.addEntity(door);
     door.lock.close();
     zone.addItem(door);
-    RTerrain rt = (RTerrain) Engine.getResources().getResource(theme.floor, "terrain");
+    RTerrain rt = (RTerrain) resourceProvider.getResource(theme.floor, "terrain");
     zone.addRegion(new Region(theme.floor, x, y, 1, 1, null, r.getZ() + 1, rt));
   }
 }

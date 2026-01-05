@@ -24,13 +24,16 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.Collection;
-import neon.core.Engine;
 import neon.entities.*;
 import neon.entities.property.Habitat;
 import neon.maps.Decomposer;
 import neon.maps.MapUtils;
 import neon.maps.Region;
 import neon.maps.Zone;
+import neon.maps.services.EngineEntityStore;
+import neon.maps.services.EngineResourceProvider;
+import neon.maps.services.EntityStore;
+import neon.maps.services.ResourceProvider;
 import neon.resources.RItem;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
@@ -52,23 +55,61 @@ import org.jdom2.Element;
 public class WildernessGenerator {
   private Zone zone;
   private String[][] terrain; // general terrain info
+  private final EntityStore entityStore;
+  private final ResourceProvider resourceProvider;
 
   /**
-   * Constuctor used by the engine.
+   * Constructor used by the engine.
    *
-   * @param zone
+   * @param zone the zone to generate
+   * @deprecated Use {@link #WildernessGenerator(Zone, EntityStore, ResourceProvider)} instead
    */
+  @Deprecated
   public WildernessGenerator(Zone zone) {
     this.zone = zone;
+    this.entityStore = new EngineEntityStore();
+    this.resourceProvider = new EngineResourceProvider();
   }
 
   /**
    * Constructor used by the editor.
    *
-   * @param terrain
+   * @param terrain the terrain array
+   * @deprecated Use {@link #WildernessGenerator(String[][], EntityStore, ResourceProvider)} instead
    */
+  @Deprecated
   public WildernessGenerator(String[][] terrain) {
     this.terrain = terrain;
+    this.entityStore = new EngineEntityStore();
+    this.resourceProvider = new EngineResourceProvider();
+  }
+
+  /**
+   * Creates a wilderness generator with dependency injection for engine use.
+   *
+   * @param zone the zone to generate
+   * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   */
+  public WildernessGenerator(
+      Zone zone, EntityStore entityStore, ResourceProvider resourceProvider) {
+    this.zone = zone;
+    this.entityStore = entityStore;
+    this.resourceProvider = resourceProvider;
+  }
+
+  /**
+   * Creates a wilderness generator with dependency injection for editor use.
+   *
+   * @param terrain the terrain array
+   * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   */
+  public WildernessGenerator(
+      String[][] terrain, EntityStore entityStore, ResourceProvider resourceProvider) {
+    this.terrain = terrain;
+    this.entityStore = entityStore;
+    this.resourceProvider = resourceProvider;
   }
 
   /** Generates a piece of wilderness using the supplied parameters. */
@@ -163,8 +204,7 @@ public class WildernessGenerator {
       Collection<Rectangle> pieces = Decomposer.split(area);
       for (Rectangle r : pieces) {
         if (area.contains(r)) {
-          RTerrain rt =
-              (RTerrain) Engine.getResources().getResource(region.getTextureType(), "terrain");
+          RTerrain rt = (RTerrain) resourceProvider.getResource(region.getTextureType(), "terrain");
           zone.addRegion(
               new Region(
                   region.getTextureType(), r.x, r.y, r.width, r.height, theme, region.getZ(), rt));
@@ -184,7 +224,7 @@ public class WildernessGenerator {
         (region.getWidth() > region.getHeight()) ? region.getHeight() : region.getHeight() / 2;
     zone.removeRegion(region);
 
-    RTerrain rt = (RTerrain) Engine.getResources().getResource(texture, "terrain");
+    RTerrain rt = (RTerrain) resourceProvider.getResource(texture, "terrain");
     zone.addRegion(
         new Region(
             texture, region.getX(), region.getY(), newWidth, newHeight, theme, region.getZ(), rt));
@@ -284,10 +324,10 @@ public class WildernessGenerator {
         String region = t.isEmpty() ? base : t;
 
         Creature creature =
-            EntityFactory.getCreature(id, rx + x, ry + y, Engine.getStore().createNewEntityUID());
-        RTerrain terrain = (RTerrain) Engine.getResources().getResource(region, "terrain");
+            EntityFactory.getCreature(id, rx + x, ry + y, entityStore.createNewEntityUID());
+        RTerrain terrain = (RTerrain) resourceProvider.getResource(region, "terrain");
         if (terrain.modifier == Region.Modifier.SWIM && creature.species.habitat == Habitat.LAND) {
-          Engine.getStore().addEntity(creature);
+          entityStore.addEntity(creature);
           zone.addCreature(creature);
         }
       }
@@ -304,26 +344,26 @@ public class WildernessGenerator {
           for (String entry : data) {
             if (entry.startsWith("i:")) {
               String id = entry.replace("i:", "");
-              long uid = Engine.getStore().createNewEntityUID();
+              long uid = entityStore.createNewEntityUID();
               Item item = EntityFactory.getItem(id, region.getX() + i, region.getY() + j, uid);
-              Engine.getStore().addEntity(item);
+              entityStore.addEntity(item);
               if (item instanceof Container) {
                 for (String s : ((RItem.Container) item.resource).contents) {
-                  Item content = EntityFactory.getItem(s, Engine.getStore().createNewEntityUID());
+                  Item content = EntityFactory.getItem(s, entityStore.createNewEntityUID());
                   ((Container) item).addItem(content.getUID());
-                  Engine.getStore().addEntity(content);
+                  entityStore.addEntity(content);
                 }
               }
               zone.addItem(item);
             } else if (entry.startsWith("c:")) {
               String id = entry.replace("c:", "");
-              long uid = Engine.getStore().createNewEntityUID();
+              long uid = entityStore.createNewEntityUID();
               Creature creature =
                   EntityFactory.getCreature(id, region.getX() + i, region.getY() + j, uid);
-              Engine.getStore().addEntity(creature);
+              entityStore.addEntity(creature);
               zone.addCreature(creature);
             } else if (!entry.isEmpty() && !entry.equals(region.getTextureType())) {
-              RTerrain terrain = (RTerrain) Engine.getResources().getResource(entry, "terrain");
+              RTerrain terrain = (RTerrain) resourceProvider.getResource(entry, "terrain");
               zone.addRegion(
                   new Region(
                       entry,
@@ -390,7 +430,7 @@ public class WildernessGenerator {
       for (int i = 0; i < fauna.length; i++) {
         for (int j = 0; j < fauna[i].length; j++) {
           String region = terrain[j + 1][i + 1] == null ? base : terrain[j + 1][i + 1];
-          RTerrain rt = (RTerrain) Engine.getResources().getResource(region, "terrain");
+          RTerrain rt = (RTerrain) resourceProvider.getResource(region, "terrain");
           if (fauna[i][j] != null && rt.modifier != Region.Modifier.SWIM) {
             String t = (terrain[j + 1][i + 1] != null ? terrain[j + 1][i + 1] : "");
             terrain[j + 1][i + 1] = t + ";i:" + fauna[i][j];

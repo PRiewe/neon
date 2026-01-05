@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.awt.Rectangle;
 import java.util.Collection;
 import neon.maps.services.EngineEntityStore;
+import neon.maps.services.EngineQuestProvider;
+import neon.maps.services.EngineResourceProvider;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
 import org.h2.mvstore.MVStore;
@@ -32,6 +34,8 @@ class AtlasIntegrationTest {
             TestEngineContext.getStubFileSystem(),
             testDb,
             new EngineEntityStore(),
+            new EngineResourceProvider(),
+            new EngineQuestProvider(),
             createDefaultZoneActivator());
   }
 

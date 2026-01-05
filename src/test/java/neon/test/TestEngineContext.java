@@ -14,6 +14,8 @@ import neon.entities.property.Gender;
 import neon.maps.Atlas;
 import neon.maps.ZoneActivator;
 import neon.maps.ZoneFactory;
+import neon.maps.services.EngineQuestProvider;
+import neon.maps.services.EngineResourceProvider;
 import neon.maps.services.EntityStore;
 import neon.maps.services.PhysicsManager;
 import neon.resources.RCreature;
@@ -89,7 +91,14 @@ public class TestEngineContext {
     testZoneFactory = new ZoneFactory(db);
 
     // Create test Atlas with dependency injection (doesn't need Engine.game)
-    testAtlas = new Atlas(getStubFileSystem(), db, testEntityStore, testZoneActivator);
+    testAtlas =
+        new Atlas(
+            getStubFileSystem(),
+            db,
+            testEntityStore,
+            new EngineResourceProvider(),
+            new EngineQuestProvider(),
+            testZoneActivator);
 
     // Create test Game using new DI constructor
     testGame = new Game(stubPlayer, testAtlas, testStore);

@@ -10,6 +10,8 @@ import java.util.List;
 import neon.entities.Creature;
 import neon.entities.Item;
 import neon.maps.services.EngineEntityStore;
+import neon.maps.services.EngineQuestProvider;
+import neon.maps.services.EngineResourceProvider;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
@@ -410,6 +412,8 @@ class MapPerformanceTest {
             TestEngineContext.getStubFileSystem(),
             testDb,
             new EngineEntityStore(),
+            new EngineResourceProvider(),
+            new EngineQuestProvider(),
             createDefaultZoneActivator());
     int mapCount = 100;
 
