@@ -23,7 +23,7 @@ import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.Popup;
-import neon.core.*;
+import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.core.handlers.*;
@@ -58,20 +58,22 @@ public class AimState extends State implements KeyListener {
   private CClient keys;
   private MBassador<EventObject> bus;
   private UserInterface ui;
+  private final GameContext context;
 
   /** Constructs a new AimModule. */
-  public AimState(State state, MBassador<EventObject> bus, UserInterface ui) {
+  public AimState(State state, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(state);
     this.bus = bus;
     this.ui = ui;
-    keys = (CClient) Engine.getResources().getResource("client", "config");
+    this.context = context;
+    keys = (CClient) context.getResources().getResource("client", "config");
     target = new Point();
   }
 
   @Override
   public void enter(TransitionEvent e) {
     panel = (GamePanel) getVariable("panel");
-    player = Engine.getPlayer();
+    player = context.getPlayer();
     Rectangle bounds = player.getShapeComponent();
     target.setLocation(bounds.getLocation());
     panel.print(
@@ -141,10 +143,10 @@ public class AimState extends State implements KeyListener {
   private void shoot() {
     Rectangle bounds = player.getShapeComponent();
     if (target.distance(bounds.x, bounds.y) < 5) {
-      Creature victim = Engine.getAtlas().getCurrentZone().getCreature(target);
+      Creature victim = context.getAtlas().getCurrentZone().getCreature(target);
       if (victim != null) {
         Weapon ammo =
-            (Weapon) Engine.getStore().getEntity(player.getInventoryComponent().get(Slot.AMMO));
+            (Weapon) context.getStore().getEntity(player.getInventoryComponent().get(Slot.AMMO));
         if (player.getInventoryComponent().hasEquiped(Slot.AMMO)
             && ammo.getWeaponType() == WeaponType.THROWN) {
           shoot(ammo, victim);
@@ -184,7 +186,7 @@ public class AimState extends State implements KeyListener {
 
     // shoot
     prBounds.setLocation(vBounds.x, vBounds.y);
-    Engine.getAtlas().getCurrentZone().addItem(projectile);
+    context.getAtlas().getCurrentZone().addItem(projectile);
     new Thread(
             new Translation(projectile, plBounds.x, plBounds.y, vBounds.x, vBounds.y, 100, panel))
         .start();
@@ -193,7 +195,7 @@ public class AimState extends State implements KeyListener {
   private void talk() {
     Rectangle bounds = player.getShapeComponent();
     if (target.distance(bounds.getLocation()) < 2) {
-      Creature creature = Engine.getAtlas().getCurrentZone().getCreature(target);
+      Creature creature = context.getAtlas().getCurrentZone().getCreature(target);
       if (creature != null) {
         if (creature.hasDialog()) {
           // dialog module
@@ -215,7 +217,7 @@ public class AimState extends State implements KeyListener {
       bus.publishAsync(new MagicEvent.CreatureOnPoint(this, player, target));
     } else if (player.getInventoryComponent().hasEquiped(Slot.MAGIC)) {
       Item item =
-          (Item) Engine.getStore().getEntity(player.getInventoryComponent().get(Slot.MAGIC));
+          (Item) context.getStore().getEntity(player.getInventoryComponent().get(Slot.MAGIC));
       bus.publishAsync(new MagicEvent.ItemOnPoint(this, player, item, target));
     }
 
@@ -229,16 +231,16 @@ public class AimState extends State implements KeyListener {
     // description of what is being looked at
     Rectangle bounds = player.getShapeComponent();
     if (target.distance(bounds.getLocation()) < 20) {
-      Zone zone = Engine.getAtlas().getCurrentZone();
+      Zone zone = context.getAtlas().getCurrentZone();
       String items = "";
       String actors = "";
       ArrayList<Long> things = new ArrayList<Long>(zone.getItems(target));
       if (things.size() == 1) {
-        items = ", " + Engine.getStore().getEntity(things.get(0));
+        items = ", " + context.getStore().getEntity(things.get(0));
       } else if (things.size() > 1) {
         items = ", several items";
       }
-      Creature creature = Engine.getAtlas().getCurrentZone().getCreature(target);
+      Creature creature = context.getAtlas().getCurrentZone().getCreature(target);
       if (creature != null) {
         actors = ", " + creature.toString();
       }
@@ -249,9 +251,9 @@ public class AimState extends State implements KeyListener {
   }
 
   private void act() {
-    for (long uid : Engine.getAtlas().getCurrentZone().getItems(target)) {
-      if (Engine.getStore().getEntity(uid) instanceof Door) {
-        bus.publishAsync(new TransitionEvent("door", "door", Engine.getStore().getEntity(uid)));
+    for (long uid : context.getAtlas().getCurrentZone().getItems(target)) {
+      if (context.getStore().getEntity(uid) instanceof Door) {
+        bus.publishAsync(new TransitionEvent("door", "door", context.getStore().getEntity(uid)));
         break;
       }
     }

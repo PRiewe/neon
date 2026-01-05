@@ -28,7 +28,7 @@ import java.net.URISyntaxException;
 import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import neon.core.*;
+import neon.core.GameContext;
 import neon.resources.CClient;
 import neon.ui.UserInterface;
 import neon.ui.dialog.LoadGameDialog;
@@ -42,11 +42,18 @@ public class MainMenuState extends State {
   private JPanel main;
   private MBassador<EventObject> bus;
   private UserInterface ui;
+  private final GameContext context;
 
-  public MainMenuState(State parent, MBassador<EventObject> bus, UserInterface ui, String version) {
+  public MainMenuState(
+      State parent,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      String version,
+      GameContext context) {
     super(parent, "main menu");
     this.bus = bus;
     this.ui = ui;
+    this.context = context;
 
     // the main menu JPanel itself
     main = new JPanel(new BorderLayout());
@@ -54,7 +61,7 @@ public class MainMenuState extends State {
     JPanel buttons = new JPanel(new GridLayout(0, 1));
     buttons.setBorder(new EmptyBorder(70, 120, 70, 120));
 
-    CClient ini = (CClient) Engine.getResources().getResource("client", "config");
+    CClient ini = (CClient) context.getResources().getResource("client", "config");
 
     JLabel title =
         new JLabel("<html><font size=\"18\">" + ini.getTitle() + "</font></html>", JLabel.CENTER);

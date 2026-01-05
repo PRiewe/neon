@@ -27,7 +27,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MotionHandler;
 import neon.entities.Container;
@@ -50,6 +50,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   private Object container;
   private MBassador<EventObject> bus;
   private UserInterface ui;
+  private final GameContext context;
 
   // components of the JPanel
   private JPanel panel;
@@ -61,10 +62,12 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   // lists
   private HashMap<String, Integer> cData, iData;
 
-  public ContainerState(State parent, MBassador<EventObject> bus, UserInterface ui) {
+  public ContainerState(
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;
+    this.context = context;
 
     panel = new JPanel(new BorderLayout());
     JPanel center = new JPanel(new java.awt.GridLayout(0, 3));
@@ -82,7 +85,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     center.add(iScroll);
 
     // description panel klaarmaken
-    CClient ini = (CClient) Engine.getResources().getResource("client", "config");
+    CClient ini = (CClient) context.getResources().getResource("client", "config");
     description = new DescriptionPanel(ini.getSmall());
     center.add(description);
 
@@ -110,7 +113,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   public void enter(TransitionEvent t) {
     container = t.getParameter("holder");
     cScroll.setBorder(new TitledBorder(new LineBorder(line), container.toString()));
-    player = Engine.getPlayer();
+    player = context.getPlayer();
     ui.showPanel(panel);
     update();
     iList.requestFocus();
@@ -156,7 +159,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
               Rectangle pBounds = player.getShapeComponent();
               Rectangle iBounds = item.getShapeComponent();
               iBounds.setLocation(pBounds.x, pBounds.y);
-              Engine.getAtlas().getCurrentZone().addItem(item);
+              context.getAtlas().getCurrentZone().addItem(item);
             } else if (container instanceof Creature) {
               InventoryHandler.addItem(((Creature) container), item.getUID());
             }
@@ -174,7 +177,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
               bus.publishAsync(new TransitionEvent("container", "holder", item));
             } else {
               if (container instanceof Zone) {
-                Engine.getAtlas().getCurrentZone().removeItem((Item) item);
+                context.getAtlas().getCurrentZone().removeItem((Item) item);
               } else if (container instanceof Creature) {
                 InventoryHandler.removeItem(((Creature) container), item.getUID());
               } else {
@@ -216,7 +219,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
       if (o instanceof Item) {
         item = (Item) o;
       } else {
-        item = (Item) Engine.getStore().getEntity((Long) o);
+        item = (Item) context.getStore().getEntity((Long) o);
       }
       if (!cData.containsKey(item.getID())) {
         cData.put(item.getID(), 1);
@@ -227,7 +230,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     }
 
     for (long uid : player.getInventoryComponent()) {
-      Item i = (Item) Engine.getStore().getEntity(uid);
+      Item i = (Item) context.getStore().getEntity(uid);
       if (!iData.containsKey(i.getID())) {
         iData.put(i.getID(), 1);
         iBuffer.add(i);

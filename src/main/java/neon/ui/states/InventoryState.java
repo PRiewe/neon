@@ -25,7 +25,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.*;
+import neon.core.GameContext;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MagicHandler;
 import neon.core.handlers.SkillHandler;
@@ -52,11 +52,14 @@ public class InventoryState extends State implements KeyListener, MouseListener 
   private DescriptionPanel description;
   private MBassador<EventObject> bus;
   private UserInterface ui;
+  private final GameContext context;
 
-  public InventoryState(State parent, MBassador<EventObject> bus, UserInterface ui) {
+  public InventoryState(
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent, "inventory module");
     this.bus = bus;
     this.ui = ui;
+    this.context = context;
     panel = new JPanel(new BorderLayout());
 
     // info
@@ -79,7 +82,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     scroller.setBorder(new TitledBorder("Inventory"));
     contents.add(scroller);
 
-    CClient ini = (CClient) Engine.getResources().getResource("client", "config");
+    CClient ini = (CClient) context.getResources().getResource("client", "config");
     description = new DescriptionPanel(ini.getSmall());
     contents.add(description);
 
@@ -97,7 +100,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
 
   @Override
   public void enter(TransitionEvent t) {
-    player = Engine.getPlayer();
+    player = context.getPlayer();
     initList();
     inventory.setSelectedIndex(0);
     inventory.repaint();
@@ -114,7 +117,8 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     } else if (item instanceof Item.Book && !(item instanceof Item.Scroll)) {
       RText text =
           (RText)
-              Engine.getResources()
+              context
+                  .getResources()
                   .getResource(((RItem.Text) item.resource).content + ".html", "text");
       new BookDialog(ui.getWindow()).show(item.toString(), text.getText());
     } else if (item instanceof Item.Food) {
@@ -138,8 +142,8 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     Vector<Item> buffer = new Vector<Item>();
     listData.clear();
 
-    for (long uid : Engine.getPlayer().getInventoryComponent()) {
-      Item i = (Item) Engine.getStore().getEntity(uid);
+    for (long uid : context.getPlayer().getInventoryComponent()) {
+      Item i = (Item) context.getStore().getEntity(uid);
       if (!listData.containsKey(i.getID())) {
         listData.put(i.getID(), 1);
         buffer.add(i);
@@ -163,7 +167,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     } else {
       int gold = money / 100;
       int copper = money % 100;
-      CClient ini = (CClient) Engine.getResources().getResource("client", "config");
+      CClient ini = (CClient) context.getResources().getResource("client", "config");
       return gold + " " + ini.getBig() + " and " + copper + " " + ini.getSmall();
     }
   }
@@ -200,7 +204,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
           Rectangle pBounds = player.getShapeComponent();
           Rectangle iBounds = item.getShapeComponent();
           iBounds.setLocation(pBounds.x, pBounds.y);
-          Engine.getAtlas().getCurrentZone().addItem(item);
+          context.getAtlas().getCurrentZone().addItem(item);
           initList();
           inventory.setSelectedIndex(0);
           inventory.repaint();

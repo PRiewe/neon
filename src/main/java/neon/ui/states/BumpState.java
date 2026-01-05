@@ -23,7 +23,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.EventObject;
 import javax.swing.Popup;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.handlers.MotionHandler;
 import neon.entities.Creature;
@@ -42,11 +42,14 @@ public class BumpState extends State implements KeyListener {
   private GamePanel panel;
   private MBassador<EventObject> bus;
   private UserInterface ui;
+  private final GameContext context;
 
-  public BumpState(State parent, MBassador<EventObject> bus, UserInterface ui) {
+  public BumpState(
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;
+    this.context = context;
   }
 
   @Override
@@ -78,8 +81,8 @@ public class BumpState extends State implements KeyListener {
     switch (ke.getKeyCode()) {
       case KeyEvent.VK_1:
       case KeyEvent.VK_NUMPAD1:
-        bus.publishAsync(new CombatEvent(Engine.getPlayer(), creature));
-        creature.brain.makeHostile(Engine.getPlayer());
+        bus.publishAsync(new CombatEvent(context.getPlayer(), creature));
+        creature.brain.makeHostile(context.getPlayer());
         bus.publishAsync(new TransitionEvent("return"));
         break;
       case KeyEvent.VK_2:
@@ -101,12 +104,12 @@ public class BumpState extends State implements KeyListener {
       case KeyEvent.VK_5:
       case KeyEvent.VK_NUMPAD5:
         if (isMount(creature)) {
-          Player player = Engine.getPlayer();
+          Player player = context.getPlayer();
           player.mount(creature);
           Rectangle pBounds = player.getShapeComponent();
           Rectangle cBounds = creature.getShapeComponent();
           pBounds.setLocation(cBounds.x, cBounds.y);
-          Engine.getAtlas().getCurrentZone().removeCreature(creature.getUID());
+          context.getAtlas().getCurrentZone().removeCreature(creature.getUID());
           panel.repaint();
           bus.publishAsync(new TransitionEvent("return"));
         }
@@ -119,7 +122,7 @@ public class BumpState extends State implements KeyListener {
   }
 
   private void swap() {
-    Player player = Engine.getPlayer();
+    Player player = context.getPlayer();
     Rectangle pBounds = player.getShapeComponent();
     Rectangle cBounds = creature.getShapeComponent();
 
