@@ -2,34 +2,42 @@ package neon.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.Arrays;
+import java.io.IOException;
 import neon.resources.RClothing;
 import neon.resources.RItem;
+import org.junit.jupiter.api.Test;
 
 class UIDStoreTest {
 
-  @org.junit.jupiter.api.Test
-  void addEntity() {
+  @Test
+  void addEntity() throws IOException {
     UIDStore store = new UIDStore("testfile3.dat");
     var id = store.createNewMapUID();
-    Entity entity = new Armor(id, new RClothing("one", RItem.Type.armor, "dummy"));
+    var entityId = store.createNewEntityUID();
+    Entity entity = new Armor(entityId, new RClothing("one", RItem.Type.armor, "dummy"));
     store.addMap(id, "path1", "path2");
+    store.addEntity(entity);
+    var result = store.getEntity(entityId);
 
-    var result = store.getMapPath(id);
-    System.out.println(Arrays.toString(result));
-    // assertEquals(entity.getClass(),result.getClass());
-    store.getCache().close();
+    assertEquals(entity.getClass(), result.getClass());
+    store.close();
   }
 
-  @org.junit.jupiter.api.Test
-  void removeEntity() {}
+  @Test
+  void removeEntity() throws IOException {
+    UIDStore store = new UIDStore("testfile3.dat");
+    var id = store.createNewMapUID();
+    var entityId = store.createNewEntityUID();
+    Entity entity = new Armor(entityId, new RClothing("one", RItem.Type.armor, "dummy"));
+    store.addMap(id, "path1", "path2");
+    store.addEntity(entity);
+    var result = store.getEntity(entityId);
 
-  @org.junit.jupiter.api.Test
-  void getEntity() {}
+    assertEquals(entity.getClass(), result.getClass());
 
-  @org.junit.jupiter.api.Test
-  void createNewEntityUID() {}
-
-  @org.junit.jupiter.api.Test
-  void createNewMapUID() {}
+    store.removeEntity(entityId);
+    var result2 = store.getEntity(entityId);
+    assertNull(result2);
+    store.close();
+  }
 }

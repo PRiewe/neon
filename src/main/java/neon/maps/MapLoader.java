@@ -125,7 +125,6 @@ public class MapLoader {
   }
 
   private World loadWorld(Element root, int uid) {
-    //		System.out.println("maploader: " + uid);
     World world = new World(root.getChild("header").getChildText("name"), uid);
     loadZone(root, world, 0, uid); // outdoor has only 1 zone, namely 0
     return world;

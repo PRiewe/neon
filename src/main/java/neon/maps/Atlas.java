@@ -65,17 +65,18 @@ public class Atlas implements Closeable {
    * @param entityStore the entity store service
    * @param zoneActivator the zone activator for physics management
    */
-  public Atlas(FileSystem files, MVStore db, EntityStore entityStore, ZoneActivator zoneActivator) {
+  public Atlas(
+      FileSystem files, MVStore atlasStore, EntityStore entityStore, ZoneActivator zoneActivator) {
     this.files = files;
     this.entityStore = entityStore;
     this.zoneActivator = zoneActivator;
-    this.db = db;
+    this.db = atlasStore;
     // files.delete(path);
     // String fileName = files.getFullPath(path);
     // log.warn("Creating new MVStore at {}", fileName);
 
     // db = MVStore.open(fileName);
-    maps = db.openMap("maps");
+    maps = atlasStore.openMap("maps");
   }
 
   private static MVStore getMVStore(FileSystem files, String path) {

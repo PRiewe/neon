@@ -22,6 +22,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.io.*;
 import java.util.Map;
+import neon.maps.services.EntityStore;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -31,18 +32,18 @@ import org.h2.mvstore.MVStore;
  *
  * @author mdriesen
  */
-public class UIDStore {
+public class UIDStore implements EntityStore, Closeable {
   // dummy uid for objects that don't actually exist
   public static final long DUMMY = 0;
 
   // uid database
-  private MVStore db;
+  private final MVStore uidDb;
   // uids of all objects in the game
-  private Map<Long, Entity> objects;
+  private final Map<Long, Entity> objects;
   // uids of all loaded mods
-  private Map<Short, Mod> mods;
+  private final Map<Short, Mod> mods;
   // uids of all loaded maps
-  private BiMap<Integer, String> maps = HashBiMap.create();
+  private final BiMap<Integer, String> maps = HashBiMap.create();
 
   /**
    * Tells this UIDStore to use the given jdbm3 cache.
@@ -50,16 +51,16 @@ public class UIDStore {
    * @param file
    */
   public UIDStore(String file) {
-    db = MVStore.open(file);
-    objects = db.openMap("object");
-    mods = db.openMap("mods");
+    uidDb = MVStore.open(file);
+    objects = uidDb.openMap("object");
+    mods = uidDb.openMap("mods");
   }
 
   /**
    * @return the jdbm3 cache used by this UIDStore
    */
   public MVStore getCache() {
-    return db;
+    return uidDb;
   }
 
   /**
@@ -93,9 +94,8 @@ public class UIDStore {
    */
   public void addEntity(Entity entity) {
     objects.put(entity.getUID(), entity);
-    db.commit();
     if (objects.size() % 1000 == 0) { // do a commit every 1000 entities
-      db.commit();
+      uidDb.commit();
     }
   }
 
@@ -209,6 +209,12 @@ public class UIDStore {
   public static int getMapUID(int mod, int map) {
     // this to avoid problems with two's complement
     return (mod << 16) | ((map << 16) >>> 16);
+  }
+
+  @Override
+  public void close() throws IOException {
+    uidDb.commit();
+    uidDb.close();
   }
 
   private record Mod(short uid, String name) implements Serializable {}

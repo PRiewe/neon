@@ -21,9 +21,12 @@ package neon.core;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
+
+import lombok.extern.slf4j.Slf4j;
 import neon.resources.CServer;
 import neon.resources.ResourceManager;
 
+@Slf4j
 public class Configuration {
   public static boolean audio = false; // audio aan of uit?
   public static boolean gThread = true; // terrain generation threaded of niet?
@@ -35,21 +38,9 @@ public class Configuration {
     // ini file inladen
     CServer config = (CServer) resources.getResource("ini", "config");
 
-    // logging
-    Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-
-    logger.setLevel(Level.parse("FINER"));
-    try {
-      Handler handler = new FileHandler("neon.log");
-      handler.setFormatter(new SimpleFormatter());
-      logger.addHandler(handler);
-    } catch (SecurityException | IOException e) {
-      e.printStackTrace();
-    }
-
     // threading
     gThread = config.isMapThreaded();
-    logger.config("Map generation thread: " + gThread);
+    log.info("Map generation thread: " + gThread);
   }
 
   /**

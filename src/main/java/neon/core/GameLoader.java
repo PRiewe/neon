@@ -73,8 +73,7 @@ public class GameLoader {
 
   @Handler
   public void loadGame(LoadEvent le) {
-    log.trace("loadGame {}", le);
-    System.out.println("Event source: " + le.getSource().toString());
+    log.trace("loadGame from {}: {}",le.getSource(), le);
     // load game
     switch (le.getMode()) {
       case LOAD:
@@ -115,7 +114,8 @@ public class GameLoader {
       String profession,
       RSign sign) {
     try {
-      System.out.println("Engine.initGame() start");
+      log.debug("Engine.initGame() start");
+
       // initialize player
       RCreature species =
           new RCreature(((RCreature) Engine.getResources().getResource(race)).toElement());
@@ -151,10 +151,9 @@ public class GameLoader {
       Engine.getAtlas().setMap(map);
       Engine.getAtlas().setCurrentZone(game.getStartZone());
     } catch (RuntimeException re) {
-      System.out.println(re);
-      re.printStackTrace();
+      log.error("Error during initGame",re);
     }
-    System.out.println("Engine.initGame() exit");
+    log.debug("Engine.initGame() exit");
   }
 
   private void setSign(Player player, RSign sign) {
