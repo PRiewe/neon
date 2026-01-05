@@ -45,7 +45,7 @@ import net.engio.mbassy.listener.References;
  *
  * @author mdriesen
  */
-@Listener(references = References.Strong) // strong, om gc te vermijden
+@Listener(references = References.Strong) // strong, to avoid gc
 @Slf4j
 public class CombatHandler {
   @Handler
@@ -90,7 +90,7 @@ public class CombatHandler {
    * @return			the outcome of the fight
    */
   private int shoot(Creature shooter, Creature target) {
-    // damage is gemiddelde van pijl en boog (Creature.getAV)
+    // damage is average of arrow and bow (Creature.getAV)
     Weapon ammo =
         (Weapon) Engine.getStore().getEntity(shooter.getInventoryComponent().get(Slot.AMMO));
     InventoryHandler.removeItem(shooter, ammo.getUID());
@@ -130,43 +130,43 @@ public class CombatHandler {
   }
 
   private int fight(Creature attacker, Creature defender, Weapon weapon) {
-    // aanvaller bepaalt een attack value (hangt af van dex)
+    // attacker determines an attack value (depends on dex)
     int attack = CombatUtils.attack(attacker);
 
     int result;
 
-    // verdediger kijkt of hij kan dodgen of blocken
+    // defender checks if they can dodge or block
     if (CombatUtils.dodge(defender) < attack) {
       if (CombatUtils.block(defender) < attack) {
         if (weapon != null) {
           weapon.setState(weapon.getState() - 1);
         }
 
-        // Attack Value, afhankelijk van wapen, skill en str
+        // Attack Value, dependent on weapon, skill and str
         int AV = CombatUtils.getAV(attacker);
-        // defense value, afhankelijk van armor, skill
+        // defense value, dependent on armor, skill
         int DV = CombatUtils.getDV(defender);
 
-        // altijd minimum 1 damage
+        // always minimum 1 damage
         HealthComponent health = defender.getHealthComponent();
         health.heal(Math.min(-1, -(int) ((AV - DV) / (DV + 1))));
 
-        // enchanted weapon spell casten
+        // cast enchanted weapon spell
         if (weapon != null && weapon.getMagicComponent().getSpell() != null) {
           Rectangle bounds = defender.getShapeComponent();
           Engine.post(new MagicEvent.ItemOnPoint(this, attacker, weapon, bounds.getLocation()));
         }
 
-        // berichten bepalen
+        // determine messages
         if (health.getHealth() < 0) {
           result = CombatEvent.DIE;
         } else {
           result = CombatEvent.ATTACK;
         }
-      } else { // geblockt
+      } else { // blocked
         result = CombatEvent.BLOCK;
       }
-    } else { // gedodged
+    } else { // dodged
       result = CombatEvent.DODGE;
     }
 

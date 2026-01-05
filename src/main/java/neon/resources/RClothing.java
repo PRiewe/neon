@@ -32,7 +32,7 @@ public class RClothing extends RItem  implements Serializable {
     NONE;
   }
 
-  // algemene dingen
+  // general properties
   public ArmorType kind;
   public int rating;
   public Slot slot;

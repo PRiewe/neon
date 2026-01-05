@@ -26,11 +26,11 @@ import java.util.*;
  * @author mdriesen
  */
 public class FiniteStateMachine extends State {
-  // String in hashmap is eventID + current state, dan kunnen eventIDs herbruikt worden
+  // String in hashmap is eventID + current state, then eventIDs can be reused
   private HashMap<String, Transition> transitions = new HashMap<>();
   private HashMap<String, Object> variables = new HashMap<>();
-  private List<State> starts = new ArrayList<>(); // lijst met alle start states
-  private Set<State> currents; // lijst van alle current states
+  private List<State> starts = new ArrayList<>(); // list of all start states
+  private Set<State> currents; // list of all current states
 
   public FiniteStateMachine() {
     super(null, "FSM");
@@ -57,11 +57,11 @@ public class FiniteStateMachine extends State {
   }
 
   public void transition(TransitionEvent event) {
-    // hier een kopie van currents maken, omdat currents kan aangepast worden
+    // make a copy of currents here, because currents can be modified
     for (State current : new ArrayList<State>(currents)) {
       if (currents.contains(current) && !current.isBlocked()) {
         if (transitions.containsKey(event.toString() + current)) {
-          // dit wil zeggen dat transition.from zeker de current state is
+          // this means that transition.from is certainly the current state
           stateChanged(event, current);
         }
       }
@@ -76,27 +76,27 @@ public class FiniteStateMachine extends State {
     State next = transition.getNext();
     State ancestor = getCommonAncestor(current, next);
     //		System.out.println(current.getName() + " -> " + next.getName());
-    // lokale transitie
+    // local transition
     boolean isLocal = transition.isLocal();
 
-    // alle nodige state exiten
-    if (isLocal) { // lokale transitie
+    // exit all necessary states
+    if (isLocal) { // local transition
       for (State state : new ArrayList<State>(currents)) {
         if (state.parent == ancestor) {
           exit(e, ancestor, state);
         }
       }
-    } else { // alle andere transities
+    } else { // all other transitions
       exit(e, ancestor, current);
     }
 
-    // acties op transitie uitvoeren
+    // execute actions on transition
     if (transition.getAction() != null) {
       transition.getAction().run(e);
     }
 
-    // alle nodige states enteren
-    if (isLocal) { // lokale transitie
+    // enter all necessary states
+    if (isLocal) { // local transition
       enter(e, ancestor, next);
       for (State state : starts) {
         if (state.parent == ancestor) {
@@ -108,39 +108,39 @@ public class FiniteStateMachine extends State {
     }
   }
 
-  // current en alle super/substates exiten
+  // exit current and all super/substates
   private void exit(TransitionEvent e, State ancestor, State current) {
     currents.remove(current);
-    // substates exiten
+    // exit substates
     for (State state : new ArrayList<State>(currents)) {
       if (state.parent == current) {
         exit(e, current, state);
       }
     }
-    // current exiten
+    // exit current
     current.exit(e);
-    // superstates exiten
+    // exit superstates
     if (current.parent != ancestor && currents.contains(current.parent)) {
       exit(e, ancestor, current.parent);
     }
   }
 
-  // current en alle super/substates enteren
+  // enter current and all super/substates
   private void enter(TransitionEvent e, State ancestor, State next) {
     currents.add(next);
 
-    // alle superstates enteren
+    // enter all superstates
     if (next != ancestor && next.parent != ancestor && !currents.contains(next.parent)) {
       enter(e, ancestor, next.parent);
     }
-    // next enteren
+    // enter next
     next.enter(e);
-    // alle substates enteren
+    // enter all substates
     for (State state : starts) {
       if (state.parent == next) {
         boolean check = true;
 
-        // als huidige state al actieve state heeft, overslaan
+        // if current state already has active state, skip
         for (State other : currents) {
           if (other.parent == next) {
             check = false;
@@ -153,7 +153,7 @@ public class FiniteStateMachine extends State {
       }
     }
 
-    // aangeven dat deze state net geëntered is, en geen events meer mag handlen deze beurt
+    // indicate that this state has just been entered, and may not handle events this turn
     next.block();
   }
 
@@ -197,7 +197,7 @@ public class FiniteStateMachine extends State {
       } else if (getCommonAncestor(one, two) == one) {
         return -1;
       } else {
-        return 1; // om volgorde in set goed te krijgen...
+        return 1; // to get the order in set right...
       }
     }
   }

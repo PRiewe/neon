@@ -49,7 +49,7 @@ public class RWeapon extends RItem implements Serializable {
     }
   }
 
-  // algemene dingen
+  // general properties
   public String damage;
   public WeaponType weaponType;
 

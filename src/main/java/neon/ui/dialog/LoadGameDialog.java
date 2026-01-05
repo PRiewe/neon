@@ -44,14 +44,14 @@ public class LoadGameDialog {
     menu = new JPanel();
     menu.setLayout(new BorderLayout());
 
-    // instructies
+    // instructions
     JLabel instructions =
         new JLabel("Use arrow keys to select a saved game, press enter to start, esc to cancel.");
     instructions.setBorder(
         new CompoundBorder(new TitledBorder("Instructions"), new EmptyBorder(0, 5, 10, 5)));
     menu.add(instructions, BorderLayout.PAGE_START);
 
-    // lijst met items
+    // list of items
     games = new JList<String>();
     games.setFocusable(false);
     JScrollPane scroller = new JScrollPane(games);
@@ -59,7 +59,7 @@ public class LoadGameDialog {
     scroller.setBorder(new TitledBorder("Saved games"));
     menu.add(scroller, BorderLayout.CENTER);
 
-    // OK en cancel knop
+    // OK and cancel button
     JPanel bottom = new JPanel();
     Action ok = new ButtonAction("Ok", "ok");
     JButton okButton = new JButton(ok);

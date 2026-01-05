@@ -84,7 +84,7 @@ public class AimState extends State implements KeyListener {
   @Override
   public void exit(TransitionEvent e) {
     panel.removeKeyListener(this);
-    if (popup != null) { // kan gebeuren als popup nog niet geset is in look()
+    if (popup != null) { // can happen if popup is not yet set in look()
       popup.hide();
     }
     panel.hideCursor();
@@ -226,7 +226,7 @@ public class AimState extends State implements KeyListener {
     cursor.setX(target.x);
     cursor.setY(target.y);
     panel.repaint();
-    // beschrijving van waar naar gekeken wordt
+    // description of what is being looked at
     Rectangle bounds = player.getShapeComponent();
     if (target.distance(bounds.getLocation()) < 20) {
       Zone zone = Engine.getAtlas().getCurrentZone();

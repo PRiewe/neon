@@ -46,7 +46,7 @@ public class RMod extends Resource {
     }
 
     // cc.xml
-    if (cc != null) { // hier strings, want resources zijn nog niet geladen
+    if (cc != null) { // strings here, because resources are not yet loaded
       for (Element race : cc.getChildren("race")) {
         ccRaces.add(race.getText());
       }

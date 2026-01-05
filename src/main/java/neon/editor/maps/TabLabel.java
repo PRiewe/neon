@@ -27,7 +27,7 @@ public class TabLabel extends JPanel {
   private JButton button;
 
   public TabLabel(String title) {
-    // randen rond label wat kleiner maken
+    // make borders around label a bit smaller
     super(new FlowLayout(FlowLayout.LEFT, 0, 0));
     setOpaque(false);
 

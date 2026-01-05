@@ -52,7 +52,7 @@ public class TattooDialog implements KeyListener {
     panel.setBorder(
         new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10, 10, 10, 10)));
 
-    // lijst met tattoos
+    // list of tattoos
     tattoos = new JList<RTattoo>();
     tattoos.setFocusable(false);
     tattoos.setCellRenderer(new TattooCellRenderer());
@@ -61,7 +61,7 @@ public class TattooDialog implements KeyListener {
     scroller.setBorder(new TitledBorder("Tattoos"));
     panel.add(scroller, BorderLayout.CENTER);
 
-    // instructies geven
+    // provide instructions
     JLabel instructions =
         new JLabel("Use arrow keys to select a tattoo, press enter to draw, esc to exit.");
     instructions.setBorder(

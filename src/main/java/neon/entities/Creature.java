@@ -32,22 +32,22 @@ import neon.resources.RCreature;
  * @author mdriesen
  */
 public class Creature extends Entity {
-  // componenten
+  // components
   public final FactionComponent social;
   public final Stats stats;
   public final RCreature species;
   public AI brain;
 
-  // allerlei
+  // miscellaneous
   protected Gender gender;
   protected String name;
 
-  // lijstjes
+  // lists
   protected EnumMap<Skill, Float> skills;
   protected ArrayList<Spell> spells; // active spells
   protected Set<Condition> conditions;
 
-  // character attributen
+  // character attributes
   private int date = 0; // time of death
 
   /**
@@ -69,11 +69,11 @@ public class Creature extends Entity {
     stats = new Stats(uid, species);
     components.putInstance(Characteristics.class, new Characteristics(uid));
 
-    // dit eerst
+    // set this first
     gender = Gender.OTHER;
     name = species.getName();
 
-    // collections initialiseren
+    // initialize collections
     spells = new ArrayList<Spell>();
     skills = new EnumMap<Skill, Float>(species.skills);
     conditions = EnumSet.noneOf(Condition.class);
@@ -112,7 +112,7 @@ public class Creature extends Entity {
     return brain;
   }
 
-  // conditions die een actor kan hebben
+  // conditions that an actor can have
   /**
    * Adds a condition to this creature (for instance 'levitating').
    *
@@ -148,7 +148,7 @@ public class Creature extends Entity {
     return conditions.contains(c);
   }
 
-  // dingen die met sterven te maken hebben
+  // things related to death
   /**
    * Lets this creature die.
    *
@@ -163,7 +163,7 @@ public class Creature extends Entity {
    * @return the time of death
    */
   public int getTimeOfDeath() {
-    return date; // 0 is niet dood, negatief is dood voor spel begon
+    return date; // 0 is not dead, negative is dead before game started
   }
 
   /**
@@ -231,7 +231,7 @@ public class Creature extends Entity {
   }
 
   /*
-   * hier alle getters
+   * all getters here
    *
    */
   /**

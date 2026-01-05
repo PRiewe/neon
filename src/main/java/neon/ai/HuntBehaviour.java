@@ -51,7 +51,7 @@ public class HuntBehaviour implements Behaviour {
           creature.getMagicComponent().equipSpell(power);
           ShapeComponent bounds = prey.getShapeComponent();
           Engine.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
-          return; // hunt afbreken van zodra er een spell is gecast
+          return; // abort hunt as soon as a spell is cast
         }
       }
       for (RSpell spell : creature.getMagicComponent().getSpells()) {
@@ -60,14 +60,14 @@ public class HuntBehaviour implements Behaviour {
           creature.getMagicComponent().equipSpell(spell);
           ShapeComponent bounds = prey.getShapeComponent();
           Engine.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
-          return; // hunt afbreken van zodra er een spell is gecast
+          return; // abort hunt as soon as a spell is cast
         }
       }
     }
 
     Point p;
     if (creature.getStatsComponent().getInt()
-        < 5) { // als wezen lomp is, gewoon kortste weg proberen
+        < 5) { // if creature is clumsy, just try the shortest path
       int dx = 0;
       int dy = 0;
       if (creaturePos.x < preyPos.x) {
@@ -81,7 +81,7 @@ public class HuntBehaviour implements Behaviour {
         dy = -1;
       }
       p = new Point(creaturePos.x + dx, creaturePos.y + dy);
-    } else { // als wezen slimmer is, A* proberen
+    } else { // if creature is smarter, try A*
       ShapeComponent cBounds = creature.getShapeComponent();
       ShapeComponent pBounds = prey.getShapeComponent();
       p = PathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
@@ -99,9 +99,9 @@ public class HuntBehaviour implements Behaviour {
       //			Engine.post(new CombatEvent(creature, prey));
       //		} else if(Atlas.getCurrentZone().getCreature(p) == null) {
       //			if(MotionHandler.move(creature, p) == MotionHandler.DOOR) {
-      //				open(p);	// deur opendoen indien nodig
+      //				open(p);	// open door if necessary
       //			}
-    } else { // als een ander creature in de weg staat
+    } else { // if another creature is in the way
       //			wander();
     }
   }

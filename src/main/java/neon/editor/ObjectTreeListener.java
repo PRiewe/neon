@@ -157,7 +157,7 @@ public class ObjectTreeListener implements MouseListener {
                 .showInputDialog(frame, "Create new " + type.toString().toLowerCase());
         if (!props.cancelled()) {
           RData object;
-          // item aanmaken en in dataStore toevoegen
+          // create item and add to dataStore
           switch (type) {
             case CREATURE:
               object = new RCreature(props.getID(), Editor.getStore().getActive().get("id"));
@@ -210,7 +210,7 @@ public class ObjectTreeListener implements MouseListener {
               break;
           }
 
-          // node op juiste plaats in tree duwen
+          // push node to the correct place in tree
           Editor.resources.addResource(object);
           ObjectNode node = new ObjectNode(object, type);
           DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
@@ -218,7 +218,7 @@ public class ObjectTreeListener implements MouseListener {
             ObjectNode parent = (ObjectNode) root.getChildAt(i);
             if (parent.getType() == type) {
               parent.add(node);
-              tree.updateUI(); // anders update de tree niet na toevoegen
+              tree.updateUI(); // otherwise the tree doesn't update after adding
               Object[] nodes = {root, parent, node};
               TreePath path = new TreePath(nodes);
               tree.scrollPathToVisible(path);
@@ -230,7 +230,7 @@ public class ObjectTreeListener implements MouseListener {
       } else if (e.getActionCommand().equals("Edit object")) {
         launchEditor((ObjectNode) tree.getLastSelectedPathComponent());
       } else if (e.getActionCommand().equals("Delete object")) {
-        // uit tree en datastore halen
+        // remove from tree and datastore
         ObjectNode node = (ObjectNode) tree.getLastSelectedPathComponent();
         model.removeNodeFromParent(node);
         Editor.resources.removeResource(node.getResource());

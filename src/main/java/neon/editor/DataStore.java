@@ -73,7 +73,7 @@ public class DataStore {
     loadThemes(mod, root, "themes", "zones.xml");
     loadThemes(mod, root, "themes", "regions.xml");
     loadThemes(mod, root, "themes", "dungeons.xml");
-    loadMaps(mod, root, "maps"); // maps moeten na themes geladen worden
+    loadMaps(mod, root, "maps"); // maps must be loaded after themes
     loadCreatures(mod, root, "objects", "monsters.xml");
     loadCreatures(mod, root, "objects", "npc.xml");
 
@@ -111,7 +111,7 @@ public class DataStore {
     try {
       info = Editor.files.getFile(new XMLTranslator(), file).getRootElement();
       info.detach();
-    } catch (NullPointerException e) { // file bestaat niet
+    } catch (NullPointerException e) { // file does not exist
       info = new Element("master");
       info.setAttribute("id", file[0]);
       info.addContent(new Element("title"));
@@ -125,7 +125,7 @@ public class DataStore {
     try {
       cc = Editor.files.getFile(new XMLTranslator(), file).getRootElement();
       cc.detach();
-    } catch (NullPointerException e) { // file bestaat niet
+    } catch (NullPointerException e) { // file does not exist
       cc = new Element("root");
       cc.addContent(new Element("races"));
       cc.addContent(new Element("items"));
@@ -140,7 +140,7 @@ public class DataStore {
     try {
       for (String s : Editor.files.listFiles(file)) {
         System.arraycopy(file, 0, path, 0, file.length);
-        // substrings moeten er alebei instaan voor jars
+        // both substrings must be included for jars
         s = s.substring(s.lastIndexOf("/") + 1);
         s = s.substring(s.lastIndexOf(File.separator) + 1);
         path[file.length] = s;

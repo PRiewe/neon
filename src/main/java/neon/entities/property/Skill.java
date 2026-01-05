@@ -35,7 +35,7 @@ public enum Skill {
   ALCHEMY(Attribute.INTELLIGENCE, 0.1f),
   CONJURATION(Attribute.WISDOM, 0.1f),
 
-  // wapens
+  // weapons
   ARCHERY(Attribute.DEXTERITY, 0.1f),
   AXE(Attribute.STRENGTH, 0.1f),
   BLUNT(Attribute.STRENGTH, 0.1f),
@@ -43,7 +43,7 @@ public enum Skill {
   SPEAR(Attribute.STRENGTH, 0.1f),
   UNARMED(Attribute.CONSTITUTION, 0.1f),
 
-  // bewegen
+  // movement
   CLIMBING(Attribute.CONSTITUTION, 0.1f),
   SWIMMING(Attribute.CONSTITUTION, 0.1f),
   SNEAK(Attribute.DEXTERITY, 0.1f),
@@ -56,7 +56,7 @@ public enum Skill {
   BLOCK(Attribute.STRENGTH, 0.1f),
   UNARMORED(Attribute.CONSTITUTION, 0.1f),
 
-  // allerlei
+  // miscellaneous
   MERCANTILE(Attribute.CHARISMA, 0.1f),
   PICKPOCKET(Attribute.DEXTERITY, 0.1f),
   ARMORER(Attribute.CONSTITUTION, 0.1f),
@@ -68,7 +68,7 @@ public enum Skill {
   DISGUISE(Attribute.CHARISMA, 0.1f),
   RIDING(Attribute.WISDOM, 0.1f),
 
-  // en deze
+  // and this one
   NONE(Attribute.NONE, 0.0f);
 
   public final Attribute stat;

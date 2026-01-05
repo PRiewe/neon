@@ -31,9 +31,9 @@ import org.jdom2.Element;
 public class RQuest extends RData {
   public Element variables;
   public int frequency;
-  // repeat quests kunnen meer als eens draaien
+  // repeat quests can run more than once
   public boolean repeat = false;
-  // initial quest wordt toegevoegd van zodra spel start
+  // initial quest is added as soon as game starts
   public boolean initial = false;
 
   private ArrayList<String> conditions = new ArrayList<String>();
@@ -84,7 +84,7 @@ public class RQuest extends RData {
   private void initTopic(Conversation conversation, Topic parent, Element te) {
     Topic topic = new Topic(id, conversation.id, te);
     conversation.addSubTopic(parent, topic);
-    // recursief alle child topics toevoegen
+    // recursively add all child topics
     for (Element ce : te.getChildren("topic")) {
       initTopic(conversation, topic, ce);
     }

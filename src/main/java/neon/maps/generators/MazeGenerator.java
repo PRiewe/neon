@@ -80,20 +80,20 @@ public class MazeGenerator {
     int count = 0;
     int x = 0;
     int y = 0;
-    // startpositie voor doolhof
+    // start position for maze
     Block start = blocks[x][y];
     start.visited = true;
 
-    // stap1: doolhof genereren
+    // step 1: generate maze
     int roll = Dice.roll(1, 4, 0);
     while (count < width * height - 1) {
       if (Dice.roll(1, 100, 0) < randomness) {
         roll = Dice.roll(1, 4, 0);
       }
 
-      // vanuit startpositie richting kiezen en doorgang maken naar volgende
-      // vakje. De switch loopt door tot er een geldige richting is gevonden,
-      // of er een nieuw vakje is gekozen (case 0).
+      // from start position choose direction and make passage to next
+      // cell. The switch continues until a valid direction is found,
+      // or a new cell is chosen (case 0).
       switch (roll) {
         case 1:
           if (y - 1 >= 0 && !blocks[x][y - 1].visited) {
@@ -139,7 +139,7 @@ public class MazeGenerator {
       }
     }
 
-    // stap 2: doodlopende stukken weghalen
+    // step 2: remove dead ends
     while (sparse > 0) {
       Block[][] temp = blocks.clone();
       sparse--;
@@ -166,7 +166,7 @@ public class MazeGenerator {
       blocks = temp;
     }
 
-    // stap3: loops maken
+    // step 3: create loops
     for (int i = 0; i < width; i++) {
       for (int j = 0; j < height; j++) {
         if (blocks[i][j].dead() && Dice.roll(1, 100, 0) < remove) {
@@ -178,9 +178,9 @@ public class MazeGenerator {
             if (Dice.roll(1, 100, 0) < randomness) {
               roll = Dice.roll(1, 4, 0);
             }
-            // vanuit starpositie richting kiezen en doorgang maken naar volgende
-            // vakje. De switch loopt door tot er een geldige richting is gevonden,
-            // of er een nieuw vakje is gekozen (case 0).
+            // from start position choose direction and make passage to next
+            // cell. The switch continues until a valid direction is found,
+            // or a new cell is chosen (case 0).
             switch (roll) {
               case 1:
                 if (y - 1 >= 0) {

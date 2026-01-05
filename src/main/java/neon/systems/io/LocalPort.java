@@ -35,7 +35,7 @@ import net.engio.mbassy.listener.References;
  *
  * @author mdriesen
  */
-@Listener(references = References.Strong) // strong, om gc te vermijden
+@Listener(references = References.Strong) // strong, to avoid gc
 @Slf4j
 public class LocalPort extends Port {
   private Collection<EventObject> buffer =
@@ -62,7 +62,7 @@ public class LocalPort extends Port {
   @Handler
   public void receive(EventObject event) {
     log.trace("{} received {}",this.name,event);
-    // zorgen dat al behandelde events niet nog eens worden teruggestuurd
+    // ensure that already processed events are not sent back again
     if (!buffer.remove(event)) {
       peer.write(event);
     }
@@ -70,7 +70,7 @@ public class LocalPort extends Port {
 
   private void write(EventObject event) {
     buffer.add(event);
-    // geen async, anders werkt save en quit niet meer
+    // no async, otherwise save and quit won't work anymore
     bus.publish(event);
   }
 }

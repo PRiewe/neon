@@ -36,16 +36,16 @@ import org.jetbrains.annotations.NotNull;
  * @author mdriesen
  */
 public class UIDStore {
-  // dummy uid voor objecten die eigenlijk niet bestaan
+  // dummy uid for objects that don't actually exist
   public static final long DUMMY = 0;
 
   // uid database
   private MVStore db;
-  // uids van alle objecten in het spel
+  // uids of all objects in the game
   private Map<Long, Entity> objects;
-  // uids van alle geladen mods
+  // uids of all loaded mods
   private Map<Short, Mod> mods;
-  // uids van alle geladen maps
+  // uids of all loaded maps
   private BiMap<Integer, String> maps = HashBiMap.create();
 
   /**
@@ -98,7 +98,7 @@ public class UIDStore {
   public void addEntity(Entity entity) {
     objects.put(entity.getUID(), entity);
     db.commit();
-    if (objects.size() % 1000 == 0) { // elke 1000 entities ne commit doen
+    if (objects.size() % 1000 == 0) { // do a commit every 1000 entities
       db.commit();
     }
   }
@@ -162,7 +162,7 @@ public class UIDStore {
    * @return
    */
   public long createNewEntityUID() {
-    // random objects hebben een random negatieve long als uid
+    // random objects have a random negative long as uid
     long uid = (long) (Math.random() * Long.MIN_VALUE);
     while (objects.containsKey(uid)) {
       uid = (uid >= 0) ? Long.MIN_VALUE : uid + 1;
@@ -176,7 +176,7 @@ public class UIDStore {
    * @return
    */
   public int createNewMapUID() {
-    // random maps hebben een random negatieve int als uid
+    // random maps have a random negative int as uid
     int uid = (int) (Math.random() * Integer.MIN_VALUE);
     while (maps.containsKey(uid)) {
       uid = (uid >= 0) ? Integer.MIN_VALUE : uid + 1;
@@ -190,7 +190,7 @@ public class UIDStore {
       result.append(s);
       result.append(",");
     }
-    // laatste "," wegnemen
+    // remove last ","
     result.replace(result.length(), result.length(), "");
     return result.toString();
   }
@@ -201,7 +201,7 @@ public class UIDStore {
    * @return the full object UID
    */
   public static long getObjectUID(long map, long object) {
-    // dit om problemen met two's complement te vermijden
+    // this to avoid problems with two's complement
     return (map << 32) | ((object << 32) >>> 32);
   }
 
@@ -211,7 +211,7 @@ public class UIDStore {
    * @return the full map UID
    */
   public static int getMapUID(int mod, int map) {
-    // dit om problemen met two's complement te vermijden
+    // this to avoid problems with two's complement
     return (mod << 16) | ((map << 16) >>> 16);
   }
 

@@ -116,7 +116,7 @@ public class InfoEditor implements ActionListener {
   }
 
   public void show() {
-    // veronderstellen dat data altijd geldig is...
+    // assume that data is always valid...
     RMod data = Editor.getStore().getActive();
     titleField.setText(data.get("title"));
     if (data.get("big") != null) {
@@ -132,18 +132,18 @@ public class InfoEditor implements ActionListener {
 
   private void save() {
     RMod data = Editor.getStore().getActive();
-    // big mag niet hetzelfde zijn als small
+    // big may not be the same as small
     if (!bigField.getText().equals(smallField.getText())) {
-      // big niet null of "€"
+      // big not null or "€"
       if (!bigField.getText().isEmpty() && !bigField.getText().equals("€")) {
         data.set("big", bigField.getText());
       }
-      // small niet null of "c"
+      // small not null or "c"
       if (!smallField.getText().isEmpty() && !bigField.getText().equals("c")) {
         data.set("small", smallField.getText());
       }
     }
-    // title niet null of "", tenzij bij extension
+    // title not null or "", unless for extension
     if (!Editor.getStore().getActive().isExtension()
         || !(titleField.getText() == null && titleField.getText().isEmpty())) {
       data.set("title", titleField.getText());

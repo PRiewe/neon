@@ -62,9 +62,9 @@ public class MotionHandler {
    */
   public static byte teleport(Creature creature, Door door) {
     if (door.portal.isPortal()) {
-      Zone previous = Engine.getAtlas().getCurrentZone(); // effe huidige zone bufferen
+      Zone previous = Engine.getAtlas().getCurrentZone(); // briefly buffer current zone
       if (door.portal.getDestMap() != 0) {
-        // effen map laden en deur terug laten verwijzen
+        // load map and have door refer back
         Map map = Engine.getAtlas().getMap(door.portal.getDestMap());
         Zone zone = map.getZone(door.portal.getDestZone());
         for (long uid : zone.getItems(door.portal.getDestPos())) {
@@ -85,7 +85,7 @@ public class MotionHandler {
       Engine.getAtlas().enterZone(door, previous);
 
       walk(creature, door.portal.getDestPos());
-      // kijken of er op de bestemming een deur staat, zo ja, deze deur unlocken en openen
+      // check if there is a door at the destination, if so, unlock and open this door
       Rectangle bounds = creature.getShapeComponent();
       for (long uid : Engine.getAtlas().getCurrentZone().getItems(bounds)) {
         Entity i = Engine.getStore().getEntity(uid);
@@ -94,7 +94,7 @@ public class MotionHandler {
         }
       }
 
-      // als er een sign op de deur staat, nu laten zien
+      // if there is a sign on the door, show it now
       if (door.hasSign()) {
         Engine.post(new MessageEvent(door, door.toString(), 3, SwingConstants.BOTTOM));
       }
@@ -126,7 +126,7 @@ public class MotionHandler {
       return NULL;
     }
 
-    // effen kijken of er geen gesloten deur aanwezig is
+    // check if there is no closed door present
     Collection<Long> items = Engine.getAtlas().getCurrentZone().getItems(p);
     for (long uid : items) {
       Entity i = Engine.getStore().getEntity(uid);
@@ -137,10 +137,10 @@ public class MotionHandler {
       }
     }
 
-    // type grond bepalen:
+    // determine ground type:
     Region.Modifier mov = region.getMovMod();
 
-    // kijken of actor aan het leviteren/vliegen is
+    // check if actor is levitating/flying
     if (actor.hasCondition(Condition.LEVITATE) || actor.species.habitat == Habitat.AIR) {
       if (mov != Region.Modifier.BLOCK) {
         mov = Region.Modifier.NONE;
@@ -184,8 +184,8 @@ public class MotionHandler {
   }
 
   /*
-   * Methode om te klimmen. De skill check
-   * moet groter zijn dan 25 (later meer terreinvarieteiten).
+   * Method to climb. The skill check
+   * must be greater than 25 (more terrain varieties later).
    *
    * @param tile
    */

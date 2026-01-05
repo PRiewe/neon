@@ -164,7 +164,7 @@ public class ScrollEditor extends ObjectEditor {
 
   protected void save() {
     data.name = nameField.getText();
-    try { // gefoefel om altijd long terug te krijgen
+    try { // workaround to always get a long value back
       costField.commitEdit();
       data.cost = ((Long) costField.getValue()).intValue();
     } catch (ParseException e) {

@@ -131,7 +131,7 @@ public class MapUtils {
     int[] yPoints = new int[4 * numPoints];
     int[] buffer = new int[numPoints];
 
-    // boven
+    // top
     for (int i = 0; i < numPoints; i++) {
       Point p = randomPoint(up);
       buffer[i] = p.x;
@@ -140,7 +140,7 @@ public class MapUtils {
     Arrays.sort(buffer);
     System.arraycopy(buffer, 0, xPoints, 0, numPoints);
 
-    // rechts
+    // right
     for (int i = 0; i < numPoints; i++) {
       Point p = randomPoint(right);
       xPoints[numPoints + i] = p.x;
@@ -149,7 +149,7 @@ public class MapUtils {
     Arrays.sort(buffer);
     System.arraycopy(buffer, 0, yPoints, numPoints, numPoints);
 
-    // onder
+    // bottom
     for (int i = 0; i < numPoints; i++) {
       Point p = randomPoint(down);
       buffer[i] = p.x;
@@ -158,7 +158,7 @@ public class MapUtils {
     Arrays.sort(buffer);
     System.arraycopy(reverse(buffer), 0, xPoints, 2 * numPoints, numPoints);
 
-    // links
+    // left
     for (int i = 0; i < numPoints; i++) {
       Point p = randomPoint(left);
       xPoints[3 * numPoints + i] = p.x;
@@ -196,21 +196,21 @@ public class MapUtils {
    * @return an array of points contained in the ribbon
    */
   public static Point[] randomRibbon(Rectangle r, boolean horizontal) {
-    // richting: true is horizontaal, false is verticaal
+    // direction: true is horizontal, false is vertical
     Point ribbon[];
 
     if (horizontal) {
       ribbon = new Point[r.width];
-      // startpositie
+      // start position
       int y = random(r.y, r.y + r.height);
       ribbon[0] = new Point(r.x, y);
-      for (int i = 1; i < r.width; i++) { // volgende punten
+      for (int i = 1; i < r.width; i++) { // next points
         y = random(Math.max(r.y, y - 1), Math.min(r.y + r.height, y + 1));
         ribbon[i] = new Point(r.x + i, y);
       }
     } else {
       ribbon = new Point[r.height];
-      // startpositie
+      // start position
       int x = random(r.x, r.x + r.width);
       ribbon[0] = new Point(x, r.y);
       for (int i = 1; i < r.height; i++) {

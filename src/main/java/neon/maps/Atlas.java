@@ -156,7 +156,7 @@ public class Atlas {
    */
   public void setMap(Map map) {
     if (!maps.containsKey(map.getUID())) {
-      // kan een random map zijn die nog niet in db zit
+      // could be a random map that's not in the database yet
       maps.put(map.getUID(), map);
     }
     currentMap = map.getUID();

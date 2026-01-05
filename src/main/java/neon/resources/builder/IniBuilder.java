@@ -45,19 +45,19 @@ public class IniBuilder extends Builder {
 
   @Override
   public void build(ResourceManager resources) {
-    // server instellingen inlezen
+    // read server settings
     CServer server = new CServer(ini);
     resources.addResource(server, "config");
 
-    // client instellingen inlezen
+    // read client settings
     CClient client = new CClient(ini);
     resources.addResource(client, "config");
 
-    // spelgerelateerde instellingen
+    // game-related settings
     CGame game = new CGame("game");
     resources.addResource(game, "config");
 
-    // alle data dirs en jars afgaan
+    // iterate through all data directories and jars
     for (String file : server.getMods()) {
       RMod mod = new ModLoader(file, queue, files).loadMod(game, client);
       resources.addResource(mod, "mods");

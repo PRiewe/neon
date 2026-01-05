@@ -61,7 +61,7 @@ public class CrafterDialog implements KeyListener {
     panel.setBorder(
         new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10, 10, 10, 10)));
 
-    // lijst met recepten
+    // list of recipes
     items = new JList<RCraft>();
     items.setFocusable(false);
     items.setCellRenderer(new CraftCellRenderer());
@@ -70,7 +70,7 @@ public class CrafterDialog implements KeyListener {
     scroller.setBorder(new TitledBorder("Items"));
     panel.add(scroller, BorderLayout.CENTER);
 
-    // instructies geven
+    // provide instructions
     JLabel instructions =
         new JLabel("Use arrow keys to select item, press enter to craft, esc to exit.");
     instructions.setBorder(
@@ -118,7 +118,7 @@ public class CrafterDialog implements KeyListener {
           if (player.getInventoryComponent().getMoney() >= craft.cost) {
             Collection<Long> removed =
                 InventoryHandler.removeItems(player, craft.raw, craft.amount);
-            for (long uid : removed) { // gebruikte items verwijderen
+            for (long uid : removed) { // remove used items
               bus.publishAsync(new StoreEvent(this, uid));
             }
             Item item = EntityFactory.getItem(craft.name, Engine.getStore().createNewEntityUID());

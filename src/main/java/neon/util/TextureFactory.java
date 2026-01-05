@@ -101,7 +101,7 @@ public class TextureFactory {
     g2i.setColor(Color.black);
     g2i.fillRect(0, 0, size, size);
     g2i.setColor(color);
-    // 0.25 en 0.85 om letter mooi in midden van texture te krijgen
+    // 0.25 and 0.85 to nicely center the letter in the middle of the texture
     g2i.drawString(text, (int) (size * 0.25), (int) (size * 0.85));
 
     TexturePaint texture = new TexturePaint(image, new Rectangle(size, size));
@@ -139,7 +139,7 @@ public class TextureFactory {
     g2i.setColor(Color.black);
     g2i.fillRect(0, 0, size, size);
     g2i.setColor(color);
-    // 0.25 en 0.85 om letter mooi in midden van texture te krijgen
+    // 0.25 and 0.85 to nicely center the letter in the middle of the texture
     g2i.drawString(text, (int) (size * 0.25), (int) (size * 0.85));
 
     images.get(size).put(type, image);

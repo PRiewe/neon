@@ -50,10 +50,10 @@ public class ModLoader {
   }
 
   public RMod loadMod(CGame game, CClient client) {
-    // main.xml laden
+    // load main.xml
     Element mod = files.getFile(new XMLTranslator(), path, "main.xml").getRootElement();
 
-    // cc.xml laden
+    // load cc.xml
     Element cc = null;
     if (files.exists(path, "cc.xml")) {
       cc = files.getFile(new XMLTranslator(), path, "cc.xml").getRootElement();
@@ -77,14 +77,14 @@ public class ModLoader {
 
     // books
     if (files.listFiles(path, "books") != null) {
-      initBooks(path, "books"); // laden voor items, anders vindt book zijn text niet
+      initBooks(path, "books"); // load before items, otherwise book won't find its text
     }
 
     // items
     initItems(path, "objects", "items.xml"); // items
     initItems(path, "objects", "crafting.xml"); // crafting
 
-    // themes (na terrain en items, want themes bevatten terrain en items)
+    // themes (after terrain and items, because themes contain terrain and items)
     initThemes(path, "themes", "dungeons.xml"); // dungeons
     initThemes(path, "themes", "zones.xml"); // zones
     initThemes(path, "themes", "regions.xml"); // regions
@@ -144,7 +144,7 @@ public class ModLoader {
         Document doc = files.getFile(new XMLTranslator(), path, "quests", quest);
         Engine.getResources().addResource(new RQuest(quest, doc.getRootElement()), "quest");
       }
-    } catch (Exception e) { // gebeurt bij .svn directory
+    } catch (Exception e) { // happens with .svn directory
       log.error("Error loading quest in mod {}",path,e);
     }
   }
@@ -165,8 +165,8 @@ public class ModLoader {
   private ArrayList<String[]> initMaps(String... file) {
     ArrayList<String[]> maps = new ArrayList<String[]>();
     for (String s : files.listFiles(file)) {
-      /* gefoefel met separators om jar of folder files te krijgen:
-       * substrings moeten er allebei instaan als het om jars gaat
+      /* workaround with separators to get jar or folder files:
+       * both substrings must be present when dealing with jars
        */
       s = s.substring(s.lastIndexOf("/") + 1);
       s = s.substring(s.lastIndexOf(File.separator) + 1);
@@ -340,26 +340,26 @@ public class ModLoader {
       String[] ticks = e.getAttributeValue("tick").split(":");
       RScript rs =
           (RScript) Engine.getResources().getResource(e.getAttributeValue("script"), "script");
-      if (ticks.length == 1) { // ene tick: gewoon toevoegen op dat tijdstip
+      if (ticks.length == 1) { // one tick: simply add at that time
         queue.add(rs.script, Integer.parseInt(ticks[0]), 0, 0);
-      } else if (ticks.length == 2) { // twee ticks
+      } else if (ticks.length == 2) { // two ticks
         if (!ticks[0].isEmpty()) {
           ticks[0] = "0";
         }
-        if (!ticks[1].isEmpty()) { // indien periode 0, maar 1 keer uitvoeren
+        if (!ticks[1].isEmpty()) { // if period 0, execute only once
           queue.add(rs.script, Integer.parseInt(ticks[0]), 0, 0);
-        } else { // anders met periode vanaf start
+        } else { // otherwise with period from start
           queue.add(rs.script, Integer.parseInt(ticks[0]), Integer.parseInt(ticks[1]), 0);
         }
-      } else if (ticks.length == 3) { // drie ticks
+      } else if (ticks.length == 3) { // three ticks
         if (!ticks[2].isEmpty()) {
           ticks[2] = "0";
         }
         if (!ticks[1].isEmpty()
-            || ticks[1].equals("0")) { // indien periode 0, enkel op begin en eind uitvoeren
+            || ticks[1].equals("0")) { // if period 0, execute only at start and end
           queue.add(rs.script, Integer.parseInt(ticks[0]), 0, 0);
           queue.add(rs.script, Integer.parseInt(ticks[2]), 0, 0);
-        } else { // anders met periode vanaf start tot stop
+        } else { // otherwise with period from start to stop
           queue.add(
               rs.script,
               Integer.parseInt(ticks[0]),

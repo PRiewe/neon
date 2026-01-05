@@ -46,7 +46,7 @@ import neon.util.ColorFactory;
  */
 @SuppressWarnings("serial")
 public class GamePanel extends JComponent {
-  // onderdelen
+  // components
   private JTextArea text;
   private JScrollPane scroller;
   private JPanel stats;
@@ -54,7 +54,7 @@ public class GamePanel extends JComponent {
   private TitledBorder sBorder, aBorder, cBorder;
   private JVectorPane drawing;
 
-  // onderdelen van het statspanel
+  // components of the stats panel
   private JLabel intLabel, conLabel, dexLabel, strLabel, wisLabel, chaLabel;
   private JLabel healthLabel, magicLabel, AVLabel, DVLabel;
 
@@ -63,7 +63,7 @@ public class GamePanel extends JComponent {
     drawing = new JVectorPane();
     drawing.setFilter(new LightFilter());
 
-    // stats field (mottige manier om dit semi-transparant te krijgen)
+    // stats field (hacky way to make it semi-transparent)
     stats =
         new JPanel(new GridLayout(0, 1)) {
           @Override
@@ -104,7 +104,7 @@ public class GamePanel extends JComponent {
     aPanel.add(chaLabel = new JLabel());
     stats.add(aPanel);
 
-    // text field (weer mottig)
+    // text field (hacky again)
     text = new JTextArea();
     text.setOpaque(false);
     text.setFocusable(false);
@@ -176,7 +176,7 @@ public class GamePanel extends JComponent {
       add(stats);
       add(scroller);
 
-      // layouten
+      // layout
       SpringLayout layout = new SpringLayout();
       layout.putConstraint(SpringLayout.NORTH, drawing, 0, SpringLayout.NORTH, this);
       layout.putConstraint(SpringLayout.EAST, drawing, 0, SpringLayout.EAST, this);
@@ -189,7 +189,7 @@ public class GamePanel extends JComponent {
       layout.putConstraint(SpringLayout.EAST, scroller, 0, SpringLayout.EAST, this);
       layout.putConstraint(SpringLayout.SOUTH, scroller, 0, SpringLayout.SOUTH, this);
       setLayout(layout);
-      // om drawing vanonder te steken
+      // to place drawing underneath
       setComponentZOrder(drawing, 2);
     } else {
       setLayout(new BorderLayout());
@@ -378,7 +378,7 @@ public class GamePanel extends JComponent {
         g.setColor(new Color(0, 0, 0, (hour - 12) * (hour - 12) * 3 / 2));
         g.fill(area);
       } else {
-        // TODO: verschillend gekleurde lichtjes
+        // TODO: differently colored lights
         g.setColor(new Color(0, 0, 0, 200));
         g.fill(area);
       }

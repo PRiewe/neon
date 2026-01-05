@@ -91,10 +91,10 @@ public class RCreature extends RData {
     cha = Integer.parseInt(properties.getChild("stats").getAttributeValue("cha"));
 
     speed = Integer.parseInt(properties.getAttributeValue("speed"));
-    if (properties.getAttributeValue("mana") != null) { // niet altijd aanwezig
+    if (properties.getAttributeValue("mana") != null) { // not always present
       mana = Integer.parseInt(properties.getAttributeValue("mana"));
     }
-    if (properties.getChild("dv") != null) { // niet altijd aanwezig
+    if (properties.getChild("dv") != null) { // not always present
       dv = Integer.parseInt(properties.getChild("dv").getText());
     }
 

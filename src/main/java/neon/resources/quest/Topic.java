@@ -30,12 +30,12 @@ public class Topic {
   public final String questID;
 
   public final String conversationID;
-  public final String id; // unieke id string
+  public final String id; // unique id string
 
-  public String phrase; // hetgeen de player zegt
-  public String condition; // script voorwaarden
-  public String answer; // antwoord van NPC
-  public String action; // script om achteraf uit te voeren
+  public String phrase; // what the player says
+  public String condition; // script conditions
+  public String answer; // NPC's response
+  public String action; // script to execute afterwards
 
   /**
    * Initializes a topic from a JDOM {@code Element}.
@@ -46,7 +46,7 @@ public class Topic {
     this.questID = questID;
     this.conversationID = conversationID;
 
-    // id en phrase moeten altijd bestaan
+    // id and phrase must always exist
     id = topic.getAttributeValue("id");
     phrase = topic.getChildText("phrase");
 

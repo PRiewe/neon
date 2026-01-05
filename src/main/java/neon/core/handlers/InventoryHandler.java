@@ -81,7 +81,7 @@ public class InventoryHandler {
    */
   public static void removeItem(Creature creature, long uid) {
     if (creature.getInventoryComponent().hasEquiped(uid)) {
-      unequip(uid, creature); // eerst unequipen als ge dit nog aanhebt
+      unequip(uid, creature); // first unequip if you still have this equipped
     }
     creature.getInventoryComponent().removeItem(uid);
   }
@@ -238,7 +238,7 @@ public class InventoryHandler {
     for (long uid : creature.getInventoryComponent()) {
       sum += ((Item) Engine.getStore().getEntity(uid)).resource.weight;
     }
-    // in geval van 'burden' spell
+    // in case of 'burden' spell
     for (Spell s : creature.getActiveSpells()) {
       if (s.getEffect() == Effect.BURDEN) {
         sum += s.getMagnitude();

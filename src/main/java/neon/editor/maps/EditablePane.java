@@ -59,14 +59,14 @@ public class EditablePane extends JScrollPane
     this.node = node;
     setBackground(Color.black);
     pane = new JVectorPane();
-    scene = node.getZone().getScene(); // scene na pane, anders loopt repaint mis
+    scene = node.getZone().getScene(); // scene after pane, otherwise repaint goes wrong
     setViewportView(pane);
     pane.setEditable(true);
     pane.setPreferredSize(
         new Dimension(
             (int) (scene.getWidth() * pane.getZoom()), (int) (scene.getHeight() * pane.getZoom())));
 
-    // listeners en dingen
+    // listeners and stuff
     pane.addMouseListener(this);
     pane.addMouseMotionListener(this);
     pane.addMouseWheelListener(this);
@@ -80,13 +80,13 @@ public class EditablePane extends JScrollPane
     SwingUtilities.invokeLater(
         new Runnable() {
           public void run() {
-            repaint(); // omdat er anders iets misloopt met nieuwe panes
+            repaint(); // because otherwise something goes wrong with new panes
           }
         });
   }
 
   public void repaint() {
-    if (scene != null) { // JScrollPane repaint() al in de constructor
+    if (scene != null) { // JScrollPane repaint() already in the constructor
       pane.setRenderables(scene.getElements(pane.getVisibleRectangle()));
     }
     super.repaint();
@@ -246,7 +246,7 @@ public class EditablePane extends JScrollPane
                 original.width,
                 original.height);
       } else if (original instanceof IObject) {
-        // state van deuren en containers meekopieren -> nee?
+        // copy state of doors and containers -> no?
         cloneElement.setAttribute("id", originalElement.getAttributeValue("id"));
         clone =
             new IObject(
@@ -287,10 +287,10 @@ public class EditablePane extends JScrollPane
         }
       } else if (e.getActionCommand().equals("Delete")) {
         if (selected != null) {
-          scene.removeElement(selected); // ding verwijderen
-          if (selected instanceof IObject) { // UID weg indien object
+          scene.removeElement(selected); // remove thing
+          if (selected instanceof IObject) { // remove UID if object
             node.getZone().map.removeObjectUID(((IObject) selected).uid);
-            if (selected instanceof IContainer) { // inhoud van container ook verwijderen
+            if (selected instanceof IContainer) { // also remove container contents
               for (IObject io : ((IContainer) selected).contents) {
                 node.getZone().map.removeObjectUID(io.uid);
               }
@@ -321,7 +321,7 @@ public class EditablePane extends JScrollPane
     final int x = Math.max(0, (int) (viewport.getViewPosition().x * ratio + dx));
     final int y = Math.max(0, (int) (viewport.getViewPosition().y * ratio + dy));
     pane.setZoom(zoom);
-    // omdat preferredSize van de viewport niet onmiddelijk verandert
+    // because preferredSize of the viewport doesn't change immediately
     SwingUtilities.invokeLater(
         new Runnable() {
           public void run() {
@@ -372,9 +372,9 @@ public class EditablePane extends JScrollPane
         Instance selected = (Instance) pane.getSelectedObject();
         if (selected != null) {
           scene.removeElement(selected);
-          if (selected instanceof IObject) { // UID weg indien object
+          if (selected instanceof IObject) { // remove UID if object
             node.getZone().map.removeObjectUID(((IObject) selected).uid);
-            if (selected instanceof IContainer) { // inhoud van container ook verwijderen
+            if (selected instanceof IContainer) { // also remove container contents
               for (IObject io : ((IContainer) selected).contents) {
                 node.getZone().map.removeObjectUID(io.uid);
               }

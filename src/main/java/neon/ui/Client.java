@@ -63,7 +63,7 @@ public class Client implements Runnable {
   }
 
   private void initUI() {
-    // look and feel setten
+    // set look and feel
     try {
       Theme.loadTheme(new File("data/neon.theme"));
       UIManager.setLookAndFeel("de.muntjak.tinylookandfeel.TinyLookAndFeel");
@@ -71,7 +71,7 @@ public class Client implements Runnable {
       log.error("initUI",e);
     }
 
-    // UI dingen
+    // UI components
     CClient client = (CClient) Engine.getResources().getResource("client", "config");
     ui = new UserInterface(client.getTitle());
     ui.show();
@@ -81,14 +81,14 @@ public class Client implements Runnable {
     // main menu
     MainMenuState main = new MainMenuState(fsm, bus, ui, version);
 
-    // alle game substates.
+    // all game substates
     GameState game = new GameState(fsm, bus, ui);
     bus.subscribe(game);
-    // deuren
+    // doors
     DoorState doors = new DoorState(game, bus, ui);
     // locks
     LockState locks = new LockState(game, bus, ui);
-    // bumpen
+    // bumping
     BumpState bump = new BumpState(game, bus, ui);
     // move
     MoveState move = new MoveState(game, bus);
@@ -104,7 +104,7 @@ public class Client implements Runnable {
     // journal state
     JournalState journal = new JournalState(fsm, bus, ui);
 
-    // start states setten
+    // set start states
     fsm.addStartStates(main, move);
 
     // transitions
@@ -129,7 +129,7 @@ public class Client implements Runnable {
     fsm.addTransition(new Transition(bump, move, "return"));
     fsm.addTransition(new Transition(bump, dialog, "dialog"));
 
-    // en starten
+    // and start
     fsm.start(new TransitionEvent("start"));
   }
 

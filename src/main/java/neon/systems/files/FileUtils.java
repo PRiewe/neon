@@ -101,7 +101,7 @@ public class FileUtils {
    * @throws IOException
    */
   public static JarFile pack(String path, String modID) throws IOException {
-    // alle oudermappen wegknippen
+    // cut off all parent folders
     String name = path.substring(Math.max(0, path.lastIndexOf(File.separator)));
 
     File mod = new File(path);
@@ -130,7 +130,7 @@ public class FileUtils {
       }
       in.close();
     }
-    // manifest schrijven
+    // write manifest
     Manifest mf = new Manifest();
     mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
     mf.getMainAttributes().putValue("Mod-ID", modID);
@@ -164,13 +164,13 @@ public class FileUtils {
         File file = new File(dir.getPath() + File.separator + name);
         if (!entry.isDirectory()) {
           File parent = new File(file.getParent());
-          // directories worden niet uitgepakt, maar worden voor elke file gecontroleerd
+          // directories are not unpacked, but are checked for each file
           if (!parent.exists()) {
             parent.mkdir();
           }
           InputStream in = jar.getInputStream(jar.getEntry(entry.getName()));
           OutputStream out = new FileOutputStream(file);
-          int nextByte; // in.read leest een byte, maar steekt dat in een int?????
+          int nextByte; // in.read reads a byte, but puts it in an int?????
           while ((nextByte = in.read()) != -1) {
             out.write((byte) nextByte);
           }
@@ -184,7 +184,7 @@ public class FileUtils {
     }
   }
 
-  // geeft lijst terug van alle files in een directory en zijn subdirectories
+  // returns a list of all files in a directory and its subdirectories
   private static List<File> listFiles(File dir) {
     ArrayList<File> files = new ArrayList<File>();
     for (File file : dir.listFiles()) {

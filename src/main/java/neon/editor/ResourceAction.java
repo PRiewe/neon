@@ -72,7 +72,7 @@ public class ResourceAction extends AbstractAction {
         switch (type) {
           case RECIPE:
             Collection<RItem.Potion> potions = Editor.resources.getResources(RItem.Potion.class);
-            if (!potions.isEmpty()) { // kijken of er al potions zijn aangemaakt
+            if (!potions.isEmpty()) { // check if potions have already been created
               RItem potion =
                   (RItem)
                       JOptionPane.showInputDialog(
@@ -93,7 +93,7 @@ public class ResourceAction extends AbstractAction {
             break;
           case CRAFT:
             Collection<RItem> items = Editor.resources.getResources(RItem.class);
-            if (!items.isEmpty()) { // kijken of er al items zijn aangemaakt
+            if (!items.isEmpty()) { // check if items have already been created
               RItem craft =
                   (RItem)
                       JOptionPane.showInputDialog(
@@ -174,7 +174,7 @@ public class ResourceAction extends AbstractAction {
             break;
         }
 
-        // node op juiste plaats in tree duwen
+        // push node to the correct place in tree
         ResourceNode node = new ResourceNode(object, type);
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
         listener.launchEditor(node);
@@ -182,7 +182,7 @@ public class ResourceAction extends AbstractAction {
           ResourceNode parent = (ResourceNode) root.getChildAt(i);
           if (parent.getType() == type) {
             parent.add(node);
-            tree.updateUI(); // anders update de tree niet na toevoegen
+            tree.updateUI(); // otherwise the tree doesn't update after adding
             Object[] nodes = {root, parent, node};
             TreePath path = new TreePath(nodes);
             tree.scrollPathToVisible(path);
@@ -193,7 +193,7 @@ public class ResourceAction extends AbstractAction {
     } else if (e.getActionCommand().equals("Edit resource")) {
       listener.launchEditor((ResourceNode) tree.getLastSelectedPathComponent());
     } else if (e.getActionCommand().equals("Delete resource")) {
-      // uit tree en datastore halen
+      // remove from tree and datastore
       ResourceNode node = (ResourceNode) tree.getLastSelectedPathComponent();
       model.removeNodeFromParent(node);
       Editor.resources.removeResource(node.getResource());

@@ -27,7 +27,7 @@ import neon.maps.MapUtils;
 
 public class ComplexGenerator {
   protected static int[][] generateSparseDungeon(int width, int height, int n, int rMin, int rMax) {
-    // paar dingen aanmaken
+    // create a few things
     int[][] tiles = new int[width][height];
     ArrayList<RoomGenerator.Room> rooms = new ArrayList<RoomGenerator.Room>();
     for (Rectangle room :
@@ -41,8 +41,8 @@ public class ComplexGenerator {
       }
     }
 
-    // kamers verbinden: startkamer kiezen, dan kamer nemen en tunnelen, enz.
-    Collections.shuffle(rooms); // eerst beetje schuffelen
+    // connect rooms: choose starting room, then take room and tunnel, etc.
+    Collections.shuffle(rooms); // shuffle a bit first
     Area area = null;
     for (RoomGenerator.Room room : rooms) {
       if (area == null) {
@@ -53,7 +53,7 @@ public class ComplexGenerator {
       }
     }
 
-    // louche dingen weghalen
+    // remove suspicious things
     clean(tiles);
     return tiles;
   }
@@ -65,14 +65,14 @@ public class ComplexGenerator {
     int[][] tiles = new int[width][height];
     Area area = new Area();
 
-    // alle kamers plaatsen
+    // place all rooms
     for (Rectangle room : rooms) {
       RoomGenerator.makeRoom(tiles, room);
     }
 
-    // paar kamers samenvoegen tot polygonen
+    // merge a few rooms into polygons
     boolean[] wasted = new boolean[rooms.size()];
-    // 10 % proberen te verbinden
+    // try to connect 10%
     while (MapUtils.amount(wasted, true) < wasted.length / 10) {
       int index = MapUtils.random(0, wasted.length - 1);
       if (!wasted[index]) {
@@ -80,15 +80,15 @@ public class ComplexGenerator {
       }
     }
 
-    // kamers verbinden: startkamer kiezen, dan kamer nemen en tunnelen, enz.
+    // connect rooms: choose starting room, then take room and tunnel, etc.
     for (Rectangle room : rooms) {
-      if (!area.isEmpty() && !wasted[rooms.indexOf(room)]) { // tunnelen naar reeds bestaande area
+      if (!area.isEmpty() && !wasted[rooms.indexOf(room)]) { // tunnel to already existing area
         connect(tiles, room, area);
       }
-      area.add(new Area(room)); // en huidige kamer dan toevoegen
+      area.add(new Area(room)); // and then add current room
     }
 
-    // louche dingen weghalen
+    // remove suspicious things
     clean(tiles);
 
     return tiles;
@@ -100,12 +100,12 @@ public class ComplexGenerator {
     int[][] tiles = new int[width][height];
     Area area = new Area();
 
-    // alle kamers plaatsen
+    // place all rooms
     for (Rectangle room : rooms) {
       RoomGenerator.makeRoom(tiles, room);
     }
 
-    // paar kamers samenvoegen tot polygonen
+    // merge a few rooms into polygons
     boolean[] wasted = new boolean[rooms.size()];
     while (Math.random() < 0.5) {
       int index = MapUtils.random(0, wasted.length - 1);
@@ -114,15 +114,15 @@ public class ComplexGenerator {
       }
     }
 
-    // kamers verbinden: startkamer kiezen, dan kamer nemen en tunnelen, enz.
+    // connect rooms: choose starting room, then take room and tunnel, etc.
     for (Rectangle room : rooms) {
-      if (!area.isEmpty() && !wasted[rooms.indexOf(room)]) { // tunnelen naar reeds bestaande area
+      if (!area.isEmpty() && !wasted[rooms.indexOf(room)]) { // tunnel to already existing area
         connect(tiles, room, area);
       }
-      area.add(new Area(room)); // en huidige kamer dan toevoegen
+      area.add(new Area(room)); // and then add current room
     }
 
-    // louche dingen weghalen
+    // remove suspicious things
     clean(tiles);
 
     return tiles;
@@ -162,22 +162,22 @@ public class ComplexGenerator {
   }
 
   private static boolean goHorizontal(int[][] tiles, Rectangle source, Rectangle dest, Area area) {
-    while (source.x != dest.x) { // nog niet op zelfde breedte
-      int dir = (source.x < dest.x) ? 1 : -1; // welke richting uit
+    while (source.x != dest.x) { // not at same width yet
+      int dir = (source.x < dest.x) ? 1 : -1; // which direction to go
       source.x += dir;
       if (tiles[source.x][source.y] == MapUtils.ENTRY
           || tiles[source.x][source.y] == MapUtils.CORNER) {
-        source.x -= dir; // obstakel gevonden
+        source.x -= dir; // obstacle found
         return false;
       } else if (tiles[source.x][source.y] == MapUtils.CORRIDOR) {
         return true;
       } else if (tiles[source.x][Math.max(0, source.y - 1)] == MapUtils.CORRIDOR
           || tiles[source.x][Math.min(tiles[0].length - 1, source.y + 1)] == MapUtils.CORRIDOR) {
-        // andere gang tegengekomen
+        // encountered another corridor
         tiles[source.x][source.y] = MapUtils.TEMP;
         return true;
       } else if (tiles[source.x][source.y] != MapUtils.FLOOR) {
-        if (tiles[source.x][source.y] == MapUtils.WALL_ROOM) { // kamermuur doorboord
+        if (tiles[source.x][source.y] == MapUtils.WALL_ROOM) { // room wall breached
           tiles[source.x][source.y + 1] = MapUtils.ENTRY;
           tiles[source.x][source.y] = MapUtils.random(MapUtils.DOOR, MapUtils.DOOR_LOCKED);
           tiles[source.x][source.y - 1] = MapUtils.ENTRY;
@@ -187,7 +187,7 @@ public class ComplexGenerator {
         } else {
           tiles[source.x][source.y] = MapUtils.TEMP;
         }
-      } else { // als er dus wel ne vloertegel wordt tegengekomen
+      } else { // if a floor tile is encountered
         if (area.contains(source)) {
           return true;
         }
@@ -197,22 +197,22 @@ public class ComplexGenerator {
   }
 
   private static boolean goVertical(int[][] tiles, Rectangle source, Rectangle dest, Area area) {
-    while (source.y != dest.y) { // nog niet op zelfde hoogte
+    while (source.y != dest.y) { // not at same height yet
       int dir = (source.y < dest.y) ? 1 : -1;
       source.y += dir;
       if (tiles[source.x][source.y] == MapUtils.ENTRY
           || tiles[source.x][source.y] == MapUtils.CORNER) {
-        source.y -= dir; // obstakel gevonden
+        source.y -= dir; // obstacle found
         return false;
       } else if (tiles[source.x][source.y] == MapUtils.CORRIDOR) {
         return true;
       } else if (tiles[Math.min(tiles.length - 1, source.x + 1)][source.y] == MapUtils.CORRIDOR
           || tiles[Math.max(0, source.x - 1)][source.y]
-              == MapUtils.CORRIDOR) { // andere gang tegengekomen
+              == MapUtils.CORRIDOR) { // encountered another corridor
         tiles[source.x][source.y] = MapUtils.TEMP;
         return true;
       } else if (tiles[source.x][source.y] != MapUtils.FLOOR) {
-        if (tiles[source.x][source.y] == MapUtils.WALL_ROOM) { // kamermuur doorboord
+        if (tiles[source.x][source.y] == MapUtils.WALL_ROOM) { // room wall breached
           tiles[source.x - 1][source.y] = MapUtils.ENTRY;
           tiles[source.x][source.y] = MapUtils.random(MapUtils.DOOR, MapUtils.DOOR_LOCKED);
           tiles[source.x + 1][source.y] = MapUtils.ENTRY;
@@ -222,7 +222,7 @@ public class ComplexGenerator {
         } else {
           tiles[source.x][source.y] = MapUtils.TEMP;
         }
-      } else { // als er dus wel ne vloertegel wordt tegengekomen
+      } else { // if a floor tile is encountered
         if (area.contains(source)) {
           return true;
         }
@@ -241,26 +241,26 @@ public class ComplexGenerator {
     do {
       Rectangle source = new Rectangle((int) room.getCenterX(), (int) room.getCenterY(), 1, 1);
       Rectangle dest = new Rectangle(1, 1);
-      do { // punt zoeken binnen al gedane area
+      do { // find point within already done area
         dest.x = MapUtils.random(1, tiles.length - 1);
         dest.y = MapUtils.random(1, tiles[dest.x].length - 1);
       } while (!area.contains(dest));
 
-      if (loop % 2 > 0) { // af en toe eens in de andere richting beginnen
+      if (loop % 2 > 0) { // occasionally start in the other direction
         ok = goHorizontal(tiles, source, dest, area) || goVertical(tiles, source, dest, area);
       } else {
         ok = goVertical(tiles, source, dest, area) || goHorizontal(tiles, source, dest, area);
       }
-      for (int x = 0; x < tiles.length; x++) { // temp corridors vervangen
+      for (int x = 0; x < tiles.length; x++) { // replace temp corridors
         for (int y = 0; y < tiles[x].length; y++) {
           if (tiles[x][y] == MapUtils.TEMP) {
             tiles[x][y] =
-                ok ? MapUtils.CORRIDOR : MapUtils.WALL; // temp wordt echte corridor als ok
+                ok ? MapUtils.CORRIDOR : MapUtils.WALL; // temp becomes real corridor if ok
           }
           if (room.contains(x, y)
               && (isDoor(tiles[x][y]) || tiles[x][y] == MapUtils.ENTRY)
               && !ok) {
-            tiles[x][y] = MapUtils.WALL_ROOM; // entry en door worden terug wall indien niet ok
+            tiles[x][y] = MapUtils.WALL_ROOM; // entry and door become wall again if not ok
           }
         }
       }
@@ -269,7 +269,7 @@ public class ComplexGenerator {
   }
 
   private static void clean(int[][] tiles) {
-    // niet-geconnecteerde stukken zoeken en verwijderen
+    // find and remove unconnected pieces
     int[][] fill = new int[tiles.length][tiles[0].length];
     for (int x = 1; x < tiles.length - 1; x++) {
       for (int y = 1; y < tiles[x].length - 1; y++) {
@@ -278,8 +278,8 @@ public class ComplexGenerator {
         }
       }
     }
-    Point start = new Point(1, 1); // startpositie
-    do { // punt zoeken binnen dungeon
+    Point start = new Point(1, 1); // start position
+    do { // find point within dungeon
       start.x = MapUtils.random(1, tiles.length - 1);
       start.y = MapUtils.random(1, tiles[start.x].length - 1);
     } while (tiles[start.x][start.y] != MapUtils.FLOOR);
@@ -292,10 +292,10 @@ public class ComplexGenerator {
       }
     }
 
-    // andere louche dingen
+    // other suspicious things
     for (int x = 1; x < tiles.length - 1; x++) {
       for (int y = 1; y < tiles[x].length - 1; y++) {
-        // gat in kamermuur
+        // hole in room wall
         if ((isRoomWall(tiles[x][y + 1]) && isRoomWall(tiles[x][y - 1]))
             && (isFloor(tiles[x + 1][y]) != isFloor(tiles[x - 1][y]))) {
           tiles[x][y] = MapUtils.WALL_ROOM;
@@ -305,7 +305,7 @@ public class ComplexGenerator {
           tiles[x][y] = MapUtils.WALL_ROOM;
         }
 
-        // deuren langs elkaar
+        // doors next to each other
         if (isDoor(tiles[x][y])
             && (isDoor(tiles[x + 1][y])
                 || isDoor(tiles[x - 1][y])
@@ -314,13 +314,13 @@ public class ComplexGenerator {
           tiles[x][y] = MapUtils.FLOOR;
         }
 
-        // twee deuren tussen aangrenzende kamers
+        // two doors between adjacent rooms
         if (isRoomWall(tiles[x][y])
             && isFloor(tiles[x][y + 1])
             && isFloor(tiles[x][y - 1])
             && isFloor(tiles[x + 1][y])
             && isFloor(tiles[x - 1][y])) {
-          if (Math.random() < 0.5) { // om niet altijd linkse of bovenste deur te pakken
+          if (Math.random() < 0.5) { // to not always pick the left or top door
             if (isRoomWall(tiles[x + 2][y])) {
               tiles[x + 1][y] = MapUtils.WALL_ROOM;
             } else {

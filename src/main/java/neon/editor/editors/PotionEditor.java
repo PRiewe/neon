@@ -155,7 +155,7 @@ public class PotionEditor extends ObjectEditor {
 
   protected void save() {
     data.name = nameField.getText();
-    try { // gefoefel om altijd long terug te krijgen
+    try { // fiddling to always get long back
       costField.commitEdit();
       data.cost = ((Long) costField.getValue()).intValue();
     } catch (ParseException e) {
@@ -174,7 +174,7 @@ public class PotionEditor extends ObjectEditor {
 
   private Vector<String> loadSpells() {
     Vector<String> spells = new Vector<String>();
-    spells.add(null); // potion kan ook geen effect hebben
+    spells.add(null); // potion can also have no effect
     for (RSpell.Enchantment spell : Editor.resources.getResources(RSpell.Enchantment.class)) {
       if (spell.item.equals("nutrition")) {
         spells.add(spell.id);

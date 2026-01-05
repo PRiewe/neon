@@ -58,27 +58,27 @@ public class NewGameDialog {
 
     main = new JPanel(new BorderLayout());
 
-    // uitleg in bovenste deel van scherm
+    // explanation in top part of screen
     JLabel instructions =
         new JLabel("Use tab to move between options. Press enter to accept, esc to cancel");
     instructions.setBorder(
         new CompoundBorder(new TitledBorder("Instructions"), new EmptyBorder(0, 5, 10, 5)));
 
-    // naam, beroep, ras, geslacht, specialisatie
+    // name, profession, race, gender, specialization
     JPanel middle = new JPanel(new GridLayout(0, 1));
-    // naam
+    // name
     JPanel namePanel = new JPanel();
     namePanel.setBorder(new TitledBorder("Name"));
     name = new JTextField(20);
     namePanel.add(name);
     middle.add(namePanel);
-    // beroep
+    // profession
     JPanel profPanel = new JPanel();
     profPanel.setBorder(new TitledBorder("Profession"));
     prof = new JTextField("adventurer", 20);
     profPanel.add(prof);
     middle.add(profPanel);
-    // ras
+    // race
     JPanel racePanel = new JPanel();
     raceList = new HashMap<String, String>();
     CGame game = (CGame) Engine.getResources().getResource("game", "config");
@@ -89,13 +89,13 @@ public class NewGameDialog {
     racePanel.add(race);
     racePanel.setBorder(new TitledBorder("Race"));
     middle.add(racePanel);
-    // geslacht
+    // gender
     JPanel genderPanel = new JPanel();
     gender = new JComboBox<Gender>(Gender.values());
     genderPanel.add(gender);
     genderPanel.setBorder(new TitledBorder("Gender"));
     middle.add(genderPanel);
-    // specialisatie
+    // specialization
     JPanel specPanel = new JPanel();
     spec = new JComboBox<Player.Specialisation>(Player.Specialisation.values());
     specPanel.add(spec);
@@ -109,7 +109,7 @@ public class NewGameDialog {
     signPanel.setBorder(new TitledBorder("Birthsign"));
     middle.add(signPanel);
 
-    // OK en cancel knop
+    // OK and cancel button
     JPanel bottom = new JPanel();
     Action ok = new Ok("ok");
     JButton okButton = new JButton(ok);
@@ -118,7 +118,7 @@ public class NewGameDialog {
     JButton cancelButton = new JButton(cancel);
     bottom.add(cancelButton);
 
-    // alles toevoegen aan main
+    // add everything to main
     main.add(instructions, BorderLayout.PAGE_START);
     main.add(middle, BorderLayout.CENTER);
     main.add(bottom, BorderLayout.PAGE_END);
