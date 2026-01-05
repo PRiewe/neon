@@ -22,7 +22,13 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.Arrays;
+import neon.util.DefaultRandomSource;
+import neon.util.RandomSource;
 
+/**
+ * Utility class for map generation operations including random shape generation. Can be
+ * instantiated with a specific {@link RandomSource} for deterministic testing.
+ */
 public class MapUtils {
   public static final int WALL = 0;
   public static final int FLOOR = 1;
@@ -35,16 +41,43 @@ public class MapUtils {
   public static final int CORNER = 8;
   public static final int TEMP = 9;
 
+  private final RandomSource randomSource;
+
+  /** Creates a new MapUtils with a default (non-deterministic) random source. */
+  public MapUtils() {
+    this(new DefaultRandomSource());
+  }
+
+  /**
+   * Creates a new MapUtils with a specific random source. Use this constructor for deterministic
+   * testing.
+   *
+   * @param randomSource the random source to use
+   */
+  public MapUtils(RandomSource randomSource) {
+    this.randomSource = randomSource;
+  }
+
+  /**
+   * Factory method to create a MapUtils with a seeded random source for reproducible results.
+   *
+   * @param seed the seed for the random number generator
+   * @return a new MapUtils instance with seeded random behavior
+   */
+  public static MapUtils withSeed(long seed) {
+    return new MapUtils(new DefaultRandomSource(seed));
+  }
+
   /**
    * Returns a rectangle with the given min/max width and height.
    *
-   * @param minW
-   * @param maxW
-   * @param minH
-   * @param maxH
-   * @return a random Rectangle with its origin a (0,0)
+   * @param minW minimum width
+   * @param maxW maximum width
+   * @param minH minimum height
+   * @param maxH maximum height
+   * @return a random Rectangle with its origin at (0,0)
    */
-  public static Rectangle randomRectangle(int minW, int maxW, int minH, int maxH) {
+  public Rectangle randomRectangle(int minW, int maxW, int minH, int maxH) {
     int w = random(minW, maxW);
     int h = random(minH, maxH);
     return new Rectangle(w, h);
@@ -53,11 +86,11 @@ public class MapUtils {
   /**
    * Returns a square with the given min/max side length.
    *
-   * @param minW
-   * @param maxW
+   * @param minW minimum side length
+   * @param maxW maximum side length
    * @return a square with its origin at (0,0)
    */
-  public static Rectangle randomSquare(int minW, int maxW) {
+  public Rectangle randomSquare(int minW, int maxW) {
     int w = random(minW, maxW);
     return new Rectangle(w, w);
   }
@@ -66,14 +99,14 @@ public class MapUtils {
    * Returns a rectangle with the given min/max dimensions and a maximum width/height or
    * height/width ratio.
    *
-   * @param minW
-   * @param maxW
-   * @param minH
-   * @param maxH
-   * @param ratio
+   * @param minW minimum width
+   * @param maxW maximum width
+   * @param minH minimum height
+   * @param maxH maximum height
+   * @param ratio maximum aspect ratio
    * @return a random Rectangle with its origin at (0,0)
    */
-  public static Rectangle randomRectangle(int minW, int maxW, int minH, int maxH, double ratio) {
+  public Rectangle randomRectangle(int minW, int maxW, int minH, int maxH, double ratio) {
     int w = random(minW, maxW);
     int hMin = Math.max(minH, (int) (w / ratio));
     int hMax = Math.min(maxH, (int) (w * ratio));
@@ -84,11 +117,11 @@ public class MapUtils {
   /**
    * Generates a random rectangle within the given rectangle.
    *
-   * @param minW
-   * @param bounds
-   * @return a @code{Rectangle}
+   * @param minW minimum width
+   * @param bounds the bounding rectangle
+   * @return a Rectangle within the bounds
    */
-  public static Rectangle randomRectangle(int minW, Rectangle bounds) {
+  public Rectangle randomRectangle(int minW, Rectangle bounds) {
     int w = random(minW, bounds.width - 1);
     int h = random(minW, bounds.height - 1);
     Rectangle rec = new Rectangle(w, h);
@@ -101,23 +134,34 @@ public class MapUtils {
   }
 
   /**
-   * @param min
-   * @param max
-   * @return a random int between min and max (min and max included)
+   * Returns a random int between min and max (min and max included).
+   *
+   * @param min minimum value (inclusive)
+   * @param max maximum value (inclusive)
+   * @return a random int between min and max
    */
-  public static int random(int min, int max) {
-    return (int) (min + (max - min + 1) * Math.random());
+  public int random(int min, int max) {
+    return randomSource.nextInt(min, max);
+  }
+
+  /**
+   * Returns the random source used by this MapUtils instance.
+   *
+   * @return the random source
+   */
+  public RandomSource getRandomSource() {
+    return randomSource;
   }
 
   /**
    * Returns a random polygon with approximately the given number of vertices. The polygon is not
    * guaranteed to be convex, but will not intersect itself.
    *
-   * @param r a rectangle
-   * @param corners the number of vertices
+   * @param r a rectangle bounding the polygon
+   * @param corners the approximate number of vertices
    * @return a polygon that is bounded by the given rectangle
    */
-  public static Polygon randomPolygon(Rectangle r, int corners) {
+  public Polygon randomPolygon(Rectangle r, int corners) {
     Rectangle up = new Rectangle(r.x + r.width / 4, r.y, r.width / 2, r.height / 4);
     Rectangle right =
         new Rectangle(r.x + 3 * r.width / 4, r.y + r.height / 4, r.width / 4, r.height / 2);
@@ -181,21 +225,23 @@ public class MapUtils {
   }
 
   /**
-   * @param r
-   * @return a random point in the given rectangle
+   * Returns a random point in the given rectangle.
+   *
+   * @param r the bounding rectangle
+   * @return a random point within the rectangle
    */
-  public static Point randomPoint(Rectangle r) {
+  public Point randomPoint(Rectangle r) {
     return new Point(random(r.x, r.x + r.width), random(r.y, r.y + r.height));
   }
 
   /**
    * Returns a ribbon of width one, running from one side of a rectangle to the opposite one.
    *
-   * @param r
-   * @param horizontal
+   * @param r the bounding rectangle
+   * @param horizontal true for horizontal ribbon, false for vertical
    * @return an array of points contained in the ribbon
    */
-  public static Point[] randomRibbon(Rectangle r, boolean horizontal) {
+  public Point[] randomRibbon(Rectangle r, boolean horizontal) {
     // direction: true is horizontal, false is vertical
     Point ribbon[];
 
@@ -223,9 +269,11 @@ public class MapUtils {
   }
 
   /**
-   * @param array
-   * @param ref
-   * @return the number of times the given boolean occurs in the given array
+   * Counts the number of times the given boolean occurs in the given array.
+   *
+   * @param array the array to search
+   * @param ref the boolean value to count
+   * @return the number of occurrences
    */
   public static int amount(boolean[] array, boolean ref) {
     int count = 0;
@@ -238,9 +286,11 @@ public class MapUtils {
   }
 
   /**
-   * @param x1
-   * @param x2
-   * @return the average of two integers
+   * Returns the average of two integers.
+   *
+   * @param x1 first integer
+   * @param x2 second integer
+   * @return the average (integer division)
    */
   public static int average(int x1, int x2) {
     return (x1 + x2) / 2;

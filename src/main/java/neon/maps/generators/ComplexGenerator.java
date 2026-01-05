@@ -25,19 +25,54 @@ import java.util.ArrayList;
 import java.util.Collections;
 import neon.maps.MapUtils;
 
+/**
+ * Generator for complex dungeon layouts including sparse, BSP, and packed dungeons.
+ *
+ * @author mdriesen
+ */
 public class ComplexGenerator {
-  protected static int[][] generateSparseDungeon(int width, int height, int n, int rMin, int rMax) {
+  private final MapUtils mapUtils;
+  private final BlocksGenerator blocksGenerator;
+  private final RoomGenerator roomGenerator;
+
+  /** Creates a new ComplexGenerator with default (non-deterministic) random behavior. */
+  public ComplexGenerator() {
+    this(new MapUtils());
+  }
+
+  /**
+   * Creates a new ComplexGenerator with a specific MapUtils instance for deterministic testing.
+   *
+   * @param mapUtils the MapUtils instance to use for random operations
+   */
+  public ComplexGenerator(MapUtils mapUtils) {
+    this.mapUtils = mapUtils;
+    this.blocksGenerator = new BlocksGenerator(mapUtils);
+    this.roomGenerator = new RoomGenerator(mapUtils);
+  }
+
+  /**
+   * Generates a sparse dungeon layout.
+   *
+   * @param width dungeon width
+   * @param height dungeon height
+   * @param n number of rooms
+   * @param rMin minimum room size
+   * @param rMax maximum room size
+   * @return 2D array of tile types
+   */
+  protected int[][] generateSparseDungeon(int width, int height, int n, int rMin, int rMax) {
     // create a few things
     int[][] tiles = new int[width][height];
     ArrayList<RoomGenerator.Room> rooms = new ArrayList<RoomGenerator.Room>();
     for (Rectangle room :
-        BlocksGenerator.generateSparseRectangles(width - 1, height - 1, rMin, rMax, 2, n)) {
+        blocksGenerator.createSparseRectangles(width - 1, height - 1, rMin, rMax, 2, n)) {
       if (room.width > 14 || room.height > 14) {
-        rooms.add(RoomGenerator.makeCaveRoom(tiles, room));
+        rooms.add(roomGenerator.makeCaveRoom(tiles, room));
       } else if (room.width > 9 || room.height > 9) {
-        rooms.add(RoomGenerator.makePolyRoom(tiles, room));
+        rooms.add(roomGenerator.makePolyRoom(tiles, room));
       } else {
-        rooms.add(RoomGenerator.makeRoom(tiles, room));
+        rooms.add(roomGenerator.makeRoom(tiles, room));
       }
     }
 
@@ -58,23 +93,32 @@ public class ComplexGenerator {
     return tiles;
   }
 
-  protected static int[][] generateBSPDungeon(int width, int height, int rMin, int rMax) {
+  /**
+   * Generates a BSP (Binary Space Partitioning) dungeon layout.
+   *
+   * @param width dungeon width
+   * @param height dungeon height
+   * @param rMin minimum room size
+   * @param rMax maximum room size
+   * @return 2D array of tile types
+   */
+  protected int[][] generateBSPDungeon(int width, int height, int rMin, int rMax) {
     ArrayList<Rectangle> rooms =
-        BlocksGenerator.generateBSPRectangles(width - 1, height - 1, rMin, rMax);
+        blocksGenerator.createBSPRectangles(width - 1, height - 1, rMin, rMax);
     Collections.shuffle(rooms);
     int[][] tiles = new int[width][height];
     Area area = new Area();
 
     // place all rooms
     for (Rectangle room : rooms) {
-      RoomGenerator.makeRoom(tiles, room);
+      roomGenerator.makeRoom(tiles, room);
     }
 
     // merge a few rooms into polygons
     boolean[] wasted = new boolean[rooms.size()];
     // try to connect 10%
     while (MapUtils.amount(wasted, true) < wasted.length / 10) {
-      int index = MapUtils.random(0, wasted.length - 1);
+      int index = mapUtils.random(0, wasted.length - 1);
       if (!wasted[index]) {
         wasted[index] = combine(rooms.get(index), rooms, tiles);
       }
@@ -94,21 +138,31 @@ public class ComplexGenerator {
     return tiles;
   }
 
-  protected static int[][] generatePackedDungeon(int width, int height, int n, int rMin, int rMax) {
+  /**
+   * Generates a packed dungeon layout.
+   *
+   * @param width dungeon width
+   * @param height dungeon height
+   * @param n number of rooms
+   * @param rMin minimum room size
+   * @param rMax maximum room size
+   * @return 2D array of tile types
+   */
+  protected int[][] generatePackedDungeon(int width, int height, int n, int rMin, int rMax) {
     ArrayList<Rectangle> rooms =
-        BlocksGenerator.generatePackedRectangles(width - 1, height - 1, rMin, rMax, 2, n);
+        blocksGenerator.createPackedRectangles(width - 1, height - 1, rMin, rMax, 2, n);
     int[][] tiles = new int[width][height];
     Area area = new Area();
 
     // place all rooms
     for (Rectangle room : rooms) {
-      RoomGenerator.makeRoom(tiles, room);
+      roomGenerator.makeRoom(tiles, room);
     }
 
     // merge a few rooms into polygons
     boolean[] wasted = new boolean[rooms.size()];
-    while (Math.random() < 0.5) {
-      int index = MapUtils.random(0, wasted.length - 1);
+    while (mapUtils.getRandomSource().nextDouble() < 0.5) {
+      int index = mapUtils.random(0, wasted.length - 1);
       if (!wasted[index]) {
         wasted[index] = combine(rooms.get(index), rooms, tiles);
       }
@@ -146,7 +200,6 @@ public class ComplexGenerator {
             || (inter.height > 1
                 && rec.height != room.height
                 && (room.y == rec.y || room.y + room.height == rec.y + rec.height))) {
-          //					System.out.println("combine");
           for (int x = inter.x; x < inter.x + inter.width; x++) {
             for (int y = inter.y; y < inter.y + inter.height; y++) {
               if (tiles[x][y] == MapUtils.WALL_ROOM) {
@@ -161,7 +214,7 @@ public class ComplexGenerator {
     return false;
   }
 
-  private static boolean goHorizontal(int[][] tiles, Rectangle source, Rectangle dest, Area area) {
+  private boolean goHorizontal(int[][] tiles, Rectangle source, Rectangle dest, Area area) {
     while (source.x != dest.x) { // not at same width yet
       int dir = (source.x < dest.x) ? 1 : -1; // which direction to go
       source.x += dir;
@@ -179,7 +232,7 @@ public class ComplexGenerator {
       } else if (tiles[source.x][source.y] != MapUtils.FLOOR) {
         if (tiles[source.x][source.y] == MapUtils.WALL_ROOM) { // room wall breached
           tiles[source.x][source.y + 1] = MapUtils.ENTRY;
-          tiles[source.x][source.y] = MapUtils.random(MapUtils.DOOR, MapUtils.DOOR_LOCKED);
+          tiles[source.x][source.y] = mapUtils.random(MapUtils.DOOR, MapUtils.DOOR_LOCKED);
           tiles[source.x][source.y - 1] = MapUtils.ENTRY;
           if (area.contains(source)) {
             return true;
@@ -196,7 +249,7 @@ public class ComplexGenerator {
     return false;
   }
 
-  private static boolean goVertical(int[][] tiles, Rectangle source, Rectangle dest, Area area) {
+  private boolean goVertical(int[][] tiles, Rectangle source, Rectangle dest, Area area) {
     while (source.y != dest.y) { // not at same height yet
       int dir = (source.y < dest.y) ? 1 : -1;
       source.y += dir;
@@ -214,7 +267,7 @@ public class ComplexGenerator {
       } else if (tiles[source.x][source.y] != MapUtils.FLOOR) {
         if (tiles[source.x][source.y] == MapUtils.WALL_ROOM) { // room wall breached
           tiles[source.x - 1][source.y] = MapUtils.ENTRY;
-          tiles[source.x][source.y] = MapUtils.random(MapUtils.DOOR, MapUtils.DOOR_LOCKED);
+          tiles[source.x][source.y] = mapUtils.random(MapUtils.DOOR, MapUtils.DOOR_LOCKED);
           tiles[source.x + 1][source.y] = MapUtils.ENTRY;
           if (area.contains(source)) {
             return true;
@@ -235,15 +288,15 @@ public class ComplexGenerator {
     return i == MapUtils.CORNER || i == MapUtils.WALL_ROOM || i == MapUtils.ENTRY;
   }
 
-  private static boolean connect(int[][] tiles, Rectangle room, Area area) {
+  private boolean connect(int[][] tiles, Rectangle room, Area area) {
     boolean ok = false;
     int loop = 10;
     do {
       Rectangle source = new Rectangle((int) room.getCenterX(), (int) room.getCenterY(), 1, 1);
       Rectangle dest = new Rectangle(1, 1);
       do { // find point within already done area
-        dest.x = MapUtils.random(1, tiles.length - 1);
-        dest.y = MapUtils.random(1, tiles[dest.x].length - 1);
+        dest.x = mapUtils.random(1, tiles.length - 1);
+        dest.y = mapUtils.random(1, tiles[dest.x].length - 1);
       } while (!area.contains(dest));
 
       if (loop % 2 > 0) { // occasionally start in the other direction
@@ -268,7 +321,7 @@ public class ComplexGenerator {
     return ok;
   }
 
-  private static void clean(int[][] tiles) {
+  private void clean(int[][] tiles) {
     // find and remove unconnected pieces
     int[][] fill = new int[tiles.length][tiles[0].length];
     for (int x = 1; x < tiles.length - 1; x++) {
@@ -280,8 +333,8 @@ public class ComplexGenerator {
     }
     Point start = new Point(1, 1); // start position
     do { // find point within dungeon
-      start.x = MapUtils.random(1, tiles.length - 1);
-      start.y = MapUtils.random(1, tiles[start.x].length - 1);
+      start.x = mapUtils.random(1, tiles.length - 1);
+      start.y = mapUtils.random(1, tiles[start.x].length - 1);
     } while (tiles[start.x][start.y] != MapUtils.FLOOR);
     floodFill(fill, start.x, start.y, MapUtils.FLOOR, MapUtils.TEMP);
     for (int x = 1; x < fill.length - 1; x++) {
@@ -320,7 +373,8 @@ public class ComplexGenerator {
             && isFloor(tiles[x][y - 1])
             && isFloor(tiles[x + 1][y])
             && isFloor(tiles[x - 1][y])) {
-          if (Math.random() < 0.5) { // to not always pick the left or top door
+          if (mapUtils.getRandomSource().nextDouble()
+              < 0.5) { // to not always pick the left or top door
             if (isRoomWall(tiles[x + 2][y])) {
               tiles[x + 1][y] = MapUtils.WALL_ROOM;
             } else {

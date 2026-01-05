@@ -20,10 +20,49 @@ package neon.maps.generators;
 
 import java.awt.geom.Area;
 import neon.maps.MapUtils;
+import neon.util.Dice;
 
+/**
+ * Generator for cave-style dungeon layouts.
+ *
+ * @author mdriesen
+ */
 public class CaveGenerator {
-  protected static int[][] generateOpenCave(int width, int height, int sparseness) {
-    int[][] tiles = makeTiles(MazeGenerator.generateSquashedMaze(width, height, 3), width, height);
+  private final MazeGenerator mazeGenerator;
+
+  /** Creates a new CaveGenerator with default (non-deterministic) random behavior. */
+  public CaveGenerator() {
+    this(new MazeGenerator());
+  }
+
+  /**
+   * Creates a new CaveGenerator with a specific MazeGenerator instance for deterministic testing.
+   *
+   * @param mazeGenerator the MazeGenerator instance to use
+   */
+  public CaveGenerator(MazeGenerator mazeGenerator) {
+    this.mazeGenerator = mazeGenerator;
+  }
+
+  /**
+   * Creates a new CaveGenerator with a specific Dice instance for deterministic testing.
+   *
+   * @param dice the Dice instance to use for random operations
+   */
+  public CaveGenerator(Dice dice) {
+    this(new MazeGenerator(dice));
+  }
+
+  /**
+   * Generates an open cave layout.
+   *
+   * @param width cave width
+   * @param height cave height
+   * @param sparseness how sparse the cave should be
+   * @return 2D array of tile types
+   */
+  protected int[][] generateOpenCave(int width, int height, int sparseness) {
+    int[][] tiles = makeTiles(mazeGenerator.generateSquashedMaze(width, height, 3), width, height);
 
     // thinning out the numbers
     for (int i = 0; i < sparseness; i++) {
@@ -60,7 +99,7 @@ public class CaveGenerator {
         }
       }
 
-      for (int x = 1; x < tiles.length - 1; x++) { // TEMPs vervangen
+      for (int x = 1; x < tiles.length - 1; x++) { // replace TEMPs
         for (int y = 1; y < tiles[x].length - 1; y++) {
           if (tiles[x][y] == MapUtils.TEMP) {
             tiles[x][y] = MapUtils.FLOOR;

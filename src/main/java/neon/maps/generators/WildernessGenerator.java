@@ -56,6 +56,14 @@ public class WildernessGenerator {
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
 
+  // random sources
+  private final MapUtils mapUtils;
+  private final Dice dice;
+
+  // helper generators
+  private final BlocksGenerator blocksGenerator;
+  private final CaveGenerator caveGenerator;
+
   /**
    * Creates a wilderness generator with dependency injection for engine use.
    *
@@ -65,9 +73,31 @@ public class WildernessGenerator {
    */
   public WildernessGenerator(
       Zone zone, EntityStore entityStore, ResourceProvider resourceProvider) {
+    this(zone, entityStore, resourceProvider, new MapUtils(), new Dice());
+  }
+
+  /**
+   * Creates a wilderness generator with dependency injection and custom random sources.
+   *
+   * @param zone the zone to generate
+   * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   * @param mapUtils the MapUtils instance for random operations
+   * @param dice the Dice instance for random operations
+   */
+  public WildernessGenerator(
+      Zone zone,
+      EntityStore entityStore,
+      ResourceProvider resourceProvider,
+      MapUtils mapUtils,
+      Dice dice) {
     this.zone = zone;
     this.entityStore = entityStore;
     this.resourceProvider = resourceProvider;
+    this.mapUtils = mapUtils;
+    this.dice = dice;
+    this.blocksGenerator = new BlocksGenerator(mapUtils);
+    this.caveGenerator = new CaveGenerator(dice);
   }
 
   /**
@@ -79,9 +109,32 @@ public class WildernessGenerator {
    */
   public WildernessGenerator(
       String[][] terrain, EntityStore entityStore, ResourceProvider resourceProvider) {
+    this(terrain, entityStore, resourceProvider, new MapUtils(), new Dice());
+  }
+
+  /**
+   * Creates a wilderness generator with dependency injection for editor use and custom random
+   * sources.
+   *
+   * @param terrain the terrain array
+   * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   * @param mapUtils the MapUtils instance for random operations
+   * @param dice the Dice instance for random operations
+   */
+  public WildernessGenerator(
+      String[][] terrain,
+      EntityStore entityStore,
+      ResourceProvider resourceProvider,
+      MapUtils mapUtils,
+      Dice dice) {
     this.terrain = terrain;
     this.entityStore = entityStore;
     this.resourceProvider = resourceProvider;
+    this.mapUtils = mapUtils;
+    this.dice = dice;
+    this.blocksGenerator = new BlocksGenerator(mapUtils);
+    this.caveGenerator = new CaveGenerator(dice);
   }
 
   /** Generates a piece of wilderness using the supplied parameters. */
@@ -260,18 +313,18 @@ public class WildernessGenerator {
     for (Element feature : theme.features) {
       int n = (int) Float.parseFloat(feature.getAttributeValue("n")) * 100;
       if (n > 100) {
-        n = MapUtils.random(0, (int) (n * ratio / 100));
+        n = mapUtils.random(0, (int) (n * ratio / 100));
       } else {
-        n = (MapUtils.random(0, (int) (n * ratio)) > 50) ? 1 : 0;
+        n = (mapUtils.random(0, (int) (n * ratio)) > 50) ? 1 : 0;
       }
       if (feature.getText().equals("lake")) { // large patch that just overwrites everything
         int size = 100 / Integer.parseInt(feature.getAttributeValue("s"));
         ArrayList<Rectangle> lakes =
-            BlocksGenerator.generateSparseRectangles(
+            blocksGenerator.createSparseRectangles(
                 width, height, width / size, height / size, 2, n);
         for (Rectangle r : lakes) {
           // place lake
-          Polygon lake = MapUtils.randomPolygon(r, (r.width + r.height) / 2);
+          Polygon lake = mapUtils.randomPolygon(r, (r.width + r.height) / 2);
           for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
               if (lake.contains(x, y)) {
@@ -288,9 +341,9 @@ public class WildernessGenerator {
       int rx, int ry, int width, int height, RRegionTheme theme, String base) {
     double ratio = (double) width * height / 10000;
     for (String id : theme.creatures.keySet()) {
-      for (int i = (int) (Dice.roll(1, theme.creatures.get(id), 0) * ratio); i > 0; i--) {
-        int x = Dice.roll(1, width, -1);
-        int y = Dice.roll(1, height, -1);
+      for (int i = (int) (dice.rollDice(1, theme.creatures.get(id), 0) * ratio); i > 0; i--) {
+        int x = dice.rollDice(1, width, -1);
+        int y = dice.rollDice(1, height, -1);
 
         String t = terrain[y + 1][x + 1] == null ? base : terrain[y + 1][x + 1].split(";")[0];
         String region = t.isEmpty() ? base : t;
@@ -311,7 +364,6 @@ public class WildernessGenerator {
     for (int i = 0; i < region.getWidth(); i++) {
       for (int j = 0; j < region.getHeight(); j++) {
         if (terrain[j + 1][i + 1] != null) {
-          //					System.out.println(terrain[j+1][i+1]);
           String[] data = terrain[j + 1][i + 1].split(";");
           for (String entry : data) {
             if (entry.startsWith("i:")) {
@@ -354,7 +406,7 @@ public class WildernessGenerator {
   }
 
   protected void generateTerraces(int width, int height, RRegionTheme theme) {
-    int[][] tiles = CaveGenerator.generateOpenCave(width, height, 3);
+    int[][] tiles = caveGenerator.generateOpenCave(width, height, 3);
 
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
@@ -391,8 +443,8 @@ public class WildernessGenerator {
         for (int i = 0; i < fill.length; i++) {
           for (int j = 0; j < fill[0].length; j++) {
             if (fill[i][j]) {
-              fauna[i * size + MapUtils.random(0, size - 1)][
-                      j * size + MapUtils.random(0, size - 1)] =
+              fauna[i * size + mapUtils.random(0, size - 1)][
+                      j * size + mapUtils.random(0, size - 1)] =
                   id;
             }
           }
@@ -425,7 +477,7 @@ public class WildernessGenerator {
             addTerrain(i + 1, 1, 1, h, terrain[0][i + 1]);
           }
 
-          double c = Math.random();
+          double c = mapUtils.getRandomSource().nextDouble();
           if (c > 0.7 && h < height / 10) {
             h++;
           } else if (c < 0.3 && h > 0) {
@@ -444,7 +496,7 @@ public class WildernessGenerator {
             addTerrain(i + 1, height - h + 1, 1, h, terrain[height + 1][i + 1]);
           }
 
-          double c = Math.random();
+          double c = mapUtils.getRandomSource().nextDouble();
           if (c > 0.7 && h < height / 10) {
             h++;
           } else if (c < 0.3 && h > 0) {
@@ -463,7 +515,7 @@ public class WildernessGenerator {
             addTerrain(1, i + 1, w, 1, terrain[i + 1][0]);
           }
 
-          double c = Math.random();
+          double c = mapUtils.getRandomSource().nextDouble();
           if (c > 0.7 && w < width / 10) {
             w++;
           } else if (c < 0.3 && w > 0) {
@@ -482,7 +534,7 @@ public class WildernessGenerator {
             addTerrain(width - w + 1, i + 1, w, 1, terrain[i + 1][width + 1]);
           }
 
-          double c = Math.random();
+          double c = mapUtils.getRandomSource().nextDouble();
           if (c > 0.7 && w < width / 10) {
             w++;
           } else if (c < 0.3 && w > 0) {
@@ -508,14 +560,14 @@ public class WildernessGenerator {
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         // p: initial chance that a cell contains something
-        map[x][y] = (MapUtils.random(0, 100) < p);
+        map[x][y] = (mapUtils.random(0, 100) < p);
       }
     }
 
     // iterate i times
     for (; i > 0; i--) {
-      int x = MapUtils.random(0, width - 1);
-      int y = MapUtils.random(0, height - 1);
+      int x = mapUtils.random(0, width - 1);
+      int y = mapUtils.random(0, height - 1);
       // approximately Conway's game of life with n neighbors
       map[x][y] = (filledNeighbours(x, y, map) > n);
     }

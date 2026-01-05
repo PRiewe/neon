@@ -52,6 +52,7 @@ import org.jdom2.*;
 public class MapLoader {
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
+  private final MapUtils mapUtils;
 
   /**
    * Creates a MapLoader with dependency injection.
@@ -60,8 +61,20 @@ public class MapLoader {
    * @param resourceProvider the resource provider service
    */
   public MapLoader(EntityStore entityStore, ResourceProvider resourceProvider) {
+    this(entityStore, resourceProvider, new MapUtils());
+  }
+
+  /**
+   * Creates a MapLoader with dependency injection and custom random source.
+   *
+   * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   * @param mapUtils the MapUtils instance for random operations
+   */
+  public MapLoader(EntityStore entityStore, ResourceProvider resourceProvider, MapUtils mapUtils) {
     this.entityStore = entityStore;
     this.resourceProvider = resourceProvider;
+    this.mapUtils = mapUtils;
   }
 
   /**
@@ -169,10 +182,10 @@ public class MapLoader {
     float branch = theme.branching;
     String[] types = theme.zones.split(";");
 
-    int[] zones = new int[MapUtils.random(minZ, maxZ)];
+    int[] zones = new int[mapUtils.random(minZ, maxZ)];
     int z = zones.length - 1;
     while (z > -1) {
-      int t = MapUtils.random(0, types.length - 1);
+      int t = mapUtils.random(0, types.length - 1);
       zones[z] = 1;
       RZoneTheme rzt = (RZoneTheme) resourceProvider.getResource(types[t], "theme");
       map.addZone(z, "zone " + z, rzt);
@@ -182,7 +195,7 @@ public class MapLoader {
     zones[0] = 0;
     for (z = 1; z < zones.length; z++) {
       // connect to already visited zone
-      int to = MapUtils.random((int) Math.max(0, z - branch), z - 1);
+      int to = mapUtils.random((int) Math.max(0, z - branch), z - 1);
       map.addConnection(z, to);
       zones[z] = 0;
     }
