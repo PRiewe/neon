@@ -38,7 +38,7 @@ public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
   private RNode<E> root;
   private final int max;
   private final int min;
-  private AtomicInteger objectsMaxIndex = new AtomicInteger(0);
+  private final AtomicInteger objectsMaxIndex = new AtomicInteger(0);
 
   /**
    * Initializes a new R-tree with the given maximum node size and minimum fill factor.

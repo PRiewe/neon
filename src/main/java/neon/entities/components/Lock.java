@@ -18,6 +18,8 @@
 
 package neon.entities.components;
 
+import lombok.Getter;
+import lombok.Setter;
 import neon.resources.RItem;
 
 /**
@@ -31,9 +33,22 @@ public class Lock implements Component {
   public static final int LOCKED = 2;
 
   private int lock = 0;
-  private int state = OPEN;
-  private RItem key;
-  private long uid;
+
+  /**
+   * -- GETTER -- Returns whether this is an open, locked or closed lock.
+   *
+   * <p>-- SETTER -- Sets the state of this lock.
+   */
+  @Setter @Getter private int state = OPEN;
+
+  /**
+   * -- GETTER -- Returns the key used to open this lock.
+   *
+   * <p>-- SETTER -- Sets the key used to open this lock.
+   */
+  @Setter @Getter private RItem key;
+
+  private final long uid;
 
   public Lock(long uid) {
     this.uid = uid;
@@ -90,15 +105,6 @@ public class Lock implements Component {
     return state == OPEN;
   }
 
-  /**
-   * Returns whether this is an open, locked or closed lock.
-   *
-   * @return the state of this lock
-   */
-  public int getState() {
-    return state;
-  }
-
   /** Closes this lock. */
   public void close() {
     if (state != LOCKED) {
@@ -112,37 +118,10 @@ public class Lock implements Component {
   }
 
   /**
-   * Returns the key used to open this lock.
-   *
-   * @return the door key
-   */
-  public RItem getKey() {
-    return key;
-  }
-
-  /**
-   * Sets the key used to open this lock.
-   *
-   * @param key the key
-   */
-  public void setKey(RItem key) {
-    this.key = key;
-  }
-
-  /**
    * @return whether this lock actually has a non-null key
    */
   public boolean hasKey() {
     return key != null;
-  }
-
-  /**
-   * Sets the state of this lock.
-   *
-   * @param state
-   */
-  public void setState(int state) {
-    this.state = state;
   }
 
   @Override

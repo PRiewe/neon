@@ -117,47 +117,34 @@ public class RoomGenerator {
     for (int x = room.x; x < room.x + room.width; x++) {
       d = MapUtils.random(1, (room.width + room.height) / 3);
       line = new Line2D.Float(center, new Point(x, room.y));
-      for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
-        for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
-          if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
-            tiles[lx][ly] = MapUtils.FLOOR;
-          }
-        }
-      }
+      applyFloor(tiles, room, line, l, d, round);
 
       d = MapUtils.random(1, (room.width + room.height) / 3);
       line = new Line2D.Float(center, new Point(x, room.y + room.height));
-      for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
-        for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
-          if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
-            tiles[lx][ly] = MapUtils.FLOOR;
-          }
-        }
-      }
+      applyFloor(tiles, room, line, l, d, round);
     }
     for (int y = room.y; y < room.y + room.height; y++) {
       d = MapUtils.random(1, (room.width + room.height) / 3);
       line = new Line2D.Float(center, new Point(room.x, y));
-      for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
-        for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
-          if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
-            tiles[lx][ly] = MapUtils.FLOOR;
-          }
-        }
-      }
+      applyFloor(tiles, room, line, l, d, round);
 
       d = MapUtils.random(1, (room.width + room.height) / 3);
       line = new Line2D.Float(center, new Point(room.x + room.width, y));
-      for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
-        for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
-          if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
-            tiles[lx][ly] = MapUtils.FLOOR;
-          }
-        }
-      }
+      applyFloor(tiles, room, line, l, d, round);
     }
 
     return new Room(room);
+  }
+
+  private static void applyFloor(
+      int[][] tiles, Rectangle room, Line2D line, float l, int d, RoundRectangle2D round) {
+    for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
+      for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
+        if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
+          tiles[lx][ly] = MapUtils.FLOOR;
+        }
+      }
+    }
   }
 
   private static boolean isCorner(int[][] tiles, int x, int y) {
@@ -190,6 +177,10 @@ public class RoomGenerator {
   }
 
   private static boolean exposed(int[][] tiles, int x, int y) {
+    return newExposed(tiles, x, y);
+  }
+
+  static boolean newExposed(int[][] tiles, int x, int y) {
     for (int i = x - 1; i < x + 2; i++) {
       for (int j = y - 1; j < y + 2; j++) {
         if (i > -1

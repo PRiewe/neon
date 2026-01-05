@@ -95,24 +95,26 @@ public class TownGenerator {
     // sneak in a door somewhere
     int x = 0, y = 0;
 
-    switch ((int) (Math.random() * 4)) {
-      case 0:
-        x = r.getX() + 1;
-        y = r.getY();
-        break;
-      case 1:
-        x = r.getX() + 1;
-        y = r.getHeight() + r.getY() - 1;
-        break;
-      case 2:
-        x = r.getX();
-        y = r.getY() + 1;
-        break;
-      case 3:
-        x = r.getWidth() + r.getX() - 1;
-        y = r.getY() + 1;
-        break;
-    }
+    y =
+        switch ((int) (Math.random() * 4)) {
+          case 0 -> {
+            x = r.getX() + 1;
+            yield r.getY();
+          }
+          case 1 -> {
+            x = r.getX() + 1;
+            yield r.getHeight() + r.getY() - 1;
+          }
+          case 2 -> {
+            x = r.getX();
+            yield r.getY() + 1;
+          }
+          case 3 -> {
+            x = r.getWidth() + r.getX() - 1;
+            yield r.getY() + 1;
+          }
+          default -> y;
+        };
 
     long uid = entityStore.createNewEntityUID();
     Door door = (Door) EntityFactory.getItem(theme.door, x, y, uid);

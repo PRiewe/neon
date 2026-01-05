@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SimpleIndex<E> implements SpatialIndex<E> {
-  private CopyOnWriteArrayList<E> elements = new CopyOnWriteArrayList<E>();
+  private final CopyOnWriteArrayList<E> elements = new CopyOnWriteArrayList<E>();
   private Rectangle bounds;
 
   public Collection<E> getElements() {

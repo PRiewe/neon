@@ -18,6 +18,8 @@
 
 package neon.maps.generators;
 
+import static neon.maps.generators.RoomGenerator.newExposed;
+
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
@@ -164,8 +166,7 @@ public class DungeonGenerator {
           zone.addItem(toDoor);
         } else { // multiple doors between two zones
           for (long uid : previous.getItems()) {
-            if (entityStore.getEntity(uid) instanceof Door) {
-              Door fromDoor = (Door) entityStore.getEntity(uid);
+            if (entityStore.getEntity(uid) instanceof Door fromDoor) {
               if (!doors.contains(fromDoor)
                   && fromDoor.portal.getDestMap() == 0
                   && fromDoor.portal.getDestZone() == zone.getIndex()) {
@@ -370,19 +371,7 @@ public class DungeonGenerator {
   }
 
   private static boolean exposed(int[][] tiles, int x, int y) {
-    for (int i = x - 1; i < x + 2; i++) {
-      for (int j = y - 1; j < y + 2; j++) {
-        if (i > -1
-            && i < tiles.length
-            && j > -1
-            && j < tiles[i].length
-            && tiles[i][j] == MapUtils.FLOOR) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return newExposed(tiles, x, y);
   }
 
   // to convert a string[][] into regions, items and creatures

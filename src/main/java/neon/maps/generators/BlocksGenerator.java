@@ -79,9 +79,12 @@ public class BlocksGenerator {
   }
 
   private static class SparseGenerator {
-    private int w, h, minW, maxW;
-    private double ratio;
-    private ArrayList<Rectangle> rooms;
+    private final int w;
+    private final int h;
+    private final int minW;
+    private final int maxW;
+    private final double ratio;
+    private final ArrayList<Rectangle> rooms;
     private Area area;
 
     private SparseGenerator(int w, int h, int minW, int maxW, double ratio) {
@@ -109,7 +112,7 @@ public class BlocksGenerator {
 
       r.x = MapUtils.random(0, w - r.width);
       r.y = MapUtils.random(0, h - r.height);
-      if (rooms.size() == 0) { // just throw room in the middle
+      if (rooms.isEmpty()) { // just throw room in the middle
         area = new Area(r);
       } else { // move room around randomly
         int i = 0;
@@ -130,7 +133,10 @@ public class BlocksGenerator {
   }
 
   private static class BSPGenerator {
-    private int w, h, minW, maxW;
+    private final int w;
+    private final int h;
+    private final int minW;
+    private final int maxW;
 
     private BSPGenerator(int w, int h, int minW, int maxW) {
       this.w = w;
@@ -145,7 +151,7 @@ public class BlocksGenerator {
 
       buffer.add(new Rectangle(w, h));
 
-      while (buffer.size() > 0) {
+      while (!buffer.isEmpty()) {
         ListIterator<Rectangle> i = buffer.listIterator();
         while (i.hasNext()) {
           Rectangle r = i.next();
@@ -179,9 +185,12 @@ public class BlocksGenerator {
   }
 
   private static class RectangleGenerator {
-    private int w, h, minW, maxW;
-    private double ratio;
-    private ArrayList<Rectangle> rooms;
+    private final int w;
+    private final int h;
+    private final int minW;
+    private final int maxW;
+    private final double ratio;
+    private final ArrayList<Rectangle> rooms;
     private Area area;
 
     private RectangleGenerator(int w, int h, int minW, int maxW, double ratio) {
@@ -190,7 +199,7 @@ public class BlocksGenerator {
       this.minW = minW;
       this.maxW = maxW;
       this.ratio = ratio;
-      rooms = new ArrayList<Rectangle>();
+      rooms = new ArrayList<>();
     }
 
     private ArrayList<Rectangle> generate(int numRecs) {
@@ -209,7 +218,7 @@ public class BlocksGenerator {
 
       r.x = w / 2 - r.width / 2;
       r.y = h / 2 - r.height / 2;
-      if (rooms.size() == 0) { // just throw room in the middle
+      if (rooms.isEmpty()) { // just throw room in the middle
         area = new Area(r);
       } else { // move room around in a spiral
         int i = 0;
