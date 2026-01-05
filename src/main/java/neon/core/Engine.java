@@ -49,8 +49,14 @@ import org.graalvm.polyglot.HostAccess;
  */
 @Slf4j
 public class Engine implements Runnable {
+  // Singleton instance for backward compatibility during migration
+  private static Engine instance;
+
+  // GameContext provides instance-based access to all services
+  // TODO: migrate all static accessors to use context, then remove static state
+  private static DefaultGameContext context;
+
   // initialized by engine
-  // TODO: remove all global static state
   private static Context engine;
   private static org.graalvm.polyglot.Engine polyengine;
   private static FileSystem files; // virtual file system
@@ -67,6 +73,9 @@ public class Engine implements Runnable {
 
   /** Initializes the engine. */
   public Engine(Port port) throws IOException {
+    instance = this;
+    context = new DefaultGameContext();
+
     // set up engine components
     bus = port.getBus();
     // Create a custom Engine with desired options or settings
@@ -99,6 +108,12 @@ public class Engine implements Runnable {
     // set up remaining engine components
     quests = new QuestTracker();
     config = new Configuration(resources);
+
+    // Initialize the GameContext with all engine systems
+    context.setResources(resources);
+    context.setQuestTracker(quests);
+    context.setPhysicsEngine(physics);
+    context.setScriptEngine(engine);
   }
 
   /** This method is the run method of the gamethread. It sets up the event system. */
@@ -131,7 +146,9 @@ public class Engine implements Runnable {
    *
    * @param script the script to execute
    * @return the result of the script
+   * @deprecated Use {@link GameContext#execute(String)} instead
    */
+  @Deprecated
   public static Object execute(String script) {
     try {
 
@@ -147,20 +164,29 @@ public class Engine implements Runnable {
    */
   /**
    * @return the player
+   * @deprecated Use {@link GameContext#getPlayer()} instead
    */
+  @Deprecated
   public static Player getPlayer() {
     if (game != null) {
       return game.getPlayer();
     } else return null;
   }
 
+  /**
+   * @return the quest tracker
+   * @deprecated Use {@link GameContext#getQuestTracker()} instead
+   */
+  @Deprecated
   public static QuestTracker getQuestTracker() {
     return quests;
   }
 
   /**
    * @return the timer
+   * @deprecated Use {@link GameContext#getTimer()} instead
    */
+  @Deprecated
   public static Timer getTimer() {
     return game.getTimer();
   }
@@ -169,31 +195,51 @@ public class Engine implements Runnable {
    * @return the virtual filesystem of the engine
    */
   public static FileSystem getFileSystem() {
+    // Note: FileSystem is not part of GameContext as it's an engine-internal system
     return files;
   }
 
   /**
    * @return the physics engine
+   * @deprecated Use {@link GameContext#getPhysicsEngine()} instead
    */
+  @Deprecated
   public static PhysicsSystem getPhysicsEngine() {
     return physics;
   }
 
   /**
    * @return the script engine
+   * @deprecated Use {@link GameContext#getScriptEngine()} instead
    */
+  @Deprecated
   public static Context getScriptEngine() {
     return engine;
   }
 
+  /**
+   * @return the entity store
+   * @deprecated Use {@link GameContext#getStore()} instead
+   */
+  @Deprecated
   public static UIDStore getStore() {
     return game.getStore();
   }
 
+  /**
+   * @return the resource manager
+   * @deprecated Use {@link GameContext#getResources()} instead
+   */
+  @Deprecated
   public static ResourceManager getResources() {
     return resources;
   }
 
+  /**
+   * @return the atlas
+   * @deprecated Use {@link GameContext#getAtlas()} instead
+   */
+  @Deprecated
   public static Atlas getAtlas() {
     return game.getAtlas();
   }
@@ -202,10 +248,31 @@ public class Engine implements Runnable {
     return queue;
   }
 
+  /**
+   * Returns the GameContext, which provides instance-based access to all game services. Use this
+   * instead of the deprecated static accessor methods.
+   *
+   * @return the game context
+   */
+  public GameContext getContext() {
+    return context;
+  }
+
+  /**
+   * Returns the static GameContext instance. This is a transitional method to allow gradual
+   * migration from static accessors.
+   *
+   * @return the game context
+   */
+  public static GameContext getStaticContext() {
+    return context;
+  }
+
   /** Starts a new game. */
   public void startGame(Game game) {
     System.out.printf("Engine.startGame() start game %s%n", game);
     Engine.game = game;
+    context.setGame(game);
 
     // set up missing systems
     bus.subscribe(new MagicHandler(queue, game));
@@ -218,7 +285,12 @@ public class Engine implements Runnable {
     System.out.println("Engine.startGame() exit");
   }
 
-  /** quit the game */
+  /**
+   * Quit the game.
+   *
+   * @deprecated Use {@link GameContext#quit()} instead
+   */
+  @Deprecated
   public static void quit() {
     System.exit(0);
   }
