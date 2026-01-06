@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
 import java.awt.geom.Area;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.stream.Stream;
 import neon.util.Dice;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -166,80 +164,18 @@ class MazeGeneratorTest {
   }
 
   private void assertMazeIsConnected(Area maze, int width, int height, String message) {
-    // Convert Area to a boolean grid
-    boolean[][] grid = areaToGrid(maze, width, height);
-
-    // Count total walkable cells
-    int totalCells = 0;
-    int startX = -1, startY = -1;
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        if (grid[x][y]) {
-          totalCells++;
-          if (startX < 0) {
-            startX = x;
-            startY = y;
-          }
-        }
-      }
-    }
-
-    if (totalCells == 0) {
-      fail(message + " - no walkable cells found");
-      return;
-    }
-
-    // Flood fill from start position to count reachable cells
-    int reachable = floodFillCount(grid, startX, startY, width, height);
-    assertEquals(totalCells, reachable, message + " - not all cells are connected");
+    TileConnectivityAssertions.assertAreaFullyConnected(maze, width, height, message);
   }
 
   private void assertAreasEqual(Area area1, Area area2, int width, int height) {
-    boolean[][] grid1 = areaToGrid(area1, width, height);
-    boolean[][] grid2 = areaToGrid(area2, width, height);
+    boolean[][] grid1 = TileConnectivityAssertions.areaToGrid(area1, width, height);
+    boolean[][] grid2 = TileConnectivityAssertions.areaToGrid(area2, width, height);
 
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         assertEquals(grid1[x][y], grid2[x][y], String.format("Cell at (%d,%d) should match", x, y));
       }
     }
-  }
-
-  private boolean[][] areaToGrid(Area area, int width, int height) {
-    boolean[][] grid = new boolean[width][height];
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        grid[x][y] = area.contains(x + 0.5, y + 0.5);
-      }
-    }
-    return grid;
-  }
-
-  private int floodFillCount(boolean[][] grid, int startX, int startY, int width, int height) {
-    boolean[][] visited = new boolean[width][height];
-    Queue<int[]> queue = new LinkedList<>();
-    queue.add(new int[] {startX, startY});
-    visited[startX][startY] = true;
-    int count = 0;
-
-    int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    while (!queue.isEmpty()) {
-      int[] current = queue.poll();
-      count++;
-
-      for (int[] dir : directions) {
-        int nx = current[0] + dir[0];
-        int ny = current[1] + dir[1];
-
-        if (nx >= 0 && nx < width && ny >= 0 && ny < height && !visited[nx][ny] && grid[nx][ny]) {
-          visited[nx][ny] = true;
-          queue.add(new int[] {nx, ny});
-        }
-      }
-    }
-
-    return count;
   }
 
   // ==================== Visualization ====================
@@ -255,7 +191,7 @@ class MazeGeneratorTest {
    * </ul>
    */
   private String visualize(Area maze, int width, int height) {
-    boolean[][] grid = areaToGrid(maze, width, height);
+    boolean[][] grid = TileConnectivityAssertions.areaToGrid(maze, width, height);
 
     StringBuilder sb = new StringBuilder();
     sb.append("+").append("-".repeat(width)).append("+\n");

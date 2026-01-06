@@ -5,9 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.awt.Point;
 import java.io.File;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.stream.Stream;
 import neon.entities.Door;
 import neon.entities.Entity;
@@ -249,8 +247,9 @@ class DungeonGeneratorTest {
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Dungeon width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Dungeon height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertDungeonIsConnected(tiles, "Dungeon should be connected"));
+        () -> TileAssertions.assertWalkableTilesExist(tiles, "Dungeon should have floor tiles"),
+        () ->
+            TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"));
   }
 
   @ParameterizedTest(name = "generateBaseTiles determinism: {0}")
@@ -267,7 +266,7 @@ class DungeonGeneratorTest {
         generator2.generateBaseTiles(scenario.type(), scenario.width(), scenario.height());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== generateTiles Tests ====================
@@ -297,7 +296,9 @@ class DungeonGeneratorTest {
         () -> assertTrue(width <= scenario.maxSize(), "Width should be <= max"),
         () -> assertTrue(height >= scenario.minSize(), "Height should be >= min"),
         () -> assertTrue(height <= scenario.maxSize(), "Height should be <= max"),
-        () -> assertFloorTerrainExists(terrain, scenario.floors(), "Terrain should have floors"));
+        () ->
+            TileAssertions.assertFloorTerrainExists(
+                terrain, scenario.floors(), "Terrain should have floors"));
   }
 
   @ParameterizedTest(name = "generateTiles determinism: {0}")
@@ -312,7 +313,7 @@ class DungeonGeneratorTest {
     String[][] terrain2 = generator2.generateTiles();
 
     // Then
-    assertTerrainMatch(terrain1, terrain2);
+    TileAssertions.assertTerrainMatch(terrain1, terrain2);
   }
 
   @Test
@@ -452,8 +453,8 @@ class DungeonGeneratorTest {
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Dungeon width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Dungeon height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertDungeonIsConnected(tiles, "Dungeon should be connected"),
+        () -> TileAssertions.assertWalkableTilesExist(tiles, "Dungeon should have floor tiles"),
+        () -> TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"),
         () -> assertTrue(elapsed < 30000, "Generation should complete within 30 seconds"));
   }
 
@@ -471,7 +472,7 @@ class DungeonGeneratorTest {
         generator2.generateBaseTiles(scenario.type(), scenario.width(), scenario.height());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // @Test
@@ -496,8 +497,8 @@ class DungeonGeneratorTest {
     assertAll(
         () -> assertEquals(width, tiles.length, "Width should match"),
         () -> assertEquals(height, tiles[0].length, "Height should match"),
-        () -> assertFloorTilesExist(tiles, "Should have floor tiles"),
-        () -> assertDungeonIsConnected(tiles, "Should be connected"));
+        () -> TileAssertions.assertWalkableTilesExist(tiles, "Should have floor tiles"),
+        () -> TileConnectivityAssertions.assertFullyConnected(tiles, "Should be connected"));
   }
 
   @Test
@@ -525,141 +526,11 @@ class DungeonGeneratorTest {
     assertAll(
         () -> assertEquals(width, tiles.length, "Width should match"),
         () -> assertEquals(height, tiles[0].length, "Height should match"),
-        () -> assertFloorTilesExist(tiles, "Should have floor tiles"),
-        () -> assertDungeonIsConnected(tiles, "Should be connected"));
+        () -> TileAssertions.assertWalkableTilesExist(tiles, "Should have floor tiles"),
+        () -> TileConnectivityAssertions.assertFullyConnected(tiles, "Should be connected"));
   }
 
   // ==================== Assertion Helpers ====================
-
-  private void assertFloorTerrainExists(String[][] terrain, String floors, String message) {
-    List<String> floorTypes = List.of(floors.split(","));
-    boolean hasFloor = false;
-    for (int x = 0; x < terrain.length; x++) {
-      for (int y = 0; y < terrain[0].length; y++) {
-        if (terrain[x][y] != null) {
-          String baseTerrain = terrain[x][y].split(";")[0];
-          if (floorTypes.contains(baseTerrain)) {
-            hasFloor = true;
-            break;
-          }
-        }
-      }
-      if (hasFloor) break;
-    }
-    assertTrue(hasFloor, message);
-  }
-
-  private void assertTerrainMatch(String[][] terrain1, String[][] terrain2) {
-    assertEquals(terrain1.length, terrain2.length, "Terrain arrays should have same width");
-    for (int x = 0; x < terrain1.length; x++) {
-      assertEquals(
-          terrain1[x].length,
-          terrain2[x].length,
-          "Terrain arrays should have same height at x=" + x);
-      for (int y = 0; y < terrain1[x].length; y++) {
-        if (terrain1[x][y] == null && terrain2[x][y] == null) {
-          continue; // Both null is fine
-        }
-        assertEquals(
-            terrain1[x][y], terrain2[x][y], String.format("Terrain at (%d,%d) should match", x, y));
-      }
-    }
-  }
-
-  private void assertFloorTilesExist(int[][] tiles, String message) {
-    boolean hasFloor = false;
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        if (isWalkable(tiles[x][y])) {
-          hasFloor = true;
-          break;
-        }
-      }
-      if (hasFloor) break;
-    }
-    assertTrue(hasFloor, message);
-  }
-
-  private void assertDungeonIsConnected(int[][] tiles, String message) {
-    // Count walkable tiles and verify flood fill reaches all of them
-    int floorCount = 0;
-    int startX = -1, startY = -1;
-
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        if (isWalkable(tiles[x][y])) {
-          floorCount++;
-          if (startX < 0) {
-            startX = x;
-            startY = y;
-          }
-        }
-      }
-    }
-
-    if (floorCount == 0) {
-      fail(message + " - no walkable tiles found");
-      return;
-    }
-
-    // Flood fill from start position using BFS
-    int reachable = floodFillCount(tiles, startX, startY);
-    assertEquals(floorCount, reachable, message + " - not all walkable tiles are connected");
-  }
-
-  private boolean isWalkable(int tile) {
-    return tile == MapUtils.FLOOR
-        || tile == MapUtils.CORRIDOR
-        || tile == MapUtils.DOOR
-        || tile == MapUtils.DOOR_CLOSED
-        || tile == MapUtils.DOOR_LOCKED;
-  }
-
-  private int floodFillCount(int[][] tiles, int startX, int startY) {
-    int width = tiles.length;
-    int height = tiles[0].length;
-    boolean[][] visited = new boolean[width][height];
-    Queue<int[]> queue = new LinkedList<>();
-    queue.add(new int[] {startX, startY});
-    visited[startX][startY] = true;
-    int count = 0;
-
-    int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    while (!queue.isEmpty()) {
-      int[] current = queue.poll();
-      count++;
-
-      for (int[] dir : directions) {
-        int nx = current[0] + dir[0];
-        int ny = current[1] + dir[1];
-
-        if (nx >= 0
-            && nx < width
-            && ny >= 0
-            && ny < height
-            && !visited[nx][ny]
-            && isWalkable(tiles[nx][ny])) {
-          visited[nx][ny] = true;
-          queue.add(new int[] {nx, ny});
-        }
-      }
-    }
-
-    return count;
-  }
-
-  private void assertTilesMatch(int[][] tiles1, int[][] tiles2) {
-    assertEquals(tiles1.length, tiles2.length, "Tile arrays should have same width");
-    for (int x = 0; x < tiles1.length; x++) {
-      assertEquals(
-          tiles1[x].length, tiles2[x].length, "Tile arrays should have same height at x=" + x);
-      for (int y = 0; y < tiles1[x].length; y++) {
-        assertEquals(
-            tiles1[x][y], tiles2[x][y], String.format("Tile at (%d,%d) should match", x, y));
-      }
-    }
-  }
 
   // ==================== Visualization ====================
 

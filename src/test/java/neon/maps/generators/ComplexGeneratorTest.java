@@ -121,8 +121,9 @@ class ComplexGeneratorTest {
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Tiles width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Tiles height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () ->
+            TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"));
   }
 
   @ParameterizedTest(name = "sparse determinism: {0}")
@@ -149,7 +150,7 @@ class ComplexGeneratorTest {
             scenario.maxSize());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== Large Sparse Dungeon Tests (150x120) ====================
@@ -178,8 +179,9 @@ class ComplexGeneratorTest {
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Tiles width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Tiles height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () ->
+            TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"));
   }
 
   // ==================== BSP Dungeon Tests ====================
@@ -204,8 +206,9 @@ class ComplexGeneratorTest {
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Tiles width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Tiles height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () ->
+            TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"));
   }
 
   @ParameterizedTest(name = "BSP determinism: {0}")
@@ -224,7 +227,7 @@ class ComplexGeneratorTest {
             scenario.width(), scenario.height(), scenario.minSize(), scenario.maxSize());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== Packed Dungeon Tests ====================
@@ -253,8 +256,9 @@ class ComplexGeneratorTest {
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Tiles width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Tiles height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () ->
+            TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"));
   }
 
   @ParameterizedTest(name = "packed determinism: {0}")
@@ -281,90 +285,10 @@ class ComplexGeneratorTest {
             scenario.maxSize());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== Assertion Helpers ====================
-
-  private void assertTilesMatch(int[][] tiles1, int[][] tiles2) {
-    assertEquals(tiles1.length, tiles2.length, "Tile arrays should have same width");
-    for (int x = 0; x < tiles1.length; x++) {
-      assertEquals(
-          tiles1[x].length, tiles2[x].length, "Tile arrays should have same height at x=" + x);
-      for (int y = 0; y < tiles1[x].length; y++) {
-        assertEquals(
-            tiles1[x][y], tiles2[x][y], String.format("Tile at (%d,%d) should match", x, y));
-      }
-    }
-  }
-
-  private void assertFloorTilesExist(int[][] tiles, String message) {
-    boolean hasFloor = false;
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        if (tiles[x][y] == MapUtils.FLOOR) {
-          hasFloor = true;
-          break;
-        }
-      }
-      if (hasFloor) break;
-    }
-    assertTrue(hasFloor, message);
-  }
-
-  private void assertConnectedDungeon(int[][] tiles, String message) {
-    // Count floor tiles and verify flood fill reaches all of them
-    int floorCount = 0;
-    int startX = -1, startY = -1;
-
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        if (isWalkable(tiles[x][y])) {
-          floorCount++;
-          if (startX < 0) {
-            startX = x;
-            startY = y;
-          }
-        }
-      }
-    }
-
-    if (floorCount == 0) {
-      fail(message + " - no walkable tiles found");
-      return;
-    }
-
-    // Flood fill from start position
-    boolean[][] visited = new boolean[tiles.length][tiles[0].length];
-    int reachable = floodFillCount(tiles, visited, startX, startY);
-
-    assertEquals(floorCount, reachable, message + " - not all walkable tiles are connected");
-  }
-
-  private boolean isWalkable(int tile) {
-    return tile == MapUtils.FLOOR
-        || tile == MapUtils.CORRIDOR
-        || tile == MapUtils.DOOR
-        || tile == MapUtils.DOOR_CLOSED
-        || tile == MapUtils.DOOR_LOCKED;
-  }
-
-  private int floodFillCount(int[][] tiles, boolean[][] visited, int x, int y) {
-    if (x < 0 || x >= tiles.length || y < 0 || y >= tiles[0].length) {
-      return 0;
-    }
-    if (visited[x][y] || !isWalkable(tiles[x][y])) {
-      return 0;
-    }
-
-    visited[x][y] = true;
-    int count = 1;
-    count += floodFillCount(tiles, visited, x - 1, y);
-    count += floodFillCount(tiles, visited, x + 1, y);
-    count += floodFillCount(tiles, visited, x, y - 1);
-    count += floodFillCount(tiles, visited, x, y + 1);
-    return count;
-  }
 
   // ==================== Visualization ====================
 

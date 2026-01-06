@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+
 import java.util.stream.Stream;
 import neon.entities.Door;
 import neon.entities.Entity;
@@ -178,7 +178,7 @@ class DungeonGeneratorXmlIntegrationTest {
                 terrain[0].length <= scenario.theme().max,
                 "Height " + terrain[0].length + " should be <= " + scenario.theme().max),
         () ->
-            assertFloorTerrainExists(
+            TileAssertions.assertFloorTerrainExists(
                 terrain, scenario.theme().floor, "Terrain should have floor tiles"));
   }
 
@@ -203,7 +203,7 @@ class DungeonGeneratorXmlIntegrationTest {
     int[][] tiles = generator.generateBaseTiles(scenario.theme().type, size, size);
 
     // Then
-    assertDungeonIsConnected(tiles, "Dungeon should be fully connected");
+    TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be fully connected");
   }
 
   @ParameterizedTest(name = "determinism for XML theme: {0}")
@@ -218,7 +218,7 @@ class DungeonGeneratorXmlIntegrationTest {
     String[][] terrain2 = gen2.generateTiles();
 
     // Then
-    assertTerrainMatch(terrain1, terrain2);
+    TileAssertions.assertTerrainMatch(terrain1, terrain2);
   }
 
   @ParameterizedTest(name = "entities for XML theme: {0}")
@@ -248,105 +248,15 @@ class DungeonGeneratorXmlIntegrationTest {
 
   // ==================== Assertion Helpers ====================
 
-  private void assertFloorTerrainExists(String[][] terrain, String floors, String message) {
-    List<String> floorTypes = List.of(floors.split(","));
-    boolean hasFloor = false;
-    for (int x = 0; x < terrain.length && !hasFloor; x++) {
-      for (int y = 0; y < terrain[0].length && !hasFloor; y++) {
-        if (terrain[x][y] != null) {
-          String baseTerrain = terrain[x][y].split(";")[0];
-          if (floorTypes.contains(baseTerrain)) {
-            hasFloor = true;
-          }
-        }
-      }
-    }
-    assertTrue(hasFloor, message);
-  }
 
-  private void assertDungeonIsConnected(int[][] tiles, String message) {
-    int floorCount = 0;
-    int startX = -1, startY = -1;
 
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        if (isWalkable(tiles[x][y])) {
-          floorCount++;
-          if (startX < 0) {
-            startX = x;
-            startY = y;
-          }
-        }
-      }
-    }
 
-    if (floorCount == 0) {
-      fail(message + " - no walkable tiles found");
-      return;
-    }
 
-    int reachable = floodFillCount(tiles, startX, startY);
-    assertEquals(floorCount, reachable, message + " - not all walkable tiles are connected");
-  }
 
-  private boolean isWalkable(int tile) {
-    return tile == MapUtils.FLOOR
-        || tile == MapUtils.CORRIDOR
-        || tile == MapUtils.DOOR
-        || tile == MapUtils.DOOR_CLOSED
-        || tile == MapUtils.DOOR_LOCKED;
-  }
 
-  private int floodFillCount(int[][] tiles, int startX, int startY) {
-    int width = tiles.length;
-    int height = tiles[0].length;
-    boolean[][] visited = new boolean[width][height];
-    Queue<int[]> queue = new LinkedList<>();
-    queue.add(new int[] {startX, startY});
-    visited[startX][startY] = true;
-    int count = 0;
 
-    int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-    while (!queue.isEmpty()) {
-      int[] current = queue.poll();
-      count++;
 
-      for (int[] dir : directions) {
-        int nx = current[0] + dir[0];
-        int ny = current[1] + dir[1];
-
-        if (nx >= 0
-            && nx < width
-            && ny >= 0
-            && ny < height
-            && !visited[nx][ny]
-            && isWalkable(tiles[nx][ny])) {
-          visited[nx][ny] = true;
-          queue.add(new int[] {nx, ny});
-        }
-      }
-    }
-
-    return count;
-  }
-
-  private void assertTerrainMatch(String[][] terrain1, String[][] terrain2) {
-    assertEquals(terrain1.length, terrain2.length, "Terrain arrays should have same width");
-    for (int x = 0; x < terrain1.length; x++) {
-      assertEquals(
-          terrain1[x].length,
-          terrain2[x].length,
-          "Terrain arrays should have same height at x=" + x);
-      for (int y = 0; y < terrain1[x].length; y++) {
-        if (terrain1[x][y] == null && terrain2[x][y] == null) {
-          continue;
-        }
-        assertEquals(
-            terrain1[x][y], terrain2[x][y], String.format("Terrain at (%d,%d) should match", x, y));
-      }
-    }
-  }
 
   private void assertHasCreatureAnnotations(String[][] terrain, String message) {
     boolean hasCreature = false;
