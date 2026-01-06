@@ -187,6 +187,31 @@ public class TestEngineContext {
         default -> null;
       };
     }
+
+    @Override
+    public neon.resources.Resource getResource(String id) {
+      if (id == null) {
+        return null;
+      }
+      // Door resources
+      if (id.contains("door") || id.startsWith("test_door")) {
+        return new neon.resources.RItem.Door(id, neon.resources.RItem.Type.door);
+      }
+      // Creature resources (including test creatures)
+      if (id.contains("creature") || id.contains("goblin") || id.contains("monster")) {
+        return new RCreature(id);
+      }
+      // Item resources (test items specifically)
+      if (id.startsWith("test_") && id.contains("item")) {
+        return new neon.resources.RItem(id, neon.resources.RItem.Type.item);
+      }
+      // Terrain resources
+      if (id.contains("floor") || id.contains("wall") || id.contains("terrain")) {
+        return new neon.resources.RTerrain(id);
+      }
+      // Default to creature for unknown IDs (for EntityFactory.getCreature)
+      return new RCreature(id);
+    }
   }
 
   /** Stub FileSystem (minimal implementation). */

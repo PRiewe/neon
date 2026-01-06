@@ -31,10 +31,10 @@ import net.engio.mbassy.listener.Handler;
 
 @Slf4j
 public class QuestTracker {
-  private LinkedList<String> objects = new LinkedList<>();
-  private HashMap<String, Quest> quests = new HashMap<>();
+  private final LinkedList<String> objects = new LinkedList<>();
+  private final HashMap<String, Quest> quests = new HashMap<>();
   // temporary map for quests that have been loaded for the dialog module
-  private HashMap<String, Quest> temp = new HashMap<>();
+  private final HashMap<String, Quest> temp = new HashMap<>();
 
   public QuestTracker() {}
 
