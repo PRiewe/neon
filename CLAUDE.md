@@ -32,11 +32,6 @@ java -jar target/neon-<version>-jar-with-dependencies.jar
 mvn test
 ```
 
-### Code Formatting
-```bash
-mvn com.spotify.fmt:fmt-maven-plugin:format
-```
-
 ## Architecture
 
 ### Client-Server Communication
