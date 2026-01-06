@@ -269,58 +269,7 @@ public class TestEngineContext {
   }
 
   /** Stub ResourceManager that returns dummy resources. */
-  static class StubResourceManager extends ResourceManager implements ResourceProvider {
-    /*
-    @Override
-    public neon.resources.Resource getResource(String id, String namespace) {
-      return switch (namespace) {
-        case "terrain" -> new RTerrain(id);
-        case "theme", "ztheme" -> null; // regions can have null theme for fixed terrain
-        default -> null;
-      };
-    }
-
-    @Override
-    public neon.resources.Resource getResource(String id) {
-      if (id == null) {
-        return null;
-      }
-      // Door resources
-      if (id.contains("door") || id.startsWith("test_door")) {
-        return new neon.resources.RItem.Door(id, neon.resources.RItem.Type.door);
-      }
-      // Creature resources (including test creatures)
-      if (id.contains("creature") || id.contains("goblin") || id.contains("monster")) {
-        return new RCreature(id);
-      }
-      // Item resources (test items specifically)
-      if (id.startsWith("test_") && id.contains("item")) {
-        return new neon.resources.RItem(id, neon.resources.RItem.Type.item);
-      }
-      // Common items from zones.xml: copper, gold, torch, dagger, wheat, iron, clump, tomb,
-      // silver, platinum
-      if (id.contains("copper")
-          || id.contains("gold")
-          || id.contains("torch")
-          || id.contains("dagger")
-          || id.contains("wheat")
-          || id.contains("iron")
-          || id.contains("clump")
-          || id.contains("silver")
-          || id.contains("platinum")
-          || id.contains("tomb")) {
-        return new neon.resources.RItem(id, neon.resources.RItem.Type.item);
-      }
-      // Terrain resources
-      if (id.contains("floor") || id.contains("wall") || id.contains("terrain")) {
-        return new neon.resources.RTerrain(id);
-      }
-      // Default to creature for unknown IDs (for EntityFactory.getCreature)
-      return new RCreature(id);
-    }
-    */
-
-  }
+  static class StubResourceManager extends ResourceManager implements ResourceProvider {}
 
   /** Stub FileSystem (minimal implementation). */
   public static class StubFileSystem extends FileSystem {

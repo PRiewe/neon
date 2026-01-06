@@ -18,13 +18,8 @@ import neon.maps.MapUtils;
 import neon.maps.Zone;
 import neon.maps.services.EntityStore;
 import neon.maps.services.QuestProvider;
-import neon.maps.services.ResourceProvider;
-import neon.resources.RCreature;
 import neon.resources.RDungeonTheme;
-import neon.resources.RItem;
-import neon.resources.RTerrain;
 import neon.resources.RZoneTheme;
-import neon.resources.Resource;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
 import neon.util.Dice;
@@ -456,87 +451,6 @@ class DungeonGeneratorXmlIntegrationTest {
       TestEngineContext.reset();
       new File("test-store.dat").delete();
       new File("testfile3.dat").delete();
-    }
-
-    /** Adapter to expose EntityStore from TestEngineContext. */
-    private class TestEntityStoreAdapter implements EntityStore {
-      @Override
-      public Entity getEntity(long uid) {
-        return neon.core.Engine.getStore().getEntity(uid);
-      }
-
-      @Override
-      public void addEntity(Entity entity) {
-        neon.core.Engine.getStore().addEntity(entity);
-      }
-
-      @Override
-      public long createNewEntityUID() {
-        return neon.core.Engine.getStore().createNewEntityUID();
-      }
-
-      @Override
-      public int createNewMapUID() {
-        return neon.core.Engine.getStore().createNewMapUID();
-      }
-
-      @Override
-      public String[] getMapPath(int uid) {
-        return neon.core.Engine.getStore().getMapPath(uid);
-      }
-    }
-
-    /** ResourceProvider that returns resources based on XML theme content patterns. */
-    private class XmlResourceProvider implements ResourceProvider {
-      @Override
-      public Resource getResource(String id) {
-        if (id == null) {
-          return null;
-        }
-        // Door resources
-        if (id.contains("door")) {
-          return new RItem.Door(id, RItem.Type.door);
-        }
-        // Terrain resources (floor, wall, features)
-        if (id.contains("floor")
-            || id.contains("wall")
-            || id.contains("stone")
-            || id.contains("lime")
-            || id.contains("dirt")
-            || id.contains("puddle")
-            || id.contains("moss")
-            || id.contains("fungi")
-            || id.contains("blood")
-            || id.contains("boulders")
-            || id.contains("ore")
-            || id.contains("water")) {
-          return new RTerrain(id);
-        }
-        // Items (from zones.xml: copper, gold, torch, dagger, wheat, iron, clump, tomb, silver,
-        // platinum)
-        if (id.contains("copper")
-            || id.contains("gold")
-            || id.contains("torch")
-            || id.contains("dagger")
-            || id.contains("wheat")
-            || id.contains("iron")
-            || id.contains("clump")
-            || id.contains("silver")
-            || id.contains("platinum")
-            || id.contains("tomb")) {
-          return new RItem(id, RItem.Type.item);
-        }
-        // Default to creature for unknown IDs (draugr, goblin, troll, etc.)
-        return new RCreature(id);
-      }
-
-      @Override
-      public Resource getResource(String id, String type) {
-        if ("terrain".equals(type)) {
-          return new RTerrain(id);
-        }
-        return getResource(id);
-      }
     }
 
     /** QuestProvider that returns no quest objects. */

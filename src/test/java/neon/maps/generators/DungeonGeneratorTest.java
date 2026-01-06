@@ -921,9 +921,8 @@ class DungeonGeneratorTest {
       }
     }
 
-//    @Test
-    void
-    generate_createsZoneWithRegions() throws Exception {
+    //    @Test
+    void generate_createsZoneWithRegions() throws Exception {
       // Given: a dungeon with two zones, and a door from zone 0 to zone 1
       int mapUID = entityStore.createNewMapUID();
       RZoneTheme theme = MapTestFixtures.createTestZoneTheme("cave");
@@ -1043,7 +1042,7 @@ class DungeonGeneratorTest {
       assertEquals(10, returnDoorDest.y, "Return door should point to entry door Y");
     }
 
-   // @Test
+    // @Test
     void generate_handlesZoneConnections() throws Exception {
       // Given: a dungeon with three zones where zone 1 connects to both zone 0 and zone 2
       int mapUID = entityStore.createNewMapUID();
@@ -1173,7 +1172,7 @@ class DungeonGeneratorTest {
       assertTrue(hasQuestItem, "Generated zone should contain quest item");
     }
 
-   // @Test
+    // @Test
     void generate_placesQuestCreature() throws Exception {
       // Given: a dungeon with quest creature to place
       int mapUID = entityStore.createNewMapUID();
