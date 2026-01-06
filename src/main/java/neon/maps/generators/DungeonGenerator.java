@@ -333,7 +333,15 @@ public class DungeonGenerator {
     return terrain;
   }
 
-  private int[][] generateBaseTiles(String type, int width, int height) {
+  /**
+   * Generates base tiles for a dungeon of the given type. Package-private for testing.
+   *
+   * @param type dungeon type (cave, pits, maze, mine, bsp, packed, or default/sparse)
+   * @param width dungeon width
+   * @param height dungeon height
+   * @return 2D array of tile types
+   */
+  int[][] generateBaseTiles(String type, int width, int height) {
     int[][] tiles = new int[width][height];
     switch (type) {
       case "cave":

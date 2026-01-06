@@ -224,9 +224,30 @@ public class BlocksGenerator {
         while (i.hasNext()) {
           Rectangle r = i.next();
           i.remove();
+
+          // Check if rectangle is too small to partition in either dimension
+          boolean canSplitVertically = r.height >= 2 * minW;
+          boolean canSplitHorizontally = r.width >= 2 * minW;
+
+          // If can't split in any direction, add to results
+          if (!canSplitVertically && !canSplitHorizontally) {
+            result.add(r);
+            continue;
+          }
+
           Rectangle r1;
           Rectangle r2;
-          if (r.width < r.height) {
+
+          // Decide split direction: prefer splitting the larger dimension,
+          // but only if we can actually split in that direction
+          boolean splitVertically;
+          if (canSplitVertically && canSplitHorizontally) {
+            splitVertically = r.width < r.height;
+          } else {
+            splitVertically = canSplitVertically;
+          }
+
+          if (splitVertically) {
             int dy = mapUtils.random(r.y + minW, r.y + r.height - minW);
             r1 = new Rectangle(r.x, r.y, r.width, dy - r.y);
             r2 = new Rectangle(r.x, dy, r.width, r.y + r.height - dy);
