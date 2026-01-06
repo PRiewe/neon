@@ -9,14 +9,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Stream;
+import neon.entities.Door;
+import neon.entities.Entity;
+import neon.maps.Atlas;
+import neon.maps.Dungeon;
+import neon.maps.MapTestFixtures;
 import neon.maps.MapUtils;
+import neon.maps.Zone;
+import neon.maps.services.EntityStore;
+import neon.maps.services.QuestProvider;
+import neon.maps.services.ResourceProvider;
+import neon.resources.RCreature;
 import neon.resources.RDungeonTheme;
+import neon.resources.RItem;
+import neon.resources.RTerrain;
 import neon.resources.RZoneTheme;
+import neon.resources.Resource;
+import neon.test.MapDbTestHelper;
+import neon.test.TestEngineContext;
 import neon.util.Dice;
+import org.h2.mvstore.MVStore;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -401,5 +420,245 @@ class DungeonGeneratorXmlIntegrationTest {
             width, height, floorCount, creatureCount, itemCount));
 
     return sb.toString();
+  }
+
+  // ==================== Full Integration Tests ====================
+
+  /**
+   * Nested test class for integration tests that require full Engine context. These tests verify
+   * the generate(Door, Zone, Atlas) method which creates actual entities.
+   */
+  @Nested
+  class GenerateWithFullContextTests {
+
+    private MVStore testDb;
+    private Atlas testAtlas;
+    private EntityStore entityStore;
+
+    @BeforeEach
+    void setUp() throws Exception {
+      // Clean up any stale test files
+      new File("test-store.dat").delete();
+      new File("testfile3.dat").delete();
+
+      testDb = MapDbTestHelper.createInMemoryDB();
+      TestEngineContext.initialize(testDb);
+      // Load resources from sampleMod1 (same pattern as ModLoader)
+      //
+      // TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
+      TestEngineContext.loadTestResources("src/test/resources/sampleMod1");
+      testAtlas = TestEngineContext.getTestAtlas();
+      entityStore = new TestEntityStoreAdapter();
+    }
+
+    @AfterEach
+    void tearDown() {
+      TestEngineContext.reset();
+      new File("test-store.dat").delete();
+      new File("testfile3.dat").delete();
+    }
+
+    /** Adapter to expose EntityStore from TestEngineContext. */
+    private class TestEntityStoreAdapter implements EntityStore {
+      @Override
+      public Entity getEntity(long uid) {
+        return neon.core.Engine.getStore().getEntity(uid);
+      }
+
+      @Override
+      public void addEntity(Entity entity) {
+        neon.core.Engine.getStore().addEntity(entity);
+      }
+
+      @Override
+      public long createNewEntityUID() {
+        return neon.core.Engine.getStore().createNewEntityUID();
+      }
+
+      @Override
+      public int createNewMapUID() {
+        return neon.core.Engine.getStore().createNewMapUID();
+      }
+
+      @Override
+      public String[] getMapPath(int uid) {
+        return neon.core.Engine.getStore().getMapPath(uid);
+      }
+    }
+
+    /** ResourceProvider that returns resources based on XML theme content patterns. */
+    private class XmlResourceProvider implements ResourceProvider {
+      @Override
+      public Resource getResource(String id) {
+        if (id == null) {
+          return null;
+        }
+        // Door resources
+        if (id.contains("door")) {
+          return new RItem.Door(id, RItem.Type.door);
+        }
+        // Terrain resources (floor, wall, features)
+        if (id.contains("floor")
+            || id.contains("wall")
+            || id.contains("stone")
+            || id.contains("lime")
+            || id.contains("dirt")
+            || id.contains("puddle")
+            || id.contains("moss")
+            || id.contains("fungi")
+            || id.contains("blood")
+            || id.contains("boulders")
+            || id.contains("ore")
+            || id.contains("water")) {
+          return new RTerrain(id);
+        }
+        // Items (from zones.xml: copper, gold, torch, dagger, wheat, iron, clump, tomb, silver,
+        // platinum)
+        if (id.contains("copper")
+            || id.contains("gold")
+            || id.contains("torch")
+            || id.contains("dagger")
+            || id.contains("wheat")
+            || id.contains("iron")
+            || id.contains("clump")
+            || id.contains("silver")
+            || id.contains("platinum")
+            || id.contains("tomb")) {
+          return new RItem(id, RItem.Type.item);
+        }
+        // Default to creature for unknown IDs (draugr, goblin, troll, etc.)
+        return new RCreature(id);
+      }
+
+      @Override
+      public Resource getResource(String id, String type) {
+        if ("terrain".equals(type)) {
+          return new RTerrain(id);
+        }
+        return getResource(id);
+      }
+    }
+
+    /** QuestProvider that returns no quest objects. */
+    private class NoQuestProvider implements QuestProvider {
+      @Override
+      public String getNextRequestedObject() {
+        return null;
+      }
+    }
+
+    // ==================== Tests Using generate() ====================
+
+    @ParameterizedTest(name = "generate() with XML theme: {0}")
+    @MethodSource("neon.maps.generators.DungeonGeneratorXmlIntegrationTest#zoneThemeScenarios")
+    void generate_withXmlZoneTheme_createsZoneWithRegions(ZoneThemeScenario scenario)
+        throws Exception {
+      // Given: Set up dungeon structure
+      int mapUID = entityStore.createNewMapUID();
+      Dungeon dungeon = new Dungeon("test-dungeon-" + scenario.zoneId(), mapUID);
+      dungeon.addZone(0, "zone-0"); // Previous zone
+      dungeon.addZone(1, "zone-1", scenario.theme()); // Target zone with theme
+
+      Zone previousZone = dungeon.getZone(0);
+      Zone targetZone = dungeon.getZone(1);
+
+      previousZone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
+      testAtlas.setMap(dungeon);
+
+      // Create entry door in previous zone
+      Door entryDoor =
+          MapTestFixtures.createTestPortalDoor(entityStore.createNewEntityUID(), 25, 25, 1, 0);
+      entityStore.addEntity(entryDoor);
+      previousZone.addItem(entryDoor);
+
+      // Create generator with full dependencies
+      DungeonGenerator generator =
+          new DungeonGenerator(
+              targetZone,
+              entityStore,
+              new XmlResourceProvider(),
+              new NoQuestProvider(),
+              MapUtils.withSeed(scenario.seed()),
+              Dice.withSeed(scenario.seed()));
+
+      // When: Call the full generate() method (same entry point as engine uses)
+      generator.generate(entryDoor, previousZone, testAtlas);
+
+      // Then: Verify actual entities were created
+      assertFalse(targetZone.getRegions().isEmpty(), "Zone should have regions");
+      assertHasReturnDoor(targetZone, previousZone.getIndex());
+    }
+
+    @ParameterizedTest(name = "generate() door linking: {0}")
+    @MethodSource("neon.maps.generators.DungeonGeneratorXmlIntegrationTest#zoneThemeScenarios")
+    void generate_withXmlZoneTheme_linksDoorsCorrectly(ZoneThemeScenario scenario)
+        throws Exception {
+      // Given
+      int mapUID = entityStore.createNewMapUID();
+      Dungeon dungeon = new Dungeon("test-dungeon-" + scenario.zoneId(), mapUID);
+      dungeon.addZone(0, "zone-0");
+      dungeon.addZone(1, "zone-1", scenario.theme());
+
+      Zone previousZone = dungeon.getZone(0);
+      Zone targetZone = dungeon.getZone(1);
+
+      previousZone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
+      testAtlas.setMap(dungeon);
+
+      Door entryDoor =
+          MapTestFixtures.createTestPortalDoor(entityStore.createNewEntityUID(), 10, 10, 1, 0);
+      entityStore.addEntity(entryDoor);
+      previousZone.addItem(entryDoor);
+
+      DungeonGenerator generator =
+          new DungeonGenerator(
+              targetZone,
+              entityStore,
+              new XmlResourceProvider(),
+              new NoQuestProvider(),
+              MapUtils.withSeed(scenario.seed()),
+              Dice.withSeed(scenario.seed()));
+
+      // When
+      generator.generate(entryDoor, previousZone, testAtlas);
+
+      // Then: entry door should have destination position set
+      assertNotNull(entryDoor.portal.getDestPos(), "Entry door should have destination position");
+
+      // Find return door and verify it links back
+      Door returnDoor = findReturnDoor(targetZone, previousZone.getIndex());
+      assertNotNull(returnDoor, "Should have a return door");
+      assertNotNull(returnDoor.portal.getDestPos(), "Return door should have destination position");
+      assertEquals(
+          10, returnDoor.portal.getDestPos().x, "Return door should point to entry door X");
+      assertEquals(
+          10, returnDoor.portal.getDestPos().y, "Return door should point to entry door Y");
+    }
+
+    // ==================== Helper Methods ====================
+
+    private void assertHasReturnDoor(Zone zone, int previousZoneIndex) {
+      boolean hasReturnDoor = false;
+      for (long itemUid : zone.getItems()) {
+        Entity entity = entityStore.getEntity(itemUid);
+        if (entity instanceof Door door) {
+          if (door.portal.getDestZone() == previousZoneIndex) {
+            hasReturnDoor = true;
+            break;
+          }
+        }
+      }
+      assertTrue(hasReturnDoor, "Zone should have return door to previous zone");
+    }
+
+    private Door findReturnDoor(Zone zone, int previousZoneIndex) {
+      for (long itemUid : zone.getItems()) {
+        Entity entity = entityStore.getEntity(itemUid);
+        if (entity instanceof Door door && door.portal.getDestZone() == previousZoneIndex) {
+          return door;
+        }
+      }
+      return null;
+    }
   }
 }
