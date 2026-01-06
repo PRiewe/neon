@@ -53,10 +53,10 @@ import neon.util.trees.PathTree;
  */
 @Slf4j
 public class FileSystem {
-  private HashMap<String, String> jars = new HashMap<String, String>();
-  private File temp;
-  private PathTree<String, String> files = new PathTree<String, String>();
-  private HashMap<String, String> paths =
+  private final HashMap<String, String> jars = new HashMap<String, String>();
+  private final File temp;
+  private final PathTree<String, String> files = new PathTree<String, String>();
+  private final HashMap<String, String> paths =
       new HashMap<String, String>(); // to keep track of absolute paths to a dir or jar
 
   public FileSystem() throws IOException {
@@ -128,7 +128,7 @@ public class FileSystem {
     while (entries.hasMoreElements()) {
       JarEntry entry = entries.nextElement();
       if (!entry.isDirectory()) {
-        String name = new String(entry.getName());
+        String name = entry.getName();
         // this apparently must use "/" because I'm in a jar, and not File.separator
         int separatorCount = name.length() - name.replace("/", "").length();
         String[] pathArray = new String[separatorCount + 2];

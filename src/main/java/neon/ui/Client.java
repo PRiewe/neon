@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.EventObject;
 import javax.swing.UIManager;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.event.LoadEvent;
 import neon.core.event.MagicEvent;
 import neon.core.event.MessageEvent;
@@ -47,10 +47,12 @@ public class Client implements Runnable {
   private final FiniteStateMachine fsm;
   private final MBassador<EventObject> bus;
   private final String version;
+  private final GameContext context;
 
-  public Client(Port port, String version) {
+  public Client(Port port, String version, GameContext context) {
     bus = port.getBus();
     this.version = version;
+    this.context = context;
     fsm = new FiniteStateMachine();
     bus.subscribe(new BusAdapter());
   }
@@ -71,37 +73,37 @@ public class Client implements Runnable {
     }
 
     // UI components
-    CClient client = (CClient) Engine.getResources().getResource("client", "config");
+    CClient client = (CClient) context.getResources().getResource("client", "config");
     ui = new UserInterface(client.getTitle());
     ui.show();
   }
 
   private void initFSM() {
     // main menu
-    MainMenuState main = new MainMenuState(fsm, bus, ui, version);
+    MainMenuState main = new MainMenuState(fsm, bus, ui, version, context);
 
     // all game substates
-    GameState game = new GameState(fsm, bus, ui);
+    GameState game = new GameState(fsm, bus, ui, context);
     bus.subscribe(game);
     // doors
-    DoorState doors = new DoorState(game, bus, ui);
+    DoorState doors = new DoorState(game, bus, ui, context);
     // locks
-    LockState locks = new LockState(game, bus, ui);
+    LockState locks = new LockState(game, bus, ui, context);
     // bumping
-    BumpState bump = new BumpState(game, bus, ui);
+    BumpState bump = new BumpState(game, bus, ui, context);
     // move
-    MoveState move = new MoveState(game, bus);
+    MoveState move = new MoveState(game, bus, context);
     // aim
-    AimState aim = new AimState(game, bus, ui);
+    AimState aim = new AimState(game, bus, ui, context);
 
     // dialog state
-    DialogState dialog = new DialogState(fsm, bus, ui);
+    DialogState dialog = new DialogState(fsm, bus, ui, context);
     // inventory state
-    InventoryState inventory = new InventoryState(fsm, bus, ui);
+    InventoryState inventory = new InventoryState(fsm, bus, ui, context);
     // containers
-    ContainerState container = new ContainerState(fsm, bus, ui);
+    ContainerState container = new ContainerState(fsm, bus, ui, context);
     // journal state
-    JournalState journal = new JournalState(fsm, bus, ui);
+    JournalState journal = new JournalState(fsm, bus, ui, context);
 
     // set start states
     fsm.addStartStates(main, move);

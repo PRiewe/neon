@@ -18,13 +18,17 @@
 
 package neon.core;
 
+import java.io.Closeable;
+import java.io.IOException;
+import lombok.Getter;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
 import neon.systems.files.FileSystem;
 import neon.systems.timing.Timer;
 
-public class Game {
+@Getter
+public class Game implements Closeable {
   private final UIDStore store;
   private final Player player;
   private final Timer timer = new Timer();
@@ -49,19 +53,9 @@ public class Game {
     this.store = store;
   }
 
-  public Player getPlayer() {
-    return player;
-  }
-
-  public Timer getTimer() {
-    return timer;
-  }
-
-  public UIDStore getStore() {
-    return store;
-  }
-
-  public Atlas getAtlas() {
-    return atlas;
+  @Override
+  public void close() throws IOException {
+    store.close();
+    atlas.close();
   }
 }

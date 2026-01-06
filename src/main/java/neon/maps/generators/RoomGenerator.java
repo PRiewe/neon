@@ -25,13 +25,40 @@ import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
 import neon.maps.MapUtils;
 
+/**
+ * Generator for creating various types of rooms in a dungeon.
+ *
+ * @author mdriesen
+ */
 public class RoomGenerator {
-  /*
-   * Makes a room consisting of two interlocking rectangles.
+  private final MapUtils mapUtils;
+
+  /** Creates a new RoomGenerator with default (non-deterministic) random behavior. */
+  public RoomGenerator() {
+    this(new MapUtils());
+  }
+
+  /**
+   * Creates a new RoomGenerator with a specific MapUtils instance for deterministic testing.
+   *
+   * @param mapUtils the MapUtils instance to use for random operations
    */
-  protected static Room makePolyRoom(int[][] tiles, Rectangle room) {
-    Rectangle rec1 = MapUtils.randomRectangle(room.width / 2, room);
-    Rectangle rec2 = MapUtils.randomRectangle(room.width / 2, room);
+  public RoomGenerator(MapUtils mapUtils) {
+    this.mapUtils = mapUtils;
+  }
+
+  /**
+   * Makes a room consisting of two interlocking rectangles.
+   *
+   * @param tiles the tile array to modify
+   * @param room the bounding rectangle for the room
+   * @return a Room containing the two rectangles
+   */
+  protected Room makePolyRoom(int[][] tiles, Rectangle room) {
+    // Use minimum of both dimensions to ensure sub-rectangles fit within bounds
+    int minSize = Math.min(room.width, room.height) / 2;
+    Rectangle rec1 = mapUtils.randomRectangle(minSize, room);
+    Rectangle rec2 = mapUtils.randomRectangle(minSize, room);
 
     for (int x = room.x + 1; x < room.x + room.width; x++) {
       for (int y = room.y + 1; y < room.y + room.height; y++) {
@@ -46,23 +73,26 @@ public class RoomGenerator {
         if (tiles[x][y] == MapUtils.WALL && isCorner(tiles, x, y)) {
           tiles[x][y] = MapUtils.CORNER;
         } else if (tiles[x][y] == MapUtils.WALL && exposed(tiles, x, y)) {
-          //					System.out.println("exposed");
           tiles[x][y] = MapUtils.WALL_ROOM;
         }
       }
     }
 
-    // om ervoor te zorgen dat de buitenmuur ook deel uitmaakt van de room
+    // to ensure the outer wall is also part of the room
     room.width++;
     room.height++;
 
     return new Room(rec1, rec2);
   }
 
-  /*
+  /**
    * Makes a simple rectangular room.
+   *
+   * @param tiles the tile array to modify
+   * @param room the bounding rectangle for the room
+   * @return a Room containing the rectangle
    */
-  protected static Room makeRoom(int[][] tiles, Rectangle room) {
+  protected Room makeRoom(int[][] tiles, Rectangle room) {
     // floor the room itself
     for (int x = room.x + 1; x < room.x + room.width; x++) {
       for (int y = room.y + 1; y < room.y + room.height; y++) {
@@ -101,10 +131,14 @@ public class RoomGenerator {
     return new Room(new Rectangle(room));
   }
 
-  /*
+  /**
    * Makes a room with irregular walls.
+   *
+   * @param tiles the tile array to modify
+   * @param room the bounding rectangle for the room
+   * @return a Room containing the rectangle
    */
-  protected static Room makeCaveRoom(int[][] tiles, Rectangle room) {
+  protected Room makeCaveRoom(int[][] tiles, Rectangle room) {
     Point2D center = new Point2D.Double(room.getCenterX(), room.getCenterY());
     Line2D line;
     float l = 0.8f;
@@ -115,49 +149,36 @@ public class RoomGenerator {
 
     // floor tiles maken
     for (int x = room.x; x < room.x + room.width; x++) {
-      d = MapUtils.random(1, (room.width + room.height) / 3);
+      d = mapUtils.random(1, (room.width + room.height) / 3);
       line = new Line2D.Float(center, new Point(x, room.y));
-      for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
-        for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
-          if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
-            tiles[lx][ly] = MapUtils.FLOOR;
-          }
-        }
-      }
+      applyFloor(tiles, room, line, l, d, round);
 
-      d = MapUtils.random(1, (room.width + room.height) / 3);
+      d = mapUtils.random(1, (room.width + room.height) / 3);
       line = new Line2D.Float(center, new Point(x, room.y + room.height));
-      for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
-        for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
-          if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
-            tiles[lx][ly] = MapUtils.FLOOR;
-          }
-        }
-      }
+      applyFloor(tiles, room, line, l, d, round);
     }
     for (int y = room.y; y < room.y + room.height; y++) {
-      d = MapUtils.random(1, (room.width + room.height) / 3);
+      d = mapUtils.random(1, (room.width + room.height) / 3);
       line = new Line2D.Float(center, new Point(room.x, y));
-      for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
-        for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
-          if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
-            tiles[lx][ly] = MapUtils.FLOOR;
-          }
-        }
-      }
+      applyFloor(tiles, room, line, l, d, round);
 
-      d = MapUtils.random(1, (room.width + room.height) / 3);
+      d = mapUtils.random(1, (room.width + room.height) / 3);
       line = new Line2D.Float(center, new Point(room.x + room.width, y));
-      for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
-        for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
-          if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
-            tiles[lx][ly] = MapUtils.FLOOR;
-          }
-        }
-      }
+      applyFloor(tiles, room, line, l, d, round);
     }
 
     return new Room(room);
+  }
+
+  private static void applyFloor(
+      int[][] tiles, Rectangle room, Line2D line, float l, int d, RoundRectangle2D round) {
+    for (int lx = room.x + d; lx < room.x + room.width - d; lx++) {
+      for (int ly = room.y + d; ly < room.y + room.height - d; ly++) {
+        if (line.ptLineDist(lx, ly) < l && round.contains(lx, ly)) {
+          tiles[lx][ly] = MapUtils.FLOOR;
+        }
+      }
+    }
   }
 
   private static boolean isCorner(int[][] tiles, int x, int y) {
@@ -190,6 +211,10 @@ public class RoomGenerator {
   }
 
   private static boolean exposed(int[][] tiles, int x, int y) {
+    return newExposed(tiles, x, y);
+  }
+
+  static boolean newExposed(int[][] tiles, int x, int y) {
     for (int i = x - 1; i < x + 2; i++) {
       for (int j = y - 1; j < y + 2; j++) {
         if (i > -1
@@ -213,6 +238,7 @@ public class RoomGenerator {
     return i == MapUtils.DOOR || i == MapUtils.DOOR_LOCKED || i == MapUtils.DOOR_CLOSED;
   }
 
+  /** Represents a room consisting of one or more rectangular regions. */
   protected static class Room {
     private Rectangle[] regions;
 

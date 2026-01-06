@@ -1,11 +1,13 @@
 package neon.test;
 
 import java.awt.Rectangle;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import lombok.Getter;
 import neon.core.Engine;
 import neon.core.Game;
+import neon.core.event.TaskQueue;
 import neon.entities.Entity;
 import neon.entities.Player;
 import neon.entities.UIDStore;
@@ -14,14 +16,15 @@ import neon.entities.property.Gender;
 import neon.maps.Atlas;
 import neon.maps.ZoneActivator;
 import neon.maps.ZoneFactory;
-import neon.maps.services.EntityStore;
-import neon.maps.services.PhysicsManager;
-import neon.resources.RCreature;
-import neon.resources.RTerrain;
-import neon.resources.ResourceManager;
+import neon.maps.services.*;
+import neon.resources.*;
+import neon.resources.builder.IniBuilder;
 import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import org.h2.mvstore.MVStore;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
 /**
  * Test utility for managing Engine singleton dependencies in tests.
@@ -33,7 +36,7 @@ public class TestEngineContext {
 
   private static MVStore testDb;
   private static Atlas testAtlas;
-  private static ResourceManager testResources;
+  private static StubResourceManager testResources;
   private static Game testGame;
   private static UIDStore testStore;
   private static ZoneFactory testZoneFactory;
@@ -89,7 +92,14 @@ public class TestEngineContext {
     testZoneFactory = new ZoneFactory(db);
 
     // Create test Atlas with dependency injection (doesn't need Engine.game)
-    testAtlas = new Atlas(getStubFileSystem(), db, testEntityStore, testZoneActivator);
+    testAtlas =
+        new Atlas(
+            getStubFileSystem(),
+            db,
+            testEntityStore,
+            new EngineResourceProvider(),
+            new EngineQuestProvider(),
+            testZoneActivator);
 
     // Create test Game using new DI constructor
     testGame = new Game(stubPlayer, testAtlas, testStore);
@@ -142,9 +152,99 @@ public class TestEngineContext {
     return testResources;
   }
 
+  /** Gets the test ResourceProvider instance. */
+  public static EntityStore getTestEntityStore() {
+    return testEntityStore;
+  }
+
+  /** Gets the test ResourceProvider instance. */
+  public static ResourceProvider getTestResourceProvider() {
+    return testResources;
+  }
+
   /** Gets the test ZoneFactory instance. */
   public static ZoneFactory getTestZoneFactory() {
     return testZoneFactory;
+  }
+
+  public static void loadTestResourceViaConfig(String configFilename) throws Exception {
+    IniBuilder iniBuilder = new IniBuilder(configFilename, getStubFileSystem(), new TaskQueue());
+    iniBuilder.build(getTestResources());
+  }
+
+  /**
+   * Loads test resources from a mod path following the same pattern as ModLoader.
+   *
+   * <p>Loads items, creatures, terrain, and themes from XML files in the specified path.
+   *
+   * @param modPath the path to the mod directory (e.g., "src/test/resources/sampleMod1")
+   */
+  public static void loadTestResources(String modPath) throws Exception {
+    SAXBuilder builder = new SAXBuilder();
+
+    // Load items
+    File itemsFile = new File(modPath + "/objects/items.xml");
+    if (itemsFile.exists()) {
+      Document doc = builder.build(itemsFile);
+      for (Element e : doc.getRootElement().getChildren()) {
+        switch (e.getName()) {
+          case "book", "scroll" -> Engine.getResources().addResource(new RItem.Text(e));
+          case "weapon" -> Engine.getResources().addResource(new RWeapon(e));
+          case "door" -> Engine.getResources().addResource(new RItem.Door(e));
+          case "potion" -> Engine.getResources().addResource(new RItem.Potion(e));
+          case "container" -> Engine.getResources().addResource(new RItem.Container(e));
+          case "armor", "clothing" -> Engine.getResources().addResource(new RClothing(e));
+          case "list" -> Engine.getResources().addResource(new LItem(e));
+          default -> Engine.getResources().addResource(new RItem(e));
+        }
+      }
+    }
+
+    // Load creatures
+    File monstersFile = new File(modPath + "/objects/monsters.xml");
+    if (monstersFile.exists()) {
+      Document doc = builder.build(monstersFile);
+      for (Element c : doc.getRootElement().getChildren()) {
+        switch (c.getName()) {
+          case "list" -> Engine.getResources().addResource(new LCreature(c));
+          default -> Engine.getResources().addResource(new RCreature(c));
+        }
+      }
+    }
+
+    // Load terrain
+    File terrainFile = new File(modPath + "/terrain.xml");
+    if (terrainFile.exists()) {
+      Document doc = builder.build(terrainFile);
+      for (Element e : doc.getRootElement().getChildren()) {
+        Engine.getResources().addResource(new RTerrain(e), "terrain");
+      }
+    }
+
+    // Load themes
+    File dungeonsFile = new File(modPath + "/themes/dungeons.xml");
+    if (dungeonsFile.exists()) {
+      Document doc = builder.build(dungeonsFile);
+      for (Element theme : doc.getRootElement().getChildren("dungeon")) {
+        Engine.getResources().addResource(new RDungeonTheme(theme), "theme");
+      }
+    }
+
+    File zonesFile = new File(modPath + "/themes/zones.xml");
+    if (zonesFile.exists()) {
+      Document doc = builder.build(zonesFile);
+      for (Element theme : doc.getRootElement().getChildren("zone")) {
+        Engine.getResources().addResource(new RZoneTheme(theme), "theme");
+      }
+    }
+
+    File regionsFile = new File(modPath + "/themes/regions.xml");
+    if (regionsFile.exists()) {
+      Document doc = builder.build(regionsFile);
+      for (Element theme : doc.getRootElement().getChildren("region")) {
+        Engine.getResources().addResource(new RRegionTheme(theme), "theme");
+      }
+    }
   }
 
   /** Sets a static field using reflection. */
@@ -169,16 +269,7 @@ public class TestEngineContext {
   }
 
   /** Stub ResourceManager that returns dummy resources. */
-  static class StubResourceManager extends ResourceManager {
-    @Override
-    public neon.resources.Resource getResource(String id, String namespace) {
-      return switch (namespace) {
-        case "terrain" -> new RTerrain(id);
-        case "theme", "ztheme" -> null; // regions can have null theme for fixed terrain
-        default -> null;
-      };
-    }
-  }
+  static class StubResourceManager extends ResourceManager implements ResourceProvider {}
 
   /** Stub FileSystem (minimal implementation). */
   public static class StubFileSystem extends FileSystem {

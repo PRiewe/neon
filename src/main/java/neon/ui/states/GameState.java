@@ -23,7 +23,8 @@ import java.io.InputStream;
 import java.util.EventObject;
 import java.util.Scanner;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.*;
+import neon.core.GameContext;
+import neon.core.ScriptInterface;
 import neon.core.event.*;
 import neon.core.handlers.TurnHandler;
 import neon.entities.Player;
@@ -46,17 +47,20 @@ public class GameState extends State implements KeyListener, CollisionListener {
   private CClient keys;
   private MBassador<EventObject> bus;
   private UserInterface ui;
+  private final GameContext context;
 
-  public GameState(State parent, MBassador<EventObject> bus, UserInterface ui) {
+  public GameState(
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent, "game module");
     this.bus = bus;
     this.ui = ui;
-    keys = (CClient) Engine.getResources().getResource("client", "config");
-    panel = new GamePanel();
+    this.context = context;
+    keys = (CClient) context.getResources().getResource("client", "config");
+    panel = new GamePanel(context);
     setVariable("panel", panel);
 
     // makes functions available for scripting:
-    Engine.getScriptEngine().getBindings("js").putMember("engine", new ScriptInterface(panel));
+    context.getScriptEngine().getBindings("js").putMember("engine", new ScriptInterface(panel));
     bus.subscribe(new TurnHandler(panel));
   }
 
@@ -64,10 +68,10 @@ public class GameState extends State implements KeyListener, CollisionListener {
   public void enter(TransitionEvent e) {
     ui.showPanel(panel);
     if (e.toString().equals("start")) {
-      player = Engine.getPlayer();
-      Engine.getPhysicsEngine().addListener(this);
+      player = context.getPlayer();
+      context.getPhysicsEngine().addListener(this);
       // in case game starts, the events of the current clock tick must be executed now
-      bus.publishAsync(new TurnEvent(Engine.getTimer().getTime(), true));
+      bus.publishAsync(new TurnEvent(context.getTimer().getTime(), true));
     }
     panel.setVisible(true);
     panel.addKeyListener(this);
@@ -109,7 +113,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
         save(true);
         break;
       case KeyEvent.VK_F1:
-        InputStream input = Engine.class.getResourceAsStream("help.html");
+        InputStream input = GameState.class.getResourceAsStream("/neon/core/help.html");
         String help = new Scanner(input, "UTF-8").useDelimiter("\\A").next();
         ui.showHelp(help);
         break;
@@ -117,11 +121,11 @@ public class GameState extends State implements KeyListener, CollisionListener {
         panel.toggleHUD();
         break;
       case KeyEvent.VK_F3:
-        ui.showConsole(Engine.getScriptEngine());
+        ui.showConsole(context.getScriptEngine());
         break;
       default:
         if (code == keys.map) {
-          new MapDialog(ui.getWindow(), Engine.getAtlas().getCurrentZone()).show();
+          new MapDialog(ui.getWindow(), context.getAtlas().getCurrentZone(), context).show();
         } else if (code == keys.sneak) {
           player.setSneaking(!player.isSneaking());
           panel.repaint();
@@ -137,7 +141,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
         if (ui.showQuestion("Do you wish to save?")) {
           bus.publish(new SaveEvent(this));
         }
-        Engine.quit();
+        context.quit();
       } else {
         panel.repaint();
       }
@@ -157,13 +161,13 @@ public class GameState extends State implements KeyListener, CollisionListener {
     try {
       if (one.equals(0L) && two instanceof neon.maps.Region) {
         for (String s : ((neon.maps.Region) two).getScripts()) {
-          RScript rs = (RScript) Engine.getResources().getResource(s, "script");
-          Engine.execute(rs.script);
+          RScript rs = (RScript) context.getResources().getResource(s, "script");
+          context.execute(rs.script);
         }
       } else if (one instanceof neon.maps.Region && two.equals(0L)) {
         for (String s : ((neon.maps.Region) one).getScripts()) {
-          RScript rs = (RScript) Engine.getResources().getResource(s, "script");
-          Engine.execute(rs.script);
+          RScript rs = (RScript) context.getResources().getResource(s, "script");
+          context.execute(rs.script);
         }
       }
     } catch (Exception e) {
@@ -194,7 +198,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
             break;
           case CombatEvent.DIE:
             panel.print("You killed the " + ce.getDefender() + ".");
-            bus.publishAsync(new DeathEvent(ce.getDefender(), Engine.getTimer().getTime()));
+            bus.publishAsync(new DeathEvent(ce.getDefender(), context.getTimer().getTime()));
             break;
         }
       }

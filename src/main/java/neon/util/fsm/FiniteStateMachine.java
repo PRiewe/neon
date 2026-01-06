@@ -19,6 +19,7 @@
 package neon.util.fsm;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * A simple finite state machine supporting nested states.
@@ -27,10 +28,10 @@ import java.util.*;
  */
 public class FiniteStateMachine extends State {
   // String in hashmap is eventID + current state, then eventIDs can be reused
-  private HashMap<String, Transition> transitions = new HashMap<>();
-  private HashMap<String, Object> variables = new HashMap<>();
-  private List<State> starts = new ArrayList<>(); // list of all start states
-  private Set<State> currents; // list of all current states
+  private final HashMap<String, Transition> transitions = new HashMap<>();
+  private final HashMap<String, Object> variables = new HashMap<>();
+  private final List<State> starts = new ArrayList<>(); // list of all start states
+  private ConcurrentSkipListSet<State> currents; // list of all current states
 
   public FiniteStateMachine() {
     super(null, "FSM");
@@ -41,7 +42,7 @@ public class FiniteStateMachine extends State {
   }
 
   public void start(TransitionEvent e) {
-    currents = new TreeSet<State>(new StateComparator());
+    currents = new ConcurrentSkipListSet<>(new StateComparator());
     for (State state : starts) {
       if (state.parent.equals(this) || starts.contains(state.parent)) {
         currents.add(state);
@@ -58,7 +59,7 @@ public class FiniteStateMachine extends State {
 
   public void transition(TransitionEvent event) {
     // make a copy of currents here, because currents can be modified
-    for (State current : new ArrayList<State>(currents)) {
+    for (State current : new ArrayList<>(currents)) {
       if (currents.contains(current) && !current.isBlocked()) {
         if (transitions.containsKey(event.toString() + current)) {
           // this means that transition.from is certainly the current state
@@ -112,7 +113,7 @@ public class FiniteStateMachine extends State {
   private void exit(TransitionEvent e, State ancestor, State current) {
     currents.remove(current);
     // exit substates
-    for (State state : new ArrayList<State>(currents)) {
+    for (State state : new ArrayList<>(currents)) {
       if (state.parent == current) {
         exit(e, current, state);
       }
@@ -172,7 +173,7 @@ public class FiniteStateMachine extends State {
   }
 
   private State getCommonAncestor(State one, State two) {
-    LinkedList<State> states = new LinkedList<State>();
+    LinkedList<State> states = new LinkedList<>();
 
     State next = one;
     while (next != null) {

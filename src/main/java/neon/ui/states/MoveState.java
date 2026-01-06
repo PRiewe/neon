@@ -24,7 +24,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.EventObject;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.core.event.TurnEvent;
@@ -45,16 +45,18 @@ public class MoveState extends State implements KeyListener {
   private GamePanel panel;
   private CClient keys;
   private MBassador<EventObject> bus;
+  private final GameContext context;
 
-  public MoveState(State parent, MBassador<EventObject> bus) {
+  public MoveState(State parent, MBassador<EventObject> bus, GameContext context) {
     super(parent, "move module");
     this.bus = bus;
-    keys = (CClient) Engine.getResources().getResource("client", "config");
+    this.context = context;
+    keys = (CClient) context.getResources().getResource("client", "config");
   }
 
   @Override
   public void enter(TransitionEvent e) {
-    player = Engine.getPlayer();
+    player = context.getPlayer();
     panel = (GamePanel) getVariable("panel");
     panel.addKeyListener(this);
   }
@@ -70,23 +72,24 @@ public class MoveState extends State implements KeyListener {
     Point p = new Point(bounds.x + x, bounds.y + y);
 
     // check if creature is in the way
-    Creature other = Engine.getAtlas().getCurrentZone().getCreature(p);
+    Creature other = context.getAtlas().getCurrentZone().getCreature(p);
     if (other != null && !other.hasCondition(Condition.DEAD)) {
       if (other.brain.isHostile()) {
         bus.publishAsync(new CombatEvent(player, other));
-        bus.publishAsync(new TurnEvent(Engine.getTimer().addTick())); // next turn
+        bus.publishAsync(new TurnEvent(context.getTimer().addTick())); // next turn
       } else {
         bus.publishAsync(new TransitionEvent("bump", "creature", other));
       }
     } else { // no one in the way, so move
       if (MotionHandler.move(player, p) == MotionHandler.DOOR) {
-        for (long uid : Engine.getAtlas().getCurrentZone().getItems(p)) {
-          if (Engine.getStore().getEntity(uid) instanceof Door) {
-            bus.publishAsync(new TransitionEvent("door", "door", Engine.getStore().getEntity(uid)));
+        for (long uid : context.getAtlas().getCurrentZone().getItems(p)) {
+          if (context.getStore().getEntity(uid) instanceof Door) {
+            bus.publishAsync(
+                new TransitionEvent("door", "door", context.getStore().getEntity(uid)));
           }
         }
       }
-      bus.publishAsync(new TurnEvent(Engine.getTimer().addTick())); // next turn
+      bus.publishAsync(new TurnEvent(context.getTimer().addTick())); // next turn
     }
   }
 
@@ -97,14 +100,14 @@ public class MoveState extends State implements KeyListener {
     // clone the list here, otherwise concurrent modification exceptions when picking up items
     Rectangle bounds = player.getShapeComponent();
     ArrayList<Long> items =
-        new ArrayList<Long>(Engine.getAtlas().getCurrentZone().getItems(bounds));
-    Creature c = Engine.getAtlas().getCurrentZone().getCreature(bounds.getLocation());
+        new ArrayList<Long>(context.getAtlas().getCurrentZone().getItems(bounds));
+    Creature c = context.getAtlas().getCurrentZone().getCreature(bounds.getLocation());
     if (c != null) {
       items.add(c.getUID());
     }
 
     if (items.size() == 1) {
-      Entity entity = Engine.getStore().getEntity(items.get(0));
+      Entity entity = context.getStore().getEntity(items.get(0));
       if (entity instanceof Container) {
         Container container = (Container) entity;
         if (container.lock.isLocked()) {
@@ -118,17 +121,17 @@ public class MoveState extends State implements KeyListener {
         }
       } else if (entity instanceof Door) {
         if (MotionHandler.teleport(player, (Door) entity) == MotionHandler.OK) {
-          bus.publishAsync(new TurnEvent(Engine.getTimer().addTick()));
+          bus.publishAsync(new TurnEvent(context.getTimer().addTick()));
         }
       } else if (entity instanceof Creature) {
         bus.publishAsync(new TransitionEvent("container", "holder", entity));
       } else {
-        Engine.getAtlas().getCurrentZone().removeItem((Item) entity);
+        context.getAtlas().getCurrentZone().removeItem((Item) entity);
         InventoryHandler.addItem(player, entity.getUID());
       }
     } else if (items.size() > 1) {
       bus.publishAsync(
-          new TransitionEvent("container", "holder", Engine.getAtlas().getCurrentZone()));
+          new TransitionEvent("container", "holder", context.getAtlas().getCurrentZone()));
     }
   }
 
@@ -168,7 +171,7 @@ public class MoveState extends State implements KeyListener {
       if (player.isMounted()) {
         Creature mount = player.getMount();
         player.unmount();
-        Engine.getAtlas().getCurrentZone().addCreature(mount);
+        context.getAtlas().getCurrentZone().addCreature(mount);
         Rectangle pBounds = player.getShapeComponent();
         Rectangle mBounds = mount.getShapeComponent();
         mBounds.setLocation(pBounds.x, pBounds.y);
@@ -183,7 +186,7 @@ public class MoveState extends State implements KeyListener {
         }
       } else if (player.getInventoryComponent().hasEquiped(Slot.MAGIC)) {
         Item item =
-            (Item) Engine.getStore().getEntity(player.getInventoryComponent().get(Slot.MAGIC));
+            (Item) context.getStore().getEntity(player.getInventoryComponent().get(Slot.MAGIC));
         if (item.getMagicComponent().getSpell().range > 0) {
           bus.publishAsync(new TransitionEvent("aim"));
         } else {
@@ -195,7 +198,7 @@ public class MoveState extends State implements KeyListener {
 
   private boolean hasItem(Creature creature, RItem item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (Engine.getStore().getEntity(uid).getID().equals(item.id)) {
+      if (context.getStore().getEntity(uid).getID().equals(item.id)) {
         return true;
       }
     }

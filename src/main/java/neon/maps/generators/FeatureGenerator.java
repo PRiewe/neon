@@ -23,11 +23,39 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import neon.maps.MapUtils;
 
+/**
+ * Generator for terrain features like lakes and rivers.
+ *
+ * @author mdriesen
+ */
 public class FeatureGenerator {
-  protected static void generateLake(String[][] terrain, String type, Rectangle bounds) {
+  private final MapUtils mapUtils;
+
+  /** Creates a new FeatureGenerator with default (non-deterministic) random behavior. */
+  public FeatureGenerator() {
+    this(new MapUtils());
+  }
+
+  /**
+   * Creates a new FeatureGenerator with a specific MapUtils instance for deterministic testing.
+   *
+   * @param mapUtils the MapUtils instance to use for random operations
+   */
+  public FeatureGenerator(MapUtils mapUtils) {
+    this.mapUtils = mapUtils;
+  }
+
+  /**
+   * Generates a lake feature on the terrain.
+   *
+   * @param terrain the terrain array to modify
+   * @param type the terrain type to use for the lake
+   * @param bounds the bounding rectangle for the lake
+   */
+  protected void generateLake(String[][] terrain, String type, Rectangle bounds) {
     int width = terrain.length;
     int height = terrain[0].length;
-    Polygon lake = MapUtils.randomPolygon(bounds, 16);
+    Polygon lake = mapUtils.randomPolygon(bounds, 16);
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         if (lake.contains(x, y)) {
@@ -37,12 +65,20 @@ public class FeatureGenerator {
     }
   }
 
-  protected static void generateRiver(String[][] terrain, int[][] tiles, String type, int size) {
+  /**
+   * Generates a river feature on the terrain.
+   *
+   * @param terrain the terrain array to modify
+   * @param tiles the tile array
+   * @param type the terrain type to use for the river
+   * @param size the width of the river
+   */
+  protected void generateRiver(String[][] terrain, int[][] tiles, String type, int size) {
     int width = terrain.length;
     int height = terrain[0].length;
-    boolean direction = Math.random() > 0.5 ? false : true;
-    Point[] points = MapUtils.randomRibbon(new Rectangle(width + 1, height + 1), direction);
-    Polygon river = FeatureGenerator.generateRiverPolygon(points, size, direction);
+    boolean direction = mapUtils.getRandomSource().nextDouble() > 0.5;
+    Point[] points = mapUtils.randomRibbon(new Rectangle(width + 1, height + 1), direction);
+    Polygon river = generateRiverPolygon(points, size, direction);
     for (int x = 0; x < tiles.length; x++) {
       for (int y = 0; y < tiles[x].length; y++) {
         if (river.contains(x, y)) {

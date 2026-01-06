@@ -18,14 +18,16 @@
 
 package neon.util.fsm;
 
+import lombok.Getter;
+
 /**
  * This class represents a state in the finite state machine. Every state can contain substates.
  *
  * @author mdriesen
  */
-public class State {
-  protected State parent;
-  protected String name;
+public abstract class State {
+  @Getter protected State parent;
+  @Getter protected String name;
   private boolean blocked = false;
 
   public State(State parent, String name) {
@@ -48,14 +50,6 @@ public class State {
 
   public Object getVariable(String name) {
     return parent.getVariable(name);
-  }
-
-  public State getParent() {
-    return parent;
-  }
-
-  public String getName() {
-    return name;
   }
 
   void block() {

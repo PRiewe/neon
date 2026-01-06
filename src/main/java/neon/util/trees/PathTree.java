@@ -28,7 +28,7 @@ import java.util.Collection;
  * @param <F>
  */
 public class PathTree<E, F> {
-  private PathNode<E, F> top;
+  private final PathNode<E, F> top;
 
   public PathTree() {
     top = new PathNode<E, F>(0);
@@ -38,7 +38,8 @@ public class PathTree<E, F> {
    * @param path
    * @return the element at the given path
    */
-  public F get(E... path) {
+  @SafeVarargs
+  public final F get(E... path) {
     return top.get(path);
   }
 
@@ -48,7 +49,8 @@ public class PathTree<E, F> {
    * @param path
    * @return
    */
-  public boolean contains(E... path) {
+  @SafeVarargs
+  public final boolean contains(E... path) {
     return top.contains(path);
   }
 
@@ -59,7 +61,8 @@ public class PathTree<E, F> {
    * @param path
    * @return a list of all elements at the given path
    */
-  public Collection<F> list(E... path) {
+  @SafeVarargs
+  public final Collection<F> list(E... path) {
     return top.list(path);
   }
 
@@ -69,7 +72,8 @@ public class PathTree<E, F> {
    * @param value
    * @param path
    */
-  public void add(F value, E... path) {
+  @SafeVarargs
+  public final void add(F value, E... path) {
     top.add(path, value);
   }
 
@@ -78,7 +82,8 @@ public class PathTree<E, F> {
    *
    * @param path
    */
-  public void remove(E... path) {
+  @SafeVarargs
+  public final void remove(E... path) {
     top.remove(path);
   }
 }

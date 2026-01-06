@@ -2,10 +2,12 @@ package neon.maps;
 
 import java.awt.Rectangle;
 import neon.entities.Creature;
+import neon.entities.Door;
 import neon.entities.Item;
 import neon.resources.RCreature;
 import neon.resources.RItem;
 import neon.resources.RTerrain;
+import neon.resources.RZoneTheme;
 import neon.test.TestEngineContext;
 
 /**
@@ -305,5 +307,78 @@ public class MapTestFixtures {
    */
   public static Item createTestItem(long uid) {
     return createTestItem("test-item", uid, 0, 0);
+  }
+
+  /**
+   * Creates a test door with basic parameters.
+   *
+   * @param id door ID
+   * @param uid door UID
+   * @param x x-coordinate
+   * @param y y-coordinate
+   * @return a new Door instance
+   */
+  public static Door createTestDoor(String id, long uid, int x, int y) {
+    RItem.Door resource = new RItem.Door(id, RItem.Type.door);
+    Door door = new Door(uid, resource);
+    door.getShapeComponent().setLocation(x, y);
+    return door;
+  }
+
+  /**
+   * Creates a test door with default parameters.
+   *
+   * @param uid door UID
+   * @return a new Door instance at position (0, 0)
+   */
+  public static Door createTestDoor(long uid) {
+    return createTestDoor("test_door", uid, 0, 0);
+  }
+
+  /**
+   * Creates a test door configured as a portal to a specific zone.
+   *
+   * @param uid door UID
+   * @param x x-coordinate
+   * @param y y-coordinate
+   * @param destZone destination zone index
+   * @param destMap destination map UID
+   * @return a new Door instance configured as a portal
+   */
+  public static Door createTestPortalDoor(long uid, int x, int y, int destZone, int destMap) {
+    Door door = createTestDoor("test_door", uid, x, y);
+    door.portal.setDestination(new java.awt.Point(0, 0), destZone, destMap);
+    door.lock.open();
+    return door;
+  }
+
+  /**
+   * Creates a zone theme for dungeon generation testing.
+   *
+   * @param type dungeon type (cave, maze, bsp, etc.)
+   * @return a configured RZoneTheme
+   */
+  public static RZoneTheme createTestZoneTheme(String type) {
+    RZoneTheme theme = new RZoneTheme("test-theme");
+    theme.type = type;
+    theme.min = 25;
+    theme.max = 35;
+    theme.floor = "stone_floor";
+    theme.walls = "stone_wall";
+    theme.doors = "test_door";
+    return theme;
+  }
+
+  /**
+   * Creates a zone theme with multiple floor types.
+   *
+   * @param type dungeon type
+   * @param floors comma-separated floor terrain IDs
+   * @return a configured RZoneTheme
+   */
+  public static RZoneTheme createTestZoneTheme(String type, String floors) {
+    RZoneTheme theme = createTestZoneTheme(type);
+    theme.floor = floors;
+    return theme;
   }
 }

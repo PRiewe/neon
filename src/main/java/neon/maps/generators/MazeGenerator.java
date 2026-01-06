@@ -23,8 +23,38 @@ import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import neon.util.Dice;
 
+/**
+ * Generator for maze layouts using various algorithms.
+ *
+ * @author mdriesen
+ */
 public class MazeGenerator {
-  public static Area generateMaze(int width, int height, int sparse, int randomness) {
+  private final Dice dice;
+
+  /** Creates a new MazeGenerator with default (non-deterministic) random behavior. */
+  public MazeGenerator() {
+    this(new Dice());
+  }
+
+  /**
+   * Creates a new MazeGenerator with a specific Dice instance for deterministic testing.
+   *
+   * @param dice the Dice instance to use for random operations
+   */
+  public MazeGenerator(Dice dice) {
+    this.dice = dice;
+  }
+
+  /**
+   * Generates a maze with the given dimensions and parameters.
+   *
+   * @param width maze width
+   * @param height maze height
+   * @param sparse sparseness factor
+   * @param randomness randomness factor
+   * @return an Area representing the maze
+   */
+  public Area generateMaze(int width, int height, int sparse, int randomness) {
     Block[][] blocks = generateBlock(width / 2 - 1, height / 2 - 1, sparse, 50, 70);
 
     Area maze = new Area();
@@ -54,7 +84,15 @@ public class MazeGenerator {
     return maze;
   }
 
-  public static Area generateSquashedMaze(int width, int height, int sparse) {
+  /**
+   * Generates a squashed maze with the given dimensions.
+   *
+   * @param width maze width
+   * @param height maze height
+   * @param sparse sparseness factor
+   * @return an Area representing the squashed maze
+   */
+  public Area generateSquashedMaze(int width, int height, int sparse) {
     Block[][] blocks = generateBlock(width - 2, height - 2, sparse, 100, 0);
 
     Path2D maze = new Path2D.Float();
@@ -68,8 +106,7 @@ public class MazeGenerator {
     return new Area(maze);
   }
 
-  private static Block[][] generateBlock(
-      int width, int height, int sparse, int randomness, int remove) {
+  private Block[][] generateBlock(int width, int height, int sparse, int randomness, int remove) {
     Block[][] blocks = new Block[width + 1][height + 1];
     for (int i = 0; i < width + 1; i++) {
       for (int j = 0; j < height + 1; j++) {
@@ -85,10 +122,10 @@ public class MazeGenerator {
     start.visited = true;
 
     // step 1: generate maze
-    int roll = Dice.roll(1, 4, 0);
+    int roll = dice.rollDice(1, 4, 0);
     while (count < width * height - 1) {
-      if (Dice.roll(1, 100, 0) < randomness) {
-        roll = Dice.roll(1, 4, 0);
+      if (dice.rollDice(1, 100, 0) < randomness) {
+        roll = dice.rollDice(1, 4, 0);
       }
 
       // from start position choose direction and make passage to next
@@ -133,8 +170,8 @@ public class MazeGenerator {
           }
         default:
           do {
-            x = Dice.roll(1, width, -1);
-            y = Dice.roll(1, height, -1);
+            x = dice.rollDice(1, width, -1);
+            y = dice.rollDice(1, height, -1);
           } while (!blocks[x][y].visited);
       }
     }
@@ -169,14 +206,14 @@ public class MazeGenerator {
     // step 3: create loops
     for (int i = 0; i < width; i++) {
       for (int j = 0; j < height; j++) {
-        if (blocks[i][j].dead() && Dice.roll(1, 100, 0) < remove) {
-          roll = Dice.roll(1, 4, 0);
+        if (blocks[i][j].dead() && dice.rollDice(1, 100, 0) < remove) {
+          roll = dice.rollDice(1, 4, 0);
           x = i;
           y = j;
           boolean loop = true;
           do {
-            if (Dice.roll(1, 100, 0) < randomness) {
-              roll = Dice.roll(1, 4, 0);
+            if (dice.rollDice(1, 100, 0) < randomness) {
+              roll = dice.rollDice(1, 4, 0);
             }
             // from start position choose direction and make passage to next
             // cell. The switch continues until a valid direction is found,

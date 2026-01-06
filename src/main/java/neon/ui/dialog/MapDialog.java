@@ -24,14 +24,17 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.*;
 import javax.swing.border.*;
+import neon.core.GameContext;
 import neon.maps.Zone;
 import neon.ui.MapPanel;
 
 public class MapDialog implements KeyListener {
   private JDialog frame;
   private MapPanel map;
+  private final GameContext context;
 
-  public MapDialog(JFrame parent, Zone zone) {
+  public MapDialog(JFrame parent, Zone zone, GameContext context) {
+    this.context = context;
     frame = new JDialog(parent, false);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 50));
     frame.setUndecorated(true);
@@ -41,7 +44,7 @@ public class MapDialog implements KeyListener {
         new CompoundBorder(new EtchedBorder(EtchedBorder.RAISED), new EmptyBorder(10, 10, 10, 10)));
 
     // mappanel
-    map = new MapPanel(zone);
+    map = new MapPanel(zone, context);
     panel.add(map, BorderLayout.CENTER);
 
     // instructies geven

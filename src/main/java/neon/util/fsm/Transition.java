@@ -18,17 +18,20 @@
 
 package neon.util.fsm;
 
+import lombok.Getter;
+
 /**
  * Transitions must be added to the (nested) state or state machine that contains the 'from' state.
  *
  * @author mdriesen
  */
+@Getter
 public class Transition {
-  private String condition;
-  private boolean local;
-  private Action action;
-  private State next;
-  private State from;
+  private final String condition;
+  private final boolean local;
+  private final Action action;
+  private final State next;
+  private final State from;
 
   public Transition(State from, State next, String condition) {
     this(from, next, condition, null);
@@ -48,25 +51,5 @@ public class Transition {
     this.action = action;
     this.next = next;
     this.from = from;
-  }
-
-  public State getNext() {
-    return next;
-  }
-
-  public State getFrom() {
-    return from;
-  }
-
-  public Action getAction() {
-    return action;
-  }
-
-  public String getCondition() {
-    return condition;
-  }
-
-  public boolean isLocal() {
-    return local;
   }
 }

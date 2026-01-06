@@ -21,23 +21,19 @@ package neon.util.trees;
 import java.util.*;
 
 public class PathNode<E, F> {
-  private HashMap<E, PathNode<E, F>> nodes; // directories
-  private HashMap<E, F> values; // files
-  private int level;
+  private final HashMap<E, PathNode<E, F>> nodes; // directories
+  private final HashMap<E, F> values; // files
+  private final int level;
 
   protected PathNode(int level) {
     this.level = level;
-    values = new HashMap<E, F>();
-    nodes = new HashMap<E, PathNode<E, F>>();
+    values = new HashMap<>();
+    nodes = new HashMap<>();
   }
 
   protected F get(E[] path) {
     if (path.length == level + 1) {
-      if (values.containsKey(path[level])) {
-        return values.get(path[level]);
-      } else {
-        return null;
-      }
+      return values.getOrDefault(path[level], null);
     } else {
       if (nodes.containsKey(path[level])) {
         return nodes.get(path[level]).get(path);
@@ -58,7 +54,8 @@ public class PathNode<E, F> {
     }
   }
 
-  protected Collection<F> list(E... path) {
+  @SafeVarargs
+  protected final Collection<F> list(E... path) {
     if (path.length == level) {
       return list();
     } else {
@@ -71,8 +68,7 @@ public class PathNode<E, F> {
   }
 
   protected Collection<F> list() {
-    ArrayList<F> list = new ArrayList<F>();
-    list.addAll(values.values());
+    ArrayList<F> list = new ArrayList<>(values.values());
     for (PathNode<E, F> node : nodes.values()) {
       list.addAll(node.list());
     }
@@ -81,11 +77,7 @@ public class PathNode<E, F> {
 
   protected boolean contains(E[] path) {
     if (path.length == level + 1) {
-      if (values.containsKey(path[level])) {
-        return true;
-      } else {
-        return false;
-      }
+      return values.containsKey(path[level]);
     } else {
       if (nodes.containsKey(path[level])) {
         return nodes.get(path[level]).contains(path);

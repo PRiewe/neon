@@ -25,7 +25,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.entities.Creature;
 import neon.entities.Player;
 import neon.resources.RTattoo;
@@ -38,10 +38,12 @@ public class TattooDialog implements KeyListener {
   private JPanel panel;
   private String coin;
   private UserInterface ui;
+  private final GameContext context;
 
-  public TattooDialog(UserInterface ui, String coin) {
+  public TattooDialog(UserInterface ui, String coin, GameContext context) {
     this.coin = coin;
     this.ui = ui;
+    this.context = context;
 
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
@@ -126,7 +128,7 @@ public class TattooDialog implements KeyListener {
   }
 
   private void initTattoos() {
-    tattoos.setListData(Engine.getResources().getResources(RTattoo.class));
+    tattoos.setListData(context.getResources().getResources(RTattoo.class));
     tattoos.setSelectedIndex(0);
   }
 

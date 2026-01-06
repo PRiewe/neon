@@ -22,7 +22,6 @@ import java.awt.Rectangle;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
-import neon.core.Engine;
 import neon.core.event.TurnEvent;
 import neon.core.event.UpdateEvent;
 import neon.entities.Creature;
@@ -34,6 +33,10 @@ import neon.maps.*;
 import neon.maps.Region.Modifier;
 import neon.maps.generators.TownGenerator;
 import neon.maps.generators.WildernessGenerator;
+import neon.maps.services.EntityStore;
+import neon.maps.services.GameContextEntityStore;
+import neon.maps.services.GameContextResourceProvider;
+import neon.maps.services.ResourceProvider;
 import neon.resources.CServer;
 import neon.resources.RRegionTheme;
 import neon.ui.GamePanel;
@@ -41,29 +44,33 @@ import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
 
-@Listener(references = References.Strong) // strong, to avoid gc
+@Listener(references = References.Strong) // strong, om gc te vermijden
 @Slf4j
 public class TurnHandler {
   private GamePanel panel;
   private Generator generator;
   private int range;
+  private final EntityStore entityStore;
+  private final ResourceProvider resourceProvider;
 
   public TurnHandler(GamePanel panel) {
     this.panel = panel;
+    this.entityStore = new GameContextEntityStore(panel.getContext());
+    this.resourceProvider = new GameContextResourceProvider(panel.getContext());
 
-    CServer ini = (CServer) Engine.getResources().getResource("ini", "config");
+    CServer ini = (CServer) panel.getContext().getResources().getResource("ini", "config");
     range = ini.getAIRange();
   }
 
   @Handler
   public void tick(TurnEvent te) {
     log.trace("tick {}", te);
-    // if turn is done (timer gets extra tick):
-    //	1) check random regions
-    //	2) check monsters
-    //	3) check player
+    // indien beurt gedaan is (timer krijgt extra tick):
+    //	1) random regions controleren
+    //	2) monsters controleren
+    //	3) speler controleren
 
-    // check if terrain should be generated
+    // kijken of terrain moet gegenereerd worden
     if (Configuration.gThread) {
       if (generator == null || !generator.isAlive()) {
         generator = new Generator();
@@ -73,10 +80,10 @@ public class TurnHandler {
       checkRegions();
     }
 
-    // check monsters
-    Player player = Engine.getPlayer();
-    for (long uid : Engine.getAtlas().getCurrentZone().getCreatures()) {
-      Creature creature = (Creature) Engine.getStore().getEntity(uid);
+    // monsters controleren
+    Player player = panel.getContext().getPlayer();
+    for (long uid : panel.getContext().getAtlas().getCurrentZone().getCreatures()) {
+      Creature creature = (Creature) panel.getContext().getStore().getEntity(uid);
       if (!creature.hasCondition(Condition.DEAD)) {
         HealthComponent health = creature.getHealthComponent();
         health.heal(creature.getStatsComponent().getCon() / 100f);
@@ -85,12 +92,13 @@ public class TurnHandler {
         Rectangle cBounds = creature.getShapeComponent();
         if (pBounds.getLocation().distance(cBounds.getLocation()) < range) {
           int spd = getSpeed(creature);
-          Region region = Engine.getAtlas().getCurrentZone().getRegion(cBounds.getLocation());
+          Region region =
+              panel.getContext().getAtlas().getCurrentZone().getRegion(cBounds.getLocation());
           if (creature.species.habitat == Habitat.LAND && region.getMovMod() == Modifier.SWIM) {
-            spd = spd / 4; // swimming creatures have penalty
+            spd = spd / 4; // zwemmende creatures hebben penalty
           }
           if (player.isSneaking()) {
-            spd = spd * 2; // player gets penalty when sneaking
+            spd = spd * 2; // player krijgt penalty bij sneaken
           }
 
           while (spd > getSpeed(player) * Math.random()) {
@@ -101,22 +109,22 @@ public class TurnHandler {
       }
     }
 
-    // prepare player for next turn
+    // player in gereedheid brengen voor volgende beurt
     HealthComponent health = player.getHealthComponent();
     health.heal(player.getStatsComponent().getCon() / 100f);
     player.getMagicComponent().addMana(player.getStatsComponent().getWis() / 100f);
 
-    // and update systems
-    Engine.getPhysicsEngine().update();
-    Engine.post(new UpdateEvent(this));
+    // en systems updaten
+    panel.getContext().getPhysicsEngine().update();
+    panel.getContext().post(new UpdateEvent(this));
   }
 
   private class Generator extends Thread {
     @Override
     public void run() {
-      // only repaint after something has been generated
+      // enkel repainten nadat er iets gegenereerd is
       if (checkRegions()) {
-        Engine.post(new UpdateEvent(this));
+        panel.getContext().post(new UpdateEvent(this));
       }
     }
   }
@@ -124,11 +132,11 @@ public class TurnHandler {
   /*
    * Checks if any regions are visible that should be randomly generated.
    */
-  private boolean checkRegions() { // this boolean is actually just sketchy
+  private boolean checkRegions() { // die boolean is eigenlijk maar louche
     Rectangle window = panel.getVisibleRectangle();
-    Zone zone = Engine.getAtlas().getCurrentZone();
+    Zone zone = panel.getContext().getAtlas().getCurrentZone();
     boolean fixed = true;
-    boolean generated = false; // to indicate that something was generated
+    boolean generated = false; // om aan te geven dat er iets gegenereerd werd
 
     do {
       Collection<Region> buffer = zone.getRegions(window);
@@ -138,12 +146,12 @@ public class TurnHandler {
           generated = true;
           fixed = false;
           RRegionTheme theme = r.getTheme();
-          r.fix(); // from here theme becomes null
+          r.fix(); // vanaf hier wordt theme null
           if (theme.id.startsWith("town")) {
-            new TownGenerator(zone)
+            new TownGenerator(zone, entityStore, resourceProvider)
                 .generate(r.getX(), r.getY(), r.getWidth(), r.getHeight(), theme, r.getZ());
           } else {
-            new WildernessGenerator(zone).generate(r, theme);
+            new WildernessGenerator(zone, entityStore, resourceProvider).generate(r, theme);
           }
         }
       }

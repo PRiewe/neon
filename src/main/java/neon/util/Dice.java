@@ -1,6 +1,6 @@
 /*
  *	Neon, a roguelike engine.
- *	Copyright (C) 2007 - Maarten Driesen
+ *	Copyright (C) 2013 - Maarten Driesen
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,11 +20,65 @@ package neon.util;
 
 /**
  * The Dice class implements a set of polyhedral dice, as used in many pen-and-paper roleplaying
- * games. It accepts dice with any positive number of sides.
+ * games. It accepts dice with any positive number of sides. Can be instantiated with a specific
+ * {@link RandomSource} for deterministic testing.
  *
  * @author mdriesen
  */
 public class Dice {
+  /** Shared default instance for static convenience methods. */
+  private static final Dice DEFAULT_INSTANCE = new Dice();
+
+  private final RandomSource randomSource;
+
+  /** Creates a new Dice with a default (non-deterministic) random source. */
+  public Dice() {
+    this(new DefaultRandomSource());
+  }
+
+  /**
+   * Creates a new Dice with a specific random source. Use this constructor for deterministic
+   * testing.
+   *
+   * @param randomSource the random source to use
+   */
+  public Dice(RandomSource randomSource) {
+    this.randomSource = randomSource;
+  }
+
+  /**
+   * Factory method to create a Dice with a seeded random source for reproducible results.
+   *
+   * @param seed the seed for the random number generator
+   * @return a new Dice instance with seeded random behavior
+   */
+  public static Dice withSeed(long seed) {
+    return new Dice(new DefaultRandomSource(seed));
+  }
+
+  /**
+   * Static convenience method for rolling dice using the default instance.
+   *
+   * @param number the amount of dice to roll
+   * @param dice the type of dice to roll
+   * @param mod the modifier applied to the result of the roll
+   * @return the result of (number)d(dice)+(mod)
+   */
+  public static int roll(int number, int dice, int mod) {
+    return DEFAULT_INSTANCE.rollDice(number, dice, mod);
+  }
+
+  /**
+   * Static convenience method for rolling dice using the default instance.
+   *
+   * @param roll the string representation of the roll
+   * @return the result of the roll
+   * @throws NumberFormatException if the string contains an unparsable part
+   */
+  public static int roll(String roll) {
+    return DEFAULT_INSTANCE.rollDice(roll);
+  }
+
   /**
    * Returns the result of a dice roll. The parameters <code>number</code> and <code>dice</code>
    * should be positive, <code>mod</code> can be any integer. If <code>number</code> or <code>dice
@@ -35,14 +89,14 @@ public class Dice {
    * @param mod the modifier applied to the result of the roll
    * @return the result of (number)d(dice)+(mod)
    */
-  public static int roll(int number, int dice, int mod) {
+  public int rollDice(int number, int dice, int mod) {
     if (number < 1 || dice < 1) {
       return mod;
     }
     int result = 0;
 
     for (int i = 0; i < number; i++) {
-      result += ((int) (dice * Math.random() + 1));
+      result += randomSource.nextInt(1, dice);
     }
 
     return result + mod;
@@ -56,7 +110,7 @@ public class Dice {
    * @return the result of the roll
    * @throws NumberFormatException if the string contains an unparsable part
    */
-  public static int roll(String roll) {
+  public int rollDice(String roll) {
     int index1 = roll.indexOf("d");
     int index2 = roll.indexOf("+");
     int index3 = roll.indexOf("-");
@@ -74,6 +128,15 @@ public class Dice {
       dice = Integer.parseInt(roll.substring(index1 + 1, roll.length()));
     }
 
-    return roll(number, dice, mod);
+    return rollDice(number, dice, mod);
+  }
+
+  /**
+   * Returns the random source used by this Dice instance.
+   *
+   * @return the random source
+   */
+  public RandomSource getRandomSource() {
+    return randomSource;
   }
 }

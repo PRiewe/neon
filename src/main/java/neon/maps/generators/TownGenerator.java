@@ -20,11 +20,12 @@ package neon.maps.generators;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import neon.core.Engine;
 import neon.entities.Door;
 import neon.entities.EntityFactory;
 import neon.maps.Region;
 import neon.maps.Zone;
+import neon.maps.services.EntityStore;
+import neon.maps.services.ResourceProvider;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
 
@@ -34,10 +35,21 @@ import neon.resources.RTerrain;
  * @author mdriesen
  */
 public class TownGenerator {
-  private Zone zone;
+  private final Zone zone;
+  private final EntityStore entityStore;
+  private final ResourceProvider resourceProvider;
 
-  public TownGenerator(Zone zone) {
+  /**
+   * Creates a town generator with dependency injection.
+   *
+   * @param zone the zone to generate
+   * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   */
+  public TownGenerator(Zone zone, EntityStore entityStore, ResourceProvider resourceProvider) {
     this.zone = zone;
+    this.entityStore = entityStore;
+    this.resourceProvider = resourceProvider;
   }
 
   /**
@@ -62,7 +74,7 @@ public class TownGenerator {
 
     for (Rectangle r : temp1) {
       if (r != null) {
-        RTerrain wall = (RTerrain) Engine.getResources().getResource(theme.wall, "terrain");
+        RTerrain wall = (RTerrain) resourceProvider.getResource(theme.wall, "terrain");
         Region house =
             new Region(
                 wall.id,
@@ -83,31 +95,33 @@ public class TownGenerator {
     // sneak in a door somewhere
     int x = 0, y = 0;
 
-    switch ((int) (Math.random() * 4)) {
-      case 0:
-        x = r.getX() + 1;
-        y = r.getY();
-        break;
-      case 1:
-        x = r.getX() + 1;
-        y = r.getHeight() + r.getY() - 1;
-        break;
-      case 2:
-        x = r.getX();
-        y = r.getY() + 1;
-        break;
-      case 3:
-        x = r.getWidth() + r.getX() - 1;
-        y = r.getY() + 1;
-        break;
-    }
+    y =
+        switch ((int) (Math.random() * 4)) {
+          case 0 -> {
+            x = r.getX() + 1;
+            yield r.getY();
+          }
+          case 1 -> {
+            x = r.getX() + 1;
+            yield r.getHeight() + r.getY() - 1;
+          }
+          case 2 -> {
+            x = r.getX();
+            yield r.getY() + 1;
+          }
+          case 3 -> {
+            x = r.getWidth() + r.getX() - 1;
+            yield r.getY() + 1;
+          }
+          default -> y;
+        };
 
-    long uid = Engine.getStore().createNewEntityUID();
+    long uid = entityStore.createNewEntityUID();
     Door door = (Door) EntityFactory.getItem(theme.door, x, y, uid);
-    Engine.getStore().addEntity(door);
+    entityStore.addEntity(door);
     door.lock.close();
     zone.addItem(door);
-    RTerrain rt = (RTerrain) Engine.getResources().getResource(theme.floor, "terrain");
+    RTerrain rt = (RTerrain) resourceProvider.getResource(theme.floor, "terrain");
     zone.addRegion(new Region(theme.floor, x, y, 1, 1, null, r.getZ() + 1, rt));
   }
 }

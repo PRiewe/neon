@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.event.StoreEvent;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
@@ -46,9 +46,12 @@ public class CrafterDialog implements KeyListener {
   private String coin;
   private MBassador<EventObject> bus;
   private UserInterface ui;
+  private final GameContext context;
 
-  public CrafterDialog(UserInterface ui, String coin, MBassador<EventObject> bus) {
+  public CrafterDialog(
+      UserInterface ui, String coin, MBassador<EventObject> bus, GameContext context) {
     this.ui = ui;
+    this.context = context;
     JFrame parent = ui.getWindow();
     this.coin = coin;
     this.bus = bus;
@@ -121,7 +124,7 @@ public class CrafterDialog implements KeyListener {
             for (long uid : removed) { // remove used items
               bus.publishAsync(new StoreEvent(this, uid));
             }
-            Item item = EntityFactory.getItem(craft.name, Engine.getStore().createNewEntityUID());
+            Item item = EntityFactory.getItem(craft.name, context.getStore().createNewEntityUID());
             bus.publishAsync(new StoreEvent(this, item));
             player.getInventoryComponent().addItem(item.getUID());
             player.getInventoryComponent().addMoney(-craft.cost);
@@ -139,7 +142,7 @@ public class CrafterDialog implements KeyListener {
 
   private void initItems() {
     DefaultListModel<RCraft> model = new DefaultListModel<RCraft>();
-    for (RCraft thing : Engine.getResources().getResources(RCraft.class)) {
+    for (RCraft thing : context.getResources().getResources(RCraft.class)) {
       if (InventoryHandler.getAmount(player, thing.raw) >= thing.amount) {
         model.addElement(thing);
       }

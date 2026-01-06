@@ -28,7 +28,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
 import neon.entities.Entity;
@@ -51,15 +51,17 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
   private DescriptionPanel description;
   private String big, small;
   private UserInterface ui;
+  private final GameContext context;
 
   /**
    * @param big name of major denominations (euro, dollar)
    * @param small name of minor denominations (cents)
    */
-  public TradeDialog(UserInterface ui, String big, String small) {
+  public TradeDialog(UserInterface ui, String big, String small, GameContext context) {
     this.big = big;
     this.small = small;
     this.ui = ui;
+    this.context = context;
 
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
@@ -175,14 +177,14 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
 
   private void initGoods() {
     Vector<Item> sellData = new Vector<Item>();
-    for (long uid : Engine.getPlayer().getInventoryComponent()) {
-      sellData.add((Item) Engine.getStore().getEntity(uid));
+    for (long uid : context.getPlayer().getInventoryComponent()) {
+      sellData.add((Item) context.getStore().getEntity(uid));
     }
     sellList.setListData(sellData);
 
     Vector<Item> buyData = new Vector<Item>();
     for (long uid : trader.getInventoryComponent()) {
-      buyData.add((Item) Engine.getStore().getEntity(uid));
+      buyData.add((Item) context.getStore().getEntity(uid));
     }
     buyList.setListData(buyData);
 

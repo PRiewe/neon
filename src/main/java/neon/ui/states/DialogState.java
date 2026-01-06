@@ -31,7 +31,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
-import neon.core.*;
+import neon.core.GameContext;
 import neon.entities.Creature;
 import neon.entities.Player;
 import neon.entities.components.HealthComponent;
@@ -77,12 +77,15 @@ public class DialogState extends State implements KeyListener {
   private MBassador<EventObject> bus;
   private UserInterface ui;
   private Topic topic;
+  private final GameContext context;
 
-  public DialogState(State parent, MBassador<EventObject> bus, UserInterface ui) {
+  public DialogState(
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;
-    CClient ini = (CClient) Engine.getResources().getResource("client", "config");
+    this.context = context;
+    CClient ini = (CClient) context.getResources().getResource("client", "config");
     big = ini.getSmall();
     small = ini.getBig();
     panel = new JPanel(new BorderLayout());
@@ -148,7 +151,7 @@ public class DialogState extends State implements KeyListener {
     }
     if (target != null) {
       left.setBorder(new TitledBorder(target.toString()));
-      Engine.getScriptEngine().getBindings("js").putMember("NPC", target);
+      context.getScriptEngine().getBindings("js").putMember("NPC", target);
       initDialog();
       initServices();
       ui.showPanel(panel);
@@ -199,34 +202,34 @@ public class DialogState extends State implements KeyListener {
             e.printStackTrace();
           }
 
-          Engine.getQuestTracker().doAction(topic);
+          context.getQuestTracker().doAction(topic);
           initDialog();
         } else {
           String value = list.getSelectedValue().toString();
           if (value.equals("travel")) {
-            new TravelDialog(ui, bus).show(Engine.getPlayer(), target);
+            new TravelDialog(ui, bus, context).show(context.getPlayer(), target);
           } else if (value.equals("training")) {
-            new TrainingDialog(ui, bus).show(Engine.getPlayer(), target);
+            new TrainingDialog(ui, bus, context).show(context.getPlayer(), target);
           } else if (value.equals("spells")) {
-            new SpellTradeDialog(ui, big, small).show(Engine.getPlayer(), target);
+            new SpellTradeDialog(ui, big, small).show(context.getPlayer(), target);
           } else if (value.equals("trade")) {
-            new TradeDialog(ui, big, small).show(Engine.getPlayer(), target);
+            new TradeDialog(ui, big, small, context).show(context.getPlayer(), target);
           } else if (value.equals("spell maker")) {
-            new SpellMakerDialog(ui).show(Engine.getPlayer(), target);
+            new SpellMakerDialog(ui).show(context.getPlayer(), target);
           } else if (value.equals("potion maker")) {
-            new PotionDialog(ui, small).show(Engine.getPlayer(), target);
+            new PotionDialog(ui, small, context).show(context.getPlayer(), target);
           } else if (value.equals("healer")) {
             heal();
           } else if (value.equals("charge")) {
-            new ChargeDialog(ui).show(Engine.getPlayer());
+            new ChargeDialog(ui, context).show(context.getPlayer());
           } else if (value.equals("craft")) {
-            new CrafterDialog(ui, small, bus).show(Engine.getPlayer(), target);
+            new CrafterDialog(ui, small, bus, context).show(context.getPlayer(), target);
           } else if (value.equals("enchant")) {
-            new EnchantDialog(ui).show(Engine.getPlayer(), target);
+            new EnchantDialog(ui, context).show(context.getPlayer(), target);
           } else if (value.equals("repair")) {
-            new RepairDialog(ui).show(Engine.getPlayer(), target);
+            new RepairDialog(ui, context).show(context.getPlayer(), target);
           } else if (value.equals("tattoos")) {
-            new TattooDialog(ui, small).show(Engine.getPlayer(), target);
+            new TattooDialog(ui, small, context).show(context.getPlayer(), target);
           } else {
             System.out.println("not implemented");
           }
@@ -238,7 +241,7 @@ public class DialogState extends State implements KeyListener {
   }
 
   private void heal() {
-    Player player = Engine.getPlayer();
+    Player player = context.getPlayer();
     HealthComponent health = player.getHealthComponent();
     health.heal(health.getHealth() - health.getBaseHealth());
     MagicUtils.cure(player, SpellType.CURSE);
@@ -251,11 +254,11 @@ public class DialogState extends State implements KeyListener {
     subjects.removeAll();
     services.removeAll();
 
-    if (topic != null && !Engine.getQuestTracker().getSubtopics(topic).isEmpty()) {
-      subjects.setListData(Engine.getQuestTracker().getSubtopics(topic));
+    if (topic != null && !context.getQuestTracker().getSubtopics(topic).isEmpty()) {
+      subjects.setListData(context.getQuestTracker().getSubtopics(topic));
       subjects.setSelectedIndex(0);
     } else {
-      subjects.setListData(Engine.getQuestTracker().getDialog(target));
+      subjects.setListData(context.getQuestTracker().getDialog(target));
     }
   }
 
@@ -303,7 +306,7 @@ public class DialogState extends State implements KeyListener {
 
   private boolean hasService(String name, String id) {
     try {
-      RPerson person = (RPerson) Engine.getResources().getResource(name);
+      RPerson person = (RPerson) context.getResources().getResource(name);
       for (Element e : person.services) {
         if (e.getAttributeValue("id").equals(id)) {
           return true;

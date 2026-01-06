@@ -25,7 +25,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
 import neon.entities.EntityFactory;
@@ -40,10 +40,12 @@ public class PotionDialog implements KeyListener {
   private JList<RRecipe> potions;
   private String coin;
   private UserInterface ui;
+  private final GameContext context;
 
-  public PotionDialog(UserInterface ui, String coin) {
+  public PotionDialog(UserInterface ui, String coin, GameContext context) {
     this.ui = ui;
     this.coin = coin;
+    this.context = context;
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -110,11 +112,11 @@ public class PotionDialog implements KeyListener {
           if (player.getInventoryComponent().getMoney() >= potion.cost) {
             for (String item : potion.ingredients) {
               long uid = removeItem(player, item);
-              Engine.getStore().removeEntity(uid);
+              context.getStore().removeEntity(uid);
             }
             Item item =
-                EntityFactory.getItem(potion.toString(), Engine.getStore().createNewEntityUID());
-            Engine.getStore().addEntity(item);
+                EntityFactory.getItem(potion.toString(), context.getStore().createNewEntityUID());
+            context.getStore().addEntity(item);
             player.getInventoryComponent().addItem(item.getUID());
             player.getInventoryComponent().addMoney(-potion.cost);
             initPotions();
@@ -131,7 +133,7 @@ public class PotionDialog implements KeyListener {
 
   private void initPotions() {
     DefaultListModel<RRecipe> model = new DefaultListModel<RRecipe>();
-    for (RRecipe recipe : Engine.getResources().getResources(RRecipe.class)) {
+    for (RRecipe recipe : context.getResources().getResources(RRecipe.class)) {
       boolean ok = true;
       for (String item : recipe.ingredients) {
         if (!hasItem(player, item)) {
@@ -184,7 +186,7 @@ public class PotionDialog implements KeyListener {
 
   private boolean hasItem(Creature creature, String item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (Engine.getStore().getEntity(uid).getID().equals(item)) {
+      if (context.getStore().getEntity(uid).getID().equals(item)) {
         return true;
       }
     }
@@ -193,7 +195,7 @@ public class PotionDialog implements KeyListener {
 
   private long removeItem(Creature creature, String id) {
     for (long uid : creature.getInventoryComponent()) {
-      Item item = (Item) Engine.getStore().getEntity(uid);
+      Item item = (Item) context.getStore().getEntity(uid);
       if (item.getID().equals(id)) {
         InventoryHandler.removeItem(creature, uid);
         return uid;
