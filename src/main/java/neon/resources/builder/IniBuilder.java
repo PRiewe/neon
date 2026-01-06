@@ -59,7 +59,7 @@ public class IniBuilder extends Builder {
 
     // iterate through all data directories and jars
     for (String file : server.getMods()) {
-      RMod mod = new ModLoader(file, queue, files).loadMod(game, client);
+      RMod mod = new ModLoader(file, queue, files, resources).loadMod(game, client);
       resources.addResource(mod, "mods");
     }
   }

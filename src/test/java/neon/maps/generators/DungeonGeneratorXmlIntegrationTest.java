@@ -445,10 +445,10 @@ class DungeonGeneratorXmlIntegrationTest {
       TestEngineContext.initialize(testDb);
       // Load resources from sampleMod1 (same pattern as ModLoader)
       //
-      // TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
-      TestEngineContext.loadTestResources("src/test/resources/sampleMod1");
+      TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
+      // TestEngineContext.loadTestResources("src/test/resources/sampleMod1");
       testAtlas = TestEngineContext.getTestAtlas();
-      entityStore = new TestEntityStoreAdapter();
+      entityStore = TestEngineContext.getTestEntityStore();
     }
 
     @AfterEach
@@ -576,7 +576,7 @@ class DungeonGeneratorXmlIntegrationTest {
           new DungeonGenerator(
               targetZone,
               entityStore,
-              new XmlResourceProvider(),
+              TestEngineContext.getTestResourceProvider(),
               new NoQuestProvider(),
               MapUtils.withSeed(scenario.seed()),
               Dice.withSeed(scenario.seed()));
@@ -614,7 +614,7 @@ class DungeonGeneratorXmlIntegrationTest {
           new DungeonGenerator(
               targetZone,
               entityStore,
-              new XmlResourceProvider(),
+              TestEngineContext.getTestResourceProvider(),
               new NoQuestProvider(),
               MapUtils.withSeed(scenario.seed()),
               Dice.withSeed(scenario.seed()));

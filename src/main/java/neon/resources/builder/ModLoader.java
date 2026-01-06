@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.Engine;
+// import neon.core.Engine;
 import neon.core.event.TaskQueue;
 import neon.resources.*;
 import neon.resources.quest.RQuest;
@@ -36,11 +36,12 @@ public class ModLoader {
   private String path;
   private TaskQueue queue;
   private FileSystem files;
+  private ResourceManager resourceManager;
 
-  public ModLoader(String mod, TaskQueue queue, FileSystem files) {
+  public ModLoader(String mod, TaskQueue queue, FileSystem files, ResourceManager resources) {
     this.queue = queue;
     this.files = files;
-
+    this.resourceManager = resources;
     try {
       path = files.mount(mod);
     } catch (IOException e) {
@@ -63,7 +64,7 @@ public class ModLoader {
 
     initMain(client, mod);
     if (mod.getName().equals("extension")) {
-      ResourceManager resources = Engine.getResources();
+      ResourceManager resources = resourceManager;
       if (!resources.hasResource(mod.getChild("master").getText(), "mods")) {
         log.error("Extension master not found: {}.", path);
       }
@@ -141,7 +142,7 @@ public class ModLoader {
         s = s.substring(s.lastIndexOf("/") + 1);
         String quest = s.substring(s.lastIndexOf(File.separator) + 1);
         Document doc = files.getFile(new XMLTranslator(), path, "quests", quest);
-        Engine.getResources().addResource(new RQuest(quest, doc.getRootElement()), "quest");
+        resourceManager.addResource(new RQuest(quest, doc.getRootElement()), "quest");
       }
     } catch (Exception e) { // happens with .svn directory
       log.error("Error loading quest in mod {}", path, e);
@@ -154,7 +155,7 @@ public class ModLoader {
         s = s.substring(s.lastIndexOf("/") + 1);
         String id = s.substring(s.lastIndexOf(File.separator) + 1);
         Resource book = new RText(id, files, path, "books", id);
-        Engine.getResources().addResource(book, "text");
+        resourceManager.addResource(book, "text");
       }
     } catch (Exception e) {
       log.info("No books in mod {}", path);
@@ -181,13 +182,13 @@ public class ModLoader {
       for (Element c : creatures.getChildren()) {
         switch (c.getName()) {
           case "npc":
-            Engine.getResources().addResource(new RPerson(c));
+            resourceManager.addResource(new RPerson(c));
             break;
           case "list":
-            Engine.getResources().addResource(new LCreature(c));
+            resourceManager.addResource(new LCreature(c));
             break;
           default:
-            Engine.getResources().addResource(new RCreature(c));
+            resourceManager.addResource(new RCreature(c));
             break;
         }
       }
@@ -201,32 +202,32 @@ public class ModLoader {
         switch (e.getName()) {
           case "book":
           case "scroll":
-            Engine.getResources().addResource(new RItem.Text(e));
+            resourceManager.addResource(new RItem.Text(e));
             break;
           case "weapon":
-            Engine.getResources().addResource(new RWeapon(e));
+            resourceManager.addResource(new RWeapon(e));
             break;
           case "craft":
-            Engine.getResources().addResource(new RCraft(e));
+            resourceManager.addResource(new RCraft(e));
             break;
           case "door":
-            Engine.getResources().addResource(new RItem.Door(e));
+            resourceManager.addResource(new RItem.Door(e));
             break;
           case "potion":
-            Engine.getResources().addResource(new RItem.Potion(e));
+            resourceManager.addResource(new RItem.Potion(e));
             break;
           case "container":
-            Engine.getResources().addResource(new RItem.Container(e));
+            resourceManager.addResource(new RItem.Container(e));
             break;
           case "list":
-            Engine.getResources().addResource(new LItem(e));
+            resourceManager.addResource(new LItem(e));
             break;
           case "armor":
           case "clothing":
-            Engine.getResources().addResource(new RClothing(e));
+            resourceManager.addResource(new RClothing(e));
             break;
           default:
-            Engine.getResources().addResource(new RItem(e));
+            resourceManager.addResource(new RItem(e));
             break;
         }
       }
@@ -236,7 +237,7 @@ public class ModLoader {
   private void initTerrain(String... file) {
     Element terrain = files.getFile(new XMLTranslator(), file).getRootElement();
     for (Element e : terrain.getChildren()) {
-      Engine.getResources().addResource(new RTerrain(e), "terrain");
+      resourceManager.addResource(new RTerrain(e), "terrain");
     }
   }
 
@@ -246,13 +247,13 @@ public class ModLoader {
       for (Element theme : themes.getChildren()) {
         switch (theme.getName()) {
           case "dungeon":
-            Engine.getResources().addResource(new RDungeonTheme(theme), "theme");
+            resourceManager.addResource(new RDungeonTheme(theme), "theme");
             break;
           case "zone":
-            Engine.getResources().addResource(new RZoneTheme(theme), "theme");
+            resourceManager.addResource(new RZoneTheme(theme), "theme");
             break;
           case "region":
-            Engine.getResources().addResource(new RRegionTheme(theme), "theme");
+            resourceManager.addResource(new RRegionTheme(theme), "theme");
             break;
         }
       }
@@ -265,25 +266,25 @@ public class ModLoader {
       for (Element resource : resources.getChildren()) {
         switch (resource.getName()) {
           case "sign":
-            Engine.getResources().addResource(new RSign(resource), "magic");
+            resourceManager.addResource(new RSign(resource), "magic");
             break;
           case "tattoo":
-            Engine.getResources().addResource(new RTattoo(resource), "magic");
+            resourceManager.addResource(new RTattoo(resource), "magic");
             break;
           case "recipe":
-            Engine.getResources().addResource(new RRecipe(resource), "magic");
+            resourceManager.addResource(new RRecipe(resource), "magic");
             break;
           case "list":
-            Engine.getResources().addResource(new LSpell(resource), "magic");
+            resourceManager.addResource(new LSpell(resource), "magic");
             break;
           case "power":
-            Engine.getResources().addResource(new RSpell.Power(resource), "magic");
+            resourceManager.addResource(new RSpell.Power(resource), "magic");
             break;
           case "enchant":
-            Engine.getResources().addResource(new RSpell.Enchantment(resource), "magic");
+            resourceManager.addResource(new RSpell.Enchantment(resource), "magic");
             break;
           default:
-            Engine.getResources().addResource(new RSpell(resource), "magic");
+            resourceManager.addResource(new RSpell(resource), "magic");
             break;
         }
       }
@@ -300,7 +301,7 @@ public class ModLoader {
         System.arraycopy(file, 0, path, 0, file.length);
         RScript script =
             new RScript(s.replaceAll(".js", ""), files.getFile(new StringTranslator(), path));
-        Engine.getResources().addResource(script, "script");
+        resourceManager.addResource(script, "script");
       }
     } catch (Exception e) {
       log.info("No scripts in mod {}", path);
@@ -337,8 +338,8 @@ public class ModLoader {
     Document doc = files.getFile(new XMLTranslator(), file);
     for (Element e : doc.getRootElement().getChildren()) {
       String[] ticks = e.getAttributeValue("tick").split(":");
-      RScript rs =
-          (RScript) Engine.getResources().getResource(e.getAttributeValue("script"), "script");
+      RScript rs = (RScript) resourceManager.getResource(e.getAttributeValue("script"), "script");
+      // TODO shoudlnt' be necessary -- bug in testing frameworks
       if (ticks.length == 1) { // one tick: simply add at that time
         queue.add(rs.script, Integer.parseInt(ticks[0]), 0, 0);
       } else if (ticks.length == 2) { // two ticks

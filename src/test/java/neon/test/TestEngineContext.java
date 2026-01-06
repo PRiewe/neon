@@ -16,21 +16,8 @@ import neon.entities.property.Gender;
 import neon.maps.Atlas;
 import neon.maps.ZoneActivator;
 import neon.maps.ZoneFactory;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
-import neon.maps.services.EntityStore;
-import neon.maps.services.PhysicsManager;
-import neon.resources.LCreature;
-import neon.resources.LItem;
-import neon.resources.RClothing;
-import neon.resources.RCreature;
-import neon.resources.RDungeonTheme;
-import neon.resources.RItem;
-import neon.resources.RRegionTheme;
-import neon.resources.RTerrain;
-import neon.resources.RWeapon;
-import neon.resources.RZoneTheme;
-import neon.resources.ResourceManager;
+import neon.maps.services.*;
+import neon.resources.*;
 import neon.resources.builder.IniBuilder;
 import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
@@ -49,7 +36,7 @@ public class TestEngineContext {
 
   private static MVStore testDb;
   private static Atlas testAtlas;
-  private static ResourceManager testResources;
+  private static StubResourceManager testResources;
   private static Game testGame;
   private static UIDStore testStore;
   private static ZoneFactory testZoneFactory;
@@ -165,6 +152,16 @@ public class TestEngineContext {
     return testResources;
   }
 
+  /** Gets the test ResourceProvider instance. */
+  public static EntityStore getTestEntityStore() {
+    return testEntityStore;
+  }
+
+  /** Gets the test ResourceProvider instance. */
+  public static ResourceProvider getTestResourceProvider() {
+    return testResources;
+  }
+
   /** Gets the test ZoneFactory instance. */
   public static ZoneFactory getTestZoneFactory() {
     return testZoneFactory;
@@ -172,7 +169,7 @@ public class TestEngineContext {
 
   public static void loadTestResourceViaConfig(String configFilename) throws Exception {
     IniBuilder iniBuilder = new IniBuilder(configFilename, getStubFileSystem(), new TaskQueue());
-    iniBuilder.build(Engine.getResources());
+    iniBuilder.build(getTestResources());
   }
 
   /**
@@ -272,7 +269,8 @@ public class TestEngineContext {
   }
 
   /** Stub ResourceManager that returns dummy resources. */
-  static class StubResourceManager extends ResourceManager {
+  static class StubResourceManager extends ResourceManager implements ResourceProvider {
+    /*
     @Override
     public neon.resources.Resource getResource(String id, String namespace) {
       return switch (namespace) {
@@ -320,6 +318,8 @@ public class TestEngineContext {
       // Default to creature for unknown IDs (for EntityFactory.getCreature)
       return new RCreature(id);
     }
+    */
+
   }
 
   /** Stub FileSystem (minimal implementation). */
