@@ -55,8 +55,10 @@ public class RoomGenerator {
    * @return a Room containing the two rectangles
    */
   protected Room makePolyRoom(int[][] tiles, Rectangle room) {
-    Rectangle rec1 = mapUtils.randomRectangle(room.width / 2, room);
-    Rectangle rec2 = mapUtils.randomRectangle(room.width / 2, room);
+    // Use minimum of both dimensions to ensure sub-rectangles fit within bounds
+    int minSize = Math.min(room.width, room.height) / 2;
+    Rectangle rec1 = mapUtils.randomRectangle(minSize, room);
+    Rectangle rec2 = mapUtils.randomRectangle(minSize, room);
 
     for (int x = room.x + 1; x < room.x + room.width; x++) {
       for (int y = room.y + 1; y < room.y + room.height; y++) {
