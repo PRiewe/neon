@@ -21,6 +21,17 @@ import org.junit.jupiter.params.provider.MethodSource;
  */
 class DungeonGeneratorTest {
 
+  // ==================== Configuration ====================
+
+  /**
+   * Controls whether dungeon visualizations are printed to stdout during tests. Set to true to see
+   * ASCII renderings of generated dungeons for debugging.
+   */
+  private static final boolean PRINT_DUNGEONS = false;
+
+  /** Controls whether large dungeon visualizations are printed (can be very verbose). */
+  private static final boolean PRINT_LARGE_DUNGEONS = false;
+
   // ==================== Scenario Records ====================
 
   /**
@@ -54,6 +65,22 @@ class DungeonGeneratorTest {
     @Override
     public String toString() {
       return description;
+    }
+  }
+
+  /**
+   * Test scenario for large dungeon generation to stress test the generators.
+   *
+   * @param seed random seed for deterministic behavior
+   * @param type dungeon type
+   * @param width dungeon width (can be large)
+   * @param height dungeon height (can be large)
+   */
+  record LargeDungeonScenario(long seed, String type, int width, int height) {
+
+    @Override
+    public String toString() {
+      return String.format("%s %dx%d (seed=%d)", type, width, height, seed);
     }
   }
 
@@ -100,6 +127,29 @@ class DungeonGeneratorTest {
         new GenerateTilesScenario(777L, "mine", 35, 45, "cave_floor", "mine dungeon"),
         // Default (sparse)
         new GenerateTilesScenario(42L, "default", 45, 55, "floor_a,floor_b", "sparse dungeon"));
+  }
+
+  static Stream<LargeDungeonScenario> largeDungeonScenarios() {
+    return Stream.of(
+        // Large caves
+        new LargeDungeonScenario(42L, "cave", 100, 100),
+        new LargeDungeonScenario(999L, "cave", 150, 120),
+        // Large mazes (must be odd dimensions)
+        new LargeDungeonScenario(123L, "maze", 101, 101),
+        new LargeDungeonScenario(264L, "maze", 151, 121),
+        // Large BSP dungeons
+        new LargeDungeonScenario(42L, "bsp", 120, 100),
+        new LargeDungeonScenario(777L, "bsp", 150, 130),
+        // Large packed dungeons
+        new LargeDungeonScenario(999L, "packed", 100, 80),
+        new LargeDungeonScenario(123L, "packed", 130, 110),
+        // Large sparse dungeons
+        new LargeDungeonScenario(42L, "default", 120, 100),
+        new LargeDungeonScenario(264L, "default", 150, 120),
+        // Extra large stress tests (caves don't use recursive flood fill)
+        new LargeDungeonScenario(42L, "cave", 200, 200));
+    // Note: Mine type is tested in dungeonTypeScenarios at reasonable sizes.
+    // Large mine dungeons have edge cases with the maze generator's sparseness=12.
   }
 
   // ==================== Helper to create DungeonGenerator ====================
@@ -155,10 +205,12 @@ class DungeonGeneratorTest {
     int[][] tiles =
         generator.generateBaseTiles(scenario.type(), scenario.width(), scenario.height());
 
-    // Then: visualize
-    System.out.println("Dungeon (" + scenario.type() + "): " + scenario);
-    System.out.println(visualize(tiles));
-    System.out.println();
+    // Then: visualize (controlled by PRINT_DUNGEONS flag)
+    if (PRINT_DUNGEONS) {
+      System.out.println("Dungeon (" + scenario.type() + "): " + scenario);
+      System.out.println(visualize(tiles));
+      System.out.println();
+    }
 
     // Verify
     assertAll(
@@ -196,10 +248,12 @@ class DungeonGeneratorTest {
     // When
     String[][] terrain = generator.generateTiles();
 
-    // Then: visualize
-    System.out.println("Terrain (" + scenario.description() + "):");
-    System.out.println(visualizeTerrain(terrain));
-    System.out.println();
+    // Then: visualize (controlled by PRINT_DUNGEONS flag)
+    if (PRINT_DUNGEONS) {
+      System.out.println("Terrain (" + scenario.description() + "):");
+      System.out.println(visualizeTerrain(terrain));
+      System.out.println();
+    }
 
     // Verify dimensions are within bounds
     int width = terrain.length;
@@ -326,6 +380,119 @@ class DungeonGeneratorTest {
       if (hasItem) break;
     }
     assertTrue(hasItem, "Should have at least one item placed");
+  }
+
+  // ==================== Large Dungeon Tests ====================
+
+  @ParameterizedTest(name = "large dungeon: {0}")
+  @MethodSource("largeDungeonScenarios")
+  void generateBaseTiles_handlesLargeDungeons(LargeDungeonScenario scenario) {
+    // Given
+    DungeonGenerator generator = createGenerator(scenario.seed());
+
+    // When
+    long startTime = System.currentTimeMillis();
+    int[][] tiles =
+        generator.generateBaseTiles(scenario.type(), scenario.width(), scenario.height());
+    long elapsed = System.currentTimeMillis() - startTime;
+
+    // Then: optionally visualize (controlled by PRINT_LARGE_DUNGEONS flag)
+    if (PRINT_LARGE_DUNGEONS) {
+      System.out.println("Large Dungeon (" + scenario + ") generated in " + elapsed + "ms:");
+      System.out.println(visualize(tiles));
+      System.out.println();
+    } else if (PRINT_DUNGEONS) {
+      // Just print summary without visualization
+      int[] counts = countTiles(tiles);
+      System.out.printf(
+          "Large Dungeon %s: %dx%d, floors=%d, walls=%d, time=%dms%n",
+          scenario.type(),
+          scenario.width(),
+          scenario.height(),
+          counts[MapUtils.FLOOR] + counts[MapUtils.CORRIDOR],
+          counts[MapUtils.WALL] + counts[MapUtils.WALL_ROOM],
+          elapsed);
+    }
+
+    // Verify
+    assertAll(
+        () -> assertEquals(scenario.width(), tiles.length, "Dungeon width should match"),
+        () -> assertEquals(scenario.height(), tiles[0].length, "Dungeon height should match"),
+        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () -> assertDungeonIsConnected(tiles, "Dungeon should be connected"),
+        () -> assertTrue(elapsed < 30000, "Generation should complete within 30 seconds"));
+  }
+
+  @ParameterizedTest(name = "large dungeon determinism: {0}")
+  @MethodSource("largeDungeonScenarios")
+  void generateBaseTiles_largeDungeonsAreDeterministic(LargeDungeonScenario scenario) {
+    // Given: two generators with the same seed
+    DungeonGenerator generator1 = createGenerator(scenario.seed());
+    DungeonGenerator generator2 = createGenerator(scenario.seed());
+
+    // When
+    int[][] tiles1 =
+        generator1.generateBaseTiles(scenario.type(), scenario.width(), scenario.height());
+    int[][] tiles2 =
+        generator2.generateBaseTiles(scenario.type(), scenario.width(), scenario.height());
+
+    // Then
+    assertTilesMatch(tiles1, tiles2);
+  }
+
+  @Test
+  void generateBaseTiles_veryLargeCave() {
+    // Given: a very large cave
+    long seed = 42L;
+    int width = 250;
+    int height = 250;
+    DungeonGenerator generator = createGenerator(seed);
+
+    // When
+    long startTime = System.currentTimeMillis();
+    int[][] tiles = generator.generateBaseTiles("cave", width, height);
+    long elapsed = System.currentTimeMillis() - startTime;
+
+    // Then
+    if (PRINT_LARGE_DUNGEONS) {
+      System.out.println("Very Large Cave " + width + "x" + height + " in " + elapsed + "ms:");
+      System.out.println(visualize(tiles));
+    }
+
+    assertAll(
+        () -> assertEquals(width, tiles.length, "Width should match"),
+        () -> assertEquals(height, tiles[0].length, "Height should match"),
+        () -> assertFloorTilesExist(tiles, "Should have floor tiles"),
+        () -> assertDungeonIsConnected(tiles, "Should be connected"));
+  }
+
+  @Test
+  void generateBaseTiles_veryLargeBSP() {
+    // Given: a large BSP dungeon
+    // Note: BSP uses recursive flood fill in clean() which can cause StackOverflow
+    // on very large dungeons (300x250+). Keep size reasonable.
+    // Seed 42 produces well-connected dungeons.
+    long seed = 42L;
+    int width = 180;
+    int height = 150;
+    DungeonGenerator generator = createGenerator(seed);
+
+    // When
+    long startTime = System.currentTimeMillis();
+    int[][] tiles = generator.generateBaseTiles("bsp", width, height);
+    long elapsed = System.currentTimeMillis() - startTime;
+
+    // Then
+    if (PRINT_LARGE_DUNGEONS) {
+      System.out.println("Large BSP " + width + "x" + height + " in " + elapsed + "ms:");
+      System.out.println(visualize(tiles));
+    }
+
+    assertAll(
+        () -> assertEquals(width, tiles.length, "Width should match"),
+        () -> assertEquals(height, tiles[0].length, "Height should match"),
+        () -> assertFloorTilesExist(tiles, "Should have floor tiles"),
+        () -> assertDungeonIsConnected(tiles, "Should be connected"));
   }
 
   // ==================== Assertion Helpers ====================

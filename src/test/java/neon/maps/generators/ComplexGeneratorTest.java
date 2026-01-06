@@ -59,6 +59,26 @@ class ComplexGeneratorTest {
         new DungeonScenario(123L, 55, 45, 4, 6, 9));
   }
 
+  /** Large sparse dungeon scenarios at 150x120 to stress test the generator. */
+  static Stream<DungeonScenario> largeSparseDungeonScenarios() {
+    return Stream.of(
+        // Various seeds with different room counts and sizes
+        new DungeonScenario(42L, 150, 120, 5, 5, 15),
+        new DungeonScenario(123L, 150, 120, 5, 5, 15),
+        new DungeonScenario(264L, 150, 120, 5, 5, 15),
+        new DungeonScenario(777L, 150, 120, 5, 5, 15),
+        new DungeonScenario(999L, 150, 120, 5, 5, 15),
+        // More rooms
+        new DungeonScenario(42L, 150, 120, 8, 5, 15),
+        new DungeonScenario(123L, 150, 120, 10, 5, 15),
+        // Smaller rooms
+        new DungeonScenario(42L, 150, 120, 5, 5, 10),
+        new DungeonScenario(264L, 150, 120, 5, 4, 8),
+        // Larger rooms
+        new DungeonScenario(42L, 150, 120, 5, 8, 20),
+        new DungeonScenario(999L, 150, 120, 4, 10, 25));
+  }
+
   static Stream<BSPDungeonScenario> bspDungeonScenarios() {
     return Stream.of(
         new BSPDungeonScenario(42L, 40, 30, 5, 12),
@@ -130,6 +150,36 @@ class ComplexGeneratorTest {
 
     // Then
     assertTilesMatch(tiles1, tiles2);
+  }
+
+  // ==================== Large Sparse Dungeon Tests (150x120) ====================
+
+  @ParameterizedTest(name = "large sparse 150x120: {0}")
+  @MethodSource("largeSparseDungeonScenarios")
+  void generateSparseDungeon_handlesLargeDungeons(DungeonScenario scenario) {
+    // Given
+    ComplexGenerator generator = new ComplexGenerator(MapUtils.withSeed(scenario.seed()));
+
+    // When
+    int[][] tiles =
+        generator.generateSparseDungeon(
+            scenario.width(),
+            scenario.height(),
+            scenario.numRooms(),
+            scenario.minSize(),
+            scenario.maxSize());
+
+    // Then: visualize (can be commented out for large dungeons)
+    // System.out.println("Large Sparse Dungeon: " + scenario);
+    // System.out.println(visualize(tiles));
+    // System.out.println();
+
+    // Verify
+    assertAll(
+        () -> assertEquals(scenario.width(), tiles.length, "Tiles width should match"),
+        () -> assertEquals(scenario.height(), tiles[0].length, "Tiles height should match"),
+        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
   }
 
   // ==================== BSP Dungeon Tests ====================
