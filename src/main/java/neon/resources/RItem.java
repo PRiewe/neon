@@ -18,6 +18,8 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,13 +47,52 @@ public class RItem extends RData implements Serializable {
   private static XMLOutputter outputter = new XMLOutputter();
   private static SAXBuilder builder = new SAXBuilder();
 
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
   public int cost;
+
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
   public float weight;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "z")
+  @JsonProperty(required = false)
+  private String zAttribute; // "top" or null
+
   public boolean top;
   public Type type;
-  public String spell;
-  public String svg;
 
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
+  public String spell;
+
+  public String svg; // TODO: Handle svg child element later
+
+  /**
+   * Sync z attribute to top field (called by Jackson after deserialization).
+   *
+   * @param zValue the z attribute value
+   */
+  public void setZ(String zValue) {
+    this.zAttribute = zValue;
+    this.top = zValue != null;
+  }
+
+  /**
+   * Get z attribute for serialization.
+   *
+   * @return z attribute or null
+   */
+  public String getZ() {
+    return top ? "top" : null;
+  }
+
+  // No-arg constructor for Jackson deserialization
+  public RItem() {
+    super("unknown");
+  }
+
+  // Keep JDOM constructor for backward compatibility during migration
   public RItem(Element item, String... path) {
     super(item, path);
     type = Type.valueOf(item.getName());

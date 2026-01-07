@@ -18,6 +18,8 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import java.io.Serializable;
 import neon.entities.property.Slot;
 import neon.magic.Effect;
@@ -31,7 +33,11 @@ public class RClothing extends RItem implements Serializable {
     NONE;
   }
 
-  // general properties
+  // Nested elements (deserialized via setters to sync with public fields)
+  private StatsElement statsElement;
+  private EnchantElement enchantElement;
+
+  // Public fields for game code compatibility
   public ArmorType kind;
   public int rating;
   public Slot slot;
@@ -41,6 +47,115 @@ public class RClothing extends RItem implements Serializable {
   public int mana;
   public Effect effect;
 
+  /** Inner class for stats XML element */
+  public static class StatsElement {
+    @JacksonXmlProperty(isAttribute = true)
+    public Slot slot;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "ar")
+    @JsonProperty(required = false)
+    public Integer rating;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "class")
+    @JsonProperty(required = false)
+    public ArmorType armorClass;
+
+    public StatsElement() {}
+  }
+
+  /** Inner class for enchant XML element */
+  public static class EnchantElement {
+    @JacksonXmlProperty(isAttribute = true, localName = "mag")
+    public int magnitude;
+
+    @JacksonXmlProperty(isAttribute = true)
+    public int mana;
+
+    @JacksonXmlProperty(isAttribute = true)
+    public Effect effect;
+
+    public EnchantElement() {}
+  }
+
+  // No-arg constructor for Jackson deserialization
+  public RClothing() {
+    super();
+  }
+
+  public RClothing(String id, Type type, String... path) {
+    super(id, type, path);
+  }
+
+  /**
+   * Sync stats element to public fields (called by Jackson after deserialization).
+   *
+   * @param stats the deserialized stats element
+   */
+  @JacksonXmlProperty(localName = "stats")
+  public void setStats(StatsElement stats) {
+    this.statsElement = stats;
+    this.slot = stats.slot;
+    if (stats.rating != null) {
+      this.rating = stats.rating;
+      this.kind = stats.armorClass;
+    } else {
+      this.rating = 0;
+      this.kind = ArmorType.NONE;
+    }
+  }
+
+  /**
+   * Get stats element for serialization.
+   *
+   * @return stats element
+   */
+  public StatsElement getStats() {
+    StatsElement stats = new StatsElement();
+    stats.slot = slot;
+    if (type == Type.armor) {
+      stats.armorClass = kind;
+      stats.rating = rating;
+    }
+    return stats;
+  }
+
+  /**
+   * Sync enchant element to public fields (called by Jackson after deserialization).
+   *
+   * @param enchant the deserialized enchant element
+   */
+  @JacksonXmlProperty(localName = "enchant")
+  @JsonProperty(required = false)
+  public void setEnchant(EnchantElement enchant) {
+    this.enchantElement = enchant;
+    if (enchant != null) {
+      this.magnitude = enchant.magnitude;
+      this.mana = enchant.mana;
+      this.effect = enchant.effect;
+    } else {
+      this.magnitude = 0;
+      this.mana = 0;
+      this.effect = null;
+    }
+  }
+
+  /**
+   * Get enchant element for serialization.
+   *
+   * @return enchant element or null
+   */
+  public EnchantElement getEnchant() {
+    if (magnitude > 0 || mana > 0 || effect != null) {
+      EnchantElement enchant = new EnchantElement();
+      enchant.magnitude = magnitude;
+      enchant.mana = mana;
+      enchant.effect = effect;
+      return enchant;
+    }
+    return null;
+  }
+
+  // Keep JDOM constructor for backward compatibility during migration
   public RClothing(Element cloth, String... path) {
     super(cloth, path);
     Element stats = cloth.getChild("stats");
@@ -66,10 +181,7 @@ public class RClothing extends RItem implements Serializable {
     }
   }
 
-  public RClothing(String id, Type type, String... path) {
-    super(id, type, path);
-  }
-
+  @Override
   public Element toElement() {
     Element clothing = super.toElement();
     Element stats = new Element("stats");
