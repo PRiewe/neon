@@ -21,6 +21,7 @@ package neon.resources.quest;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -93,16 +94,29 @@ public class RQuestTest {
     RQuest quest = new RQuest("fetch_quest", element);
 
     assertNotNull(quest);
-    assertNotNull(quest.variablesXml);
-    assertTrue(quest.variablesXml.contains("<objects>"));
-    assertTrue(quest.variablesXml.contains("<item"));
-    assertTrue(quest.variablesXml.contains("<npc"));
-
-    // Test helper method
-    Element vars = quest.getVariablesElement();
+    List<QuestVariable> vars = quest.getVariables();
     assertNotNull(vars);
-    assertEquals("objects", vars.getName());
-    assertEquals(2, vars.getChildren().size());
+    assertEquals(2, vars.size());
+
+    // Check first variable (item)
+    QuestVariable item = vars.get(0);
+    assertEquals("item", item.name);
+    assertEquals("item", item.category);
+    assertNull(item.id);
+    assertEquals("light", item.typeFilter);
+
+    // Check second variable (npc)
+    QuestVariable npc = vars.get(1);
+    assertEquals("npc", npc.name);
+    assertEquals("npc", npc.category);
+    assertEquals("trader,merchant", npc.id);
+    assertNull(npc.typeFilter);
+
+    // Test backward compatibility helper method
+    Element varsElement = quest.getVariablesElement();
+    assertNotNull(varsElement);
+    assertEquals("objects", varsElement.getName());
+    assertEquals(2, varsElement.getChildren().size());
   }
 
   @Test
@@ -325,7 +339,14 @@ public class RQuestTest {
     assertEquals(quest1.initial, quest2.initial);
     assertEquals(quest1.getConditions().size(), quest2.getConditions().size());
     assertEquals(quest1.getConversations().size(), quest2.getConversations().size());
-    assertNotNull(quest2.variablesXml);
+
+    // Verify variables preserved
+    assertEquals(1, quest2.getVariables().size());
+    QuestVariable var = quest2.getVariables().get(0);
+    assertEquals("test_item", var.name);
+    assertEquals("item", var.category);
+    assertNull(var.id);
+    assertEquals("weapon", var.typeFilter);
   }
 
   @Test
@@ -340,13 +361,21 @@ public class RQuestTest {
 
     quest.setVariablesElement(vars);
 
-    assertNotNull(quest.variablesXml);
-    assertTrue(quest.variablesXml.contains("<objects>"));
-    assertTrue(quest.variablesXml.contains("test_item"));
+    // Verify QuestVariable was created correctly
+    assertEquals(1, quest.getVariables().size());
+    QuestVariable var = quest.getVariables().get(0);
+    assertEquals("item_var", var.name);
+    assertEquals("item", var.category);
+    assertEquals("test_item", var.id);
+    assertNull(var.typeFilter);
 
+    // Test round-trip through helper method
     Element retrieved = quest.getVariablesElement();
     assertNotNull(retrieved);
     assertEquals("objects", retrieved.getName());
     assertEquals(1, retrieved.getChildren().size());
+    Element retrievedItem = retrieved.getChild("item");
+    assertEquals("item_var", retrievedItem.getText());
+    assertEquals("test_item", retrievedItem.getAttributeValue("id"));
   }
 }

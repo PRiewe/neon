@@ -141,11 +141,25 @@ public class ModLoader {
       for (String s : files.listFiles(file)) {
         s = s.substring(s.lastIndexOf("/") + 1);
         String quest = s.substring(s.lastIndexOf(File.separator) + 1);
-        Document doc = files.getFile(new XMLTranslator(), path, "quests", quest);
-        resourceManager.addResource(new RQuest(quest, doc.getRootElement()), "quest");
+
+        // Skip non-XML files
+        if (!quest.toLowerCase().endsWith(".xml")) {
+          continue;
+        }
+
+        try {
+          Document doc = files.getFile(new XMLTranslator(), path, "quests", quest);
+          if (doc != null && doc.hasRootElement()) {
+            resourceManager.addResource(new RQuest(quest, doc.getRootElement()), "quest");
+          } else {
+            log.warn("Quest file {} has no root element, skipping", quest);
+          }
+        } catch (Exception e) {
+          log.error("Error loading quest file {} in mod {}", quest, path, e);
+        }
       }
-    } catch (Exception e) { // happens with .svn directory
-      log.error("Error loading quest in mod {}", path, e);
+    } catch (Exception e) { // happens with .svn directory or other file system errors
+      log.error("Error accessing quests directory in mod {}", path, e);
     }
   }
 

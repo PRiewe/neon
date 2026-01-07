@@ -20,14 +20,11 @@ package neon.resources.quest;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import neon.resources.RData;
 import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 
 /**
  * A resource representing a quest.
@@ -36,9 +33,8 @@ import org.jdom2.output.XMLOutputter;
  */
 @JacksonXmlRootElement // Accepts quest or repeat element names
 public class RQuest extends RData {
-  // Store quest variables as XML string (Jackson-compatible)
-  // Will be handled by custom deserializer
-  @JsonIgnore public String variablesXml;
+  // Quest variables for dynamic content ($item$, $npc$, etc.)
+  @JsonIgnore public List<QuestVariable> variables = new ArrayList<>();
 
   @JsonIgnore public int frequency;
 
@@ -63,10 +59,16 @@ public class RQuest extends RData {
         }
       }
       if (properties.getChild("objects") != null) {
-        // Convert Element to XML string for Jackson compatibility
+        // Parse variables into QuestVariable objects
         Element vars = properties.getChild("objects");
-        XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
-        variablesXml = outputter.outputString(vars);
+        for (Element varElement : vars.getChildren()) {
+          QuestVariable var = new QuestVariable();
+          var.name = varElement.getTextTrim();
+          var.category = varElement.getName();
+          var.id = varElement.getAttributeValue("id");
+          var.typeFilter = varElement.getAttributeValue("type");
+          variables.add(var);
+        }
       }
       repeat = properties.getName().equals("repeat");
       if (repeat) {
@@ -87,34 +89,47 @@ public class RQuest extends RData {
   }
 
   /**
-   * Helper method to get variables as a JDOM Element (backward compatibility).
+   * Gets the quest variables.
+   *
+   * @return List of quest variables
+   */
+  public List<QuestVariable> getVariables() {
+    return variables;
+  }
+
+  /**
+   * Helper method to get variables as a JDOM Element (backward compatibility for QuestEditor).
    *
    * @return Element representation of variables, or null if no variables
    */
   public Element getVariablesElement() {
-    if (variablesXml == null || variablesXml.isEmpty()) {
+    if (variables.isEmpty()) {
       return null;
     }
-    try {
-      return new SAXBuilder()
-          .build(new ByteArrayInputStream(variablesXml.getBytes()))
-          .getRootElement();
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to parse variables XML: " + variablesXml, e);
+    Element varsElement = new Element("objects");
+    for (QuestVariable var : variables) {
+      // Clone to detach from any parent document
+      varsElement.addContent(var.toElement().clone());
     }
+    return varsElement;
   }
 
   /**
-   * Helper method to set variables from a JDOM Element (backward compatibility).
+   * Helper method to set variables from a JDOM Element (backward compatibility for QuestEditor).
    *
-   * @param vars Element to convert to XML string
+   * @param vars Element to parse into QuestVariable objects
    */
   public void setVariablesElement(Element vars) {
-    if (vars == null) {
-      variablesXml = null;
-    } else {
-      XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
-      variablesXml = outputter.outputString(vars);
+    variables.clear();
+    if (vars != null) {
+      for (Element varElement : vars.getChildren()) {
+        QuestVariable var = new QuestVariable();
+        var.name = varElement.getTextTrim();
+        var.category = varElement.getName();
+        var.id = varElement.getAttributeValue("id");
+        var.typeFilter = varElement.getAttributeValue("type");
+        variables.add(var);
+      }
     }
   }
 
@@ -171,10 +186,14 @@ public class RQuest extends RData {
       quest.addContent(pre);
     }
 
-    // Convert XML string back to Element and clone it (to detach from its document)
-    Element vars = getVariablesElement();
-    if (vars != null) {
-      quest.addContent(vars.clone());
+    // Serialize quest variables
+    if (!variables.isEmpty()) {
+      Element varsElement = new Element("objects");
+      for (QuestVariable var : variables) {
+        // Clone to detach from any parent document
+        varsElement.addContent(var.toElement().clone());
+      }
+      quest.addContent(varsElement);
     }
 
     Element dialog = new Element("dialog");
