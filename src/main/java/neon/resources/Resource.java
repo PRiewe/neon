@@ -18,6 +18,7 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import java.io.Serializable;
 
 /**
@@ -28,7 +29,9 @@ import java.io.Serializable;
  * @author mdriesen
  */
 public abstract class Resource implements Serializable {
+  @JacksonXmlProperty(isAttribute = true)
   public final String id;
+
   protected String[] path;
 
   /**

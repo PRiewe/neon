@@ -18,20 +18,40 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import neon.entities.property.Subtype;
 import neon.maps.Region.Modifier;
 import org.jdom2.Element;
 
+@JacksonXmlRootElement(localName = "type")
 public class RTerrain extends RData {
-  public String description;
+
+  // RTerrain-specific fields
+  @JacksonXmlText public String description;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "mod")
+  @JsonProperty(required = false)
   public Modifier modifier = Modifier.NONE;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "sub")
+  @JsonProperty(required = false)
   public Subtype type = Subtype.NONE;
+
+  // No-arg constructor for Jackson deserialization
+  public RTerrain() {
+    super("unknown");
+    this.text = ".";
+  }
 
   public RTerrain(String id, String... path) {
     super(id, path);
     text = ".";
   }
 
+  // Keep JDOM constructor for backward compatibility during migration
   public RTerrain(Element e, String... path) {
     super(e.getAttributeValue("id"), path);
     color = e.getAttributeValue("color");
