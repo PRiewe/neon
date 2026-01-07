@@ -105,10 +105,10 @@ public class Atlas implements Closeable, MapAtlas {
 
   private static MVStore getMVStore(FileSystem files, String path) {
     files.delete(path);
-    String fileName = files.getFullPath(path);
-    log.warn("Creating new MVStore at {}", fileName);
 
-    return MVStore.open(fileName);
+    log.warn("Creating new MVStore at {}", path);
+
+    return MVStore.open(path);
   }
 
   /**

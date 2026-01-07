@@ -20,6 +20,7 @@ package neon.systems.files;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.*;
 import lombok.extern.slf4j.Slf4j;
@@ -268,8 +269,12 @@ public class FileSystem {
 
   public String getFullPath(String filename) {
     var path = temp.toPath().toString();
+
     var filePath = toString(path, filename);
-    return filePath;
+    var finalPath = Path.of(temp.getPath(), filename);
+    var rv = finalPath.toAbsolutePath().normalize().toString();
+    log.trace("Final path {}", rv);
+    return rv;
   }
 
   /*
