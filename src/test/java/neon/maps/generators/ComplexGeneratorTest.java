@@ -114,7 +114,7 @@ class ComplexGeneratorTest {
 
     // Then: visualize
     System.out.println("Sparse Dungeon: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
@@ -172,7 +172,7 @@ class ComplexGeneratorTest {
 
     // Then: visualize (can be commented out for large dungeons)
     // System.out.println("Large Sparse Dungeon: " + scenario);
-    // System.out.println(visualize(tiles));
+    // System.out.println(TileVisualization.visualizeTiles(tiles));
     // System.out.println();
 
     // Verify
@@ -199,7 +199,7 @@ class ComplexGeneratorTest {
 
     // Then: visualize
     System.out.println("BSP Dungeon: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
@@ -249,7 +249,7 @@ class ComplexGeneratorTest {
 
     // Then: visualize
     System.out.println("Packed Dungeon: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
@@ -292,79 +292,4 @@ class ComplexGeneratorTest {
 
   // ==================== Visualization ====================
 
-  /**
-   * Visualizes tiles as an ASCII grid.
-   *
-   * <p>Legend:
-   *
-   * <ul>
-   *   <li>'#' = WALL
-   *   <li>'.' = FLOOR
-   *   <li>'~' = CORRIDOR
-   *   <li>'W' = WALL_ROOM
-   *   <li>'+' = CORNER
-   *   <li>'D' = DOOR (open)
-   *   <li>'d' = DOOR_CLOSED
-   *   <li>'L' = DOOR_LOCKED
-   *   <li>'E' = ENTRY
-   * </ul>
-   */
-  private String visualize(int[][] tiles) {
-    int width = tiles.length;
-    int height = tiles[0].length;
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("+").append("-".repeat(width)).append("+\n");
-
-    for (int y = 0; y < height; y++) {
-      sb.append("|");
-      for (int x = 0; x < width; x++) {
-        sb.append(tileChar(tiles[x][y]));
-      }
-      sb.append("|\n");
-    }
-    sb.append("+").append("-".repeat(width)).append("+");
-
-    // Add tile count summary
-    int[] counts = countTiles(tiles);
-    sb.append("\nTiles: ");
-    sb.append(
-        String.format(
-            "floor=%d, corridor=%d, wall=%d, room_wall=%d, doors=%d",
-            counts[MapUtils.FLOOR],
-            counts[MapUtils.CORRIDOR],
-            counts[MapUtils.WALL],
-            counts[MapUtils.WALL_ROOM],
-            counts[MapUtils.DOOR] + counts[MapUtils.DOOR_CLOSED] + counts[MapUtils.DOOR_LOCKED]));
-
-    return sb.toString();
-  }
-
-  private char tileChar(int tile) {
-    return switch (tile) {
-      case MapUtils.WALL -> '#';
-      case MapUtils.FLOOR -> '.';
-      case MapUtils.WALL_ROOM -> 'W';
-      case MapUtils.CORNER -> '+';
-      case MapUtils.CORRIDOR -> '~';
-      case MapUtils.DOOR -> 'D';
-      case MapUtils.DOOR_CLOSED -> 'd';
-      case MapUtils.DOOR_LOCKED -> 'L';
-      case MapUtils.ENTRY -> 'E';
-      default -> '?';
-    };
-  }
-
-  private int[] countTiles(int[][] tiles) {
-    int[] counts = new int[16]; // Room for all tile types
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        int tile = tiles[x][y];
-        if (tile >= 0 && tile < counts.length) {
-          counts[tile]++;
-        }
-      }
-    }
-    return counts;
-  }
 }

@@ -86,7 +86,7 @@ class RoomGeneratorTest {
 
     // Then: visualize
     System.out.println("makeRoom: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
@@ -130,7 +130,7 @@ class RoomGeneratorTest {
 
     // Then: visualize
     System.out.println("makePolyRoom: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
@@ -172,7 +172,7 @@ class RoomGeneratorTest {
 
     // Then: visualize
     System.out.println("makeCaveRoom: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
@@ -244,74 +244,4 @@ class RoomGeneratorTest {
 
   // ==================== Visualization ====================
 
-  /**
-   * Visualizes tiles as an ASCII grid.
-   *
-   * <p>Legend:
-   *
-   * <ul>
-   *   <li>'#' = WALL
-   *   <li>'.' = FLOOR
-   *   <li>'W' = WALL_ROOM
-   *   <li>'+' = CORNER
-   *   <li>'?' = unknown
-   * </ul>
-   */
-  private String visualize(int[][] tiles) {
-    int width = tiles.length;
-    int height = tiles[0].length;
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("+").append("-".repeat(width)).append("+\n");
-
-    for (int y = 0; y < height; y++) {
-      sb.append("|");
-      for (int x = 0; x < width; x++) {
-        sb.append(tileChar(tiles[x][y]));
-      }
-      sb.append("|\n");
-    }
-    sb.append("+").append("-".repeat(width)).append("+");
-
-    // Add tile count summary
-    int[] counts = countTiles(tiles);
-    sb.append("\nTiles: ");
-    sb.append(
-        String.format(
-            "floor=%d, wall=%d, room_wall=%d, corner=%d",
-            counts[MapUtils.FLOOR],
-            counts[MapUtils.WALL],
-            counts[MapUtils.WALL_ROOM],
-            counts[MapUtils.CORNER]));
-
-    return sb.toString();
-  }
-
-  private char tileChar(int tile) {
-    return switch (tile) {
-      case MapUtils.WALL -> '#';
-      case MapUtils.FLOOR -> '.';
-      case MapUtils.WALL_ROOM -> 'W';
-      case MapUtils.CORNER -> '+';
-      case MapUtils.CORRIDOR -> '~';
-      case MapUtils.DOOR -> 'D';
-      case MapUtils.DOOR_CLOSED -> 'd';
-      case MapUtils.DOOR_LOCKED -> 'L';
-      case MapUtils.ENTRY -> 'E';
-      default -> '?';
-    };
-  }
-
-  private int[] countTiles(int[][] tiles) {
-    int[] counts = new int[16]; // Room for all tile types
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        int tile = tiles[x][y];
-        if (tile >= 0 && tile < counts.length) {
-          counts[tile]++;
-        }
-      }
-    }
-    return counts;
-  }
 }

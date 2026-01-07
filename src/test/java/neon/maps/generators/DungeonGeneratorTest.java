@@ -239,7 +239,7 @@ class DungeonGeneratorTest {
     // Then: visualize (controlled by PRINT_DUNGEONS flag)
     if (PRINT_DUNGEONS) {
       System.out.println("Dungeon (" + scenario.type() + "): " + scenario);
-      System.out.println(visualize(tiles));
+      System.out.println(TileVisualization.visualizeTiles(tiles));
       System.out.println();
     }
 
@@ -434,11 +434,11 @@ class DungeonGeneratorTest {
     // Then: optionally visualize (controlled by PRINT_LARGE_DUNGEONS flag)
     if (PRINT_LARGE_DUNGEONS) {
       System.out.println("Large Dungeon (" + scenario + ") generated in " + elapsed + "ms:");
-      System.out.println(visualize(tiles));
+      System.out.println(TileVisualization.visualizeTiles(tiles));
       System.out.println();
     } else if (PRINT_DUNGEONS) {
       // Just print summary without visualization
-      int[] counts = countTiles(tiles);
+      int[] counts = TileVisualization.countTiles(tiles);
       System.out.printf(
           "Large Dungeon %s: %dx%d, floors=%d, walls=%d, time=%dms%n",
           scenario.type(),
@@ -491,7 +491,7 @@ class DungeonGeneratorTest {
     // Then
     if (PRINT_LARGE_DUNGEONS) {
       System.out.println("Very Large Cave " + width + "x" + height + " in " + elapsed + "ms:");
-      System.out.println(visualize(tiles));
+      System.out.println(TileVisualization.visualizeTiles(tiles));
     }
 
     assertAll(
@@ -520,7 +520,7 @@ class DungeonGeneratorTest {
     // Then
     if (PRINT_LARGE_DUNGEONS) {
       System.out.println("Large BSP " + width + "x" + height + " in " + elapsed + "ms:");
-      System.out.println(visualize(tiles));
+      System.out.println(TileVisualization.visualizeTiles(tiles));
     }
 
     assertAll(
@@ -587,79 +587,6 @@ class DungeonGeneratorTest {
             width, height, floorCount, creatureCount, itemCount));
 
     return sb.toString();
-  }
-
-  /**
-   * Visualizes tiles as an ASCII grid.
-   *
-   * <p>Legend:
-   *
-   * <ul>
-   *   <li>'#' = WALL
-   *   <li>'.' = FLOOR
-   *   <li>'~' = CORRIDOR
-   *   <li>'W' = WALL_ROOM
-   *   <li>'+' = CORNER
-   *   <li>'D' = DOOR
-   * </ul>
-   */
-  private String visualize(int[][] tiles) {
-    int width = tiles.length;
-    int height = tiles[0].length;
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("+").append("-".repeat(width)).append("+\n");
-
-    for (int y = 0; y < height; y++) {
-      sb.append("|");
-      for (int x = 0; x < width; x++) {
-        sb.append(tileChar(tiles[x][y]));
-      }
-      sb.append("|\n");
-    }
-    sb.append("+").append("-".repeat(width)).append("+");
-
-    // Add tile count summary
-    int[] counts = countTiles(tiles);
-    sb.append("\nTiles: ");
-    sb.append(
-        String.format(
-            "floor=%d, corridor=%d, wall=%d, room_wall=%d, doors=%d",
-            counts[MapUtils.FLOOR],
-            counts[MapUtils.CORRIDOR],
-            counts[MapUtils.WALL],
-            counts[MapUtils.WALL_ROOM],
-            counts[MapUtils.DOOR] + counts[MapUtils.DOOR_CLOSED] + counts[MapUtils.DOOR_LOCKED]));
-
-    return sb.toString();
-  }
-
-  private char tileChar(int tile) {
-    return switch (tile) {
-      case MapUtils.WALL -> '#';
-      case MapUtils.FLOOR -> '.';
-      case MapUtils.WALL_ROOM -> 'W';
-      case MapUtils.CORNER -> '+';
-      case MapUtils.CORRIDOR -> '~';
-      case MapUtils.DOOR -> 'D';
-      case MapUtils.DOOR_CLOSED -> 'd';
-      case MapUtils.DOOR_LOCKED -> 'L';
-      case MapUtils.ENTRY -> 'E';
-      default -> '?';
-    };
-  }
-
-  private int[] countTiles(int[][] tiles) {
-    int[] counts = new int[16];
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        int tile = tiles[x][y];
-        if (tile >= 0 && tile < counts.length) {
-          counts[tile]++;
-        }
-      }
-    }
-    return counts;
   }
 
   // ==================== generate(Door, Zone, Atlas) Integration Tests ====================

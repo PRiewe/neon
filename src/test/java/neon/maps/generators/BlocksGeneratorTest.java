@@ -102,7 +102,8 @@ class BlocksGeneratorTest {
 
     // Then: visualize
     System.out.println("Sparse: " + scenario);
-    System.out.println(visualize(rectangles, scenario.width(), scenario.height()));
+    System.out.println(
+        TileVisualization.visualizeRectangles(rectangles, scenario.width(), scenario.height()));
     System.out.println();
 
     // Verify
@@ -163,7 +164,8 @@ class BlocksGeneratorTest {
 
     // Then: visualize
     System.out.println("Packed: " + scenario);
-    System.out.println(visualize(rectangles, scenario.width(), scenario.height()));
+    System.out.println(
+        TileVisualization.visualizeRectangles(rectangles, scenario.width(), scenario.height()));
     System.out.println();
 
     // Verify
@@ -219,7 +221,8 @@ class BlocksGeneratorTest {
 
     // Then: visualize
     System.out.println("BSP: " + scenario);
-    System.out.println(visualize(rectangles, scenario.width(), scenario.height()));
+    System.out.println(
+        TileVisualization.visualizeRectangles(rectangles, scenario.width(), scenario.height()));
     System.out.println();
 
     // Verify
@@ -306,68 +309,4 @@ class BlocksGeneratorTest {
 
   // ==================== Visualization ====================
 
-  /**
-   * Visualizes rectangles as an ASCII grid.
-   *
-   * <p>Example output:
-   *
-   * <pre>
-   * +--------------------+
-   * |    ####            |
-   * |    ####   #####    |
-   * |    ####   #####    |
-   * |           #####    |
-   * |  @@@               |
-   * |  @@@               |
-   * +--------------------+
-   * Rectangles: 2
-   *   [#] x=4, y=0, w=4, h=4
-   *   [@] x=2, y=4, w=3, h=2
-   * </pre>
-   */
-  private String visualize(ArrayList<Rectangle> rectangles, int width, int height) {
-    char[][] grid = new char[height][width];
-
-    // Initialize with empty space
-    for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        grid[y][x] = '.';
-      }
-    }
-
-    // Fill rectangles with different characters
-    for (int i = 0; i < rectangles.size(); i++) {
-      Rectangle r = rectangles.get(i);
-      char marker = MARKERS[i % MARKERS.length];
-      for (int y = r.y; y < r.y + r.height && y < height; y++) {
-        for (int x = r.x; x < r.x + r.width && x < width; x++) {
-          grid[y][x] = marker;
-        }
-      }
-    }
-
-    // Build string representation
-    StringBuilder sb = new StringBuilder();
-    sb.append("+").append("-".repeat(width)).append("+\n");
-    for (int y = 0; y < height; y++) {
-      sb.append("|");
-      for (int x = 0; x < width; x++) {
-        sb.append(grid[y][x]);
-      }
-      sb.append("|\n");
-    }
-    sb.append("+").append("-".repeat(width)).append("+");
-
-    // Add rectangle details
-    sb.append("\nRectangles: ").append(rectangles.size());
-    for (int i = 0; i < rectangles.size(); i++) {
-      Rectangle r = rectangles.get(i);
-      sb.append(
-          String.format(
-              "\n  [%c] x=%d, y=%d, w=%d, h=%d",
-              MARKERS[i % MARKERS.length], r.x, r.y, r.width, r.height));
-    }
-
-    return sb.toString();
-  }
 }

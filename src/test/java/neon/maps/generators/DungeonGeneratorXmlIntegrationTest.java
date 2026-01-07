@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-
 import java.util.stream.Stream;
 import neon.entities.Door;
 import neon.entities.Entity;
@@ -154,7 +151,7 @@ class DungeonGeneratorXmlIntegrationTest {
     // Then: visualize (controlled by PRINT_DUNGEONS flag)
     if (PRINT_DUNGEONS) {
       System.out.println("Zone theme: " + scenario);
-      System.out.println(visualizeTerrain(terrain));
+      System.out.println(TileVisualization.visualizeTerrain(terrain));
       System.out.println();
     }
 
@@ -247,16 +244,6 @@ class DungeonGeneratorXmlIntegrationTest {
   }
 
   // ==================== Assertion Helpers ====================
-
-
-
-
-
-
-
-
-
-
 
   private void assertHasCreatureAnnotations(String[][] terrain, String message) {
     boolean hasCreature = false;

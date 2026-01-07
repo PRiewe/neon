@@ -3,7 +3,6 @@ package neon.maps.generators;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.stream.Stream;
-import neon.maps.MapUtils;
 import neon.util.Dice;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -53,7 +52,7 @@ class CaveGeneratorTest {
 
     // Then: visualize
     System.out.println("Open Cave: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
@@ -85,51 +84,4 @@ class CaveGeneratorTest {
 
   // ==================== Visualization ====================
 
-  /**
-   * Visualizes tiles as an ASCII grid.
-   *
-   * <p>Legend:
-   *
-   * <ul>
-   *   <li>'#' = WALL
-   *   <li>'.' = FLOOR
-   * </ul>
-   */
-  private String visualize(int[][] tiles) {
-    int width = tiles.length;
-    int height = tiles[0].length;
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("+").append("-".repeat(width)).append("+\n");
-
-    for (int y = 0; y < height; y++) {
-      sb.append("|");
-      for (int x = 0; x < width; x++) {
-        sb.append(tileChar(tiles[x][y]));
-      }
-      sb.append("|\n");
-    }
-    sb.append("+").append("-".repeat(width)).append("+");
-
-    // Add tile count summary
-    int floorCount = 0;
-    int wallCount = 0;
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        if (tiles[x][y] == MapUtils.FLOOR) floorCount++;
-        else if (tiles[x][y] == MapUtils.WALL) wallCount++;
-      }
-    }
-    sb.append("\nTiles: floor=").append(floorCount).append(", wall=").append(wallCount);
-
-    return sb.toString();
-  }
-
-  private char tileChar(int tile) {
-    return switch (tile) {
-      case MapUtils.WALL -> '#';
-      case MapUtils.FLOOR -> '.';
-      default -> '?';
-    };
-  }
 }

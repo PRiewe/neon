@@ -81,7 +81,7 @@ class MazeGeneratorTest {
 
     // Then: visualize
     System.out.println("Standard Maze: " + scenario);
-    System.out.println(visualize(maze, scenario.width(), scenario.height()));
+    System.out.println(TileVisualization.visualizeArea(maze, scenario.width(), scenario.height()));
     System.out.println();
 
     // Verify
@@ -126,7 +126,7 @@ class MazeGeneratorTest {
 
     // Then: visualize
     System.out.println("Squashed Maze: " + scenario);
-    System.out.println(visualize(maze, scenario.width(), scenario.height()));
+    System.out.println(TileVisualization.visualizeArea(maze, scenario.width(), scenario.height()));
     System.out.println();
 
     // Verify
@@ -180,40 +180,4 @@ class MazeGeneratorTest {
 
   // ==================== Visualization ====================
 
-  /**
-   * Visualizes a maze Area as an ASCII grid.
-   *
-   * <p>Legend:
-   *
-   * <ul>
-   *   <li>'.' = walkable cell (part of maze)
-   *   <li>'#' = wall (not part of maze)
-   * </ul>
-   */
-  private String visualize(Area maze, int width, int height) {
-    boolean[][] grid = TileConnectivityAssertions.areaToGrid(maze, width, height);
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("+").append("-".repeat(width)).append("+\n");
-
-    for (int y = 0; y < height; y++) {
-      sb.append("|");
-      for (int x = 0; x < width; x++) {
-        sb.append(grid[x][y] ? '.' : '#');
-      }
-      sb.append("|\n");
-    }
-    sb.append("+").append("-".repeat(width)).append("+");
-
-    // Add cell count summary
-    int cellCount = 0;
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        if (grid[x][y]) cellCount++;
-      }
-    }
-    sb.append("\nWalkable cells: ").append(cellCount);
-
-    return sb.toString();
-  }
 }
