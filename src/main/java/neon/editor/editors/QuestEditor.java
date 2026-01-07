@@ -160,7 +160,7 @@ public class QuestEditor extends ObjectEditor implements ActionListener, MouseLi
       }
       vars.addContent(var);
     }
-    quest.variables = vars;
+    quest.setVariablesElement(vars);
 
     //		quest.getTopics().clear();
     for (Vector<?> data : (Vector<Vector>) dialogModel.getDataVector()) {
@@ -183,8 +183,9 @@ public class QuestEditor extends ObjectEditor implements ActionListener, MouseLi
       freqField.setValue(null);
     }
 
-    if (quest.variables != null) {
-      for (Element item : quest.variables.getChildren()) {
+    Element vars = quest.getVariablesElement();
+    if (vars != null) {
+      for (Element item : vars.getChildren()) {
         String[] data = {
           item.getText(),
           item.getName(),
