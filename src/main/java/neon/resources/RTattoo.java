@@ -18,19 +18,36 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import java.io.ByteArrayInputStream;
 import neon.entities.property.Ability;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
+@JacksonXmlRootElement(localName = "tattoo")
 public class RTattoo extends RData {
+  @JacksonXmlProperty(isAttribute = true)
   public Ability ability;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "size")
   public int magnitude;
+
+  @JacksonXmlProperty(isAttribute = true)
   public int cost;
+
+  // No-arg constructor for Jackson deserialization
+  public RTattoo() {
+    super("unknown");
+  }
 
   public RTattoo(String id, String... path) {
     super(id, path);
     name = id;
   }
 
+  // Keep JDOM constructor for backward compatibility during migration
   public RTattoo(Element tattoo, String... path) {
     super(tattoo, path);
     ability = Ability.valueOf(tattoo.getAttributeValue("ability").toUpperCase());
@@ -43,12 +60,19 @@ public class RTattoo extends RData {
     }
   }
 
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
+  @Override
   public Element toElement() {
-    Element tattoo = new Element("tattoo");
-    tattoo.setAttribute("id", id);
-    tattoo.setAttribute("ability", ability.toString());
-    tattoo.setAttribute("size", Integer.toString(magnitude));
-    tattoo.setAttribute("cost", Integer.toString(cost));
-    return tattoo;
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      return new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RTattoo to Element", e);
+    }
   }
 }
