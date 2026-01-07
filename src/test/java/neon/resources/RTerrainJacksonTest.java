@@ -100,4 +100,25 @@ public class RTerrainJacksonTest {
     assertTrue(serialized.contains("cliff"));
     assertTrue(serialized.contains("CLIMB"));
   }
+
+  @Test
+  public void testToElementUsesJackson() {
+    RTerrain terrain = new RTerrain("test_terrain");
+    terrain.text = "*";
+    terrain.color = "red";
+    terrain.description = "Test terrain";
+    terrain.modifier = Modifier.CLIMB;
+
+    // Call toElement() which now uses Jackson internally
+    org.jdom2.Element element = terrain.toElement();
+
+    // Verify JDOM Element contains expected attributes
+    assertEquals("type", element.getName());
+    assertEquals("test_terrain", element.getAttributeValue("id"));
+    assertEquals("*", element.getAttributeValue("char"));
+    assertEquals("red", element.getAttributeValue("color"));
+    assertEquals("CLIMB", element.getAttributeValue("mod"));
+    assertEquals(
+        "Test terrain", element.getText().trim()); // Jackson pretty-printer adds whitespace
+  }
 }
