@@ -18,12 +18,38 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
+@JacksonXmlRootElement(localName = "list")
 public class LItem extends RItem {
   public HashMap<String, Integer> items = new HashMap<String, Integer>();
 
+  /** Inner class for Jackson XML parsing */
+  public static class ItemEntry {
+    @JacksonXmlProperty(isAttribute = true)
+    public String id;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "l")
+    public int level;
+  }
+
+  // No-arg constructor for Jackson deserialization
+  public LItem() {
+    super();
+  }
+
+  public LItem(String id, String... path) {
+    super(id, Type.item, path);
+  }
+
+  // Keep JDOM constructor for backward compatibility during migration
   public LItem(Element e, String... path) {
     super(e.getAttributeValue("id"), Type.item, path);
     for (Element c : e.getChildren()) {
@@ -31,21 +57,43 @@ public class LItem extends RItem {
     }
   }
 
-  public LItem(String id, String... path) {
-    super(id, Type.item, path);
+  /** Jackson setter for item entries - converts list to HashMap */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "item")
+  public void setItemList(java.util.List<ItemEntry> itemList) {
+    if (itemList != null) {
+      for (ItemEntry entry : itemList) {
+        items.put(entry.id, entry.level);
+      }
+    }
   }
 
-  public Element toElement() {
-    Element list = new Element("list");
-    list.setAttribute("id", id);
-
-    for (String s : items.keySet()) {
-      Element item = new Element("item");
-      item.setAttribute("id", s);
-      item.setAttribute("l", items.get(s).toString());
-      list.addContent(item);
+  /** Jackson getter for item entries - converts HashMap to list */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "item")
+  public java.util.List<ItemEntry> getItemList() {
+    java.util.List<ItemEntry> list = new java.util.ArrayList<>();
+    for (java.util.Map.Entry<String, Integer> entry : items.entrySet()) {
+      ItemEntry ie = new ItemEntry();
+      ie.id = entry.getKey();
+      ie.level = entry.getValue();
+      list.add(ie);
     }
-
     return list;
+  }
+
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
+  public Element toElement() {
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      return new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize LItem to Element", e);
+    }
   }
 }
