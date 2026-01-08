@@ -18,22 +18,118 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import java.io.ByteArrayInputStream;
 import java.util.*;
 import neon.entities.property.Skill;
 import neon.resources.RCreature.AIType;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
+@JacksonXmlRootElement(localName = "npc")
 public class RPerson extends RData {
-  public HashMap<String, Integer> factions = new HashMap<String, Integer>();
+  @JsonIgnore public HashMap<String, Integer> factions = new HashMap<String, Integer>();
   public AIType aiType;
-  public int aiRange, aiConf, aiAggr;
-  public HashMap<Skill, Integer> skills = new HashMap<Skill, Integer>();
-  public HashSet<String> spells = new HashSet<String>();
-  public ArrayList<String> items = new ArrayList<String>();
-  public ArrayList<String> scripts = new ArrayList<String>();
-  public List<Element> services = new ArrayList<Element>();
+  public int aiRange = -1, aiConf = -1, aiAggr = -1;
+  @JsonIgnore public HashMap<Skill, Integer> skills = new HashMap<Skill, Integer>();
+  @JsonIgnore public HashSet<String> spells = new HashSet<String>();
+  @JsonIgnore public ArrayList<String> items = new ArrayList<String>();
+  @JsonIgnore public ArrayList<String> scripts = new ArrayList<String>();
+  @JsonIgnore public ArrayList<Service> services = new ArrayList<Service>();
+
+  @JacksonXmlProperty(isAttribute = true, localName = "race")
   public String species;
 
+  /** Inner class for faction entries */
+  public static class FactionEntry {
+    @JacksonXmlProperty(isAttribute = true)
+    public String id;
+
+    @JacksonXmlProperty(isAttribute = true)
+    public int rank;
+  }
+
+  /** Inner class for skill entries */
+  public static class SkillEntry {
+    @JacksonXmlProperty(isAttribute = true)
+    public String id;
+
+    @JacksonXmlProperty(isAttribute = true)
+    public int rank;
+  }
+
+  /** Inner class for item entries */
+  public static class ItemEntry {
+    @JacksonXmlProperty(isAttribute = true)
+    public String id;
+  }
+
+  /** Inner class for spell entries */
+  public static class SpellEntry {
+    @JacksonXmlProperty(isAttribute = true)
+    public String id;
+  }
+
+  /** Inner class for AI configuration */
+  @JacksonXmlRootElement(localName = "ai")
+  public static class AI {
+    @JacksonXmlProperty(isAttribute = true, localName = "r")
+    public Integer r; // range
+
+    @JacksonXmlProperty(isAttribute = true, localName = "a")
+    public Integer a; // aggression
+
+    @JacksonXmlProperty(isAttribute = true, localName = "c")
+    public Integer c; // confidence
+
+    @JacksonXmlText public String type; // AI type
+  }
+
+  /** Inner class for service definitions */
+  @JacksonXmlRootElement(localName = "service")
+  public static class Service {
+    @JacksonXmlProperty(isAttribute = true)
+    public String id;
+
+    @JacksonXmlElementWrapper(useWrapping = false)
+    @JacksonXmlProperty(localName = "skill")
+    public List<String> skills = new ArrayList<>();
+
+    @JacksonXmlElementWrapper(useWrapping = false)
+    @JacksonXmlProperty(localName = "dest")
+    public List<Destination> destinations = new ArrayList<>();
+
+    /** Inner class for travel destinations */
+    public static class Destination {
+      @JacksonXmlProperty(isAttribute = true)
+      public int x;
+
+      @JacksonXmlProperty(isAttribute = true)
+      public int y;
+
+      @JacksonXmlProperty(isAttribute = true)
+      public String name;
+
+      @JacksonXmlProperty(isAttribute = true)
+      public int cost;
+    }
+  }
+
+  // No-arg constructor for Jackson deserialization
+  public RPerson() {
+    super("unknown");
+  }
+
+  public RPerson(String id, String... path) {
+    super(id, path);
+  }
+
+  // Keep JDOM constructor for backward compatibility during migration
   public RPerson(Element person, String... path) {
     super(person.getAttributeValue("id"), path);
     name = person.getAttributeValue("name");
@@ -92,9 +188,27 @@ public class RPerson extends RData {
       }
     }
 
-    // new arraylist to avoid ConcurrentModificationExceptions
-    for (Element service : new ArrayList<Element>(person.getChildren("service"))) {
-      services.add(service.detach());
+    // Parse services into Service objects
+    for (Element serviceEl : person.getChildren("service")) {
+      Service service = new Service();
+      service.id = serviceEl.getAttributeValue("id");
+
+      // Training service - has skill children
+      for (Element skillEl : serviceEl.getChildren("skill")) {
+        service.skills.add(skillEl.getText());
+      }
+
+      // Travel service - has dest children
+      for (Element destEl : serviceEl.getChildren("dest")) {
+        Service.Destination dest = new Service.Destination();
+        dest.x = Integer.parseInt(destEl.getAttributeValue("x"));
+        dest.y = Integer.parseInt(destEl.getAttributeValue("y"));
+        dest.name = destEl.getAttributeValue("name");
+        dest.cost = Integer.parseInt(destEl.getAttributeValue("cost"));
+        service.destinations.add(dest);
+      }
+
+      services.add(service);
     }
 
     for (Element script : person.getChildren("script")) {
@@ -102,68 +216,171 @@ public class RPerson extends RData {
     }
   }
 
-  public RPerson(String id, String... path) {
-    super(id, path);
+  /** Jackson setter for factions - converts list to HashMap */
+  @JacksonXmlElementWrapper(localName = "factions")
+  @JacksonXmlProperty(localName = "faction")
+  public void setFactionList(List<FactionEntry> factionList) {
+    if (factionList != null) {
+      for (FactionEntry entry : factionList) {
+        factions.put(entry.id, entry.rank);
+      }
+    }
   }
 
+  /** Jackson getter for factions - converts HashMap to list */
+  @JacksonXmlElementWrapper(localName = "factions")
+  @JacksonXmlProperty(localName = "faction")
+  public List<FactionEntry> getFactionList() {
+    List<FactionEntry> list = new ArrayList<>();
+    for (Map.Entry<String, Integer> entry : factions.entrySet()) {
+      FactionEntry fe = new FactionEntry();
+      fe.id = entry.getKey();
+      fe.rank = entry.getValue();
+      list.add(fe);
+    }
+    return list;
+  }
+
+  /** Jackson setter for skills - converts list to HashMap */
+  @JacksonXmlElementWrapper(localName = "skills")
+  @JacksonXmlProperty(localName = "skill")
+  public void setSkillList(List<SkillEntry> skillList) {
+    if (skillList != null) {
+      for (SkillEntry entry : skillList) {
+        skills.put(Skill.valueOf(entry.id.toUpperCase()), entry.rank);
+      }
+    }
+  }
+
+  /** Jackson getter for skills - converts HashMap to list */
+  @JacksonXmlElementWrapper(localName = "skills")
+  @JacksonXmlProperty(localName = "skill")
+  public List<SkillEntry> getSkillList() {
+    List<SkillEntry> list = new ArrayList<>();
+    for (Map.Entry<Skill, Integer> entry : skills.entrySet()) {
+      SkillEntry se = new SkillEntry();
+      se.id = entry.getKey().toString();
+      se.rank = entry.getValue();
+      list.add(se);
+    }
+    return list;
+  }
+
+  /** Jackson setter for items - converts list to ArrayList */
+  @JacksonXmlElementWrapper(localName = "items")
+  @JacksonXmlProperty(localName = "item")
+  public void setItemList(List<ItemEntry> itemList) {
+    if (itemList != null) {
+      for (ItemEntry entry : itemList) {
+        items.add(entry.id);
+      }
+    }
+  }
+
+  /** Jackson getter for items - converts ArrayList to list */
+  @JacksonXmlElementWrapper(localName = "items")
+  @JacksonXmlProperty(localName = "item")
+  public List<ItemEntry> getItemList() {
+    List<ItemEntry> list = new ArrayList<>();
+    for (String item : items) {
+      ItemEntry ie = new ItemEntry();
+      ie.id = item;
+      list.add(ie);
+    }
+    return list;
+  }
+
+  /** Jackson setter for spells - converts list to HashSet */
+  @JacksonXmlElementWrapper(localName = "spells")
+  @JacksonXmlProperty(localName = "spell")
+  public void setSpellList(List<SpellEntry> spellList) {
+    if (spellList != null) {
+      for (SpellEntry entry : spellList) {
+        spells.add(entry.id);
+      }
+    }
+  }
+
+  /** Jackson getter for spells - converts HashSet to list */
+  @JacksonXmlElementWrapper(localName = "spells")
+  @JacksonXmlProperty(localName = "spell")
+  public List<SpellEntry> getSpellList() {
+    List<SpellEntry> list = new ArrayList<>();
+    for (String spell : spells) {
+      SpellEntry se = new SpellEntry();
+      se.id = spell;
+      list.add(se);
+    }
+    return list;
+  }
+
+  /** Jackson setter for AI configuration */
+  @JacksonXmlProperty(localName = "ai")
+  public void setAI(AI ai) {
+    if (ai != null) {
+      if (ai.type != null && !ai.type.isEmpty()) {
+        aiType = AIType.valueOf(ai.type);
+      }
+      aiRange = (ai.r != null) ? ai.r : -1;
+      aiAggr = (ai.a != null) ? ai.a : -1;
+      aiConf = (ai.c != null) ? ai.c : -1;
+    }
+  }
+
+  /** Jackson getter for AI configuration */
+  @JacksonXmlProperty(localName = "ai")
+  public AI getAI() {
+    if (aiType == null && aiRange == -1 && aiAggr == -1 && aiConf == -1) {
+      return null;
+    }
+    AI ai = new AI();
+    ai.type = (aiType != null) ? aiType.toString() : null;
+    ai.r = (aiRange != -1) ? aiRange : null;
+    ai.a = (aiAggr != -1) ? aiAggr : null;
+    ai.c = (aiConf != -1) ? aiConf : null;
+    return ai;
+  }
+
+  /** Jackson setter for services */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "service")
+  public void setServices(List<Service> services) {
+    this.services = new ArrayList<>(services);
+  }
+
+  /** Jackson getter for services */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "service")
+  public List<Service> getServices() {
+    return services;
+  }
+
+  /** Jackson setter for scripts */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "script")
+  public void setScripts(List<String> scripts) {
+    this.scripts = new ArrayList<>(scripts);
+  }
+
+  /** Jackson getter for scripts */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "script")
+  public List<String> getScripts() {
+    return scripts;
+  }
+
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
   public Element toElement() {
-    Element npc = new Element("npc");
-    npc.setAttribute("race", species);
-    npc.setAttribute("id", id);
-
-    for (Element service : services) {
-      service.detach(); // otherwise error on 2nd save
-      npc.addContent(service);
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      return new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RPerson to Element", e);
     }
-
-    if (!factions.isEmpty()) {
-      Element factionList = new Element("factions");
-      for (String f : factions.keySet()) {
-        Element faction = new Element("faction");
-        faction.setAttribute("id", f);
-        faction.setAttribute("rank", Integer.toString(factions.get(f)));
-        factionList.addContent(faction);
-      }
-      npc.addContent(factionList);
-    }
-
-    if (!items.isEmpty()) {
-      Element itemList = new Element("items");
-      for (String ri : items) {
-        Element item = new Element("item");
-        item.setAttribute("id", ri);
-        itemList.addContent(item);
-      }
-      npc.addContent(itemList);
-    }
-
-    if (!spells.isEmpty()) {
-      Element spellList = new Element("spells");
-      for (String rs : spells) {
-        Element spell = new Element("spell");
-        spell.setAttribute("id", rs);
-        spellList.addContent(spell);
-      }
-      npc.addContent(spellList);
-    }
-
-    if (aiAggr > -1 || aiConf > -1 || aiRange > -1 || aiType != null) {
-      Element ai = new Element("ai");
-      if (aiType != null) {
-        ai.setText(aiType.toString());
-      }
-      if (aiAggr > -1) {
-        ai.setAttribute("a", Integer.toString(aiAggr));
-      }
-      if (aiConf > -1) {
-        ai.setAttribute("c", Integer.toString(aiConf));
-      }
-      if (aiRange > -1) {
-        ai.setAttribute("r", Integer.toString(aiRange));
-      }
-      npc.addContent(ai);
-    }
-
-    return npc;
   }
 }

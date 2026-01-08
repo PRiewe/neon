@@ -55,7 +55,6 @@ import neon.ui.dialog.TravelDialog;
 import neon.util.fsm.State;
 import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.bus.MBassador;
-import org.jdom2.Element;
 
 /*
  * Class that shows a list of topics to talk about. The displayed list depends
@@ -307,8 +306,8 @@ public class DialogState extends State implements KeyListener {
   private boolean hasService(String name, String id) {
     try {
       RPerson person = (RPerson) context.getResources().getResource(name);
-      for (Element e : person.services) {
-        if (e.getAttributeValue("id").equals(id)) {
+      for (RPerson.Service service : person.services) {
+        if (service.id.equals(id)) {
           return true;
         }
       }

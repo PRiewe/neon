@@ -33,7 +33,6 @@ import neon.resources.RPerson;
 import neon.ui.UserInterface;
 import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.bus.MBassador;
-import org.jdom2.Element;
 
 public class TrainingDialog implements KeyListener {
   private JDialog frame;
@@ -124,10 +123,11 @@ public class TrainingDialog implements KeyListener {
 
   private void initTraining() {
     DefaultListModel<Skill> model = new DefaultListModel<Skill>();
-    for (Element e : ((RPerson) context.getResources().getResource(trainer.getName())).services) {
-      if (e.getAttributeValue("id").equals("training")) {
-        for (Element skill : e.getChildren()) {
-          model.addElement(Skill.valueOf(skill.getText().toUpperCase()));
+    for (RPerson.Service service :
+        ((RPerson) context.getResources().getResource(trainer.getName())).services) {
+      if (service.id.equals("training")) {
+        for (String skillName : service.skills) {
+          model.addElement(Skill.valueOf(skillName.toUpperCase()));
         }
       }
     }

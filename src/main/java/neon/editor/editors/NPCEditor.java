@@ -352,30 +352,36 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
       itemListModel.addElement(i);
     }
 
-    for (Element service : data.services) {
-      if (service.getAttributeValue("id").equals("trade")) {
+    for (RPerson.Service service : data.services) {
+      if (service.id.equals("trade")) {
         tradeBox.setSelected(true);
-      } else if (service.getAttributeValue("id").equals("travel")) {
+      } else if (service.id.equals("travel")) {
         travelBox.setSelected(true);
-        for (Element d : service.getChildren()) {
-          destListModel.addElement(d.getAttributeValue("name"));
-          destMap.put(d.getAttributeValue("name"), d);
+        for (RPerson.Service.Destination d : service.destinations) {
+          destListModel.addElement(d.name);
+          // Store destination for editing
+          Element destElement = new Element("dest");
+          destElement.setAttribute("name", d.name);
+          destElement.setAttribute("x", String.valueOf(d.x));
+          destElement.setAttribute("y", String.valueOf(d.y));
+          destElement.setAttribute("cost", String.valueOf(d.cost));
+          destMap.put(d.name, destElement);
         }
-      } else if (service.getAttributeValue("id").equals("training")) {
+      } else if (service.id.equals("training")) {
         trainBox.setSelected(true);
-        for (Element s : service.getChildren()) {
-          trainedSkills.add(Skill.valueOf(s.getText().toUpperCase()));
+        for (String s : service.skills) {
+          trainedSkills.add(Skill.valueOf(s.toUpperCase()));
         }
         skillBox.setSelected(trainedSkills.contains(skillComboBox.getSelectedItem()));
-      } else if (service.getAttributeValue("id").equals("spells")) {
+      } else if (service.id.equals("spells")) {
         spellBox.setSelected(true);
-      } else if (service.getAttributeValue("id").equals("spellmaker")) {
+      } else if (service.id.equals("spellmaker")) {
         spellMakerBox.setSelected(true);
-      } else if (service.getAttributeValue("id").equals("healer")) {
+      } else if (service.id.equals("healer")) {
         healerBox.setSelected(true);
-      } else if (service.getAttributeValue("id").equals("alchemy")) {
+      } else if (service.id.equals("alchemy")) {
         potionBox.setSelected(true);
-      } else if (service.getAttributeValue("id").equals("tattoo")) {
+      } else if (service.id.equals("tattoo")) {
         tattooBox.setSelected(true);
       }
     }
@@ -446,7 +452,9 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
 
     data.services.clear();
     if (tradeBox.isSelected()) {
-      data.services.add(new Element("service").setAttribute("id", "trade"));
+      RPerson.Service service = new RPerson.Service();
+      service.id = "trade";
+      data.services.add(service);
     }
     data.items.clear();
     for (Enumeration<String> e = itemListModel.elements(); e.hasMoreElements(); ) {
@@ -454,25 +462,31 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     }
 
     if (spellMakerBox.isSelected()) {
-      data.services.add(new Element("service").setAttribute("id", "spellmaker"));
+      RPerson.Service service = new RPerson.Service();
+      service.id = "spellmaker";
+      data.services.add(service);
     }
     if (healerBox.isSelected()) {
-      data.services.add(new Element("service").setAttribute("id", "healer"));
+      RPerson.Service service = new RPerson.Service();
+      service.id = "healer";
+      data.services.add(service);
     }
     if (spellBox.isSelected()) {
-      data.services.add(new Element("service").setAttribute("id", "spells"));
+      RPerson.Service service = new RPerson.Service();
+      service.id = "spells";
+      data.services.add(service);
     }
     for (Enumeration<String> e = spellListModel.elements(); e.hasMoreElements(); ) {
       data.spells.add(e.nextElement());
     }
 
     if (trainBox.isSelected()) {
-      Element training = new Element("service");
-      training.setAttribute("id", "training");
-      data.services.add(training);
+      RPerson.Service training = new RPerson.Service();
+      training.id = "training";
       for (Skill s : trainedSkills) {
-        training.addContent(new Element("skill").setText(s.toString()));
+        training.skills.add(s.toString());
       }
+      data.services.add(training);
     }
     data.skills.clear();
     for (Skill s : skills.keySet()) {
@@ -482,28 +496,36 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     }
 
     if (travelBox.isSelected()) {
-      Element travel = new Element("service");
-      travel.setAttribute("id", "travel");
+      RPerson.Service travel = new RPerson.Service();
+      travel.id = "travel";
       // a bit of magic to still get the last modified value into destMap
       if (currentDest != null) {
         currentDest.setAttribute("x", destX.getValue().toString());
         currentDest.setAttribute("y", destY.getValue().toString());
         currentDest.setAttribute("cost", destCost.getValue().toString());
       }
-      // magic done
+      // Convert Element destMap to Service.Destination objects
       for (Element d : destMap.values()) {
-        d.detach();
-        travel.addContent(d);
+        RPerson.Service.Destination dest = new RPerson.Service.Destination();
+        dest.name = d.getAttributeValue("name");
+        dest.x = Integer.parseInt(d.getAttributeValue("x"));
+        dest.y = Integer.parseInt(d.getAttributeValue("y"));
+        dest.cost = Integer.parseInt(d.getAttributeValue("cost"));
+        travel.destinations.add(dest);
       }
       data.services.add(travel);
     }
 
     if (potionBox.isSelected()) {
-      data.services.add(new Element("service").setAttribute("id", "alchemy"));
+      RPerson.Service service = new RPerson.Service();
+      service.id = "alchemy";
+      data.services.add(service);
     }
 
     if (tattooBox.isSelected()) {
-      data.services.add(new Element("service").setAttribute("id", "tattoo"));
+      RPerson.Service service = new RPerson.Service();
+      service.id = "tattoo";
+      data.services.add(service);
     }
 
     data.setPath(Editor.getStore().getActive().get("id"));
