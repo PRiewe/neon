@@ -26,8 +26,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -48,12 +48,12 @@ import java.nio.charset.StandardCharsets;
  *
  * @since 0.5.0
  */
-public class JVSvgShape extends JVShape {
+public class JVSvgShape extends JVShape implements java.io.Externalizable {
   private static final long serialVersionUID = 1L;
 
-  // The SVGDocument is not serializable, so we mark it transient
+  // The SVGDocument is not serializable, so we don't serialize it
   // and store the original SVG content for re-parsing after deserialization
-  private transient SVGDocument svgDocument;
+  private SVGDocument svgDocument;
   private String svgContent;
   private int x, y;
   private int width, height;
@@ -90,6 +90,14 @@ public class JVSvgShape extends JVShape {
   }
 
   /**
+   * No-argument constructor required by Externalizable. Do not use this constructor directly - it's
+   * only for deserialization.
+   */
+  public JVSvgShape() {
+    // Empty constructor for Externalizable
+  }
+
+  /**
    * Wraps an SVG fragment in a complete SVG document if needed.
    *
    * @param svgContent the SVG content (fragment or complete document)
@@ -108,11 +116,12 @@ public class JVSvgShape extends JVShape {
     int size = inferFragmentSize(trimmed);
 
     return String.format(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-            + "<svg xmlns=\"http://www.w3.org/2000/svg\" "
-            + "viewBox=\"0 0 %d %d\" width=\"%d\" height=\"%d\">"
-            + "%s"
-            + "</svg>",
+        """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 %d %d" width="%d" height="%d">
+                    %s
+                    </svg>""",
         size, size, size, size, trimmed);
   }
 
@@ -197,27 +206,38 @@ public class JVSvgShape extends JVShape {
   }
 
   /**
-   * Custom serialization to handle non-serializable SVGDocument.
+   * Externalizable serialization method - writes only the necessary fields.
    *
    * @param out the output stream
    * @throws IOException if an I/O error occurs
    */
-  private void writeObject(ObjectOutputStream out) throws IOException {
-    out.defaultWriteObject();
-    // The svgContent field will be serialized automatically
-    // The transient svgDocument field will NOT be serialized
+  @Override
+  public void writeExternal(ObjectOutput out) throws IOException {
+    // Write only the SVG content, not the SVGDocument
+    out.writeObject(svgContent);
+    out.writeInt(x);
+    out.writeInt(y);
+    out.writeInt(width);
+    out.writeInt(height);
   }
 
   /**
-   * Custom deserialization to re-parse the SVG content.
+   * Externalizable deserialization method - reads fields and reconstructs SVGDocument.
    *
    * @param in the input stream
    * @throws IOException if an I/O error occurs
    * @throws ClassNotFoundException if the class cannot be found
    */
-  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-    in.defaultReadObject();
-    // Re-parse the SVG content to reconstruct the transient svgDocument
+  @Override
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    // Read the serialized fields
+    svgContent = (String) in.readObject();
+    x = in.readInt();
+    y = in.readInt();
+    width = in.readInt();
+    height = in.readInt();
+
+    // Re-parse the SVG content to reconstruct the SVGDocument
     if (svgContent != null) {
       String completeSvg = wrapSvgFragment(svgContent);
       SVGLoader loader = new SVGLoader();
