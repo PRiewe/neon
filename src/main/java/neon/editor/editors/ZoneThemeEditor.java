@@ -206,7 +206,12 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
 
     theme.features.clear();
     for (Vector<?> data : (Vector<Vector>) featureModel.getDataVector()) {
-      theme.features.add(data.toArray());
+      RZoneTheme.Feature feature = new RZoneTheme.Feature();
+      feature.value = data.get(0).toString();
+      feature.t = data.get(1).toString();
+      feature.s = (Integer) data.get(2);
+      feature.n = (Integer) data.get(3);
+      theme.features.add(feature);
     }
 
     theme.items.clear();
@@ -237,8 +242,9 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
       itemModel.insertRow(0, data);
     }
 
-    for (Object[] feature : theme.features) {
-      featureModel.insertRow(0, feature);
+    for (RZoneTheme.Feature feature : theme.features) {
+      Object[] data = {feature.value, feature.t, feature.s, feature.n};
+      featureModel.insertRow(0, data);
     }
   }
 

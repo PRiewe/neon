@@ -36,7 +36,6 @@ import neon.resources.RItem;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
 import neon.util.Dice;
-import org.jdom2.Element;
 
 /**
  * Generates a piece of wilderness. The following types are supported:
@@ -310,15 +309,15 @@ public class WildernessGenerator {
 
   private void addFeatures(int width, int height, RRegionTheme theme) {
     double ratio = (width * height) / 10000d;
-    for (Element feature : theme.features) {
-      int n = (int) Float.parseFloat(feature.getAttributeValue("n")) * 100;
+    for (RRegionTheme.Feature feature : theme.features) {
+      int n = (int) Float.parseFloat(feature.n) * 100;
       if (n > 100) {
         n = mapUtils.random(0, (int) (n * ratio / 100));
       } else {
         n = (mapUtils.random(0, (int) (n * ratio)) > 50) ? 1 : 0;
       }
-      if (feature.getText().equals("lake")) { // large patch that just overwrites everything
-        int size = 100 / Integer.parseInt(feature.getAttributeValue("s"));
+      if (feature.value.equals("lake")) { // large patch that just overwrites everything
+        int size = 100 / Integer.parseInt(feature.s);
         ArrayList<Rectangle> lakes =
             blocksGenerator.createSparseRectangles(
                 width, height, width / size, height / size, 2, n);
@@ -328,7 +327,7 @@ public class WildernessGenerator {
           for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
               if (lake.contains(x, y)) {
-                terrain[y + 1][x + 1] = feature.getAttributeValue("t");
+                terrain[y + 1][x + 1] = feature.t;
               }
             }
           }
