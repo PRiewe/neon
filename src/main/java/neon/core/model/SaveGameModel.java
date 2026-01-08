@@ -109,66 +109,111 @@ public class SaveGameModel {
     public List<FeatReference> feats = new ArrayList<>();
   }
 
-  /** Skills data with dynamic attributes */
+  /** Skills data stored as XML attributes */
   public static class SkillsData {
-    // Skills are stored as XML attributes on the <skills> element
-    // Jackson will preserve all attributes as a map
-    @JacksonXmlProperty(isAttribute = true, localName = "blade")
-    public Float blade;
+    // Skills are stored as XML attributes - use @JacksonXmlProperty for each skill
+    // All 38 skills from the Skill enum
+    @JacksonXmlProperty(isAttribute = true, localName = "CREATION")
+    public Float CREATION;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "blunt")
-    public Float blunt;
+    @JacksonXmlProperty(isAttribute = true, localName = "DESTRUCTION")
+    public Float DESTRUCTION;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "axe")
-    public Float axe;
+    @JacksonXmlProperty(isAttribute = true, localName = "RESTORATION")
+    public Float RESTORATION;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "spear")
-    public Float spear;
+    @JacksonXmlProperty(isAttribute = true, localName = "ALTERATION")
+    public Float ALTERATION;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "bow")
-    public Float bow;
+    @JacksonXmlProperty(isAttribute = true, localName = "ILLUSION")
+    public Float ILLUSION;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "thrown")
-    public Float thrown;
+    @JacksonXmlProperty(isAttribute = true, localName = "ENCHANT")
+    public Float ENCHANT;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "athletics")
-    public Float athletics;
+    @JacksonXmlProperty(isAttribute = true, localName = "ALCHEMY")
+    public Float ALCHEMY;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "security")
-    public Float security;
+    @JacksonXmlProperty(isAttribute = true, localName = "CONJURATION")
+    public Float CONJURATION;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "sneak")
-    public Float sneak;
+    @JacksonXmlProperty(isAttribute = true, localName = "ARCHERY")
+    public Float ARCHERY;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "light_armor")
-    public Float light_armor;
+    @JacksonXmlProperty(isAttribute = true, localName = "AXE")
+    public Float AXE;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "medium_armor")
-    public Float medium_armor;
+    @JacksonXmlProperty(isAttribute = true, localName = "BLUNT")
+    public Float BLUNT;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "heavy_armor")
-    public Float heavy_armor;
+    @JacksonXmlProperty(isAttribute = true, localName = "BLADE")
+    public Float BLADE;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "alteration")
-    public Float alteration;
+    @JacksonXmlProperty(isAttribute = true, localName = "SPEAR")
+    public Float SPEAR;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "conjuration")
-    public Float conjuration;
+    @JacksonXmlProperty(isAttribute = true, localName = "UNARMED")
+    public Float UNARMED;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "destruction")
-    public Float destruction;
+    @JacksonXmlProperty(isAttribute = true, localName = "CLIMBING")
+    public Float CLIMBING;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "illusion")
-    public Float illusion;
+    @JacksonXmlProperty(isAttribute = true, localName = "SWIMMING")
+    public Float SWIMMING;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "restoration")
-    public Float restoration;
+    @JacksonXmlProperty(isAttribute = true, localName = "SNEAK")
+    public Float SNEAK;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "alchemy")
-    public Float alchemy;
+    @JacksonXmlProperty(isAttribute = true, localName = "HEAVY_ARMOR")
+    public Float HEAVY_ARMOR;
 
-    @JacksonXmlProperty(isAttribute = true, localName = "enchanting")
-    public Float enchanting;
+    @JacksonXmlProperty(isAttribute = true, localName = "MEDIUM_ARMOR")
+    public Float MEDIUM_ARMOR;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "LIGHT_ARMOR")
+    public Float LIGHT_ARMOR;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "DODGING")
+    public Float DODGING;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "BLOCK")
+    public Float BLOCK;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "UNARMORED")
+    public Float UNARMORED;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "MERCANTILE")
+    public Float MERCANTILE;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "PICKPOCKET")
+    public Float PICKPOCKET;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "ARMORER")
+    public Float ARMORER;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "LOCKPICKING")
+    public Float LOCKPICKING;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "MEDICAL")
+    public Float MEDICAL;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "DISABLE")
+    public Float DISABLE;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "SPEECHCRAFT")
+    public Float SPEECHCRAFT;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "PERFORM")
+    public Float PERFORM;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "DISGUISE")
+    public Float DISGUISE;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "RIDING")
+    public Float RIDING;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "NONE")
+    public Float NONE;
   }
 
   /** Stats data */

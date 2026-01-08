@@ -36,7 +36,7 @@ public class SaveGameModelTest {
         """
         <save version="2.0">
           <player name="TestHero" race="human" gender="male" spec="COMBAT" prof="warrior" sign="warrior" map="1" l="0" x="100" y="200">
-            <skills blade="10.0" athletics="5.0"/>
+            <skills BLADE="10.0" CLIMBING="5.0"/>
             <stats str="15" con="14" dex="12" int="10" wis="11" cha="9"/>
             <money>500</money>
           </player>
@@ -65,8 +65,8 @@ public class SaveGameModelTest {
     assertEquals(200, save.player.y);
 
     assertNotNull(save.player.skills);
-    assertEquals(10.0f, save.player.skills.blade);
-    assertEquals(5.0f, save.player.skills.athletics);
+    assertEquals(10.0f, save.player.skills.BLADE);
+    assertEquals(5.0f, save.player.skills.CLIMBING);
 
     assertNotNull(save.player.stats);
     assertEquals(15, save.player.stats.str);
@@ -305,11 +305,11 @@ public class SaveGameModelTest {
         """
         <save>
           <player name="Hero" race="human" gender="male" spec="COMBAT" prof="warrior" sign="warrior" map="1" l="0" x="0" y="0">
-            <skills blade="10.0" blunt="9.0" axe="8.0" spear="7.0" bow="6.0" thrown="5.0"
-                    athletics="15.0" security="3.0" sneak="2.0"
-                    light_armor="12.0" medium_armor="11.0" heavy_armor="10.0"
-                    alteration="5.0" conjuration="4.0" destruction="3.0" illusion="2.0" restoration="1.0"
-                    alchemy="6.0" enchanting="7.0"/>
+            <skills BLADE="10.0" BLUNT="9.0" AXE="8.0" SPEAR="7.0" ARCHERY="6.0"
+                    CLIMBING="15.0" LOCKPICKING="3.0" SNEAK="2.0"
+                    LIGHT_ARMOR="12.0" MEDIUM_ARMOR="11.0" HEAVY_ARMOR="10.0"
+                    ALTERATION="5.0" CONJURATION="4.0" DESTRUCTION="3.0" ILLUSION="2.0" RESTORATION="1.0"
+                    ALCHEMY="6.0" ENCHANT="7.0"/>
             <stats str="10" con="10" dex="10" int="10" wis="10" cha="10"/>
             <money>0</money>
           </player>
@@ -325,25 +325,24 @@ public class SaveGameModelTest {
     SaveGameModel save = mapper.fromXml(input, SaveGameModel.class);
 
     SaveGameModel.SkillsData skills = save.player.skills;
-    assertEquals(10.0f, skills.blade);
-    assertEquals(9.0f, skills.blunt);
-    assertEquals(8.0f, skills.axe);
-    assertEquals(7.0f, skills.spear);
-    assertEquals(6.0f, skills.bow);
-    assertEquals(5.0f, skills.thrown);
-    assertEquals(15.0f, skills.athletics);
-    assertEquals(3.0f, skills.security);
-    assertEquals(2.0f, skills.sneak);
-    assertEquals(12.0f, skills.light_armor);
-    assertEquals(11.0f, skills.medium_armor);
-    assertEquals(10.0f, skills.heavy_armor);
-    assertEquals(5.0f, skills.alteration);
-    assertEquals(4.0f, skills.conjuration);
-    assertEquals(3.0f, skills.destruction);
-    assertEquals(2.0f, skills.illusion);
-    assertEquals(1.0f, skills.restoration);
-    assertEquals(6.0f, skills.alchemy);
-    assertEquals(7.0f, skills.enchanting);
+    assertEquals(10.0f, skills.BLADE);
+    assertEquals(9.0f, skills.BLUNT);
+    assertEquals(8.0f, skills.AXE);
+    assertEquals(7.0f, skills.SPEAR);
+    assertEquals(6.0f, skills.ARCHERY);
+    assertEquals(15.0f, skills.CLIMBING);
+    assertEquals(3.0f, skills.LOCKPICKING);
+    assertEquals(2.0f, skills.SNEAK);
+    assertEquals(12.0f, skills.LIGHT_ARMOR);
+    assertEquals(11.0f, skills.MEDIUM_ARMOR);
+    assertEquals(10.0f, skills.HEAVY_ARMOR);
+    assertEquals(5.0f, skills.ALTERATION);
+    assertEquals(4.0f, skills.CONJURATION);
+    assertEquals(3.0f, skills.DESTRUCTION);
+    assertEquals(2.0f, skills.ILLUSION);
+    assertEquals(1.0f, skills.RESTORATION);
+    assertEquals(6.0f, skills.ALCHEMY);
+    assertEquals(7.0f, skills.ENCHANT);
   }
 
   @Test
@@ -352,7 +351,7 @@ public class SaveGameModelTest {
         """
         <save version="2.0">
           <player name="Aldric" race="human" gender="male" spec="STEALTH" prof="thief" sign="thief" map="5" l="2" x="1024" y="768">
-            <skills blade="15.5" athletics="20.0" sneak="25.0" security="18.5"/>
+            <skills BLADE="15.5" CLIMBING="20.0" SNEAK="25.0" LOCKPICKING="18.5"/>
             <stats str="12" con="13" dex="18" int="14" wis="12" cha="11"/>
             <money>1500</money>
             <item uid="1001"/>
@@ -389,10 +388,10 @@ public class SaveGameModelTest {
     assertEquals(768, save.player.y);
 
     // Verify skills
-    assertEquals(15.5f, save.player.skills.blade);
-    assertEquals(20.0f, save.player.skills.athletics);
-    assertEquals(25.0f, save.player.skills.sneak);
-    assertEquals(18.5f, save.player.skills.security);
+    assertEquals(15.5f, save.player.skills.BLADE);
+    assertEquals(20.0f, save.player.skills.CLIMBING);
+    assertEquals(25.0f, save.player.skills.SNEAK);
+    assertEquals(18.5f, save.player.skills.LOCKPICKING);
 
     // Verify stats
     assertEquals(18, save.player.stats.dex);
@@ -442,8 +441,8 @@ public class SaveGameModelTest {
     original.player.y = 200;
 
     original.player.skills = new SaveGameModel.SkillsData();
-    original.player.skills.blade = 10.0f;
-    original.player.skills.athletics = 5.0f;
+    original.player.skills.BLADE = 10.0f;
+    original.player.skills.CLIMBING = 5.0f;
 
     original.player.stats = new SaveGameModel.StatsData();
     original.player.stats.str = 15;
@@ -470,7 +469,7 @@ public class SaveGameModelTest {
     // Verify
     assertEquals(original.player.name, deserialized.player.name);
     assertEquals(original.player.race, deserialized.player.race);
-    assertEquals(original.player.skills.blade, deserialized.player.skills.blade);
+    assertEquals(original.player.skills.BLADE, deserialized.player.skills.BLADE);
     assertEquals(original.player.stats.str, deserialized.player.stats.str);
     assertEquals(original.player.money.value, deserialized.player.money.value);
     assertEquals(original.timer.ticks, deserialized.timer.ticks);
