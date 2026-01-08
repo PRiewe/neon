@@ -53,6 +53,18 @@ public class DataStore {
     return events;
   }
 
+  /**
+   * Loads all data from a mod.
+   *
+   * <p>NOTE (Phase 6 - Minimal Migration): Currently uses JDOM constructors for resource loading.
+   * Full migration to Jackson constructors deferred to Phase 7 when JDOM constructors are removed
+   * from resource classes. Maps already save via Jackson (Phase 2D), but resource loading still
+   * uses JDOM via XMLTranslator, similar to ModLoader.
+   *
+   * @param root the mod path
+   * @param active whether this is the active mod
+   * @param extension whether the mod is an extension
+   */
   public void loadData(String root, boolean active, boolean extension) {
     RMod mod = new RMod(loadInfo(root, "main.xml"), loadCC(root, "cc.xml"), root);
     if (active) {

@@ -180,6 +180,13 @@ public class ModFiler {
     saveScripts();
   }
 
+  /**
+   * Saves all maps using Jackson XML serialization.
+   *
+   * <p>NOTE (Phase 6 - Partial Migration): Maps use Jackson via toWorldModel()/toDungeonModel()
+   * (migrated in Phase 2D). Other resources still use toElement() bridge and XMLTranslator. Full
+   * migration of resource saving to Jackson deferred to Phase 7.
+   */
   private void saveMaps() {
     // Delete maps that no longer exist
     for (String name : files.listFiles(store.getActive().getPath()[0], "maps")) {
