@@ -106,7 +106,7 @@ public class TestEngineContext {
     setStaticField(Engine.class, "game", testGame);
 
     // Create stub FileSystem
-    setStaticField(Engine.class, "files", new StubFileSystem());
+    setStaticField(Engine.class, "files", stubFileSystem);
 
     // Create stub PhysicsSystem
     setStaticField(Engine.class, "physics", new StubPhysicsSystem());
