@@ -155,7 +155,8 @@ public class WorldModelTest {
   @Test
   @Disabled
   public void testMixedItems() throws IOException {
-    String xml = """
+    String xml =
+        """
       <world>
           <header uid="1">
               <name>World</name>
@@ -179,10 +180,10 @@ public class WorldModelTest {
     WorldModel world = mapper.fromXml(input, WorldModel.class);
 
     // Note: Jackson may only parse first consecutive sequence of <item> elements
-      assertFalse(world.items.items.isEmpty());
+    assertFalse(world.items.items.isEmpty());
     assertEquals(1, world.items.doors.size());
     assertEquals(1, world.items.containers.size());
-    assertEquals(1,world.items.items.stream().filter(x->x.id.equals("sword")).count());
+    assertEquals(1, world.items.items.stream().filter(x -> x.id.equals("sword")).count());
     assertEquals("door", world.items.doors.get(0).id);
     assertEquals("chest", world.items.containers.get(0).id);
   }
