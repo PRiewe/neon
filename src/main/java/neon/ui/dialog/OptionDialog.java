@@ -29,12 +29,9 @@ import javax.swing.border.*;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
 import neon.core.GameContext;
+import neon.core.model.NeonConfig;
 import neon.resources.CClient;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
+import neon.systems.files.JacksonMapper;
 
 @Slf4j
 public class OptionDialog {
@@ -192,39 +189,47 @@ public class OptionDialog {
     }
 
     private void save() {
-      Document doc = new Document();
+      NeonConfig config = null;
+      JacksonMapper mapper = new JacksonMapper();
+
+      // Load existing config
       try {
         FileInputStream in = new FileInputStream("neon.ini.xml");
-        doc = new SAXBuilder().build(in);
+        config = mapper.fromXml(in, NeonConfig.class);
         in.close();
       } catch (Exception e) {
-        log.error("Error on save", e);
+        log.error("Error loading config", e);
+        config = new NeonConfig(); // Create default if load fails
       }
 
+      // Update audio setting
       Configuration.audio = audioBox.isSelected();
-      Element ini = doc.getRootElement();
+
+      // Update keyboard layout
       CClient keys = (CClient) context.getResources().getResource("client", "config");
       if (group.isSelected(numpad.getModel())) {
         keys.setKeys(CClient.NUMPAD);
-        ini.getChild("keys").setText("numpad");
+        config.keys = "numpad";
       } else if (group.isSelected(azerty.getModel())) {
         keys.setKeys(CClient.AZERTY);
-        ini.getChild("keys").setText("azerty");
+        config.keys = "azerty";
       } else if (group.isSelected(qwerty.getModel())) {
         keys.setKeys(CClient.QWERTY);
-        ini.getChild("keys").setText("qwerty");
+        config.keys = "qwerty";
       } else if (group.isSelected(qwertz.getModel())) {
         keys.setKeys(CClient.QWERTZ);
-        ini.getChild("keys").setText("qwertz");
+        config.keys = "qwertz";
       }
 
-      XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+      // Save config
       try {
-        FileOutputStream out = new FileOutputStream("neon.ini.xml");
-        outputter.output(doc, out);
-        out.close();
+        java.io.ByteArrayOutputStream out = mapper.toXml(config);
+        String xml = out.toString("UTF-8");
+        FileOutputStream fileOut = new FileOutputStream("neon.ini.xml");
+        fileOut.write(xml.getBytes("UTF-8"));
+        fileOut.close();
       } catch (IOException e) {
-        log.error("Error on save", e);
+        log.error("Error saving config", e);
       }
     }
   }
