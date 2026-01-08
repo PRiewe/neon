@@ -18,16 +18,39 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import java.io.ByteArrayInputStream;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
+@JacksonXmlRootElement(localName = "dungeon")
 public class RDungeonTheme extends RData {
-  public int min, max, branching;
+  @JacksonXmlProperty(isAttribute = true)
+  public int min;
+
+  @JacksonXmlProperty(isAttribute = true)
+  public int max;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "b")
+  public int branching;
+
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
   public String zones;
+
+  // No-arg constructor for Jackson deserialization
+  public RDungeonTheme() {
+    super("unknown");
+  }
 
   public RDungeonTheme(String id, String... path) {
     super(id, path);
   }
 
+  // Keep JDOM constructor for backward compatibility during migration
   public RDungeonTheme(Element props, String... path) {
     super(props.getAttributeValue("id"), path);
     min = Integer.parseInt(props.getAttributeValue("min"));
@@ -36,13 +59,18 @@ public class RDungeonTheme extends RData {
     zones = props.getAttributeValue("zones");
   }
 
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
   public Element toElement() {
-    Element theme = new Element("dungeon");
-    theme.setAttribute("id", id);
-    theme.setAttribute("min", Integer.toString(min));
-    theme.setAttribute("max", Integer.toString(max));
-    theme.setAttribute("b", Integer.toString(branching));
-    theme.setAttribute("zones", zones);
-    return theme;
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      return new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RDungeonTheme to Element", e);
+    }
   }
 }
