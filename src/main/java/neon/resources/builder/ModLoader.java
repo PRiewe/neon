@@ -59,6 +59,7 @@ public class ModLoader {
       cc = files.getFile(new XMLTranslator(), path, "cc.xml").getRootElement();
     }
 
+    // Use JDOM constructor for now - Jackson migration deferred to Phase 7
     RMod rmod = new RMod(mod, cc);
     rmod.addMaps(initMaps(path, "maps"));
 
@@ -150,6 +151,7 @@ public class ModLoader {
         try {
           Document doc = files.getFile(new XMLTranslator(), path, "quests", quest);
           if (doc != null && doc.hasRootElement()) {
+            // Use JDOM constructor for now - Jackson migration deferred to Phase 7
             resourceManager.addResource(new RQuest(quest, doc.getRootElement()), "quest");
           } else {
             log.warn("Quest file {} has no root element, skipping", quest);
@@ -194,6 +196,7 @@ public class ModLoader {
     if (files.exists(file)) {
       Element creatures = files.getFile(new XMLTranslator(), file).getRootElement();
       for (Element c : creatures.getChildren()) {
+        // Use JDOM constructors for now - Jackson migration deferred to Phase 7
         switch (c.getName()) {
           case "npc":
             resourceManager.addResource(new RPerson(c));
@@ -213,6 +216,7 @@ public class ModLoader {
     if (files.exists(file)) {
       Element items = files.getFile(new XMLTranslator(), file).getRootElement();
       for (Element e : items.getChildren()) {
+        // Use JDOM constructors for now - Jackson migration deferred to Phase 7
         switch (e.getName()) {
           case "book":
           case "scroll":
@@ -251,6 +255,7 @@ public class ModLoader {
   private void initTerrain(String... file) {
     Element terrain = files.getFile(new XMLTranslator(), file).getRootElement();
     for (Element e : terrain.getChildren()) {
+      // Use JDOM constructors for now - Jackson migration deferred to Phase 7
       resourceManager.addResource(new RTerrain(e), "terrain");
     }
   }
@@ -259,6 +264,7 @@ public class ModLoader {
     if (files.exists(file)) {
       Element themes = files.getFile(new XMLTranslator(), file).getRootElement();
       for (Element theme : themes.getChildren()) {
+        // Use JDOM constructors for now - Jackson migration deferred to Phase 7
         switch (theme.getName()) {
           case "dungeon":
             resourceManager.addResource(new RDungeonTheme(theme), "theme");
@@ -278,6 +284,7 @@ public class ModLoader {
     if (files.exists(file)) {
       Element resources = files.getFile(new XMLTranslator(), file).getRootElement();
       for (Element resource : resources.getChildren()) {
+        // Use JDOM constructors for now - Jackson migration deferred to Phase 7
         switch (resource.getName()) {
           case "sign":
             resourceManager.addResource(new RSign(resource), "magic");
