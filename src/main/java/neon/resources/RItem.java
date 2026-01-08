@@ -67,7 +67,41 @@ public class RItem extends RData implements Serializable {
   @JsonProperty(required = false)
   public String spell;
 
-  public String svg; // TODO: Handle svg child element later
+  // SVG content stored in a wrapper to properly deserialize inner XML
+  @JacksonXmlProperty(localName = "svg")
+  @JsonProperty(required = false)
+  private SvgWrapper svgWrapper;
+
+  // Public field for backward compatibility
+  @com.fasterxml.jackson.annotation.JsonIgnore public String svg;
+
+  /**
+   * Get SVG content.
+   *
+   * @return SVG content string
+   */
+  @com.fasterxml.jackson.annotation.JsonIgnore
+  public String getSvg() {
+    return svg;
+  }
+
+  /**
+   * Set SVG content (used by Jackson).
+   *
+   * @param wrapper the SVG wrapper
+   */
+  @com.fasterxml.jackson.annotation.JsonSetter("svg")
+  private void setSvgWrapper(SvgWrapper wrapper) {
+    this.svgWrapper = wrapper;
+    this.svg = (wrapper != null && wrapper.content != null) ? wrapper.content.trim() : null;
+  }
+
+  /** Wrapper class to deserialize SVG child element. */
+  private static class SvgWrapper {
+    @com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText public String content;
+
+    public SvgWrapper() {}
+  }
 
   /**
    * Sync z attribute to top field (called by Jackson after deserialization).
