@@ -21,8 +21,11 @@ package neon.editor.resources;
 import java.util.*;
 import neon.editor.Editor;
 import neon.editor.maps.*;
+import neon.maps.model.DungeonModel;
+import neon.maps.model.WorldModel;
 import neon.resources.RData;
 import neon.resources.RDungeonTheme;
+import neon.resources.RScript;
 import neon.systems.files.XMLTranslator;
 import neon.ui.graphics.Renderable;
 import org.jdom2.*;
@@ -177,6 +180,213 @@ public class RMap extends RData {
     }
 
     return root;
+  }
+
+  /**
+   * Converts this map to a WorldModel for Jackson XML serialization.
+   *
+   * @return WorldModel representation
+   */
+  public WorldModel toWorldModel() {
+    WorldModel model = new WorldModel();
+
+    // Header
+    model.header = new WorldModel.Header();
+    model.header.uid = uid;
+    model.header.name = name;
+
+    RZone zone = zones.get(0);
+    for (Renderable r : zone.getScene().getElements()) {
+      Instance instance = (Instance) r;
+
+      if (instance instanceof IRegion) {
+        model.regions.add(convertRegion((IRegion) instance));
+      } else if (instance instanceof IObject) {
+        IObject obj = (IObject) instance;
+        if (instance instanceof IDoor) {
+          model.items.doors.add(convertDoor((IDoor) instance));
+        } else if (instance instanceof IContainer) {
+          model.items.containers.add(convertContainer((IContainer) instance));
+        } else {
+          model.items.items.add(convertItem(obj));
+        }
+      } else if (instance instanceof IPerson) {
+        model.creatures.add(convertCreature((IPerson) instance));
+      }
+    }
+
+    return model;
+  }
+
+  /**
+   * Converts this map to a DungeonModel for Jackson XML serialization.
+   *
+   * @return DungeonModel representation
+   */
+  public DungeonModel toDungeonModel() {
+    DungeonModel model = new DungeonModel();
+
+    // Header
+    model.header = new WorldModel.Header();
+    model.header.uid = uid;
+    model.header.name = name;
+
+    // Levels
+    for (Integer levelNum : zones.keySet()) {
+      RZone zone = zones.get(levelNum);
+      DungeonModel.Level level = new DungeonModel.Level();
+      level.l = levelNum;
+      level.name = zone.name;
+
+      if (zone.theme != null) {
+        level.theme = zone.theme.id;
+        // Theme-based zones don't have explicit content
+      } else {
+        // Explicit zone content
+        for (Renderable r : zone.getScene().getElements()) {
+          Instance instance = (Instance) r;
+
+          if (instance instanceof IRegion) {
+            level.regions.add(convertRegion((IRegion) instance));
+          } else if (instance instanceof IObject) {
+            IObject obj = (IObject) instance;
+            if (instance instanceof IDoor) {
+              level.items.doors.add(convertDoor((IDoor) instance));
+            } else if (instance instanceof IContainer) {
+              level.items.containers.add(convertContainer((IContainer) instance));
+            } else {
+              level.items.items.add(convertItem(obj));
+            }
+          } else if (instance instanceof IPerson) {
+            level.creatures.add(convertCreature((IPerson) instance));
+          }
+        }
+      }
+
+      model.levels.add(level);
+    }
+
+    return model;
+  }
+
+  private WorldModel.RegionData convertRegion(IRegion region) {
+    WorldModel.RegionData data = new WorldModel.RegionData();
+    data.x = region.x;
+    data.y = region.y;
+    data.w = region.width;
+    data.h = region.height;
+    data.l = (byte) region.z;
+    data.text = region.resource.id;
+    if (region.theme != null) {
+      data.random = region.theme.id;
+    }
+    if (region.label != null && !region.label.isEmpty()) {
+      data.label = region.label;
+    }
+    for (RScript script : region.scripts) {
+      WorldModel.RegionData.ScriptReference scriptRef = new WorldModel.RegionData.ScriptReference();
+      scriptRef.id = script.id;
+      data.scripts.add(scriptRef);
+    }
+    return data;
+  }
+
+  private WorldModel.CreaturePlacement convertCreature(IPerson person) {
+    WorldModel.CreaturePlacement cp = new WorldModel.CreaturePlacement();
+    cp.x = person.x;
+    cp.y = person.y;
+    cp.id = person.resource.id;
+    cp.uid = person.uid;
+    return cp;
+  }
+
+  private WorldModel.ItemPlacement convertItem(IObject obj) {
+    WorldModel.ItemPlacement ip = new WorldModel.ItemPlacement();
+    ip.x = obj.x;
+    ip.y = obj.y;
+    ip.id = obj.resource.id;
+    ip.uid = obj.uid;
+    return ip;
+  }
+
+  private WorldModel.DoorPlacement convertDoor(IDoor door) {
+    WorldModel.DoorPlacement dp = new WorldModel.DoorPlacement();
+    dp.x = door.x;
+    dp.y = door.y;
+    dp.id = door.resource.id;
+    dp.uid = door.uid;
+
+    if (door.state != null) {
+      dp.state = door.state.toString().toLowerCase();
+    }
+    if (door.lock > 0) {
+      dp.lock = door.lock;
+    }
+    if (door.key != null) {
+      dp.key = door.key.id;
+    }
+    if (door.trap > 0) {
+      dp.trap = door.trap;
+    }
+    if (door.spell != null) {
+      dp.spell = door.spell.id;
+    }
+
+    // Destination
+    if (door.destMap != null || door.destTheme != null) {
+      dp.destination = new WorldModel.DoorPlacement.Destination();
+      if (door.destTheme != null) {
+        dp.destination.theme = door.destTheme.id;
+      } else {
+        if (door.destPos != null) {
+          dp.destination.x = door.destPos.x;
+          dp.destination.y = door.destPos.y;
+        }
+        if (door.destZone != null && door.destMap != null) {
+          dp.destination.z = door.destMap.getZone(door.destZone);
+        }
+        if (door.destMap != null) {
+          dp.destination.map = (int) door.destMap.uid;
+        }
+      }
+      if (door.text != null && !door.text.isEmpty()) {
+        dp.destination.sign = door.text;
+      }
+    }
+
+    return dp;
+  }
+
+  private WorldModel.ContainerPlacement convertContainer(IContainer container) {
+    WorldModel.ContainerPlacement cp = new WorldModel.ContainerPlacement();
+    cp.x = container.x;
+    cp.y = container.y;
+    cp.id = container.resource.id;
+    cp.uid = container.uid;
+
+    if (container.lock > 0) {
+      cp.lock = container.lock;
+    }
+    if (container.key != null) {
+      cp.key = container.key.id;
+    }
+    if (container.trap > 0) {
+      cp.trap = container.trap;
+    }
+    if (container.spell != null) {
+      cp.spell = container.spell.id;
+    }
+
+    // Contents
+    for (IObject item : container.contents) {
+      WorldModel.ContainerPlacement.ContainerItem ci =
+          new WorldModel.ContainerPlacement.ContainerItem();
+      ci.id = item.resource.id;
+      ci.uid = item.uid;
+      cp.contents.add(ci);
+    }
+
+    return cp;
   }
 
   public void load() {

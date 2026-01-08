@@ -18,6 +18,7 @@
 
 package neon.editor;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,6 +26,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import neon.editor.resources.*;
+import neon.maps.model.DungeonModel;
+import neon.maps.model.WorldModel;
 import neon.resources.RCraft;
 import neon.resources.RCreature;
 import neon.resources.RDungeonTheme;
@@ -41,6 +44,7 @@ import neon.resources.RTerrain;
 import neon.resources.RZoneTheme;
 import neon.resources.quest.RQuest;
 import neon.systems.files.FileSystem;
+import neon.systems.files.JacksonMapper;
 import neon.systems.files.StringTranslator;
 import neon.systems.files.XMLTranslator;
 import org.jdom2.Document;
@@ -177,6 +181,7 @@ public class ModFiler {
   }
 
   private void saveMaps() {
+    // Delete maps that no longer exist
     for (String name : files.listFiles(store.getActive().getPath()[0], "maps")) {
       String map =
           name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 for ".xml"
@@ -184,9 +189,26 @@ public class ModFiler {
         files.delete(name);
       }
     }
+
+    // Save maps using Jackson serialization
+    JacksonMapper mapper = new JacksonMapper();
     for (RMap map : editor.mapEditor.getActiveMaps()) {
-      Document doc = new Document().setRootElement(map.toElement());
-      saveFile(doc, "maps", map.id + ".xml");
+      try {
+        ByteArrayOutputStream out;
+        if (map.isDungeon()) {
+          DungeonModel model = map.toDungeonModel();
+          out = mapper.toXml(model);
+        } else {
+          WorldModel model = map.toWorldModel();
+          out = mapper.toXml(model);
+        }
+        // Convert ByteArrayOutputStream to String for saveFile
+        String xml = out.toString("UTF-8");
+        saveFile(xml, "maps", map.id + ".xml");
+      } catch (Exception e) {
+        System.err.println("Failed to save map: " + map.id);
+        e.printStackTrace();
+      }
     }
   }
 
