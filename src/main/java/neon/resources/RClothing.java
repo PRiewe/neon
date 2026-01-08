@@ -80,6 +80,7 @@ public class RClothing extends RItem implements Serializable {
   // No-arg constructor for Jackson deserialization
   public RClothing() {
     super();
+    this.type = Type.clothing; // Default type (can also be armor)
   }
 
   public RClothing(String id, Type type, String... path) {

@@ -19,6 +19,7 @@
 package neon.resources;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
@@ -90,6 +91,7 @@ public class RItem extends RData implements Serializable {
   // No-arg constructor for Jackson deserialization
   public RItem() {
     super("unknown");
+    this.type = Type.item; // Default type for generic items
   }
 
   // Keep JDOM constructor for backward compatibility during migration
@@ -157,6 +159,38 @@ public class RItem extends RData implements Serializable {
     public String closed = " ";
     public String locked = " ";
 
+    /** Inner class for door states */
+    public static class States {
+      @JacksonXmlProperty(isAttribute = true)
+      public String closed;
+
+      @JacksonXmlProperty(isAttribute = true)
+      public String locked;
+    }
+
+    @JacksonXmlProperty(localName = "states")
+    private States statesElement;
+
+    /** Called by Jackson after deserialization to sync states to fields */
+    @com.fasterxml.jackson.annotation.JsonSetter("states")
+    public void setStatesElement(States states) {
+      this.statesElement = states;
+      if (states != null) {
+        if (states.closed != null) {
+          this.closed = states.closed;
+        }
+        if (states.locked != null) {
+          this.locked = states.locked;
+        }
+      }
+    }
+
+    // No-arg constructor for Jackson deserialization
+    public Door() {
+      super();
+      this.type = Type.door;
+    }
+
     public Door(Element door, String... path) {
       super(door, path);
       Element states = door.getChild("states");
@@ -197,13 +231,27 @@ public class RItem extends RData implements Serializable {
   }
 
   public static class Potion extends RItem implements Serializable {
+    // No-arg constructor for Jackson deserialization
+    public Potion() {
+      super();
+      this.type = Type.potion;
+    }
+
     public Potion(Element potion, String... path) {
       super(potion, path);
     }
   }
 
   public static class Container extends RItem implements Serializable {
+    @JacksonXmlElementWrapper(useWrapping = false)
+    @JacksonXmlProperty(localName = "item")
     public ArrayList<String> contents = new ArrayList<String>();
+
+    // No-arg constructor for Jackson deserialization
+    public Container() {
+      super();
+      this.type = Type.container;
+    }
 
     public Container(Element container, String... path) {
       super(container, path);
@@ -214,7 +262,13 @@ public class RItem extends RData implements Serializable {
   }
 
   public static class Text extends RItem implements Serializable {
-    public String content;
+    @com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText public String content;
+
+    // No-arg constructor for Jackson deserialization
+    public Text() {
+      super();
+      this.type = Type.book; // Default to book, can also be scroll
+    }
 
     public Text(Element text, String... path) {
       super(text, path);
