@@ -396,4 +396,31 @@ public class RCreature extends RData {
       throw new RuntimeException("Failed to serialize RCreature to Element", e);
     }
   }
+
+  /**
+   * Creates a deep copy of this creature resource.
+   *
+   * <p>Used by GameLoader for player initialization to create an independent copy of the player's
+   * species template. The clone is created via Jackson serialization/deserialization to ensure all
+   * fields are properly copied.
+   *
+   * @return independent copy of this creature with all fields duplicated
+   * @throws RuntimeException if cloning fails
+   */
+  public RCreature clone() {
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      RCreature copy = mapper.fromXml(xml, RCreature.class);
+
+      // Preserve path which isn't serialized by Jackson
+      if (this.path != null) {
+        copy.path = this.path.clone();
+      }
+
+      return copy;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to clone RCreature: " + id, e);
+    }
+  }
 }

@@ -117,8 +117,7 @@ public class GameLoader {
       log.debug("Engine.initGame() start");
 
       // initialize player
-      RCreature species =
-          new RCreature(((RCreature) Engine.getResources().getResource(race)).toElement());
+      RCreature species = ((RCreature) Engine.getResources().getResource(race)).clone();
       Player player = new Player(species, name, gender, spec, profession);
       player.species.text = "@";
       engine.startGame(new Game(player, Engine.getFileSystem()));
@@ -265,7 +264,7 @@ public class GameLoader {
     RCreature species = (RCreature) Engine.getResources().getResource(playerData.race);
     Player player =
         new Player(
-            new RCreature(species.toElement()),
+            species.clone(),
             playerData.name,
             Gender.valueOf(playerData.gender.toUpperCase()),
             Player.Specialisation.valueOf(playerData.specialisation),
