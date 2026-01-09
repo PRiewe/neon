@@ -58,7 +58,8 @@ public class JacksonMapper {
       input.close();
       return result;
     } catch (IOException e) {
-      log.error("Failed to deserialize XML to {}", valueType.getSimpleName(), e);
+      log.error(
+          "Failed to deserialize XML to {} due to {}", valueType.getSimpleName(), e.toString());
       return null;
     }
   }
@@ -74,7 +75,10 @@ public class JacksonMapper {
     try {
       mapper.writerWithDefaultPrettyPrinter().writeValue(out, object);
     } catch (IOException e) {
-      log.error("Failed to serialize {} to XML", object.getClass().getSimpleName(), e);
+      log.error(
+          "Failed to serialize {} to XML due to {}",
+          object.getClass().getSimpleName(),
+          e.toString());
     }
     return out;
   }
@@ -86,5 +90,92 @@ public class JacksonMapper {
    */
   public XmlMapper getMapper() {
     return mapper;
+  }
+
+  /**
+   * Deserialize XML from a String to a specified type.
+   *
+   * @param <T> the type of object to deserialize to
+   * @param xmlString the XML string
+   * @param valueType the class of the type to deserialize to
+   * @return the deserialized object, or null if an error occurs
+   */
+  public <T> T fromXml(String xmlString, Class<T> valueType) {
+    try {
+      return mapper.readValue(xmlString, valueType);
+    } catch (IOException e) {
+      log.error(
+          "Failed to deserialize XML to {} due to {}", valueType.getSimpleName(), e.toString());
+      return null;
+    }
+  }
+
+  /**
+   * Parse an XML file containing multiple heterogeneous child elements under a root element. This
+   * is useful for resource files that contain different types of resources.
+   *
+   * @param input the input stream containing XML with a root element and mixed child elements
+   * @param elementHandler a handler that processes each child element based on its name
+   * @throws IOException if an error occurs reading the stream
+   */
+  public void parseMultiTypeXml(InputStream input, ElementHandler elementHandler)
+      throws IOException {
+    try {
+      // Read the entire stream into a string for manipulation
+      String xmlContent = new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+      input.close();
+
+      // Parse with basic XML parsing to extract individual elements
+      javax.xml.parsers.DocumentBuilderFactory factory =
+          javax.xml.parsers.DocumentBuilderFactory.newInstance();
+      javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
+      org.w3c.dom.Document doc = builder.parse(new ByteArrayInputStream(xmlContent.getBytes()));
+
+      org.w3c.dom.Element root = doc.getDocumentElement();
+      org.w3c.dom.NodeList children = root.getChildNodes();
+
+      for (int i = 0; i < children.getLength(); i++) {
+        org.w3c.dom.Node node = children.item(i);
+        if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+          org.w3c.dom.Element element = (org.w3c.dom.Element) node;
+          String elementName = element.getNodeName();
+          String elementXml = nodeToString(element);
+
+          // Call handler with element name and XML string
+          elementHandler.handle(elementName, elementXml);
+        }
+      }
+    } catch (Exception e) {
+      throw new IOException("Failed to parse multi-type XML", e);
+    }
+  }
+
+  /** Convert a DOM Node to an XML string. */
+  private String nodeToString(org.w3c.dom.Node node) {
+    try {
+      javax.xml.transform.TransformerFactory tf =
+          javax.xml.transform.TransformerFactory.newInstance();
+      javax.xml.transform.Transformer transformer = tf.newTransformer();
+      transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+      java.io.StringWriter writer = new java.io.StringWriter();
+      transformer.transform(
+          new javax.xml.transform.dom.DOMSource(node),
+          new javax.xml.transform.stream.StreamResult(writer));
+      return writer.getBuffer().toString();
+    } catch (Exception e) {
+      return "";
+    }
+  }
+
+  /** Functional interface for handling individual XML elements in a multi-type XML document. */
+  @FunctionalInterface
+  public interface ElementHandler {
+    /**
+     * Handle an XML element.
+     *
+     * @param elementName the name of the XML element (e.g., "spell", "item", "creature")
+     * @param elementXml the XML string for this element
+     */
+    void handle(String elementName, String elementXml);
   }
 }

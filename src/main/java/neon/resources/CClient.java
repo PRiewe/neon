@@ -28,7 +28,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import lombok.Getter;
+import lombok.Setter;
 import neon.systems.files.JacksonMapper;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -105,7 +108,7 @@ public class CClient extends Resource {
   // other settings
   private String bigCoin = "\u20AC"; // Euro symbol
   private String smallCoin = "c";
-  private String title = "";
+  @Setter @Getter private String title = "";
 
   // No-arg constructor for Jackson deserialization
   public CClient() {
@@ -140,7 +143,7 @@ public class CClient extends Resource {
     // language
     Properties defaults = new Properties(); // load locale.en as default
     try (FileInputStream stream = new FileInputStream("data/locale/locale.en");
-        InputStreamReader reader = new InputStreamReader(stream, Charset.forName("UTF-8"))) {
+        InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
       defaults.load(reader);
     } catch (IOException e) {
       e.printStackTrace();
@@ -186,14 +189,6 @@ public class CClient extends Resource {
 
   public void setSmall(String name) {
     smallCoin = name;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
   }
 
   public int getSettings() {
@@ -400,44 +395,26 @@ public class CClient extends Resource {
   }
 
   private static int getKeyCode(String code) {
-    switch (code) {
-      case "VK_B":
-        return KeyEvent.VK_B;
-      case "VK_F":
-        return KeyEvent.VK_F;
-      case "VK_G":
-        return KeyEvent.VK_G;
-      case "VK_H":
-        return KeyEvent.VK_H;
-      case "VK_I":
-        return KeyEvent.VK_I;
-      case "VK_J":
-        return KeyEvent.VK_J;
-      case "VK_K":
-        return KeyEvent.VK_K;
-      case "VK_L":
-        return KeyEvent.VK_L;
-      case "VK_M":
-        return KeyEvent.VK_M;
-      case "VK_N":
-        return KeyEvent.VK_N;
-      case "VK_O":
-        return KeyEvent.VK_O;
-      case "VK_P":
-        return KeyEvent.VK_P;
-      case "VK_R":
-        return KeyEvent.VK_R;
-      case "VK_T":
-        return KeyEvent.VK_T;
-      case "VK_U":
-        return KeyEvent.VK_U;
-      case "VK_V":
-        return KeyEvent.VK_V;
-      case "VK_SPACE":
-        return KeyEvent.VK_SPACE;
-      default:
-        return 0;
-    }
+    return switch (code) {
+      case "VK_B" -> KeyEvent.VK_B;
+      case "VK_F" -> KeyEvent.VK_F;
+      case "VK_G" -> KeyEvent.VK_G;
+      case "VK_H" -> KeyEvent.VK_H;
+      case "VK_I" -> KeyEvent.VK_I;
+      case "VK_J" -> KeyEvent.VK_J;
+      case "VK_K" -> KeyEvent.VK_K;
+      case "VK_L" -> KeyEvent.VK_L;
+      case "VK_M" -> KeyEvent.VK_M;
+      case "VK_N" -> KeyEvent.VK_N;
+      case "VK_O" -> KeyEvent.VK_O;
+      case "VK_P" -> KeyEvent.VK_P;
+      case "VK_R" -> KeyEvent.VK_R;
+      case "VK_T" -> KeyEvent.VK_T;
+      case "VK_U" -> KeyEvent.VK_U;
+      case "VK_V" -> KeyEvent.VK_V;
+      case "VK_SPACE" -> KeyEvent.VK_SPACE;
+      default -> 0;
+    };
   }
 
   /**

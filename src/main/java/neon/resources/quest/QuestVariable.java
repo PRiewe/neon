@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -42,7 +43,7 @@ import org.jdom2.input.SAXBuilder;
  * @author Peter Riewe
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class QuestVariable {
+public class QuestVariable implements Serializable {
   /**
    * The variable name/placeholder (e.g., "item", "npc", "target"). This is the text content of the
    * XML element.

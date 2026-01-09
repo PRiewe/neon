@@ -20,6 +20,7 @@ package neon.resources.quest;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -28,7 +29,7 @@ import java.util.Collection;
  *
  * @author mdriesen
  */
-public class Conversation {
+public class Conversation implements Serializable {
   /** The resource ID of the quest this conversation belongs to. */
   public final String questID;
 

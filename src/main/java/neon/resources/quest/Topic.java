@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -33,7 +34,7 @@ import org.jdom2.input.SAXBuilder;
  * @author mdriesen
  */
 @JacksonXmlRootElement(localName = "topic")
-public class Topic {
+public class Topic implements Serializable {
   /** The resource ID of the quest this topic belongs to. */
   public final String questID;
 

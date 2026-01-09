@@ -32,14 +32,16 @@ import org.jdom2.Element;
  * @author mdriesen
  */
 @JacksonXmlRootElement // Accepts quest or repeat element names
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = RQuestDeserializer.class)
 public class RQuest extends RData {
   // Quest variables for dynamic content ($item$, $npc$, etc.)
+  // Handled manually in RQuestDeserializer due to complex element-name-as-category mapping
   @JsonIgnore public List<QuestVariable> variables = new ArrayList<>();
 
   @JsonIgnore public int frequency;
 
   // repeat quests can run more than once
-  // Determined by element name (quest vs repeat)
+  // Determined by element name (quest vs repeat) - set in deserializer
   @JsonIgnore public boolean repeat = false;
 
   // initial quest is added as soon as game starts
@@ -47,8 +49,10 @@ public class RQuest extends RData {
 
   @JsonIgnore private ArrayList<String> conditions = new ArrayList<String>();
 
+  // Complex nested structure - handled manually in deserializer
   @JsonIgnore private ArrayList<Conversation> conversations = new ArrayList<Conversation>();
 
+  // JDOM constructor for backward compatibility during migration
   public RQuest(String id, Element properties, String... path) {
     super(id, path);
     try {
@@ -88,6 +92,11 @@ public class RQuest extends RData {
     super(id, path);
   }
 
+  /** No-arg constructor for Jackson deserialization. */
+  public RQuest() {
+    super("unknown");
+  }
+
   /**
    * Gets the quest variables.
    *
@@ -102,6 +111,7 @@ public class RQuest extends RData {
    *
    * @return Element representation of variables, or null if no variables
    */
+  @JsonIgnore
   public Element getVariablesElement() {
     if (variables.isEmpty()) {
       return null;
@@ -119,6 +129,7 @@ public class RQuest extends RData {
    *
    * @param vars Element to parse into QuestVariable objects
    */
+  @JsonIgnore
   public void setVariablesElement(Element vars) {
     variables.clear();
     if (vars != null) {

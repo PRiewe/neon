@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.Game;
 import neon.core.event.TaskQueue;
@@ -32,6 +33,7 @@ import org.jdom2.input.SAXBuilder;
  * <p>Provides minimal stub implementations of Engine singletons to support testing without full
  * Engine initialization.
  */
+@Slf4j
 public class TestEngineContext {
 
   private static MVStore testDb;
@@ -138,7 +140,7 @@ public class TestEngineContext {
       testStore = null;
 
     } catch (Exception e) {
-      System.err.println("Warning: Failed to reset test engine context: " + e.getMessage());
+      log.error("Failed to reset test engine context", e);
     }
   }
 

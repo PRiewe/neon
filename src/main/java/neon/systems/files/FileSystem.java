@@ -226,6 +226,27 @@ public class FileSystem {
   }
 
   /**
+   * Get a raw InputStream for a file.
+   *
+   * @param path the path components to the file
+   * @return the InputStream, or null if the file doesn't exist
+   */
+  public InputStream getStream(String... path) {
+    try {
+      if (new File(temp.getPath() + toString(path)).exists()) {
+        return new FileInputStream(temp.getPath() + toString(path));
+      } else if (jars.containsKey(path[0])) { // path[0] is the name of the mod
+        JarFile jar = new JarFile(new File(jars.get(path[0])));
+        return jar.getInputStream(jar.getEntry(files.get(path)));
+      } else {
+        return new FileInputStream(files.get(path));
+      }
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  /**
    * @param file
    * @return whether this file exists or not
    */

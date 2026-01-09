@@ -25,6 +25,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import neon.entities.property.Habitat;
@@ -102,7 +103,7 @@ public class RCreature extends RData {
   public Type type = Type.animal; // Set externally based on element name
 
   /** Inner class for stats XML element */
-  public static class Stats {
+  public static class Stats implements Serializable {
     @JacksonXmlProperty(isAttribute = true)
     public float str;
 
@@ -125,7 +126,7 @@ public class RCreature extends RData {
   }
 
   /** Inner class for AI configuration */
-  public static class AIConfig {
+  public static class AIConfig implements Serializable {
     @JacksonXmlText public AIType aiType = AIType.guard;
 
     @JacksonXmlProperty(isAttribute = true, localName = "r")
@@ -144,14 +145,14 @@ public class RCreature extends RData {
   }
 
   /** Inner class for AV (armor value) XML element */
-  public static class AVElement {
+  public static class AVElement implements Serializable {
     @JacksonXmlText public String value;
 
     public AVElement() {}
   }
 
   /** Inner class for DV (defense value) XML element */
-  public static class DVElement {
+  public static class DVElement implements Serializable {
     @JacksonXmlText public Integer value;
 
     public DVElement() {}

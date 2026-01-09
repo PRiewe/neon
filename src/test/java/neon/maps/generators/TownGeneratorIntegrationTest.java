@@ -18,6 +18,7 @@ import org.h2.mvstore.MVStore;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,7 +80,7 @@ class TownGeneratorIntegrationTest {
    */
   record TownScenario(String themeId, RRegionTheme theme, long seed) {
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return String.format("theme=%s, type=%s, seed=%d", themeId, theme.id, seed);
     }
   }

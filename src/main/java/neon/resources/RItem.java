@@ -19,8 +19,10 @@
 package neon.resources;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -90,15 +92,15 @@ public class RItem extends RData implements Serializable {
    *
    * @param wrapper the SVG wrapper
    */
-  @com.fasterxml.jackson.annotation.JsonSetter("svg")
+  @JsonSetter("svg")
   private void setSvgWrapper(SvgWrapper wrapper) {
     this.svgWrapper = wrapper;
     this.svg = (wrapper != null && wrapper.content != null) ? wrapper.content.trim() : null;
   }
 
   /** Wrapper class to deserialize SVG child element. */
-  private static class SvgWrapper {
-    @com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText public String content;
+  private static class SvgWrapper implements Serializable {
+    @JacksonXmlText public String content;
 
     public SvgWrapper() {}
   }
@@ -194,7 +196,7 @@ public class RItem extends RData implements Serializable {
     public String locked = " ";
 
     /** Inner class for door states */
-    public static class States {
+    public static class States implements Serializable {
       @JacksonXmlProperty(isAttribute = true)
       public String closed;
 
