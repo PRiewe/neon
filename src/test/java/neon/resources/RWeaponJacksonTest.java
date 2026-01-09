@@ -114,4 +114,138 @@ public class RWeaponJacksonTest {
     assertEquals(WeaponType.BLADE_TWO, weapon.weaponType);
     assertFalse(weapon.isRanged());
   }
+
+  // ========== Roundtrip Tests (Serialization + Deserialization) ==========
+
+  @Test
+  public void testSimpleWeaponRoundtrip() throws IOException {
+    // Create weapon programmatically
+    RWeapon original = new RWeapon("test_sword", RItem.Type.weapon);
+    original.name = "Test Sword";
+    original.text = "/";
+    original.color = "silver";
+    original.damage = "1d8";
+    original.weaponType = WeaponType.BLADE_ONE;
+    original.cost = 50;
+    original.weight = 4.0f;
+
+    // Serialize to XML
+    JacksonMapper mapper = new JacksonMapper();
+    String xml = mapper.toXml(original).toString();
+
+    // Deserialize back
+    InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RWeapon roundtrip = mapper.fromXml(input, RWeapon.class);
+
+    // Verify all fields match
+    assertEquals(original.id, roundtrip.id);
+    assertEquals(original.name, roundtrip.name);
+    assertEquals(original.text, roundtrip.text);
+    assertEquals(original.color, roundtrip.color);
+    assertEquals(original.damage, roundtrip.damage);
+    assertEquals(original.weaponType, roundtrip.weaponType);
+    assertEquals(original.cost, roundtrip.cost);
+    assertEquals(original.weight, roundtrip.weight);
+    assertEquals(0, roundtrip.mana); // Default value
+  }
+
+  @Test
+  public void testWeaponWithManaRoundtrip() throws IOException {
+    // Create enchanted weapon programmatically
+    RWeapon original = new RWeapon("test_staff", RItem.Type.weapon);
+    original.name = "Test Staff";
+    original.text = "|";
+    original.color = "blue";
+    original.damage = "1d6";
+    original.weaponType = WeaponType.BLUNT_ONE;
+    original.cost = 200;
+    original.weight = 2.5f;
+    original.mana = 50;
+
+    // Serialize to XML
+    JacksonMapper mapper = new JacksonMapper();
+    String xml = mapper.toXml(original).toString();
+
+    // Deserialize back
+    InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RWeapon roundtrip = mapper.fromXml(input, RWeapon.class);
+
+    // Verify all fields match
+    assertEquals(original.id, roundtrip.id);
+    assertEquals(original.name, roundtrip.name);
+    assertEquals(original.damage, roundtrip.damage);
+    assertEquals(original.weaponType, roundtrip.weaponType);
+    assertEquals(original.mana, roundtrip.mana);
+  }
+
+  @Test
+  public void testRangedWeaponRoundtrip() throws IOException {
+    // Create ranged weapon programmatically
+    RWeapon original = new RWeapon("test_bow", RItem.Type.weapon);
+    original.name = "Test Bow";
+    original.text = "}";
+    original.color = "brown";
+    original.damage = "1d8";
+    original.weaponType = WeaponType.BOW;
+    original.cost = 100;
+    original.weight = 3.0f;
+
+    // Serialize to XML
+    JacksonMapper mapper = new JacksonMapper();
+    String xml = mapper.toXml(original).toString();
+
+    // Deserialize back
+    InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RWeapon roundtrip = mapper.fromXml(input, RWeapon.class);
+
+    // Verify all fields match including ranged property
+    assertEquals(original.id, roundtrip.id);
+    assertEquals(original.weaponType, roundtrip.weaponType);
+    assertTrue(roundtrip.isRanged());
+    assertEquals(original.damage, roundtrip.damage);
+  }
+
+  @Test
+  public void testTwoHandedWeaponRoundtrip() throws IOException {
+    // Create two-handed weapon programmatically
+    RWeapon original = new RWeapon("test_greatsword", RItem.Type.weapon);
+    original.name = "Test Greatsword";
+    original.text = "/";
+    original.color = "steel";
+    original.damage = "2d6";
+    original.weaponType = WeaponType.BLADE_TWO;
+    original.cost = 150;
+    original.weight = 8.0f;
+
+    // Serialize to XML
+    JacksonMapper mapper = new JacksonMapper();
+    String xml = mapper.toXml(original).toString();
+
+    // Deserialize back
+    InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RWeapon roundtrip = mapper.fromXml(input, RWeapon.class);
+
+    // Verify all fields match
+    assertEquals(original.id, roundtrip.id);
+    assertEquals(original.weaponType, roundtrip.weaponType);
+    assertFalse(roundtrip.isRanged());
+    assertEquals(original.damage, roundtrip.damage);
+  }
+
+  @Test
+  public void testAllWeaponTypesRoundtrip() throws IOException {
+    // Test that all weapon types serialize/deserialize correctly
+    for (WeaponType type : WeaponType.values()) {
+      RWeapon original = new RWeapon("test_" + type.name().toLowerCase(), RItem.Type.weapon);
+      original.damage = "1d6";
+      original.weaponType = type;
+
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(original).toString();
+      InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+      RWeapon roundtrip = mapper.fromXml(input, RWeapon.class);
+
+      assertEquals(type, roundtrip.weaponType, "Failed for weapon type: " + type);
+    }
+  }
 }

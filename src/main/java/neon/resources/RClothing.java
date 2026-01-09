@@ -34,18 +34,24 @@ public class RClothing extends RItem implements Serializable {
   }
 
   // Nested elements (deserialized via setters to sync with public fields)
-  private StatsElement statsElement;
-  private EnchantElement enchantElement;
+  @com.fasterxml.jackson.annotation.JsonIgnore private StatsElement statsElement;
 
-  // Public fields for game code compatibility
-  public ArmorType kind;
-  public int rating;
-  public Slot slot;
+  @com.fasterxml.jackson.annotation.JsonIgnore private EnchantElement enchantElement;
 
-  // enchantment
-  public int magnitude;
-  public int mana;
-  public Effect effect;
+  // Public fields for game code compatibility - marked JsonIgnore as they're serialized via nested
+  // elements
+  @com.fasterxml.jackson.annotation.JsonIgnore public ArmorType kind;
+
+  @com.fasterxml.jackson.annotation.JsonIgnore public int rating;
+
+  @com.fasterxml.jackson.annotation.JsonIgnore public Slot slot;
+
+  // enchantment - marked JsonIgnore as they're serialized via nested element
+  @com.fasterxml.jackson.annotation.JsonIgnore public int magnitude;
+
+  @com.fasterxml.jackson.annotation.JsonIgnore public int mana;
+
+  @com.fasterxml.jackson.annotation.JsonIgnore public Effect effect;
 
   /** Inner class for stats XML element */
   public static class StatsElement {
@@ -110,6 +116,7 @@ public class RClothing extends RItem implements Serializable {
    *
    * @return stats element
    */
+  @com.fasterxml.jackson.annotation.JsonGetter("stats")
   public StatsElement getStats() {
     StatsElement stats = new StatsElement();
     stats.slot = slot;
@@ -145,6 +152,7 @@ public class RClothing extends RItem implements Serializable {
    *
    * @return enchant element or null
    */
+  @com.fasterxml.jackson.annotation.JsonGetter("enchant")
   public EnchantElement getEnchant() {
     if (magnitude > 0 || mana > 0 || effect != null) {
       EnchantElement enchant = new EnchantElement();

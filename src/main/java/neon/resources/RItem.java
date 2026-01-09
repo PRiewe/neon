@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
@@ -30,6 +31,7 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
+@JacksonXmlRootElement // No localName - accepts any element name (weapon, armor, etc.)
 public class RItem extends RData implements Serializable {
   public enum Type {
     aid,
@@ -88,7 +90,7 @@ public class RItem extends RData implements Serializable {
   }
 
   /**
-   * Set SVG content (used by Jackson).
+   * Set SVG content (used by Jackson deserialization).
    *
    * @param wrapper the SVG wrapper
    */
@@ -98,7 +100,22 @@ public class RItem extends RData implements Serializable {
     this.svg = (wrapper != null && wrapper.content != null) ? wrapper.content.trim() : null;
   }
 
-  /** Wrapper class to deserialize SVG child element. */
+  /**
+   * Get SVG wrapper for serialization (used by Jackson serialization).
+   *
+   * @return SVG wrapper or null if no SVG content
+   */
+  @com.fasterxml.jackson.annotation.JsonGetter("svg")
+  private SvgWrapper getSvgWrapper() {
+    if (svg == null || svg.isEmpty()) {
+      return null;
+    }
+    SvgWrapper wrapper = new SvgWrapper();
+    wrapper.content = svg;
+    return wrapper;
+  }
+
+  /** Wrapper class to deserialize/serialize SVG child element. */
   private static class SvgWrapper implements Serializable {
     @JacksonXmlText public String content;
 
@@ -154,46 +171,31 @@ public class RItem extends RData implements Serializable {
     this.type = type;
   }
 
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
   public Element toElement() {
-    Element item = new Element(type.toString());
-    item.setAttribute("id", id);
-    if (svg != null) {
-      try {
-        Element graphics = new Element("svg");
-        ByteArrayInputStream stream = new ByteArrayInputStream(svg.getBytes("UTF-8"));
-        Element shape = (Element) builder.build(stream).getRootElement().detach();
-        graphics.addContent(shape);
-        item.addContent(graphics);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    } else {
-      item.setAttribute("char", text);
-      item.setAttribute("color", color);
-    }
+    try {
+      neon.systems.files.JacksonMapper mapper = new neon.systems.files.JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      Element element =
+          new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
 
-    if (top) {
-      item.setAttribute("z", "top");
-    }
-    if (cost > 0) {
-      item.setAttribute("cost", Integer.toString(cost));
-    }
-    if (weight > 0) {
-      item.setAttribute("weight", Float.toString(weight));
-    }
-    if (name != null && !name.isEmpty()) {
-      item.setAttribute("name", name);
-    }
-    if (spell != null) {
-      item.setAttribute("spell", spell);
-    }
+      // Fix root element name to match type (Jackson uses generic name)
+      element.setName(type.toString());
 
-    return item;
+      return element;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RItem to Element", e);
+    }
   }
 
   public static class Door extends RItem implements Serializable {
-    public String closed = " ";
-    public String locked = " ";
+    @com.fasterxml.jackson.annotation.JsonIgnore public String closed = " ";
+
+    @com.fasterxml.jackson.annotation.JsonIgnore public String locked = " ";
 
     /** Inner class for door states */
     public static class States implements Serializable {
@@ -204,8 +206,7 @@ public class RItem extends RData implements Serializable {
       public String locked;
     }
 
-    @JacksonXmlProperty(localName = "states")
-    private States statesElement;
+    @com.fasterxml.jackson.annotation.JsonIgnore private States statesElement;
 
     /** Called by Jackson after deserialization to sync states to fields */
     @com.fasterxml.jackson.annotation.JsonSetter("states")
@@ -219,6 +220,28 @@ public class RItem extends RData implements Serializable {
           this.locked = states.locked;
         }
       }
+    }
+
+    /**
+     * Get States object for serialization (creates from public fields).
+     *
+     * @return states object or null if all defaults
+     */
+    @com.fasterxml.jackson.annotation.JsonGetter("states")
+    public States getStatesElement() {
+      // Only serialize if values differ from defaults
+      if ((!closed.equals(text) && !closed.equals(" "))
+          || (!locked.equals(closed) && !locked.equals(" "))) {
+        States states = new States();
+        if (!closed.equals(text) && !closed.equals(" ")) {
+          states.closed = closed;
+        }
+        if (!locked.equals(closed) && !locked.equals(" ")) {
+          states.locked = locked;
+        }
+        return states;
+      }
+      return null;
     }
 
     // No-arg constructor for Jackson deserialization
@@ -276,6 +299,10 @@ public class RItem extends RData implements Serializable {
     public Potion(Element potion, String... path) {
       super(potion, path);
     }
+
+    public Potion(String id, Type type, String... path) {
+      super(id, type, path);
+    }
   }
 
   public static class Container extends RItem implements Serializable {
@@ -294,6 +321,10 @@ public class RItem extends RData implements Serializable {
       for (Element item : container.getChildren("item")) {
         contents.add(item.getText());
       }
+    }
+
+    public Container(String id, Type type, String... path) {
+      super(id, type, path);
     }
   }
 

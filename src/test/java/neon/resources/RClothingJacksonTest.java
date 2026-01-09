@@ -137,4 +137,166 @@ public class RClothingJacksonTest {
     assertEquals(ArmorType.LIGHT, clothing.kind);
     assertEquals(Effect.LEVITATE, clothing.effect);
   }
+
+  // ========== Roundtrip Tests (Serialization + Deserialization) ==========
+
+  @Test
+  public void testSimpleArmorRoundtrip() throws IOException {
+    // Create armor programmatically
+    RClothing original = new RClothing("test_cuirass", RItem.Type.armor);
+    original.name = "Test Cuirass";
+    original.text = "[";
+    original.color = "gray";
+    original.cost = 200;
+    original.weight = 20.0f;
+    original.slot = Slot.CUIRASS;
+    original.rating = 10;
+    original.kind = ArmorType.HEAVY;
+
+    // Serialize to XML
+    JacksonMapper mapper = new JacksonMapper();
+    String xml = mapper.toXml(original).toString();
+
+    // Deserialize back
+    InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RClothing roundtrip = mapper.fromXml(input, RClothing.class);
+
+    // Verify all fields match
+    assertEquals(original.id, roundtrip.id);
+    assertEquals(original.name, roundtrip.name);
+    assertEquals(original.slot, roundtrip.slot);
+    assertEquals(original.rating, roundtrip.rating);
+    assertEquals(original.kind, roundtrip.kind);
+    assertEquals(0, roundtrip.magnitude); // No enchantment
+  }
+
+  @Test
+  public void testClothingWithoutArmorRoundtrip() throws IOException {
+    // Create clothing (not armor) programmatically
+    RClothing original = new RClothing("test_robe", RItem.Type.clothing);
+    original.name = "Test Robe";
+    original.text = "(";
+    original.color = "blue";
+    original.cost = 50;
+    original.weight = 3.0f;
+    original.slot = Slot.SHIRT;
+    original.rating = 0;
+    original.kind = ArmorType.NONE;
+
+    // Serialize to XML
+    JacksonMapper mapper = new JacksonMapper();
+    String xml = mapper.toXml(original).toString();
+
+    // Deserialize back
+    InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RClothing roundtrip = mapper.fromXml(input, RClothing.class);
+
+    // Verify all fields match
+    assertEquals(original.id, roundtrip.id);
+    assertEquals(original.name, roundtrip.name);
+    assertEquals(original.slot, roundtrip.slot);
+    assertEquals(0, roundtrip.rating);
+    assertEquals(ArmorType.NONE, roundtrip.kind);
+  }
+
+  @Test
+  public void testArmorWithEnchantmentRoundtrip() throws IOException {
+    // Create enchanted armor programmatically
+    RClothing original = new RClothing("test_helm", RItem.Type.armor);
+    original.name = "Test Helm";
+    original.text = "]";
+    original.color = "red";
+    original.cost = 500;
+    original.weight = 5.0f;
+    original.slot = Slot.HELMET;
+    original.rating = 5;
+    original.kind = ArmorType.LIGHT;
+    original.magnitude = 10;
+    original.mana = 100;
+    original.effect = Effect.FIRE_SHIELD;
+
+    // Serialize to XML
+    JacksonMapper mapper = new JacksonMapper();
+    String xml = mapper.toXml(original).toString();
+
+    // Deserialize back
+    InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RClothing roundtrip = mapper.fromXml(input, RClothing.class);
+
+    // Verify all fields match including enchantment
+    assertEquals(original.id, roundtrip.id);
+    assertEquals(original.slot, roundtrip.slot);
+    assertEquals(original.rating, roundtrip.rating);
+    assertEquals(original.kind, roundtrip.kind);
+    assertEquals(original.magnitude, roundtrip.magnitude);
+    assertEquals(original.mana, roundtrip.mana);
+    assertEquals(original.effect, roundtrip.effect);
+  }
+
+  @Test
+  public void testMediumArmorRoundtrip() throws IOException {
+    // Create medium armor programmatically
+    RClothing original = new RClothing("test_chausses", RItem.Type.armor);
+    original.text = "[";
+    original.color = "brown";
+    original.cost = 75;
+    original.weight = 8.0f;
+    original.slot = Slot.CHAUSSES;
+    original.rating = 3;
+    original.kind = ArmorType.MEDIUM;
+
+    // Serialize to XML
+    JacksonMapper mapper = new JacksonMapper();
+    String xml = mapper.toXml(original).toString();
+
+    // Deserialize back
+    InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RClothing roundtrip = mapper.fromXml(input, RClothing.class);
+
+    // Verify all fields match
+    assertEquals(original.id, roundtrip.id);
+    assertEquals(original.slot, roundtrip.slot);
+    assertEquals(original.rating, roundtrip.rating);
+    assertEquals(ArmorType.MEDIUM, roundtrip.kind);
+  }
+
+  @Test
+  public void testAllArmorTypesRoundtrip() throws IOException {
+    // Test that all armor types serialize/deserialize correctly
+    for (ArmorType armorType : ArmorType.values()) {
+      // Skip NONE for this test since it's for clothing, not armor
+      if (armorType == ArmorType.NONE) continue;
+
+      RClothing original =
+          new RClothing("test_" + armorType.name().toLowerCase(), RItem.Type.armor);
+      original.slot = Slot.CUIRASS;
+      original.rating = 5;
+      original.kind = armorType;
+
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(original).toString();
+      InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+      RClothing roundtrip = mapper.fromXml(input, RClothing.class);
+
+      assertEquals(armorType, roundtrip.kind, "Failed for armor type: " + armorType);
+      assertEquals(5, roundtrip.rating);
+    }
+  }
+
+  @Test
+  public void testAllSlotsRoundtrip() throws IOException {
+    // Test that all equipment slots serialize/deserialize correctly
+    for (Slot slotType : Slot.values()) {
+      RClothing original =
+          new RClothing("test_" + slotType.name().toLowerCase(), RItem.Type.clothing);
+      original.slot = slotType;
+
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(original).toString();
+      InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+      RClothing roundtrip = mapper.fromXml(input, RClothing.class);
+
+      assertEquals(slotType, roundtrip.slot, "Failed for slot type: " + slotType);
+    }
+  }
 }
