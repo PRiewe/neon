@@ -123,7 +123,7 @@ public class ModFiler {
   }
 
   public void save() {
-    XMLBuilder builder = new XMLBuilder(store);
+    JacksonXmlBuilder builder = new JacksonXmlBuilder(store);
     RMod active = store.getActive();
     saveFile(new Document(store.getActive().getMainElement()), "main.xml");
     saveFile(new Document(store.getActive().getCCElement()), "cc.xml");

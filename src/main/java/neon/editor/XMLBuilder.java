@@ -25,6 +25,14 @@ import neon.resources.RMod;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
+/**
+ * Builds JDOM Documents for editor save operations using JDOM construction.
+ *
+ * @deprecated Replaced by {@link JacksonXmlBuilder} in Phase 7A. Use JacksonXmlBuilder for all new
+ *     code. This class will be removed in Phase 7B when toElement() methods are eliminated from
+ *     resources.
+ */
+@Deprecated(forRemoval = true)
 public class XMLBuilder {
   private DataStore store;
 
