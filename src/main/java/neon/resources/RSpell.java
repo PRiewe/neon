@@ -18,9 +18,17 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import java.io.ByteArrayInputStream;
 import neon.magic.Effect;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
+@JacksonXmlRootElement // Accepts any element name (spell, disease, poison, etc.)
 public class RSpell extends RData {
   public enum SpellType {
     SPELL,
@@ -31,10 +39,38 @@ public class RSpell extends RData {
     ENCHANT;
   }
 
-  public SpellType type;
+  public SpellType type; // Set externally based on element name
+
+  @JacksonXmlProperty(isAttribute = true)
   public Effect effect;
-  public int size, range, duration, radius, cost;
+
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
+  public int size;
+
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
+  public int range;
+
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
+  public int duration;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "area")
+  @JsonProperty(required = false)
+  public int radius;
+
+  @JacksonXmlProperty(isAttribute = true)
+  public int cost;
+
+  @JacksonXmlText
+  @JsonProperty(required = false)
   public String script;
+
+  // No-arg constructor for Jackson deserialization
+  public RSpell() {
+    super("unknown");
+  }
 
   public RSpell(String id, SpellType type, String... path) {
     super(id, path);
@@ -63,6 +99,7 @@ public class RSpell extends RData {
     script = null;
   }
 
+  // Keep JDOM constructor for backward compatibility during migration
   public RSpell(Element spell, String... path) {
     super(spell, path);
     type = SpellType.valueOf(spell.getName().toUpperCase());
@@ -91,33 +128,38 @@ public class RSpell extends RData {
     }
   }
 
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
+  @Override
   public Element toElement() {
-    Element spell = new Element(type.toString());
-    spell.setAttribute("id", id);
-    spell.setAttribute("effect", effect.name());
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      Element element =
+          new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
 
-    if (script != null && !script.isEmpty()) {
-      spell.setText(script);
-    }
-    if (size > 0) {
-      spell.setAttribute("size", Integer.toString(size));
-    }
-    if (range > 0) {
-      spell.setAttribute("range", Integer.toString(range));
-    }
-    if (duration > 0) {
-      spell.setAttribute("duration", Integer.toString(duration));
-    }
-    if (radius > 0) {
-      spell.setAttribute("area", Integer.toString(radius));
-    }
+      // Fix root element name to match type (Jackson uses generic name)
+      element.setName(type.toString());
 
-    return spell;
+      return element;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RSpell to Element", e);
+    }
   }
 
   // scrolls/books have a regular spell
   public static class Enchantment extends RSpell {
+    @JacksonXmlProperty(isAttribute = true)
     public String item; // valid: clothing/armor, weapon, container/door, food/potion
+
+    // No-arg constructor for Jackson deserialization
+    public Enchantment() {
+      super();
+      this.type = SpellType.ENCHANT;
+    }
 
     public Enchantment(Element enchantment, String... path) {
       super(enchantment, path);
@@ -128,15 +170,25 @@ public class RSpell extends RData {
       super(id, SpellType.ENCHANT, path);
     }
 
+    @Override
     public Element toElement() {
       Element enchantment = super.toElement();
-      enchantment.setAttribute("item", item);
+      if (item != null) {
+        enchantment.setAttribute("item", item);
+      }
       return enchantment;
     }
   }
 
   public static class Power extends RSpell {
+    @JacksonXmlProperty(isAttribute = true, localName = "int")
     public int interval;
+
+    // No-arg constructor for Jackson deserialization
+    public Power() {
+      super();
+      this.type = SpellType.POWER;
+    }
 
     public Power(Element power, String... path) {
       super(power, path);
@@ -148,6 +200,7 @@ public class RSpell extends RData {
       interval = 0;
     }
 
+    @Override
     public Element toElement() {
       Element power = super.toElement();
       power.setAttribute("int", Integer.toString(interval));

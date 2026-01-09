@@ -34,4 +34,6 @@ public interface MapAtlas {
    * @return the map with the given UID
    */
   Map getMap(int uid);
+
+  Map getMap(int uid, String... path);
 }

@@ -30,6 +30,8 @@ import org.jdom2.Element;
 
 public class IObject extends Instance {
   public final int uid;
+  private JVShape cachedSvgShape;
+  private String cachedSvgContent;
 
   public IObject(RData resource, int x, int y, int z, int uid) {
     super(resource, x, y, z, 1, 1);
@@ -53,14 +55,20 @@ public class IObject extends Instance {
   public void paint(Graphics2D graphics, float zoom, boolean isSelected) {
     if (resource instanceof RItem && ((RItem) resource).svg != null) {
       if (MapEditor.isVisible(this)) {
-        JVShape shape = SVGLoader.loadShape(((RItem) resource).svg);
-        shape.setX(x);
-        shape.setY(y);
-        width = shape.getBounds().width;
-        height = shape.getBounds().height;
-        shape.paint(graphics, zoom, isSelected);
+        // Only reload SVG shape if content has changed (caching optimization)
+        String currentSvg = ((RItem) resource).svg;
+        if (cachedSvgShape == null || !currentSvg.equals(cachedSvgContent)) {
+          cachedSvgShape = SVGLoader.loadShape(currentSvg);
+          cachedSvgContent = currentSvg;
+        }
+
+        cachedSvgShape.setX(x);
+        cachedSvgShape.setY(y);
+        width = cachedSvgShape.getBounds().width;
+        height = cachedSvgShape.getBounds().height;
+        cachedSvgShape.paint(graphics, zoom, isSelected);
         if (isSelected) {
-          graphics.setPaint(shape.getPaint());
+          graphics.setPaint(cachedSvgShape.getPaint());
           Rectangle2D rect = new Rectangle2D.Float(x * zoom, y * zoom, width * zoom, height * zoom);
           graphics.draw(rect);
         }

@@ -23,7 +23,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.event.LoadEvent;
 import neon.core.event.MagicTask;
@@ -31,6 +32,7 @@ import neon.core.event.ScriptAction;
 import neon.core.event.TaskQueue;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.SkillHandler;
+import neon.core.model.SaveGameModel;
 import neon.entities.Entity;
 import neon.entities.EntityFactory;
 import neon.entities.Item;
@@ -44,31 +46,40 @@ import neon.entities.property.Skill;
 import neon.magic.Effect;
 import neon.magic.Spell;
 import neon.magic.SpellFactory;
+import neon.maps.Atlas;
 import neon.maps.Map;
+import neon.maps.MapLoader;
+import neon.maps.MapUtils;
+import neon.maps.services.GameContextResourceProvider;
 import neon.resources.CGame;
 import neon.resources.RCreature;
 import neon.resources.RMod;
 import neon.resources.RSign;
 import neon.resources.RSpell.SpellType;
 import neon.systems.files.FileUtils;
+import neon.systems.files.JacksonMapper;
 import neon.systems.files.XMLTranslator;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
-import org.jdom2.*;
-import org.jdom2.input.SAXBuilder;
+import org.jdom2.Element;
 
 @Listener(references = References.Strong)
 @Slf4j
 public class GameLoader {
-  private Engine engine;
+  private GameContext context;
   private TaskQueue queue;
   private Configuration config;
+  private GameContextResourceProvider resourceProvider;
+  private MapLoader mapLoader;
+  @Getter @Setter private int worldMapUID;
 
-  public GameLoader(Engine engine, Configuration config) {
-    this.engine = engine;
+  public GameLoader(GameContext context, Configuration config) {
+    this.context = context;
     this.config = config;
-    queue = engine.getQueue();
+    queue = context.getQueue();
+    resourceProvider = new GameContextResourceProvider(context);
+    mapLoader = new MapLoader(context.getStore(), resourceProvider, new MapUtils());
   }
 
   @Handler
@@ -79,7 +90,7 @@ public class GameLoader {
       case LOAD:
         loadGame(le.getSaveName());
         // indicate that loading is complete
-        Engine.post(new LoadEvent(this));
+        context.post(new LoadEvent(this));
         break;
       case NEW:
         try {
@@ -89,7 +100,7 @@ public class GameLoader {
           re.fillInStackTrace().printStackTrace();
         }
         // indicate that loading is complete
-        Engine.post(new LoadEvent(this));
+        context.post(new LoadEvent(this));
         break;
       default:
         break;
@@ -117,11 +128,10 @@ public class GameLoader {
       log.debug("Engine.initGame() start");
 
       // initialize player
-      RCreature species =
-          new RCreature(((RCreature) Engine.getResources().getResource(race)).toElement());
+      RCreature species = ((RCreature) context.getResources().getResource(race)).clone();
       Player player = new Player(species, name, gender, spec, profession);
       player.species.text = "@";
-      engine.startGame(new Game(player, Engine.getFileSystem()));
+      context.startGame(new Game(player, context.getFileSystem()));
       setSign(player, sign);
       for (Skill skill : Skill.values()) {
         SkillHandler.checkFeat(skill, player);
@@ -130,12 +140,12 @@ public class GameLoader {
       // initialize maps
       initMaps();
 
-      CGame game = (CGame) Engine.getResources().getResource("game", "config");
+      CGame game = (CGame) context.getResources().getResource("game", "config");
 
       // starting items
       for (String i : game.getStartingItems()) {
-        Item item = EntityFactory.getItem(i, Engine.getStore().createNewEntityUID());
-        Engine.getStore().addEntity(item);
+        Item item = EntityFactory.getItem(i, context.getStore().createNewEntityUID());
+        context.getStore().addEntity(item);
         InventoryHandler.addItem(player, item.getUID());
       }
       // starting spells
@@ -146,10 +156,14 @@ public class GameLoader {
       // position player
       Rectangle bounds = player.getShapeComponent();
       bounds.setLocation(game.getStartPosition().x, game.getStartPosition().y);
-      Map map = Engine.getAtlas().getMap(Engine.getStore().getMapUID(game.getStartMap()));
-      Engine.getScriptEngine().getBindings("js").putMember("map", map);
-      Engine.getAtlas().setMap(map);
-      Engine.getAtlas().setCurrentZone(game.getStartZone());
+      Atlas atlas = context.getAtlas();
+      UIDStore store = context.getStore();
+      String[] startMap = game.getStartMap();
+
+      Map map = atlas.getMap(store.getMapUID(startMap));
+      context.getScriptEngine().getBindings("js").putMember("map", map);
+      context.getAtlas().setMap(map);
+      context.getAtlas().setCurrentZone(game.getStartZone());
     } catch (RuntimeException re) {
       log.error("Error during initGame", re);
     }
@@ -174,17 +188,19 @@ public class GameLoader {
   private void loadGame(String save) {
     config.setProperty("save", save);
 
-    Document doc = new Document();
+    SaveGameModel saveModel = null;
     try {
       FileInputStream in = new FileInputStream("saves/" + save + "/save.xml");
-      doc = new SAXBuilder().build(in);
+      JacksonMapper mapper = new JacksonMapper();
+      saveModel = mapper.fromXml(in, SaveGameModel.class);
       in.close();
     } catch (IOException e) {
-      System.out.println("IOException in loadGame");
-    } catch (JDOMException e) {
-      System.out.println("JDOMException in loadGame");
+      System.out.println("IOException in loadGame: " + e.getMessage());
+      return;
+    } catch (Exception e) {
+      System.out.println("Error parsing save file: " + e.getMessage());
+      return;
     }
-    Element root = doc.getRootElement();
 
     // copy save map to temp
     Path savePath = Paths.get("saves", save);
@@ -195,62 +211,61 @@ public class GameLoader {
     initMaps();
 
     // set time correctly (using setTime(), otherwise listeners would be called)
-    Engine.getTimer().setTime(Integer.parseInt(root.getChild("timer").getAttributeValue("ticks")));
+    context.getTimer().setTime(saveModel.timer.ticks);
 
     // create player
-    loadPlayer(root.getChild("player"));
+    loadPlayer(saveModel.player);
 
     // events
-    loadEvents(root.getChild("events"));
+    loadEvents(saveModel.events);
 
     // quests
-    Element journal = root.getChild("journal");
-    Player player = Engine.getPlayer();
+    Player player = context.getPlayer();
     if (player != null) {
-      for (Element e : journal.getChildren()) {
-        Engine.getPlayer().getJournal().addQuest(e.getAttributeValue("id"), e.getText());
-        Engine.getPlayer()
-            .getJournal()
-            .updateQuest(e.getAttributeValue("id"), Integer.parseInt(e.getAttributeValue("stage")));
+      for (SaveGameModel.QuestEntry quest : saveModel.journal.quests) {
+        context.getPlayer().getJournal().addQuest(quest.id, quest.subject);
+        context.getPlayer().getJournal().updateQuest(quest.id, quest.stage);
       }
     } else {
       System.out.println("Skipping journal update");
     }
   }
 
-  private void loadEvents(Element events) {
+  private void loadEvents(SaveGameModel.EventsData events) {
     // normal tasks
-    for (Element event : events.getChildren("task")) {
-      String description = event.getAttributeValue("desc");
-      if (event.getAttribute("script") != null) {
-        String script = event.getAttributeValue("script");
-        queue.add(description, new ScriptAction(script));
+    for (SaveGameModel.TaskEvent event : events.tasks) {
+      if (event.script != null) {
+        queue.add(event.description, new ScriptAction(event.script));
       }
     }
 
     // timed tasks
-    for (Element event : events.getChildren("timer")) {
-      String[] ticks = event.getAttributeValue("tick").split(":");
+    for (SaveGameModel.TimerEvent event : events.timerEvents) {
+      String[] ticks = event.tick.split(":");
       int start = Integer.parseInt(ticks[0]);
       int period = Integer.parseInt(ticks[1]);
       int stop = Integer.parseInt(ticks[2]);
 
-      switch (event.getAttributeValue("task")) {
+      if (event.taskType == null) {
+        continue;
+      }
+
+      switch (event.taskType) {
         case "script":
-          queue.add(event.getAttributeValue("script"), start, period, stop);
+          queue.add(event.script, start, period, stop);
           break;
         case "magic":
-          Effect effect = Effect.valueOf(event.getAttributeValue("effect").toUpperCase());
-          float magnitude = Float.parseFloat(event.getAttributeValue("magnitude"));
-          String script = event.getAttributeValue("script");
-          SpellType type = SpellType.valueOf(event.getAttributeValue("type").toUpperCase());
+          Effect effect = Effect.valueOf(event.effect.toUpperCase());
+          float magnitude = event.magnitude;
+          String script = event.script;
+          SpellType type = SpellType.valueOf(event.spellType.toUpperCase());
           Entity caster = null;
-          if (event.getAttribute("caster") != null) {
-            caster = Engine.getStore().getEntity(Long.parseLong(event.getAttributeValue("caster")));
+          if (event.caster != null) {
+            caster = context.getStore().getEntity(event.caster);
           }
           Entity target = null;
-          if (event.getAttribute("target") != null) {
-            target = Engine.getStore().getEntity(Long.parseLong(event.getAttributeValue("target")));
+          if (event.target != null) {
+            target = context.getStore().getEntity(event.target);
           }
           Spell spell = new Spell(target, caster, effect, magnitude, script, type);
           queue.add(new MagicTask(spell, stop), start, stop, period);
@@ -259,85 +274,110 @@ public class GameLoader {
     }
   }
 
-  private void loadPlayer(Element playerData) {
+  private void loadPlayer(SaveGameModel.PlayerSaveData playerData) {
     // create player
-    RCreature species =
-        (RCreature) Engine.getResources().getResource(playerData.getAttributeValue("race"));
+    RCreature species = (RCreature) context.getResources().getResource(playerData.race);
     Player player =
         new Player(
-            new RCreature(species.toElement()),
-            playerData.getAttributeValue("name"),
-            Gender.valueOf(playerData.getAttributeValue("gender").toUpperCase()),
-            Player.Specialisation.valueOf(playerData.getAttributeValue("spec")),
-            playerData.getAttributeValue("prof"));
-    engine.startGame(new Game(player, Engine.getFileSystem()));
+            species.clone(),
+            playerData.name,
+            Gender.valueOf(playerData.gender.toUpperCase()),
+            Player.Specialisation.valueOf(playerData.specialisation),
+            playerData.profession);
+    context.startGame(new Game(player, context.getFileSystem()));
     Rectangle bounds = player.getShapeComponent();
-    bounds.setLocation(
-        Integer.parseInt(playerData.getAttributeValue("x")),
-        Integer.parseInt(playerData.getAttributeValue("y")));
-    player.setSign(playerData.getAttributeValue("sign"));
+    bounds.setLocation(playerData.x, playerData.y);
+    player.setSign(playerData.sign);
     player.species.text = "@";
 
     // start map
-    int mapUID = Integer.parseInt(playerData.getAttributeValue("map"));
-    Engine.getAtlas().setMap(Engine.getAtlas().getMap(mapUID));
-    int level = Integer.parseInt(playerData.getAttributeValue("l"));
-    Engine.getAtlas().setCurrentZone(level);
+    context.getAtlas().setMap(context.getAtlas().getMap(playerData.map));
+    context.getAtlas().setCurrentZone(playerData.level);
 
     // stats
     Stats stats = player.getStatsComponent();
-    stats.addStr(
-        Integer.parseInt(playerData.getChild("stats").getAttributeValue("str")) - stats.getStr());
-    stats.addCon(
-        Integer.parseInt(playerData.getChild("stats").getAttributeValue("con")) - stats.getCon());
-    stats.addDex(
-        Integer.parseInt(playerData.getChild("stats").getAttributeValue("dex")) - stats.getDex());
-    stats.addInt(
-        Integer.parseInt(playerData.getChild("stats").getAttributeValue("int")) - stats.getInt());
-    stats.addWis(
-        Integer.parseInt(playerData.getChild("stats").getAttributeValue("wis")) - stats.getWis());
-    stats.addCha(
-        Integer.parseInt(playerData.getChild("stats").getAttributeValue("cha")) - stats.getCha());
+    stats.addStr(playerData.stats.str - stats.getStr());
+    stats.addCon(playerData.stats.con - stats.getCon());
+    stats.addDex(playerData.stats.dex - stats.getDex());
+    stats.addInt(playerData.stats.int_ - stats.getInt());
+    stats.addWis(playerData.stats.wis - stats.getWis());
+    stats.addCha(playerData.stats.cha - stats.getCha());
 
     // skills
-    for (Attribute skill : (List<Attribute>) playerData.getChild("skills").getAttributes()) {
-      player.setSkill(Skill.valueOf(skill.getName()), Integer.parseInt(skill.getValue()));
-    }
+    loadSkills(player, playerData.skills);
 
     // items
-    for (Element e : playerData.getChildren("item")) {
-      long uid = Long.parseLong(e.getAttributeValue("uid"));
-      player.getInventoryComponent().addItem(uid);
+    for (SaveGameModel.ItemReference itemRef : playerData.items) {
+      player.getInventoryComponent().addItem(itemRef.uid);
     }
 
     // spells
-    for (Element e : playerData.getChildren("spell")) {
-      player.getMagicComponent().addSpell(SpellFactory.getSpell(e.getText()));
+    for (SaveGameModel.SpellReference spellRef : playerData.spells) {
+      player.getMagicComponent().addSpell(SpellFactory.getSpell(spellRef.id));
     }
 
     // feats
-    for (Element e : playerData.getChildren("feat")) {
-      player.getCharacteristicsComponent().addFeat(Feat.valueOf(e.getText()));
+    for (SaveGameModel.FeatReference featRef : playerData.feats) {
+      player.getCharacteristicsComponent().addFeat(Feat.valueOf(featRef.name));
     }
 
     // money
-    player.getInventoryComponent().addMoney(Integer.parseInt(playerData.getChildText("money")));
+    player.getInventoryComponent().addMoney(playerData.money.value);
+  }
+
+  private void loadSkills(Player player, SaveGameModel.SkillsData skills) {
+    // Load each skill if it has a value
+    if (skills.CREATION != null) player.setSkill(Skill.CREATION, skills.CREATION);
+    if (skills.DESTRUCTION != null) player.setSkill(Skill.DESTRUCTION, skills.DESTRUCTION);
+    if (skills.RESTORATION != null) player.setSkill(Skill.RESTORATION, skills.RESTORATION);
+    if (skills.ALTERATION != null) player.setSkill(Skill.ALTERATION, skills.ALTERATION);
+    if (skills.ILLUSION != null) player.setSkill(Skill.ILLUSION, skills.ILLUSION);
+    if (skills.ENCHANT != null) player.setSkill(Skill.ENCHANT, skills.ENCHANT);
+    if (skills.ALCHEMY != null) player.setSkill(Skill.ALCHEMY, skills.ALCHEMY);
+    if (skills.CONJURATION != null) player.setSkill(Skill.CONJURATION, skills.CONJURATION);
+    if (skills.ARCHERY != null) player.setSkill(Skill.ARCHERY, skills.ARCHERY);
+    if (skills.AXE != null) player.setSkill(Skill.AXE, skills.AXE);
+    if (skills.BLUNT != null) player.setSkill(Skill.BLUNT, skills.BLUNT);
+    if (skills.BLADE != null) player.setSkill(Skill.BLADE, skills.BLADE);
+    if (skills.SPEAR != null) player.setSkill(Skill.SPEAR, skills.SPEAR);
+    if (skills.UNARMED != null) player.setSkill(Skill.UNARMED, skills.UNARMED);
+    if (skills.CLIMBING != null) player.setSkill(Skill.CLIMBING, skills.CLIMBING);
+    if (skills.SWIMMING != null) player.setSkill(Skill.SWIMMING, skills.SWIMMING);
+    if (skills.SNEAK != null) player.setSkill(Skill.SNEAK, skills.SNEAK);
+    if (skills.HEAVY_ARMOR != null) player.setSkill(Skill.HEAVY_ARMOR, skills.HEAVY_ARMOR);
+    if (skills.MEDIUM_ARMOR != null) player.setSkill(Skill.MEDIUM_ARMOR, skills.MEDIUM_ARMOR);
+    if (skills.LIGHT_ARMOR != null) player.setSkill(Skill.LIGHT_ARMOR, skills.LIGHT_ARMOR);
+    if (skills.DODGING != null) player.setSkill(Skill.DODGING, skills.DODGING);
+    if (skills.BLOCK != null) player.setSkill(Skill.BLOCK, skills.BLOCK);
+    if (skills.UNARMORED != null) player.setSkill(Skill.UNARMORED, skills.UNARMORED);
+    if (skills.MERCANTILE != null) player.setSkill(Skill.MERCANTILE, skills.MERCANTILE);
+    if (skills.PICKPOCKET != null) player.setSkill(Skill.PICKPOCKET, skills.PICKPOCKET);
+    if (skills.ARMORER != null) player.setSkill(Skill.ARMORER, skills.ARMORER);
+    if (skills.LOCKPICKING != null) player.setSkill(Skill.LOCKPICKING, skills.LOCKPICKING);
+    if (skills.MEDICAL != null) player.setSkill(Skill.MEDICAL, skills.MEDICAL);
+    if (skills.DISABLE != null) player.setSkill(Skill.DISABLE, skills.DISABLE);
+    if (skills.SPEECHCRAFT != null) player.setSkill(Skill.SPEECHCRAFT, skills.SPEECHCRAFT);
+    if (skills.PERFORM != null) player.setSkill(Skill.PERFORM, skills.PERFORM);
+    if (skills.DISGUISE != null) player.setSkill(Skill.DISGUISE, skills.DISGUISE);
+    if (skills.RIDING != null) player.setSkill(Skill.RIDING, skills.RIDING);
+    if (skills.NONE != null) player.setSkill(Skill.NONE, skills.NONE);
   }
 
   private void initMaps() {
     // put mods and maps in uidstore
-    for (RMod mod : Engine.getResources().getResources(RMod.class)) {
-      if (Engine.getStore().getModUID(mod.id) == 0) {
-        Engine.getStore().addMod(mod.id);
+    for (RMod mod : context.getResources().getResources(RMod.class)) {
+      if (!context.getStore().isModUIDLoaded(mod.id)) {
+        context.getStore().addMod(mod.id);
       }
       for (String[] path : mod.getMaps())
         try { // maps are in twowaymap, and are therefore not stored in cache
-          Element map = Engine.getFileSystem().getFile(new XMLTranslator(), path).getRootElement();
+          Element map = context.getFileSystem().getFile(new XMLTranslator(), path).getRootElement();
           short mapUID = Short.parseShort(map.getChild("header").getAttributeValue("uid"));
-          int uid = UIDStore.getMapUID(Engine.getStore().getModUID(path[0]), mapUID);
-          Engine.getStore().addMap(uid, path);
+          int uid = UIDStore.getMapUID(context.getStore().getModUID(path[0]), mapUID);
+          mapLoader.load(path, mapUID, context.getFileSystem());
+          context.getStore().addMap(uid, path);
         } catch (Exception e) {
-          log.info("Map error in mod {}", path[0]);
+          log.info("Map error in mod {} : {}", path, e.toString());
         }
     }
   }

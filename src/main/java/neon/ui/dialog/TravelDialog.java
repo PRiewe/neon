@@ -35,7 +35,6 @@ import neon.resources.RPerson;
 import neon.ui.UserInterface;
 import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.bus.MBassador;
-import org.jdom2.Element;
 
 public class TravelDialog implements KeyListener {
   private JDialog frame;
@@ -133,17 +132,12 @@ public class TravelDialog implements KeyListener {
   private void initDestinations() {
     listData = new HashMap<String, Point>();
     costData = new HashMap<String, Integer>();
-    for (Element e : ((RPerson) context.getResources().getResource(agent.getID())).services) {
-      if (e.getAttributeValue("id").equals("travel")) {
-        for (Element dest : e.getChildren()) {
-          int x = Integer.parseInt(dest.getAttributeValue("x"));
-          int y = Integer.parseInt(dest.getAttributeValue("y"));
-          listData.put(
-              dest.getAttributeValue("name") + ": " + dest.getAttributeValue("cost") + " cp",
-              new Point(x, y));
-          costData.put(
-              dest.getAttributeValue("name") + ": " + dest.getAttributeValue("cost") + " cp",
-              Integer.parseInt(dest.getAttributeValue("cost")));
+    for (RPerson.Service service :
+        ((RPerson) context.getResources().getResource(agent.getID())).services) {
+      if (service.id.equals("travel")) {
+        for (RPerson.Service.Destination dest : service.destinations) {
+          listData.put(dest.name + ": " + dest.cost + " cp", new Point(dest.x, dest.y));
+          costData.put(dest.name + ": " + dest.cost + " cp", dest.cost);
         }
       }
     }

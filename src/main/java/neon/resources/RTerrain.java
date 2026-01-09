@@ -18,20 +18,43 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import java.io.ByteArrayInputStream;
 import neon.entities.property.Subtype;
 import neon.maps.Region.Modifier;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
+@JacksonXmlRootElement(localName = "type")
 public class RTerrain extends RData {
-  public String description;
+
+  // RTerrain-specific fields
+  @JacksonXmlText public String description;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "mod")
+  @JsonProperty(required = false)
   public Modifier modifier = Modifier.NONE;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "sub")
+  @JsonProperty(required = false)
   public Subtype type = Subtype.NONE;
+
+  // No-arg constructor for Jackson deserialization
+  public RTerrain() {
+    super("unknown");
+    this.text = ".";
+  }
 
   public RTerrain(String id, String... path) {
     super(id, path);
     text = ".";
   }
 
+  // Keep JDOM constructor for backward compatibility during migration
   public RTerrain(Element e, String... path) {
     super(e.getAttributeValue("id"), path);
     color = e.getAttributeValue("color");
@@ -47,20 +70,18 @@ public class RTerrain extends RData {
     }
   }
 
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
   public Element toElement() {
-    Element terrain = new Element("type");
-    terrain.setAttribute("id", id);
-    terrain.setAttribute("char", text);
-    terrain.setAttribute("color", color);
-    if (modifier != Modifier.NONE) {
-      terrain.setAttribute("mod", modifier.toString());
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      return new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RTerrain to Element", e);
     }
-    if (description != null && !description.isEmpty()) {
-      terrain.setText(description);
-    }
-    if (type != Subtype.NONE) {
-      terrain.setAttribute("sub", type.toString());
-    }
-    return terrain;
   }
 }

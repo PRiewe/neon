@@ -18,8 +18,16 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.List;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -29,13 +37,37 @@ import org.jdom2.input.SAXBuilder;
  *
  * @author mdriesen
  */
+@JacksonXmlRootElement(localName = "root")
 public class CServer extends Resource {
-  private ArrayList<String> mods = new ArrayList<String>();
+  @JsonIgnore private ArrayList<String> mods = new ArrayList<String>();
+
+  @JacksonXmlProperty(localName = "log")
   private String log = "FINEST";
-  private boolean gThread = true;
+
+  @JsonIgnore private boolean gThread = true;
+
   //	private boolean audio = false;
+
+  @JacksonXmlProperty(localName = "ai")
   private int ai = 20;
 
+  /** Inner class for file entries */
+  public static class FileEntry {
+    @JacksonXmlText public String value;
+  }
+
+  /** Inner class for threads configuration */
+  public static class Threads {
+    @JacksonXmlProperty(isAttribute = true, localName = "generate")
+    public String generate;
+  }
+
+  // No-arg constructor for Jackson deserialization
+  public CServer() {
+    super("ini");
+  }
+
+  // Keep JDOM constructor for backward compatibility during migration
   public CServer(String... path) {
     super("ini", path);
 
@@ -84,5 +116,60 @@ public class CServer extends Resource {
 
   public int getAIRange() {
     return ai;
+  }
+
+  /** Jackson setter for mods - converts list to ArrayList */
+  @JacksonXmlElementWrapper(localName = "files")
+  @JacksonXmlProperty(localName = "file")
+  public void setFileList(List<FileEntry> fileList) {
+    if (fileList != null) {
+      for (FileEntry entry : fileList) {
+        mods.add(entry.value);
+      }
+    }
+  }
+
+  /** Jackson getter for mods - converts ArrayList to list */
+  @JacksonXmlElementWrapper(localName = "files")
+  @JacksonXmlProperty(localName = "file")
+  public List<FileEntry> getFileList() {
+    List<FileEntry> list = new ArrayList<>();
+    for (String mod : mods) {
+      FileEntry fe = new FileEntry();
+      fe.value = mod;
+      list.add(fe);
+    }
+    return list;
+  }
+
+  /** Jackson setter for threads configuration */
+  @JacksonXmlProperty(localName = "threads")
+  public void setThreads(Threads threads) {
+    if (threads != null) {
+      gThread = threads.generate.equals("on");
+    }
+  }
+
+  /** Jackson getter for threads configuration */
+  @JacksonXmlProperty(localName = "threads")
+  public Threads getThreads() {
+    Threads t = new Threads();
+    t.generate = gThread ? "on" : "off";
+    return t;
+  }
+
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
+  public Element toElement() {
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      return new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize CServer to Element", e);
+    }
   }
 }

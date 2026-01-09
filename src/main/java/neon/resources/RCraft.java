@@ -18,18 +18,51 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import java.io.ByteArrayInputStream;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
+@JacksonXmlRootElement(localName = "craft")
 public class RCraft extends RData {
+  @JacksonXmlProperty(isAttribute = true)
   public String raw;
-  public int amount, cost;
 
-  public RCraft(Element properties, String... path) {
-    super(properties.getAttributeValue("id"), path);
-    name = properties.getAttributeValue("result");
-    raw = properties.getAttributeValue("raw");
-    amount = Integer.parseInt(properties.getAttributeValue("amount"));
-    cost = Integer.parseInt(properties.getAttributeValue("cost"));
+  @JacksonXmlProperty(isAttribute = true)
+  public int amount;
+
+  @JacksonXmlProperty(isAttribute = true)
+  public int cost;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "result")
+  @JsonProperty(required = false)
+  private String resultName; // Maps to 'name' field in parent
+
+  // No-arg constructor for Jackson deserialization
+  public RCraft() {
+    super("unknown");
+  }
+
+  /**
+   * Sync result name to parent name field (called by Jackson after deserialization).
+   *
+   * @param resultName the result name
+   */
+  public void setResult(String resultName) {
+    this.resultName = resultName;
+    this.name = resultName;
+  }
+
+  /**
+   * Get result name for serialization.
+   *
+   * @return result name
+   */
+  public String getResult() {
+    return name;
   }
 
   public RCraft(String id, RItem item, String... path) {
@@ -50,13 +83,28 @@ public class RCraft extends RData {
     cost = procedure.cost;
   }
 
+  // Keep JDOM constructor for backward compatibility during migration
+  public RCraft(Element properties, String... path) {
+    super(properties.getAttributeValue("id"), path);
+    name = properties.getAttributeValue("result");
+    raw = properties.getAttributeValue("raw");
+    amount = Integer.parseInt(properties.getAttributeValue("amount"));
+    cost = Integer.parseInt(properties.getAttributeValue("cost"));
+  }
+
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
+  @Override
   public Element toElement() {
-    Element procedure = new Element("craft");
-    procedure.setAttribute("id", id);
-    procedure.setAttribute("result", name);
-    procedure.setAttribute("raw", raw);
-    procedure.setAttribute("amount", Integer.toString(amount));
-    procedure.setAttribute("cost", Integer.toString(cost));
-    return procedure;
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      return new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RCraft to Element", e);
+    }
   }
 }

@@ -97,7 +97,7 @@ class FeatureGeneratorTest {
 
     // Then: visualize
     System.out.println("Lake: " + scenario);
-    System.out.println(visualize(terrain));
+    System.out.println(TileVisualization.visualizeTerrain(terrain));
     System.out.println();
 
     // Verify
@@ -140,7 +140,7 @@ class FeatureGeneratorTest {
 
     // Then: visualize
     System.out.println("River: " + scenario);
-    System.out.println(visualize(terrain));
+    System.out.println(TileVisualization.visualizeTerrain(terrain));
     System.out.println();
 
     // Verify
@@ -220,59 +220,4 @@ class FeatureGeneratorTest {
 
   // ==================== Visualization ====================
 
-  /**
-   * Visualizes terrain as an ASCII grid.
-   *
-   * <p>Legend:
-   *
-   * <ul>
-   *   <li>'~' = water
-   *   <li>'.' = grass (or other default)
-   * </ul>
-   */
-  private String visualize(String[][] terrain) {
-    int width = terrain.length;
-    int height = terrain[0].length;
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("+").append("-".repeat(width)).append("+\n");
-
-    for (int y = 0; y < height; y++) {
-      sb.append("|");
-      for (int x = 0; x < width; x++) {
-        sb.append(terrainChar(terrain[x][y]));
-      }
-      sb.append("|\n");
-    }
-    sb.append("+").append("-".repeat(width)).append("+");
-
-    // Add feature count summary
-    int waterCount = countTerrain(terrain, WATER);
-    int grassCount = countTerrain(terrain, GRASS);
-    sb.append("\nTerrain: water=").append(waterCount).append(", grass=").append(grassCount);
-
-    return sb.toString();
-  }
-
-  private char terrainChar(String type) {
-    if (WATER.equals(type)) {
-      return '~';
-    } else if (GRASS.equals(type)) {
-      return '.';
-    } else {
-      return '?';
-    }
-  }
-
-  private int countTerrain(String[][] terrain, String type) {
-    int count = 0;
-    for (int x = 0; x < terrain.length; x++) {
-      for (int y = 0; y < terrain[x].length; y++) {
-        if (type.equals(terrain[x][y])) {
-          count++;
-        }
-      }
-    }
-    return count;
-  }
 }

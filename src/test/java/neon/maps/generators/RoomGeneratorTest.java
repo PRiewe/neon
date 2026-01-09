@@ -86,14 +86,14 @@ class RoomGeneratorTest {
 
     // Then: visualize
     System.out.println("makeRoom: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
     assertAll(
         () -> assertNotNull(room, "Should return a Room"),
         () -> assertNotNull(room.getBounds(), "Room should have bounds"),
-        () -> assertFloorTilesExist(tiles, "Room should have floor tiles"),
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Room should have floor tiles"),
         () -> assertRoomWallsExist(tiles, "Room should have walls"),
         () -> assertCornersExist(tiles, "Room should have corners"));
   }
@@ -112,7 +112,7 @@ class RoomGeneratorTest {
     generator2.makeRoom(tiles2, scenario.toRectangle());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== Poly Room Tests ====================
@@ -130,14 +130,14 @@ class RoomGeneratorTest {
 
     // Then: visualize
     System.out.println("makePolyRoom: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
     assertAll(
         () -> assertNotNull(room, "Should return a Room"),
         () -> assertNotNull(room.getBounds(), "Room should have bounds"),
-        () -> assertFloorTilesExist(tiles, "Poly room should have floor tiles"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Poly room should have floor tiles"));
   }
 
   @ParameterizedTest(name = "makePolyRoom determinism: {0}")
@@ -154,7 +154,7 @@ class RoomGeneratorTest {
     generator2.makePolyRoom(tiles2, scenario.toRectangle());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== Cave Room Tests ====================
@@ -172,14 +172,14 @@ class RoomGeneratorTest {
 
     // Then: visualize
     System.out.println("makeCaveRoom: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
     assertAll(
         () -> assertNotNull(room, "Should return a Room"),
         () -> assertNotNull(room.getBounds(), "Room should have bounds"),
-        () -> assertFloorTilesExist(tiles, "Cave room should have floor tiles"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Cave room should have floor tiles"));
   }
 
   @ParameterizedTest(name = "makeCaveRoom determinism: {0}")
@@ -196,7 +196,7 @@ class RoomGeneratorTest {
     generator2.makeCaveRoom(tiles2, scenario.toRectangle());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== Helper Methods ====================
@@ -213,32 +213,6 @@ class RoomGeneratorTest {
   }
 
   // ==================== Assertion Helpers ====================
-
-  private void assertTilesMatch(int[][] tiles1, int[][] tiles2) {
-    assertEquals(tiles1.length, tiles2.length, "Tile arrays should have same width");
-    for (int x = 0; x < tiles1.length; x++) {
-      assertEquals(
-          tiles1[x].length, tiles2[x].length, "Tile arrays should have same height at x=" + x);
-      for (int y = 0; y < tiles1[x].length; y++) {
-        assertEquals(
-            tiles1[x][y], tiles2[x][y], String.format("Tile at (%d,%d) should match", x, y));
-      }
-    }
-  }
-
-  private void assertFloorTilesExist(int[][] tiles, String message) {
-    boolean hasFloor = false;
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        if (tiles[x][y] == MapUtils.FLOOR) {
-          hasFloor = true;
-          break;
-        }
-      }
-      if (hasFloor) break;
-    }
-    assertTrue(hasFloor, message);
-  }
 
   private void assertRoomWallsExist(int[][] tiles, String message) {
     boolean hasRoomWall = false;
@@ -270,74 +244,4 @@ class RoomGeneratorTest {
 
   // ==================== Visualization ====================
 
-  /**
-   * Visualizes tiles as an ASCII grid.
-   *
-   * <p>Legend:
-   *
-   * <ul>
-   *   <li>'#' = WALL
-   *   <li>'.' = FLOOR
-   *   <li>'W' = WALL_ROOM
-   *   <li>'+' = CORNER
-   *   <li>'?' = unknown
-   * </ul>
-   */
-  private String visualize(int[][] tiles) {
-    int width = tiles.length;
-    int height = tiles[0].length;
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("+").append("-".repeat(width)).append("+\n");
-
-    for (int y = 0; y < height; y++) {
-      sb.append("|");
-      for (int x = 0; x < width; x++) {
-        sb.append(tileChar(tiles[x][y]));
-      }
-      sb.append("|\n");
-    }
-    sb.append("+").append("-".repeat(width)).append("+");
-
-    // Add tile count summary
-    int[] counts = countTiles(tiles);
-    sb.append("\nTiles: ");
-    sb.append(
-        String.format(
-            "floor=%d, wall=%d, room_wall=%d, corner=%d",
-            counts[MapUtils.FLOOR],
-            counts[MapUtils.WALL],
-            counts[MapUtils.WALL_ROOM],
-            counts[MapUtils.CORNER]));
-
-    return sb.toString();
-  }
-
-  private char tileChar(int tile) {
-    return switch (tile) {
-      case MapUtils.WALL -> '#';
-      case MapUtils.FLOOR -> '.';
-      case MapUtils.WALL_ROOM -> 'W';
-      case MapUtils.CORNER -> '+';
-      case MapUtils.CORRIDOR -> '~';
-      case MapUtils.DOOR -> 'D';
-      case MapUtils.DOOR_CLOSED -> 'd';
-      case MapUtils.DOOR_LOCKED -> 'L';
-      case MapUtils.ENTRY -> 'E';
-      default -> '?';
-    };
-  }
-
-  private int[] countTiles(int[][] tiles) {
-    int[] counts = new int[16]; // Room for all tile types
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        int tile = tiles[x][y];
-        if (tile >= 0 && tile < counts.length) {
-          counts[tile]++;
-        }
-      }
-    }
-    return counts;
-  }
 }

@@ -18,11 +18,18 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
 public class RMod extends Resource {
   public ArrayList<String> ccItems = new ArrayList<String>();
@@ -31,6 +38,107 @@ public class RMod extends Resource {
   private HashMap<String, String> info = new HashMap<String, String>();
   private ArrayList<String[]> maps = new ArrayList<String[]>();
 
+  /** Jackson model for main.xml */
+  @JacksonXmlRootElement
+  public static class MainXml {
+    @JacksonXmlProperty(isAttribute = true)
+    public String id;
+
+    @JacksonXmlProperty(localName = "title")
+    @JsonProperty(required = false)
+    public String title;
+
+    @JacksonXmlProperty(localName = "currency")
+    @JsonProperty(required = false)
+    public Currency currency;
+
+    @JacksonXmlProperty(localName = "master")
+    @JsonProperty(required = false)
+    public String master;
+
+    public static class Currency {
+      @JacksonXmlProperty(isAttribute = true)
+      public String big;
+
+      @JacksonXmlProperty(isAttribute = true)
+      public String small;
+    }
+  }
+
+  /** Jackson model for cc.xml */
+  @JacksonXmlRootElement(localName = "root")
+  public static class CCXml {
+    @JacksonXmlElementWrapper(useWrapping = false)
+    @JacksonXmlProperty(localName = "race")
+    public List<String> races = new ArrayList<>();
+
+    @JacksonXmlElementWrapper(useWrapping = false)
+    @JacksonXmlProperty(localName = "item")
+    public List<String> items = new ArrayList<>();
+
+    @JacksonXmlElementWrapper(useWrapping = false)
+    @JacksonXmlProperty(localName = "spell")
+    public List<String> spells = new ArrayList<>();
+
+    @JacksonXmlProperty(localName = "map")
+    @JsonProperty(required = false)
+    public MapStart map;
+
+    public static class MapStart {
+      @JacksonXmlProperty(isAttribute = true)
+      public String path;
+
+      @JacksonXmlProperty(isAttribute = true)
+      public String x;
+
+      @JacksonXmlProperty(isAttribute = true)
+      public String y;
+
+      @JacksonXmlProperty(isAttribute = true)
+      @JsonProperty(required = false)
+      public String z;
+    }
+  }
+
+  // No-arg constructor for Jackson deserialization
+  public RMod() {
+    super("unknown");
+  }
+
+  // Jackson constructor
+  public RMod(MainXml main, CCXml cc, String... path) {
+    super(main.id, path);
+
+    // main.xml
+    info.put("id", main.id);
+    if (main.master != null) {
+      info.put("master", main.master);
+    }
+    if (main.title != null) {
+      info.put("title", main.title);
+    }
+    if (main.currency != null) {
+      info.put("big", main.currency.big);
+      info.put("small", main.currency.small);
+    }
+
+    // cc.xml
+    if (cc != null) {
+      ccRaces.addAll(cc.races);
+      ccItems.addAll(cc.items);
+      ccSpells.addAll(cc.spells);
+      if (cc.map != null) {
+        info.put("map", cc.map.path);
+        info.put("x", cc.map.x);
+        info.put("y", cc.map.y);
+        if (cc.map.z != null) {
+          info.put("z", cc.map.z);
+        }
+      }
+    }
+  }
+
+  // Keep JDOM constructor for backward compatibility during migration
   public RMod(Element main, Element cc, String... path) {
     super(main.getAttributeValue("id"), path);
 
@@ -66,48 +174,59 @@ public class RMod extends Resource {
   }
 
   /**
-   * @return the root element of the main.xml file for this mod.
+   * @return the root element of the main.xml file for this mod using Jackson serialization.
    */
   public Element getMainElement() {
-    Element main = new Element(isExtension() ? "extension" : "master");
-    main.setAttribute("id", info.get("id"));
-    if (info.get("title") != null) {
-      main.addContent(new Element("title").setText(info.get("title")));
+    try {
+      MainXml main = new MainXml();
+      main.id = info.get("id");
+      main.title = info.get("title");
+      if (info.get("big") != null || info.get("small") != null) {
+        main.currency = new MainXml.Currency();
+        main.currency.big = info.get("big");
+        main.currency.small = info.get("small");
+      }
+      if (isExtension()) {
+        main.master = info.get("master");
+      }
+
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(main).toString();
+      Element element =
+          new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+      // Set correct root element name
+      element.setName(isExtension() ? "extension" : "master");
+      return element;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RMod main to Element", e);
     }
-    if (info.get("big") != null || info.get("small") != null) {
-      Element currency = new Element("currency");
-      currency.setAttribute("big", info.get("big"));
-      currency.setAttribute("small", info.get("small"));
-      main.addContent("currency");
-    }
-    return main;
   }
 
   /**
-   * @return the root element of the cc.xml file for this mod.
+   * @return the root element of the cc.xml file for this mod using Jackson serialization.
    */
   public Element getCCElement() {
-    Element cc = new Element("cc");
-    for (String item : ccItems) {
-      cc.addContent(new Element("item").setText(item));
-    }
-    for (String spell : ccSpells) {
-      cc.addContent(new Element("spell").setText(spell));
-    }
-    for (String race : ccRaces) {
-      cc.addContent(new Element("race").setText(race));
-    }
-    if (info.get("map") != null) {
-      Element map = new Element("map");
-      map.setAttribute("path", info.get("map"));
-      map.setAttribute("x", info.get("x"));
-      map.setAttribute("y", info.get("y"));
-      if (info.get("z") != null) {
-        map.setAttribute("z", info.get("z"));
+    try {
+      CCXml cc = new CCXml();
+      cc.items.addAll(ccItems);
+      cc.spells.addAll(ccSpells);
+      cc.races.addAll(ccRaces);
+      if (info.get("map") != null) {
+        cc.map = new CCXml.MapStart();
+        cc.map.path = info.get("map");
+        cc.map.x = info.get("x");
+        cc.map.y = info.get("y");
+        cc.map.z = info.get("z");
       }
-      cc.addContent(map);
+
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(cc).toString();
+      Element element =
+          new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+      return element;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RMod cc to Element", e);
     }
-    return cc;
   }
 
   public List<String> getList(String key) {

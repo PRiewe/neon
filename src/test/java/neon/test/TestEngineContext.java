@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.Game;
 import neon.core.event.TaskQueue;
@@ -32,6 +33,7 @@ import org.jdom2.input.SAXBuilder;
  * <p>Provides minimal stub implementations of Engine singletons to support testing without full
  * Engine initialization.
  */
+@Slf4j
 public class TestEngineContext {
 
   private static MVStore testDb;
@@ -43,6 +45,7 @@ public class TestEngineContext {
   private static EntityStore testEntityStore;
   private static ZoneActivator testZoneActivator;
   @Getter private static StubFileSystem stubFileSystem;
+  @Getter private static neon.core.DefaultGameContext testContext;
 
   static {
     try {
@@ -106,10 +109,21 @@ public class TestEngineContext {
     setStaticField(Engine.class, "game", testGame);
 
     // Create stub FileSystem
-    setStaticField(Engine.class, "files", new StubFileSystem());
+    setStaticField(Engine.class, "files", stubFileSystem);
 
     // Create stub PhysicsSystem
     setStaticField(Engine.class, "physics", new StubPhysicsSystem());
+
+    // Create and initialize test GameContext
+    testContext = new neon.core.DefaultGameContext();
+    testContext.setResources(testResources);
+    testContext.setFileSystem(stubFileSystem);
+    testContext.setPhysicsEngine(new StubPhysicsSystem());
+    testContext.setQueue(new neon.core.event.TaskQueue());
+    testContext.setGame(testGame);
+
+    // Note: We don't set Engine reference in tests since we don't have a real Engine instance
+    setStaticField(Engine.class, "context", testContext);
   }
 
   /**
@@ -132,13 +146,15 @@ public class TestEngineContext {
       setStaticField(Engine.class, "game", null);
       setStaticField(Engine.class, "files", null);
       setStaticField(Engine.class, "physics", null);
+      setStaticField(Engine.class, "context", null);
 
       testResources = null;
       testGame = null;
       testStore = null;
+      testContext = null;
 
     } catch (Exception e) {
-      System.err.println("Warning: Failed to reset test engine context: " + e.getMessage());
+      log.error("Failed to reset test engine context", e);
     }
   }
 

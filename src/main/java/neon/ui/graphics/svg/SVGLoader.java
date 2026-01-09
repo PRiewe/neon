@@ -19,37 +19,47 @@
 package neon.ui.graphics.svg;
 
 import java.awt.Color;
-import java.io.StringReader;
 import neon.ui.graphics.shapes.*;
 import neon.util.ColorFactory;
-import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
 
+/**
+ * SVG loader that uses the jsvg library for full SVG 1.1+ support.
+ *
+ * <p>This class provides a simple interface for loading SVG content and converting it to JVShape
+ * instances that can be rendered in the game engine.
+ */
 public class SVGLoader {
-  public static JVShape loadShape(String shape) {
-    StringReader stringReader = new StringReader(shape);
-    SAXBuilder builder = new SAXBuilder();
-    // doc al initialiseren, in geval builder.build faalt
-    Document doc = new Document();
-    try {
-      doc = builder.build(stringReader);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    Element root = doc.getRootElement();
-    root.detach();
-    return loadShape(root);
+  /**
+   * Loads an SVG shape from a string.
+   *
+   * <p>This method uses the jsvg library to parse and render SVG content. It supports all SVG 1.1+
+   * features including circles, rectangles, paths, polygons, gradients, and text.
+   *
+   * @param svgContent the SVG content as a string (can be a fragment or complete document)
+   * @return a JVShape that can be rendered
+   * @throws RuntimeException if the SVG cannot be parsed
+   */
+  public static JVShape loadShape(String svgContent) {
+    return new JVSvgShape(svgContent);
   }
 
+  /**
+   * Loads an SVG shape from a JDOM Element.
+   *
+   * @param shape the JDOM element containing SVG shape data
+   * @return a JVShape that can be rendered
+   * @deprecated Use {@link #loadShape(String)} instead. This method uses the legacy JDOM-based
+   *     parser that only supports circles. The String-based method uses jsvg for full SVG support.
+   */
+  @Deprecated
   public static JVShape loadShape(Element shape) {
+    // Legacy implementation for backward compatibility
     Color color = ColorFactory.getColor(shape.getAttributeValue("fill"));
     if (shape.getAttribute("opacity") != null) {
       int opacity = (int) (Float.parseFloat(shape.getAttributeValue("opacity")) * 255);
       color = new Color(color.getRed(), color.getGreen(), color.getBlue(), opacity);
     }
-    //		DitherPaint paint = new DitherPaint(color,
-    // Float.parseFloat(shape.getAttributeValue("opacity")));
 
     if (shape.getName().equals("circle")) {
       int radius = Integer.parseInt(shape.getAttributeValue("r"));

@@ -20,13 +20,17 @@ package neon.resources.builder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.function.BiConsumer;
 import lombok.extern.slf4j.Slf4j;
 // import neon.core.Engine;
 import neon.core.event.TaskQueue;
 import neon.resources.*;
 import neon.resources.quest.RQuest;
 import neon.systems.files.FileSystem;
+import neon.systems.files.JacksonMapper;
 import neon.systems.files.StringTranslator;
 import neon.systems.files.XMLTranslator;
 import org.jdom2.*;
@@ -37,15 +41,17 @@ public class ModLoader {
   private TaskQueue queue;
   private FileSystem files;
   private ResourceManager resourceManager;
+  private JacksonMapper jacksonMapper;
 
   public ModLoader(String mod, TaskQueue queue, FileSystem files, ResourceManager resources) {
     this.queue = queue;
     this.files = files;
     this.resourceManager = resources;
+    this.jacksonMapper = new JacksonMapper();
     try {
       path = files.mount(mod);
     } catch (IOException e) {
-      log.error("IOE during contruction", e);
+      log.error("IOException during construction", e);
     }
   }
 
@@ -59,6 +65,7 @@ public class ModLoader {
       cc = files.getFile(new XMLTranslator(), path, "cc.xml").getRootElement();
     }
 
+    // Use JDOM constructor for now - Jackson migration deferred to Phase 7
     RMod rmod = new RMod(mod, cc);
     rmod.addMaps(initMaps(path, "maps"));
 
@@ -141,12 +148,48 @@ public class ModLoader {
       for (String s : files.listFiles(file)) {
         s = s.substring(s.lastIndexOf("/") + 1);
         String quest = s.substring(s.lastIndexOf(File.separator) + 1);
-        Document doc = files.getFile(new XMLTranslator(), path, "quests", quest);
-        resourceManager.addResource(new RQuest(quest, doc.getRootElement()), "quest");
+
+        // Skip non-XML files
+        if (!quest.toLowerCase().endsWith(".xml")) {
+          continue;
+        }
+
+        try (InputStream stream = files.getStream(path, "quests", quest)) {
+          if (stream == null) {
+            log.warn("Quest file {} not found, skipping", quest);
+            continue;
+          }
+
+          RQuest resource = deserialize(stream, quest);
+          resourceManager.addResource(resource, "quest");
+        } catch (IOException e) {
+          log.error("Error loading quest file {} in mod {} due to {}", quest, path, e.toString());
+        } catch (Exception e) {
+          log.error(
+              "Error deserializing quest file {} in mod {} due to {}", quest, path, e.toString());
+        }
       }
-    } catch (Exception e) { // happens with .svn directory
-      log.error("Error loading quest in mod {}", path, e);
+    } catch (Exception e) { // happens with .svn directory or other file system errors
+      log.error("Error accessing quests directory in mod {}", path);
     }
+  }
+
+  /** Deserialize quest XML from InputStream. Quests use the quest filename as their ID. */
+  private RQuest deserialize(InputStream stream, String questFileName) throws IOException {
+    RQuest result = jacksonMapper.fromXml(stream, RQuest.class);
+    if (result == null) {
+      throw new RuntimeException("Failed to deserialize quest: " + questFileName);
+    }
+    // Set the quest ID from filename (matches JDOM behavior)
+    // Use reflection since id is final in Resource base class
+    try {
+      java.lang.reflect.Field idField = neon.resources.Resource.class.getDeclaredField("id");
+      idField.setAccessible(true);
+      idField.set(result, questFileName);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to set quest ID: " + questFileName, e);
+    }
+    return result;
   }
 
   private void initBooks(String... file) {
@@ -177,118 +220,147 @@ public class ModLoader {
   }
 
   private void initCreatures(String... file) {
-    if (files.exists(file)) {
-      Element creatures = files.getFile(new XMLTranslator(), file).getRootElement();
-      for (Element c : creatures.getChildren()) {
-        switch (c.getName()) {
-          case "npc":
-            resourceManager.addResource(new RPerson(c));
-            break;
-          case "list":
-            resourceManager.addResource(new LCreature(c));
-            break;
-          default:
-            resourceManager.addResource(new RCreature(c));
-            break;
-        }
-      }
-    }
+    if (!files.exists(file)) return;
+
+    parseMultiElementFile(
+        file,
+        (elementName, elementXml) -> {
+          switch (elementName) {
+            case "npc" -> {
+              RPerson person = deserialize(elementXml, RPerson.class);
+              resourceManager.addResource(person);
+            }
+            case "list" -> {
+              LCreature list = deserialize(elementXml, LCreature.class);
+              resourceManager.addResource(list);
+            }
+            default -> {
+              RCreature creature = deserialize(elementXml, RCreature.class);
+              resourceManager.addResource(creature);
+            }
+          }
+        });
   }
 
   private void initItems(String... file) {
-    if (files.exists(file)) {
-      Element items = files.getFile(new XMLTranslator(), file).getRootElement();
-      for (Element e : items.getChildren()) {
-        switch (e.getName()) {
-          case "book":
-          case "scroll":
-            resourceManager.addResource(new RItem.Text(e));
-            break;
-          case "weapon":
-            resourceManager.addResource(new RWeapon(e));
-            break;
-          case "craft":
-            resourceManager.addResource(new RCraft(e));
-            break;
-          case "door":
-            resourceManager.addResource(new RItem.Door(e));
-            break;
-          case "potion":
-            resourceManager.addResource(new RItem.Potion(e));
-            break;
-          case "container":
-            resourceManager.addResource(new RItem.Container(e));
-            break;
-          case "list":
-            resourceManager.addResource(new LItem(e));
-            break;
-          case "armor":
-          case "clothing":
-            resourceManager.addResource(new RClothing(e));
-            break;
-          default:
-            resourceManager.addResource(new RItem(e));
-            break;
-        }
-      }
-    }
+    if (!files.exists(file)) return;
+
+    parseMultiElementFile(
+        file,
+        (elementName, elementXml) -> {
+          switch (elementName) {
+            case "book", "scroll" -> {
+              RItem.Text text = deserialize(elementXml, RItem.Text.class);
+              resourceManager.addResource(text);
+            }
+            case "weapon" -> {
+              RWeapon weapon = deserialize(elementXml, RWeapon.class);
+              resourceManager.addResource(weapon);
+            }
+            case "craft" -> {
+              RCraft craft = deserialize(elementXml, RCraft.class);
+              resourceManager.addResource(craft);
+            }
+            case "door" -> {
+              RItem.Door door = deserialize(elementXml, RItem.Door.class);
+              resourceManager.addResource(door);
+            }
+            case "potion" -> {
+              RItem.Potion potion = deserialize(elementXml, RItem.Potion.class);
+              resourceManager.addResource(potion);
+            }
+            case "container" -> {
+              RItem.Container container = deserialize(elementXml, RItem.Container.class);
+              resourceManager.addResource(container);
+            }
+            case "list" -> {
+              LItem list = deserialize(elementXml, LItem.class);
+              resourceManager.addResource(list);
+            }
+            case "armor", "clothing" -> {
+              RClothing clothing = deserialize(elementXml, RClothing.class);
+              resourceManager.addResource(clothing);
+            }
+            default -> {
+              RItem item = deserialize(elementXml, RItem.class);
+              resourceManager.addResource(item);
+            }
+          }
+        });
   }
 
   private void initTerrain(String... file) {
-    Element terrain = files.getFile(new XMLTranslator(), file).getRootElement();
-    for (Element e : terrain.getChildren()) {
-      resourceManager.addResource(new RTerrain(e), "terrain");
-    }
+    parseMultiElementFile(
+        file,
+        (elementName, elementXml) -> {
+          RTerrain terrain = deserialize(elementXml, RTerrain.class);
+          resourceManager.addResource(terrain, "terrain");
+        });
   }
 
   private void initThemes(String... file) {
-    if (files.exists(file)) {
-      Element themes = files.getFile(new XMLTranslator(), file).getRootElement();
-      for (Element theme : themes.getChildren()) {
-        switch (theme.getName()) {
-          case "dungeon":
-            resourceManager.addResource(new RDungeonTheme(theme), "theme");
-            break;
-          case "zone":
-            resourceManager.addResource(new RZoneTheme(theme), "theme");
-            break;
-          case "region":
-            resourceManager.addResource(new RRegionTheme(theme), "theme");
-            break;
-        }
-      }
-    }
+    if (!files.exists(file)) return;
+
+    parseMultiElementFile(
+        file,
+        (elementName, elementXml) -> {
+          switch (elementName) {
+            case "dungeon" -> {
+              RDungeonTheme theme = deserialize(elementXml, RDungeonTheme.class);
+              resourceManager.addResource(theme, "theme");
+            }
+            case "zone" -> {
+              RZoneTheme theme = deserialize(elementXml, RZoneTheme.class);
+              resourceManager.addResource(theme, "theme");
+            }
+            case "region" -> {
+              RRegionTheme theme = deserialize(elementXml, RRegionTheme.class);
+              resourceManager.addResource(theme, "theme");
+            }
+          }
+        });
   }
 
   private void initMagic(String... file) {
-    if (files.exists(file)) {
-      Element resources = files.getFile(new XMLTranslator(), file).getRootElement();
-      for (Element resource : resources.getChildren()) {
-        switch (resource.getName()) {
-          case "sign":
-            resourceManager.addResource(new RSign(resource), "magic");
-            break;
-          case "tattoo":
-            resourceManager.addResource(new RTattoo(resource), "magic");
-            break;
-          case "recipe":
-            resourceManager.addResource(new RRecipe(resource), "magic");
-            break;
-          case "list":
-            resourceManager.addResource(new LSpell(resource), "magic");
-            break;
-          case "power":
-            resourceManager.addResource(new RSpell.Power(resource), "magic");
-            break;
-          case "enchant":
-            resourceManager.addResource(new RSpell.Enchantment(resource), "magic");
-            break;
-          default:
-            resourceManager.addResource(new RSpell(resource), "magic");
-            break;
-        }
-      }
-    }
+    if (!files.exists(file)) return;
+
+    parseMultiElementFile(
+        file,
+        (elementName, elementXml) -> {
+          switch (elementName) {
+            case "sign" -> {
+              RSign sign = deserialize(elementXml, RSign.class);
+              resourceManager.addResource(sign, "magic");
+            }
+            case "tattoo" -> {
+              RTattoo tattoo = deserialize(elementXml, RTattoo.class);
+              resourceManager.addResource(tattoo, "magic");
+            }
+            case "recipe" -> {
+              RRecipe recipe = deserialize(elementXml, RRecipe.class);
+              resourceManager.addResource(recipe, "magic");
+            }
+            case "list" -> {
+              LSpell list = deserialize(elementXml, LSpell.class);
+              resourceManager.addResource(list, "magic");
+            }
+            case "power" -> {
+              RSpell.Power power = deserialize(elementXml, RSpell.Power.class);
+              assignSpellType(power, elementName);
+              resourceManager.addResource(power, "magic");
+            }
+            case "enchant" -> {
+              RSpell.Enchantment enchant = deserialize(elementXml, RSpell.Enchantment.class);
+              assignSpellType(enchant, elementName);
+              resourceManager.addResource(enchant, "magic");
+            }
+            default -> {
+              RSpell spell = deserialize(elementXml, RSpell.class);
+              assignSpellType(spell, elementName);
+              resourceManager.addResource(spell, "magic");
+            }
+          }
+        });
   }
 
   private void initScripts(String... file) {
@@ -368,5 +440,67 @@ public class ModLoader {
         }
       }
     }
+  }
+
+  /**
+   * Parse XML file with multiple heterogeneous child elements. Uses Jackson's parseMultiTypeXml for
+   * element-by-element processing. Implements fail-fast error handling - throws RuntimeException on
+   * parse failures.
+   *
+   * @param path the file path components
+   * @param elementHandler handler called for each (elementName, elementXml) pair
+   */
+  private void parseMultiElementFile(String[] path, BiConsumer<String, String> elementHandler) {
+    try (InputStream stream = files.getStream(path)) {
+      if (stream == null) {
+        log.warn("File not found: {}", Arrays.toString(path));
+        return;
+      }
+
+      jacksonMapper.parseMultiTypeXml(stream, elementHandler::accept);
+    } catch (IOException e) {
+      log.error("Failed to parse XML file {}", Arrays.toString(path), e);
+      throw new RuntimeException("Resource loading failed for " + Arrays.toString(path), e);
+    }
+  }
+
+  /**
+   * Deserialize XML string to resource object using Jackson. Implements fail-fast error handling -
+   * throws RuntimeException if deserialization returns null.
+   *
+   * @param <T> the type of resource to deserialize
+   * @param elementXml the XML string for the element
+   * @param clazz the class to deserialize to
+   * @return the deserialized resource
+   */
+  private <T> T deserialize(String elementXml, Class<T> clazz) {
+    T result = jacksonMapper.fromXml(elementXml, clazz);
+    if (result == null) {
+      throw new RuntimeException(
+          "Failed to deserialize "
+              + clazz.getSimpleName()
+              + " from XML: "
+              + elementXml.substring(0, Math.min(200, elementXml.length())));
+    }
+    return result;
+  }
+
+  /**
+   * Set RSpell.type based on element name. Handles spell type assignment after Jackson
+   * deserialization.
+   *
+   * @param spell the spell to configure
+   * @param elementName the XML element name (spell, disease, poison, curse, power, enchant)
+   */
+  private void assignSpellType(RSpell spell, String elementName) {
+    spell.type =
+        switch (elementName) {
+          case "power" -> RSpell.SpellType.POWER;
+          case "enchant" -> RSpell.SpellType.ENCHANT;
+          case "disease" -> RSpell.SpellType.DISEASE;
+          case "poison" -> RSpell.SpellType.POISON;
+          case "curse" -> RSpell.SpellType.CURSE;
+          default -> RSpell.SpellType.SPELL;
+        };
   }
 }

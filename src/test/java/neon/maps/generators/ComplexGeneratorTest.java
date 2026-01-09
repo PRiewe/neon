@@ -114,15 +114,16 @@ class ComplexGeneratorTest {
 
     // Then: visualize
     System.out.println("Sparse Dungeon: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Tiles width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Tiles height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () ->
+            TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"));
   }
 
   @ParameterizedTest(name = "sparse determinism: {0}")
@@ -149,7 +150,7 @@ class ComplexGeneratorTest {
             scenario.maxSize());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== Large Sparse Dungeon Tests (150x120) ====================
@@ -171,15 +172,16 @@ class ComplexGeneratorTest {
 
     // Then: visualize (can be commented out for large dungeons)
     // System.out.println("Large Sparse Dungeon: " + scenario);
-    // System.out.println(visualize(tiles));
+    // System.out.println(TileVisualization.visualizeTiles(tiles));
     // System.out.println();
 
     // Verify
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Tiles width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Tiles height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () ->
+            TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"));
   }
 
   // ==================== BSP Dungeon Tests ====================
@@ -197,15 +199,16 @@ class ComplexGeneratorTest {
 
     // Then: visualize
     System.out.println("BSP Dungeon: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Tiles width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Tiles height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () ->
+            TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"));
   }
 
   @ParameterizedTest(name = "BSP determinism: {0}")
@@ -224,7 +227,7 @@ class ComplexGeneratorTest {
             scenario.width(), scenario.height(), scenario.minSize(), scenario.maxSize());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== Packed Dungeon Tests ====================
@@ -246,15 +249,16 @@ class ComplexGeneratorTest {
 
     // Then: visualize
     System.out.println("Packed Dungeon: " + scenario);
-    System.out.println(visualize(tiles));
+    System.out.println(TileVisualization.visualizeTiles(tiles));
     System.out.println();
 
     // Verify
     assertAll(
         () -> assertEquals(scenario.width(), tiles.length, "Tiles width should match"),
         () -> assertEquals(scenario.height(), tiles[0].length, "Tiles height should match"),
-        () -> assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
-        () -> assertConnectedDungeon(tiles, "Dungeon should be connected"));
+        () -> TileAssertions.assertFloorTilesExist(tiles, "Dungeon should have floor tiles"),
+        () ->
+            TileConnectivityAssertions.assertFullyConnected(tiles, "Dungeon should be connected"));
   }
 
   @ParameterizedTest(name = "packed determinism: {0}")
@@ -281,166 +285,11 @@ class ComplexGeneratorTest {
             scenario.maxSize());
 
     // Then
-    assertTilesMatch(tiles1, tiles2);
+    TileAssertions.assertTilesMatch(tiles1, tiles2);
   }
 
   // ==================== Assertion Helpers ====================
 
-  private void assertTilesMatch(int[][] tiles1, int[][] tiles2) {
-    assertEquals(tiles1.length, tiles2.length, "Tile arrays should have same width");
-    for (int x = 0; x < tiles1.length; x++) {
-      assertEquals(
-          tiles1[x].length, tiles2[x].length, "Tile arrays should have same height at x=" + x);
-      for (int y = 0; y < tiles1[x].length; y++) {
-        assertEquals(
-            tiles1[x][y], tiles2[x][y], String.format("Tile at (%d,%d) should match", x, y));
-      }
-    }
-  }
-
-  private void assertFloorTilesExist(int[][] tiles, String message) {
-    boolean hasFloor = false;
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        if (tiles[x][y] == MapUtils.FLOOR) {
-          hasFloor = true;
-          break;
-        }
-      }
-      if (hasFloor) break;
-    }
-    assertTrue(hasFloor, message);
-  }
-
-  private void assertConnectedDungeon(int[][] tiles, String message) {
-    // Count floor tiles and verify flood fill reaches all of them
-    int floorCount = 0;
-    int startX = -1, startY = -1;
-
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        if (isWalkable(tiles[x][y])) {
-          floorCount++;
-          if (startX < 0) {
-            startX = x;
-            startY = y;
-          }
-        }
-      }
-    }
-
-    if (floorCount == 0) {
-      fail(message + " - no walkable tiles found");
-      return;
-    }
-
-    // Flood fill from start position
-    boolean[][] visited = new boolean[tiles.length][tiles[0].length];
-    int reachable = floodFillCount(tiles, visited, startX, startY);
-
-    assertEquals(floorCount, reachable, message + " - not all walkable tiles are connected");
-  }
-
-  private boolean isWalkable(int tile) {
-    return tile == MapUtils.FLOOR
-        || tile == MapUtils.CORRIDOR
-        || tile == MapUtils.DOOR
-        || tile == MapUtils.DOOR_CLOSED
-        || tile == MapUtils.DOOR_LOCKED;
-  }
-
-  private int floodFillCount(int[][] tiles, boolean[][] visited, int x, int y) {
-    if (x < 0 || x >= tiles.length || y < 0 || y >= tiles[0].length) {
-      return 0;
-    }
-    if (visited[x][y] || !isWalkable(tiles[x][y])) {
-      return 0;
-    }
-
-    visited[x][y] = true;
-    int count = 1;
-    count += floodFillCount(tiles, visited, x - 1, y);
-    count += floodFillCount(tiles, visited, x + 1, y);
-    count += floodFillCount(tiles, visited, x, y - 1);
-    count += floodFillCount(tiles, visited, x, y + 1);
-    return count;
-  }
-
   // ==================== Visualization ====================
 
-  /**
-   * Visualizes tiles as an ASCII grid.
-   *
-   * <p>Legend:
-   *
-   * <ul>
-   *   <li>'#' = WALL
-   *   <li>'.' = FLOOR
-   *   <li>'~' = CORRIDOR
-   *   <li>'W' = WALL_ROOM
-   *   <li>'+' = CORNER
-   *   <li>'D' = DOOR (open)
-   *   <li>'d' = DOOR_CLOSED
-   *   <li>'L' = DOOR_LOCKED
-   *   <li>'E' = ENTRY
-   * </ul>
-   */
-  private String visualize(int[][] tiles) {
-    int width = tiles.length;
-    int height = tiles[0].length;
-
-    StringBuilder sb = new StringBuilder();
-    sb.append("+").append("-".repeat(width)).append("+\n");
-
-    for (int y = 0; y < height; y++) {
-      sb.append("|");
-      for (int x = 0; x < width; x++) {
-        sb.append(tileChar(tiles[x][y]));
-      }
-      sb.append("|\n");
-    }
-    sb.append("+").append("-".repeat(width)).append("+");
-
-    // Add tile count summary
-    int[] counts = countTiles(tiles);
-    sb.append("\nTiles: ");
-    sb.append(
-        String.format(
-            "floor=%d, corridor=%d, wall=%d, room_wall=%d, doors=%d",
-            counts[MapUtils.FLOOR],
-            counts[MapUtils.CORRIDOR],
-            counts[MapUtils.WALL],
-            counts[MapUtils.WALL_ROOM],
-            counts[MapUtils.DOOR] + counts[MapUtils.DOOR_CLOSED] + counts[MapUtils.DOOR_LOCKED]));
-
-    return sb.toString();
-  }
-
-  private char tileChar(int tile) {
-    return switch (tile) {
-      case MapUtils.WALL -> '#';
-      case MapUtils.FLOOR -> '.';
-      case MapUtils.WALL_ROOM -> 'W';
-      case MapUtils.CORNER -> '+';
-      case MapUtils.CORRIDOR -> '~';
-      case MapUtils.DOOR -> 'D';
-      case MapUtils.DOOR_CLOSED -> 'd';
-      case MapUtils.DOOR_LOCKED -> 'L';
-      case MapUtils.ENTRY -> 'E';
-      default -> '?';
-    };
-  }
-
-  private int[] countTiles(int[][] tiles) {
-    int[] counts = new int[16]; // Room for all tile types
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[x].length; y++) {
-        int tile = tiles[x][y];
-        if (tile >= 0 && tile < counts.length) {
-          counts[tile]++;
-        }
-      }
-    }
-    return counts;
-  }
 }

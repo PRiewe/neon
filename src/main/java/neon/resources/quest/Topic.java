@@ -18,23 +18,49 @@
 
 package neon.resources.quest;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import java.io.ByteArrayInputStream;
+import java.io.Serializable;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
 /**
  * A single topic in a conversation branch.
  *
  * @author mdriesen
  */
-public class Topic {
+@JacksonXmlRootElement(localName = "topic")
+public class Topic implements Serializable {
   /** The resource ID of the quest this topic belongs to. */
   public final String questID;
 
   public final String conversationID;
+
+  @JacksonXmlProperty(isAttribute = true)
   public final String id; // unique id string
 
+  @JacksonXmlProperty(localName = "phrase")
+  @JsonProperty(required = false)
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String phrase; // what the player says
+
+  @JacksonXmlProperty(localName = "pre")
+  @JsonProperty(required = false)
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String condition; // script conditions
+
+  @JacksonXmlProperty(localName = "answer")
+  @JsonProperty(required = false)
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String answer; // NPC's response
+
+  @JacksonXmlProperty(localName = "action")
+  @JsonProperty(required = false)
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String action; // script to execute afterwards
 
   /**
@@ -89,26 +115,15 @@ public class Topic {
   }
 
   /**
-   * @return a JDOM {@code Element} describing this topic
+   * @return a JDOM {@code Element} describing this topic using Jackson serialization
    */
   public Element toElement() {
-    Element topic = new Element("topic");
-    topic.setAttribute("id", id);
-    if (condition != null) {
-      Element pre = new Element("pre");
-      pre.setText(condition);
-      topic.addContent(pre);
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      return new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize Topic to Element", e);
     }
-    if (answer != null) {
-      Element ae = new Element("answer");
-      ae.setText(answer);
-      topic.addContent(ae);
-    }
-    if (action != null) {
-      Element ae = new Element("action");
-      ae.setText(action);
-      topic.addContent(ae);
-    }
-    return topic;
   }
 }

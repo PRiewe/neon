@@ -18,24 +18,79 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
+@JacksonXmlRootElement(localName = "region")
 public class RRegionTheme extends RData {
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
   public String floor;
+
   public Type type;
+
   public String door, wall;
+
   public HashMap<String, Integer> creatures = new HashMap<String, Integer>();
-  public List<Element> features = new ArrayList<Element>();
+
+  public List<Feature> features = new ArrayList<Feature>();
+
   public HashMap<String, Integer> vegetation = new HashMap<String, Integer>();
+
+  /** Inner class for Jackson XML parsing of feature elements */
+  @JacksonXmlRootElement(localName = "feature")
+  public static class Feature {
+    @JacksonXmlProperty(isAttribute = true, localName = "n")
+    public String n; // number/frequency
+
+    @JacksonXmlProperty(isAttribute = true, localName = "s")
+    @JsonProperty(required = false)
+    public String s; // size
+
+    @JacksonXmlProperty(isAttribute = true, localName = "t")
+    @JsonProperty(required = false)
+    public String t; // terrain type
+
+    @JacksonXmlText public String value; // text content (e.g., "lake")
+  }
+
+  /** Inner class for creature entries */
+  public static class CreatureEntry {
+    @JacksonXmlProperty(isAttribute = true, localName = "n")
+    public int n; // number
+
+    @JacksonXmlText public String value; // creature ID
+  }
+
+  /** Inner class for vegetation/plant entries */
+  public static class PlantEntry {
+    @JacksonXmlProperty(isAttribute = true, localName = "a")
+    public int a; // abundance
+
+    @JacksonXmlText public String value; // plant ID
+  }
+
+  // No-arg constructor for Jackson deserialization
+  public RRegionTheme() {
+    super("unknown");
+  }
 
   public RRegionTheme(String id, String... path) {
     super(id, path);
   }
 
+  // Keep JDOM constructor for backward compatibility during migration
   public RRegionTheme(Element theme, String... path) {
     super(theme.getAttributeValue("id"), path);
     String[] data = theme.getAttributeValue("random").split(";");
@@ -44,9 +99,14 @@ public class RRegionTheme extends RData {
       creatures.put(creature.getText(), Integer.parseInt(creature.getAttributeValue("n")));
     }
 
-    // nieuwe arraylist om concurrentmodificationexceptions te vermijden
-    for (Element feature : new ArrayList<Element>(theme.getChildren("feature"))) {
-      features.add(feature.detach());
+    // Convert JDOM Elements to Feature objects
+    for (Element featureEl : new ArrayList<Element>(theme.getChildren("feature"))) {
+      Feature feature = new Feature();
+      feature.n = featureEl.getAttributeValue("n");
+      feature.s = featureEl.getAttributeValue("s");
+      feature.t = featureEl.getAttributeValue("t");
+      feature.value = featureEl.getText();
+      features.add(feature);
     }
 
     floor = theme.getAttributeValue("floor");
@@ -68,40 +128,114 @@ public class RRegionTheme extends RData {
     }
   }
 
-  public Element toElement() {
-    Element theme = new Element("region");
-    theme.setAttribute("id", id);
-
-    if (floor != null) {
-      theme.setAttribute("floor", floor);
+  /** Jackson setter for creature entries - converts list to HashMap */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "creature")
+  public void setCreatureList(List<CreatureEntry> creatureList) {
+    if (creatureList != null) {
+      for (CreatureEntry entry : creatureList) {
+        creatures.put(entry.value, entry.n);
+      }
     }
+  }
 
+  /** Jackson getter for creature entries - converts HashMap to list */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "creature")
+  public List<CreatureEntry> getCreatureList() {
+    List<CreatureEntry> list = new ArrayList<>();
     for (Map.Entry<String, Integer> entry : creatures.entrySet()) {
-      Element creature = new Element("creature");
-      creature.setText(entry.getKey());
-      creature.setAttribute("n", Integer.toString(entry.getValue()));
-      theme.addContent(creature);
+      CreatureEntry ce = new CreatureEntry();
+      ce.value = entry.getKey();
+      ce.n = entry.getValue();
+      list.add(ce);
     }
+    return list;
+  }
 
-    for (Map.Entry<String, Integer> plant : vegetation.entrySet()) {
-      Element veg = new Element("plant");
-      veg.setText(plant.getKey());
-      veg.setAttribute("a", Integer.toString(plant.getValue()));
-      theme.addContent(veg);
+  /** Jackson setter for feature list */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "feature")
+  public void setFeatures(List<Feature> features) {
+    this.features = features;
+  }
+
+  /** Jackson getter for feature list */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "feature")
+  public List<Feature> getFeatures() {
+    return features;
+  }
+
+  /** Jackson setter for vegetation/plant entries - converts list to HashMap */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "plant")
+  public void setPlantList(List<PlantEntry> plantList) {
+    if (plantList != null) {
+      for (PlantEntry entry : plantList) {
+        vegetation.put(entry.value, entry.a);
+      }
     }
+  }
 
+  /** Jackson getter for vegetation/plant entries - converts HashMap to list */
+  @JacksonXmlElementWrapper(useWrapping = false)
+  @JacksonXmlProperty(localName = "plant")
+  public List<PlantEntry> getPlantList() {
+    List<PlantEntry> list = new ArrayList<>();
+    for (Map.Entry<String, Integer> entry : vegetation.entrySet()) {
+      PlantEntry pe = new PlantEntry();
+      pe.value = entry.getKey();
+      pe.a = entry.getValue();
+      list.add(pe);
+    }
+    return list;
+  }
+
+  /** Jackson setter for the "random" attribute - parses type, wall, door */
+  @JacksonXmlProperty(isAttribute = true, localName = "random")
+  public void setRandom(String random) {
+    if (random != null) {
+      String[] data = random.split(";");
+      type = Type.valueOf(data[0]);
+      if (data.length > 1) {
+        wall = data[1];
+      }
+      if (data.length > 2) {
+        door = data[2];
+      }
+    }
+  }
+
+  /** Jackson getter for the "random" attribute - serializes type, wall, door */
+  @JacksonXmlProperty(isAttribute = true, localName = "random")
+  public String getRandom() {
     String random = type.toString() + ";";
     switch (type) {
       case town:
       case town_big:
       case town_small:
-        random += (wall + ";" + door.toString());
+        random += (wall + ";" + door);
         break;
       default:
         break;
     }
-    theme.setAttribute("random", random);
-    return theme;
+    return random;
+  }
+
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
+  public Element toElement() {
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      return new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RRegionTheme to Element", e);
+    }
   }
 
   public enum Type {

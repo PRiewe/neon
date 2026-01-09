@@ -20,24 +20,25 @@ package neon.core;
 
 import com.google.common.collect.Multimap;
 import java.awt.Rectangle;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import neon.core.event.MagicTask;
 import neon.core.event.SaveEvent;
 import neon.core.event.ScriptAction;
 import neon.core.event.TaskQueue;
+import neon.core.model.SaveGameModel;
 import neon.entities.Player;
 import neon.entities.property.Feat;
 import neon.entities.property.Skill;
 import neon.magic.Spell;
 import neon.maps.Atlas;
 import neon.resources.RSpell;
-import neon.systems.files.XMLTranslator;
+import neon.systems.files.JacksonMapper;
+import neon.systems.files.StringTranslator;
 import neon.util.fsm.Action;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
-import org.jdom2.Document;
-import org.jdom2.Element;
 
 @Listener(references = References.Strong)
 public class GameSaver {
@@ -50,19 +51,19 @@ public class GameSaver {
   /** Saves the current game. */
   @Handler
   public void saveGame(SaveEvent se) {
-    Document doc = new Document();
-    Element root = new Element("save");
-    doc.setRootElement(root);
-
     Player player = Engine.getPlayer();
-    root.addContent(savePlayer(player)); // save player data
-    root.addContent(saveJournal(player)); // save journal
-    root.addContent(saveEvents()); // save events
-    root.addContent(saveQuests()); // save quests
-    Element timer = new Element("timer");
-    timer.setAttribute("ticks", String.valueOf(Engine.getTimer().getTime()));
-    root.addContent(timer);
 
+    // Build save game model
+    SaveGameModel save = new SaveGameModel();
+    save.version = "2.0";
+    save.player = buildPlayerData(player);
+    save.journal = buildJournalData(player);
+    save.events = buildEventsData();
+    save.timer = new SaveGameModel.TimerData();
+    save.timer.ticks = Engine.getTimer().getTime();
+    save.quests = null; // No random quests yet
+
+    // Ensure directories exist
     File saves = new File("saves");
     if (!saves.exists()) {
       saves.mkdir();
@@ -77,24 +78,32 @@ public class GameSaver {
     Engine.getAtlas().getCache().commit();
     Engine.getStore().getCache().commit();
     Engine.getFileSystem().storeTemp(dir);
-    Engine.getFileSystem()
-        .saveFile(doc, new XMLTranslator(), "saves", player.getName(), "save.xml");
+
+    // Serialize with Jackson
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      ByteArrayOutputStream out = mapper.toXml(save);
+      String xml = out.toString("UTF-8");
+      Engine.getFileSystem()
+          .saveFile(xml, new StringTranslator(), "saves", player.getName(), "save.xml");
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to save game", e);
+    }
   }
 
-  private Element saveEvents() {
-    Element events = new Element("events");
+  private SaveGameModel.EventsData buildEventsData() {
+    SaveGameModel.EventsData events = new SaveGameModel.EventsData();
 
     // all normal tasks (for now only script tasks)
     Multimap<String, Action> tasks = queue.getTasks();
     for (String key : tasks.keySet()) {
       for (Action action : tasks.get(key)) {
-        Element event = new Element("task");
-        event.setAttribute("desc", key);
         if (action instanceof ScriptAction) {
-          ScriptAction task = (ScriptAction) action;
-          event.setAttribute("script", task.getScript());
+          SaveGameModel.TaskEvent event = new SaveGameModel.TaskEvent();
+          event.description = key;
+          event.script = ((ScriptAction) action).getScript();
+          events.tasks.add(event);
         }
-        events.addContent(event);
       }
     }
 
@@ -102,115 +111,223 @@ public class GameSaver {
     Multimap<Integer, TaskQueue.RepeatEntry> repeats = queue.getTimerTasks();
     for (Integer key : repeats.keySet()) {
       for (TaskQueue.RepeatEntry entry : repeats.get(key)) {
-        Element event = new Element("timer");
-        event.setAttribute("tick", key + ":" + entry.getPeriod() + ":" + entry.getStop());
+        SaveGameModel.TimerEvent event = new SaveGameModel.TimerEvent();
+        event.tick = key + ":" + entry.getPeriod() + ":" + entry.getStop();
+
         if (entry.getScript() != null) {
-          event.setAttribute("task", "script");
-          event.setAttribute("script", entry.getScript());
+          event.taskType = "script";
+          event.script = entry.getScript();
         } else if (entry.getTask() instanceof MagicTask) {
-          event.setAttribute("task", "magic");
+          event.taskType = "magic";
           Spell spell = ((MagicTask) entry.getTask()).getSpell();
-          event.setAttribute("effect", spell.getEffect().name());
+          event.effect = spell.getEffect().name();
           if (spell.getTarget() != null) {
-            event.setAttribute("target", Long.toString(spell.getTarget().getUID()));
+            event.target = spell.getTarget().getUID();
           }
           if (spell.getCaster() != null) {
-            event.setAttribute("caster", Long.toString(spell.getCaster().getUID()));
+            event.caster = spell.getCaster().getUID();
           }
           if (spell.getScript() != null) {
-            event.setAttribute("script", spell.getScript());
+            event.script = spell.getScript();
           }
-          event.setAttribute("stype", spell.getType().name());
-          event.setAttribute("mag", Float.toString(spell.getMagnitude()));
+          event.spellType = spell.getType().name();
+          event.magnitude = spell.getMagnitude();
         }
-        events.addContent(event);
+
+        events.timerEvents.add(event);
       }
     }
 
     return events;
   }
 
-  private Element saveQuests() {
-    Element quests = new Element("quests");
-    // TODO: save random quests
-    return quests;
-  }
+  private SaveGameModel.PlayerSaveData buildPlayerData(Player player) {
+    SaveGameModel.PlayerSaveData data = new SaveGameModel.PlayerSaveData();
 
-  private Element savePlayer(Player player) {
-    Element PC = new Element("player");
+    // Basic attributes
+    data.name = player.getName();
+    data.race = player.species.id;
+    data.gender = player.getGender().toString().toLowerCase();
+    data.specialisation = player.getSpecialisation().toString();
+    data.profession = player.getProfession();
+    data.sign = player.getSign();
 
-    PC.setAttribute("name", player.getName());
-    PC.setAttribute("race", player.species.id);
-
-    PC.setAttribute("gender", player.getGender().toString().toLowerCase());
-
-    PC.setAttribute("spec", player.getSpecialisation().toString());
-
+    // Position
     Atlas atlas = Engine.getAtlas();
-    PC.setAttribute("map", Integer.toString(atlas.getCurrentMap().getUID()));
-    int l = atlas.getCurrentZoneIndex();
-    PC.setAttribute("l", Integer.toString(l));
+    data.map = atlas.getCurrentMap().getUID();
+    data.level = atlas.getCurrentZoneIndex();
     Rectangle bounds = player.getShapeComponent();
-    PC.setAttribute("x", String.valueOf(bounds.x));
-    PC.setAttribute("y", String.valueOf(bounds.y));
-    PC.setAttribute("sign", player.getSign());
+    data.x = bounds.x;
+    data.y = bounds.y;
 
-    Element skills = new Element("skills");
+    // Skills
+    data.skills = new SaveGameModel.SkillsData();
     for (Skill s : Skill.values()) {
-      skills.setAttribute(s.toString(), String.valueOf(player.getSkill(s)));
+      float skillValue = player.getSkill(s);
+      setSkillValue(data.skills, s, skillValue);
     }
-    PC.addContent(skills);
 
-    Element stats = new Element("stats");
-    stats.setAttribute("str", String.valueOf(player.getStatsComponent().getStr()));
-    stats.setAttribute("con", String.valueOf(player.getStatsComponent().getCon()));
-    stats.setAttribute("dex", String.valueOf(player.getStatsComponent().getDex()));
-    stats.setAttribute("int", String.valueOf(player.getStatsComponent().getInt()));
-    stats.setAttribute("wis", String.valueOf(player.getStatsComponent().getWis()));
-    stats.setAttribute("cha", String.valueOf(player.getStatsComponent().getCha()));
-    PC.addContent(stats);
+    // Stats
+    data.stats = new SaveGameModel.StatsData();
+    data.stats.str = player.getStatsComponent().getStr();
+    data.stats.con = player.getStatsComponent().getCon();
+    data.stats.dex = player.getStatsComponent().getDex();
+    data.stats.int_ = player.getStatsComponent().getInt();
+    data.stats.wis = player.getStatsComponent().getWis();
+    data.stats.cha = player.getStatsComponent().getCha();
 
-    Element money = new Element("money");
-    money.setText(String.valueOf(player.getInventoryComponent().getMoney()));
-    PC.addContent(money);
+    // Money
+    data.money = new SaveGameModel.MoneyData();
+    data.money.value = player.getInventoryComponent().getMoney();
 
+    // Items
     for (long uid : player.getInventoryComponent()) {
-      Element item = new Element("item");
-      item.setAttribute("uid", Long.toString(uid));
-      PC.addContent(item);
+      SaveGameModel.ItemReference item = new SaveGameModel.ItemReference();
+      item.uid = uid;
+      data.items.add(item);
     }
 
+    // Spells and powers
     for (RSpell s : player.getMagicComponent().getSpells()) {
-      Element spell = new Element("spell");
-      spell.setText(s.id);
-      PC.addContent(spell);
+      SaveGameModel.SpellReference spell = new SaveGameModel.SpellReference();
+      spell.id = s.id;
+      data.spells.add(spell);
     }
 
     for (RSpell p : player.getMagicComponent().getPowers()) {
-      Element spell = new Element("spell");
-      spell.setText(p.id);
-      PC.addContent(spell);
+      SaveGameModel.SpellReference spell = new SaveGameModel.SpellReference();
+      spell.id = p.id;
+      data.spells.add(spell);
     }
 
+    // Feats
     for (Feat f : player.getCharacteristicsComponent().getFeats()) {
-      Element feat = new Element("feat");
-      feat.setText(f.toString());
-      PC.addContent(feat);
+      SaveGameModel.FeatReference feat = new SaveGameModel.FeatReference();
+      feat.name = f.toString();
+      data.feats.add(feat);
     }
 
-    return PC;
+    return data;
   }
 
-  private Element saveJournal(Player player) {
-    Element journal = new Element("journal");
+  private void setSkillValue(SaveGameModel.SkillsData skills, Skill skill, float value) {
+    switch (skill) {
+      case CREATION:
+        skills.CREATION = value;
+        break;
+      case DESTRUCTION:
+        skills.DESTRUCTION = value;
+        break;
+      case RESTORATION:
+        skills.RESTORATION = value;
+        break;
+      case ALTERATION:
+        skills.ALTERATION = value;
+        break;
+      case ILLUSION:
+        skills.ILLUSION = value;
+        break;
+      case ENCHANT:
+        skills.ENCHANT = value;
+        break;
+      case ALCHEMY:
+        skills.ALCHEMY = value;
+        break;
+      case CONJURATION:
+        skills.CONJURATION = value;
+        break;
+      case ARCHERY:
+        skills.ARCHERY = value;
+        break;
+      case AXE:
+        skills.AXE = value;
+        break;
+      case BLUNT:
+        skills.BLUNT = value;
+        break;
+      case BLADE:
+        skills.BLADE = value;
+        break;
+      case SPEAR:
+        skills.SPEAR = value;
+        break;
+      case UNARMED:
+        skills.UNARMED = value;
+        break;
+      case CLIMBING:
+        skills.CLIMBING = value;
+        break;
+      case SWIMMING:
+        skills.SWIMMING = value;
+        break;
+      case SNEAK:
+        skills.SNEAK = value;
+        break;
+      case HEAVY_ARMOR:
+        skills.HEAVY_ARMOR = value;
+        break;
+      case MEDIUM_ARMOR:
+        skills.MEDIUM_ARMOR = value;
+        break;
+      case LIGHT_ARMOR:
+        skills.LIGHT_ARMOR = value;
+        break;
+      case DODGING:
+        skills.DODGING = value;
+        break;
+      case BLOCK:
+        skills.BLOCK = value;
+        break;
+      case UNARMORED:
+        skills.UNARMORED = value;
+        break;
+      case MERCANTILE:
+        skills.MERCANTILE = value;
+        break;
+      case PICKPOCKET:
+        skills.PICKPOCKET = value;
+        break;
+      case ARMORER:
+        skills.ARMORER = value;
+        break;
+      case LOCKPICKING:
+        skills.LOCKPICKING = value;
+        break;
+      case MEDICAL:
+        skills.MEDICAL = value;
+        break;
+      case DISABLE:
+        skills.DISABLE = value;
+        break;
+      case SPEECHCRAFT:
+        skills.SPEECHCRAFT = value;
+        break;
+      case PERFORM:
+        skills.PERFORM = value;
+        break;
+      case DISGUISE:
+        skills.DISGUISE = value;
+        break;
+      case RIDING:
+        skills.RIDING = value;
+        break;
+      case NONE:
+        skills.NONE = value;
+        break;
+    }
+  }
+
+  private SaveGameModel.JournalData buildJournalData(Player player) {
+    SaveGameModel.JournalData journal = new SaveGameModel.JournalData();
 
     for (String q : player.getJournal().getQuests().keySet()) {
-      Element quest = new Element("quest");
-      quest.setAttribute("id", q);
-      quest.setAttribute("stage", String.valueOf(player.getJournal().getQuests().get(q)));
-      quest.setText(player.getJournal().getSubjects().get(q));
-      journal.addContent(quest);
+      SaveGameModel.QuestEntry quest = new SaveGameModel.QuestEntry();
+      quest.id = q;
+      quest.stage = player.getJournal().getQuests().get(q);
+      quest.subject = player.getJournal().getSubjects().get(q);
+      journal.quests.add(quest);
     }
+
     return journal;
   }
 }

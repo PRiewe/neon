@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import neon.entities.Door;
 import neon.entities.EntityFactory;
+import neon.maps.MapUtils;
 import neon.maps.Region;
 import neon.maps.Zone;
 import neon.maps.services.EntityStore;
@@ -38,18 +39,36 @@ public class TownGenerator {
   private final Zone zone;
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
+  private final MapUtils mapUtils;
 
   /**
-   * Creates a town generator with dependency injection.
+   * Creates a town generator with dependency injection. Uses default (non-deterministic) random
+   * number generation.
    *
    * @param zone the zone to generate
    * @param entityStore the entity store service
    * @param resourceProvider the resource provider service
    */
   public TownGenerator(Zone zone, EntityStore entityStore, ResourceProvider resourceProvider) {
+    this(zone, entityStore, resourceProvider, new MapUtils());
+  }
+
+  /**
+   * Creates a town generator with dependency injection and custom random sources for deterministic
+   * testing.
+   *
+   * @param zone the zone to generate
+   * @param entityStore the entity store service
+   * @param resourceProvider the resource provider service
+   * @param mapUtils the map utilities with configured random source
+   * @param dice the dice roller with configured random source
+   */
+  public TownGenerator(
+      Zone zone, EntityStore entityStore, ResourceProvider resourceProvider, MapUtils mapUtils) {
     this.zone = zone;
     this.entityStore = entityStore;
     this.resourceProvider = resourceProvider;
+    this.mapUtils = mapUtils;
   }
 
   /**
@@ -96,7 +115,7 @@ public class TownGenerator {
     int x = 0, y = 0;
 
     y =
-        switch ((int) (Math.random() * 4)) {
+        switch (mapUtils.random(0, 3)) {
           case 0 -> {
             x = r.getX() + 1;
             yield r.getY();

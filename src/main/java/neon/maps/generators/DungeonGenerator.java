@@ -372,20 +372,20 @@ public class DungeonGenerator {
     return tiles;
   }
 
-  private void generateFeatures(Collection<Object[]> features, double ratio) {
+  private void generateFeatures(Collection<RZoneTheme.Feature> features, double ratio) {
     int width = terrain.length;
     int height = terrain[0].length;
-    for (Object[] feature : features) {
-      int s = (int) (feature[2]);
-      String t = feature[0].toString();
-      int n = (int) feature[3] * 100;
+    for (RZoneTheme.Feature feature : features) {
+      int s = feature.s;
+      String t = feature.t;
+      int n = feature.n * 100;
       if (n > 100) {
         n = mapUtils.random(0, (int) (n * ratio / 100));
       } else {
         n = (mapUtils.random(0, (int) (n * ratio)) > 50) ? 1 : 0;
       }
 
-      if (feature[1].equals("lake")) { // large patch that just overwrites everything
+      if (feature.value.equals("lake")) { // large patch that just overwrites everything
         int size = 100 / s;
         ArrayList<Rectangle> lakes =
             blocksGenerator.createSparseRectangles(
@@ -393,7 +393,7 @@ public class DungeonGenerator {
         for (Rectangle r : lakes) { // place lake
           featureGenerator.generateLake(terrain, t, r);
         }
-      } else if (feature[1].equals("patch")) { // patch that only overwrites floor tiles
+      } else if (feature.value.equals("patch")) { // patch that only overwrites floor tiles
         // place patches
         ArrayList<Rectangle> patches =
             blocksGenerator.createSparseRectangles(width, height, s, s, 2, n);
@@ -407,7 +407,7 @@ public class DungeonGenerator {
             }
           }
         }
-      } else if (feature[1].equals("chunk")) { // patch that only overwrites wall tiles
+      } else if (feature.value.equals("chunk")) { // patch that only overwrites wall tiles
         ArrayList<Rectangle> chunks =
             blocksGenerator.createSparseRectangles(width, height, s, s, 2, n);
         for (Rectangle chunk : chunks) {
@@ -422,7 +422,7 @@ public class DungeonGenerator {
             }
           }
         }
-      } else if (feature[1].equals("stain")) { // patch that only overwrites exposed wall tiles
+      } else if (feature.value.equals("stain")) { // patch that only overwrites exposed wall tiles
         ArrayList<Rectangle> stains =
             blocksGenerator.createSparseRectangles(width, height, s, s, 2, n);
         for (Rectangle stain : stains) {
@@ -438,7 +438,7 @@ public class DungeonGenerator {
             }
           }
         }
-      } else if (feature[1].equals("river")) {
+      } else if (feature.value.equals("river")) {
         while (n-- > 0) { // apparently first >, then --
           featureGenerator.generateRiver(terrain, tiles, t, s);
         }

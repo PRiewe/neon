@@ -18,8 +18,11 @@
 
 package neon.resources.quest;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import neon.resources.RData;
 import org.jdom2.Element;
 
@@ -28,17 +31,28 @@ import org.jdom2.Element;
  *
  * @author mdriesen
  */
+@JacksonXmlRootElement // Accepts quest or repeat element names
+@com.fasterxml.jackson.databind.annotation.JsonDeserialize(using = RQuestDeserializer.class)
 public class RQuest extends RData {
-  public Element variables;
-  public int frequency;
+  // Quest variables for dynamic content ($item$, $npc$, etc.)
+  // Handled manually in RQuestDeserializer due to complex element-name-as-category mapping
+  @JsonIgnore public List<QuestVariable> variables = new ArrayList<>();
+
+  @JsonIgnore public int frequency;
+
   // repeat quests can run more than once
-  public boolean repeat = false;
+  // Determined by element name (quest vs repeat) - set in deserializer
+  @JsonIgnore public boolean repeat = false;
+
   // initial quest is added as soon as game starts
-  public boolean initial = false;
+  @JsonIgnore public boolean initial = false;
 
-  private ArrayList<String> conditions = new ArrayList<String>();
-  private ArrayList<Conversation> conversations = new ArrayList<Conversation>();
+  @JsonIgnore private ArrayList<String> conditions = new ArrayList<String>();
 
+  // Complex nested structure - handled manually in deserializer
+  @JsonIgnore private ArrayList<Conversation> conversations = new ArrayList<Conversation>();
+
+  // JDOM constructor for backward compatibility during migration
   public RQuest(String id, Element properties, String... path) {
     super(id, path);
     try {
@@ -49,7 +63,16 @@ public class RQuest extends RData {
         }
       }
       if (properties.getChild("objects") != null) {
-        variables = properties.getChild("objects").detach();
+        // Parse variables into QuestVariable objects
+        Element vars = properties.getChild("objects");
+        for (Element varElement : vars.getChildren()) {
+          QuestVariable var = new QuestVariable();
+          var.name = varElement.getTextTrim();
+          var.category = varElement.getName();
+          var.id = varElement.getAttributeValue("id");
+          var.typeFilter = varElement.getAttributeValue("type");
+          variables.add(var);
+        }
       }
       repeat = properties.getName().equals("repeat");
       if (repeat) {
@@ -67,6 +90,58 @@ public class RQuest extends RData {
 
   public RQuest(String id, String... path) {
     super(id, path);
+  }
+
+  /** No-arg constructor for Jackson deserialization. */
+  public RQuest() {
+    super("unknown");
+  }
+
+  /**
+   * Gets the quest variables.
+   *
+   * @return List of quest variables
+   */
+  public List<QuestVariable> getVariables() {
+    return variables;
+  }
+
+  /**
+   * Helper method to get variables as a JDOM Element (backward compatibility for QuestEditor).
+   *
+   * @return Element representation of variables, or null if no variables
+   */
+  @JsonIgnore
+  public Element getVariablesElement() {
+    if (variables.isEmpty()) {
+      return null;
+    }
+    Element varsElement = new Element("objects");
+    for (QuestVariable var : variables) {
+      // Clone to detach from any parent document
+      varsElement.addContent(var.toElement().clone());
+    }
+    return varsElement;
+  }
+
+  /**
+   * Helper method to set variables from a JDOM Element (backward compatibility for QuestEditor).
+   *
+   * @param vars Element to parse into QuestVariable objects
+   */
+  @JsonIgnore
+  public void setVariablesElement(Element vars) {
+    variables.clear();
+    if (vars != null) {
+      for (Element varElement : vars.getChildren()) {
+        QuestVariable var = new QuestVariable();
+        var.name = varElement.getTextTrim();
+        var.category = varElement.getName();
+        var.id = varElement.getAttributeValue("id");
+        var.typeFilter = varElement.getAttributeValue("type");
+        variables.add(var);
+      }
+    }
   }
 
   private void initDialog(Element dialog) {
@@ -110,6 +185,9 @@ public class RQuest extends RData {
     if (initial) {
       quest.setAttribute("init", "1");
     }
+    if (repeat && frequency > 0) {
+      quest.setAttribute("f", Integer.toString(frequency));
+    }
 
     if (!conditions.isEmpty()) {
       Element pre = new Element("pre");
@@ -119,16 +197,64 @@ public class RQuest extends RData {
       quest.addContent(pre);
     }
 
-    if (variables != null) {
-      quest.addContent(variables);
+    // Serialize quest variables
+    if (!variables.isEmpty()) {
+      Element varsElement = new Element("objects");
+      for (QuestVariable var : variables) {
+        // Clone to detach from any parent document
+        varsElement.addContent(var.toElement().clone());
+      }
+      quest.addContent(varsElement);
     }
 
     Element dialog = new Element("dialog");
-    //		for(Topic topic : topics) {
-    //			dialog.addContent(topic.toElement());
-    //		}
+    for (Conversation conversation : conversations) {
+      dialog.addContent(serializeConversation(conversation));
+    }
     quest.addContent(dialog);
 
     return quest;
+  }
+
+  private Element serializeConversation(Conversation conversation) {
+    Element conv = new Element("conversation");
+    conv.setAttribute("id", conversation.id);
+
+    Topic root = conversation.getRootTopic();
+    Element rootEl = new Element("root");
+    rootEl.setAttribute("id", root.id);
+
+    // Add root topic content in proper order
+    if (root.condition != null) {
+      rootEl.addContent(new Element("pre").setText(root.condition));
+    }
+    if (root.phrase != null) {
+      rootEl.addContent(new Element("phrase").setText(root.phrase));
+    }
+    if (root.answer != null) {
+      rootEl.addContent(new Element("answer").setText(root.answer));
+    }
+    if (root.action != null) {
+      rootEl.addContent(new Element("action").setText(root.action));
+    }
+
+    // Recursively add child topics
+    for (Topic child : conversation.getTopics(root)) {
+      rootEl.addContent(serializeTopicTree(conversation, child));
+    }
+
+    conv.addContent(rootEl);
+    return conv;
+  }
+
+  private Element serializeTopicTree(Conversation conversation, Topic topic) {
+    Element topicEl = topic.toElement(); // Use Topic's toElement()
+
+    // Recursively add children
+    for (Topic child : conversation.getTopics(topic)) {
+      topicEl.addContent(serializeTopicTree(conversation, child));
+    }
+
+    return topicEl;
   }
 }

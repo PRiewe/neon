@@ -20,6 +20,7 @@ package neon.systems.files;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.*;
 import lombok.extern.slf4j.Slf4j;
@@ -225,6 +226,27 @@ public class FileSystem {
   }
 
   /**
+   * Get a raw InputStream for a file.
+   *
+   * @param path the path components to the file
+   * @return the InputStream, or null if the file doesn't exist
+   */
+  public InputStream getStream(String... path) {
+    try {
+      if (new File(temp.getPath() + toString(path)).exists()) {
+        return new FileInputStream(temp.getPath() + toString(path));
+      } else if (jars.containsKey(path[0])) { // path[0] is the name of the mod
+        JarFile jar = new JarFile(new File(jars.get(path[0])));
+        return jar.getInputStream(jar.getEntry(files.get(path)));
+      } else {
+        return new FileInputStream(files.get(path));
+      }
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  /**
    * @param file
    * @return whether this file exists or not
    */
@@ -268,8 +290,12 @@ public class FileSystem {
 
   public String getFullPath(String filename) {
     var path = temp.toPath().toString();
+
     var filePath = toString(path, filename);
-    return filePath;
+    var finalPath = Path.of(temp.getPath(), filename);
+    var rv = finalPath.toAbsolutePath().normalize().toString();
+    log.trace("Final path {}", rv);
+    return rv;
   }
 
   /*

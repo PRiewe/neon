@@ -28,8 +28,8 @@ import javax.swing.table.TableColumn;
 import neon.editor.DialogEditor;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
+import neon.resources.quest.QuestVariable;
 import neon.resources.quest.RQuest;
-import org.jdom2.Element;
 
 public class QuestEditor extends ObjectEditor implements ActionListener, MouseListener {
   private RQuest quest;
@@ -148,19 +148,16 @@ public class QuestEditor extends ObjectEditor implements ActionListener, MouseLi
       quest.getConditions().add(data.get(0));
     }
 
-    Element vars = new Element("objects");
+    // Convert table data to QuestVariable objects
+    quest.getVariables().clear();
     for (Vector<?> data : (Vector<Vector>) varModel.getDataVector()) {
-      Element var = new Element(data.get(1).toString());
-      var.setText(data.get(0).toString());
-      if (data.get(2) != null) {
-        var.setAttribute("id", data.get(2).toString());
-      }
-      if (data.get(3) != null) {
-        var.setAttribute("type", data.get(3).toString());
-      }
-      vars.addContent(var);
+      QuestVariable var = new QuestVariable();
+      var.name = data.get(0) != null ? data.get(0).toString() : null;
+      var.category = data.get(1) != null ? data.get(1).toString() : null;
+      var.id = data.get(2) != null ? data.get(2).toString() : null;
+      var.typeFilter = data.get(3) != null ? data.get(3).toString() : null;
+      quest.getVariables().add(var);
     }
-    quest.variables = vars;
 
     //		quest.getTopics().clear();
     for (Vector<?> data : (Vector<Vector>) dialogModel.getDataVector()) {
@@ -183,16 +180,10 @@ public class QuestEditor extends ObjectEditor implements ActionListener, MouseLi
       freqField.setValue(null);
     }
 
-    if (quest.variables != null) {
-      for (Element item : quest.variables.getChildren()) {
-        String[] data = {
-          item.getText(),
-          item.getName(),
-          item.getAttributeValue("id"),
-          item.getAttributeValue("type")
-        };
-        varModel.insertRow(0, data);
-      }
+    // Load QuestVariable objects into table
+    for (QuestVariable var : quest.getVariables()) {
+      String[] data = {var.name, var.category, var.id, var.typeFilter};
+      varModel.insertRow(0, data);
     }
 
     for (String condition : quest.getConditions()) {

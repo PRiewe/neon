@@ -18,13 +18,26 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import neon.entities.property.Habitat;
 import neon.entities.property.Skill;
 import neon.entities.property.Subtype;
+import neon.resources.jackson.SkillMapDeserializer;
+import neon.resources.jackson.SkillMapSerializer;
+import neon.systems.files.JacksonMapper;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
+@JacksonXmlRootElement // No localName - accepts any element name (humanoid, animal, etc.)
 public class RCreature extends RData {
   public enum Size {
     tiny,
@@ -51,16 +64,242 @@ public class RCreature extends RData {
     schedule;
   }
 
+  // Jackson annotations for fields (id, text, color, name inherited from parent)
+  @JacksonXmlProperty(isAttribute = true)
+  public String hit;
+
+  @JacksonXmlProperty(isAttribute = true)
+  public int speed;
+
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
+  public int mana;
+
+  @JacksonXmlProperty(isAttribute = true)
+  public Size size = Size.medium;
+
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
+  public Habitat habitat = Habitat.LAND;
+
+  // Nested elements (deserialized via setters to sync with public fields)
+  private Stats statsObj;
+  private AIConfig aiObj;
+  private AVElement avElement;
+  private DVElement dvElement;
+
+  // Public fields for game code compatibility
+  public String av;
+  public int dv;
+
+  @JsonSerialize(using = SkillMapSerializer.class)
   public final EnumMap<Skill, Float> skills;
-  public final ArrayList<Subtype> subtypes;
-  public String hit, av;
-  public int speed, mana, dv;
+
+  // Public fields for game code compatibility
   public float str, dex, con, iq, wis, cha;
-  public AIType aiType = AIType.guard; // default
+  public AIType aiType = AIType.guard;
   public int aiRange = 10, aiConf = 0, aiAggr = 0;
-  public Size size = Size.medium; // default
-  public Type type = Type.animal; // default
-  public Habitat habitat = Habitat.LAND; // default
+  public final ArrayList<Subtype> subtypes;
+  public Type type = Type.animal; // Set externally based on element name
+
+  /** Inner class for stats XML element */
+  public static class Stats implements Serializable {
+    @JacksonXmlProperty(isAttribute = true)
+    public float str;
+
+    @JacksonXmlProperty(isAttribute = true)
+    public float con;
+
+    @JacksonXmlProperty(isAttribute = true)
+    public float dex;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "int")
+    public float iq; // "int" is reserved keyword
+
+    @JacksonXmlProperty(isAttribute = true)
+    public float wis;
+
+    @JacksonXmlProperty(isAttribute = true)
+    public float cha;
+
+    public Stats() {}
+  }
+
+  /** Inner class for AI configuration */
+  public static class AIConfig implements Serializable {
+    @JacksonXmlText public AIType aiType = AIType.guard;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "r")
+    @JsonProperty(required = false)
+    public int aiRange = 10;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "a")
+    @JsonProperty(required = false)
+    public int aiAggr = 0;
+
+    @JacksonXmlProperty(isAttribute = true, localName = "c")
+    @JsonProperty(required = false)
+    public int aiConf = 0;
+
+    public AIConfig() {}
+  }
+
+  /** Inner class for AV (armor value) XML element */
+  public static class AVElement implements Serializable {
+    @JacksonXmlText public String value;
+
+    public AVElement() {}
+  }
+
+  /** Inner class for DV (defense value) XML element */
+  public static class DVElement implements Serializable {
+    @JacksonXmlText public Integer value;
+
+    public DVElement() {}
+  }
+
+  /**
+   * Sync Stats object to individual public fields (called by Jackson after deserialization).
+   *
+   * @param stats the deserialized stats object
+   */
+  @JacksonXmlProperty(localName = "stats")
+  public void setStats(Stats stats) {
+    this.statsObj = stats;
+    this.str = stats.str;
+    this.con = stats.con;
+    this.dex = stats.dex;
+    this.iq = stats.iq;
+    this.wis = stats.wis;
+    this.cha = stats.cha;
+  }
+
+  /**
+   * Get Stats object for serialization (creates from public fields).
+   *
+   * @return stats object
+   */
+  public Stats getStats() {
+    Stats s = new Stats();
+    s.str = this.str;
+    s.con = this.con;
+    s.dex = this.dex;
+    s.iq = this.iq;
+    s.wis = this.wis;
+    s.cha = this.cha;
+    return s;
+  }
+
+  /**
+   * Sync AIConfig object to individual public fields (called by Jackson after deserialization).
+   *
+   * @param ai the deserialized AI config
+   */
+  @JacksonXmlProperty(localName = "ai")
+  public void setAi(AIConfig ai) {
+    this.aiObj = ai;
+    this.aiType = ai.aiType;
+    this.aiRange = ai.aiRange;
+    this.aiAggr = ai.aiAggr;
+    this.aiConf = ai.aiConf;
+  }
+
+  /**
+   * Sync skills map (called by Jackson after deserialization).
+   *
+   * @param skillsMap the deserialized skills map
+   */
+  @JacksonXmlProperty(localName = "skills")
+  public void setSkills(
+      @JsonDeserialize(using = SkillMapDeserializer.class) EnumMap<Skill, Float> skillsMap) {
+    if (skillsMap != null) {
+      this.skills.putAll(skillsMap);
+    }
+  }
+
+  /**
+   * Get skills for serialization (only non-zero values).
+   *
+   * @return skills map
+   */
+  public EnumMap<Skill, Float> getSkills() {
+    return skills;
+  }
+
+  /**
+   * Get AIConfig object for serialization (creates from public fields).
+   *
+   * @return AI config object, or null if all defaults
+   */
+  public AIConfig getAi() {
+    if (aiAggr == 0 && aiConf == 0 && aiRange == 10 && aiType == AIType.guard) {
+      return null; // All defaults, don't serialize
+    }
+    AIConfig ai = new AIConfig();
+    ai.aiType = this.aiType;
+    ai.aiRange = this.aiRange;
+    ai.aiAggr = this.aiAggr;
+    ai.aiConf = this.aiConf;
+    return ai;
+  }
+
+  /**
+   * Sync AV element to public field (called by Jackson after deserialization).
+   *
+   * @param avElement the deserialized av element
+   */
+  @JacksonXmlProperty(localName = "av")
+  public void setAv(AVElement avElement) {
+    this.avElement = avElement;
+    this.av = (avElement != null && avElement.value != null) ? avElement.value : "1d1";
+  }
+
+  /**
+   * Sync DV element to public field (called by Jackson after deserialization).
+   *
+   * @param dvElement the deserialized dv element
+   */
+  @JacksonXmlProperty(localName = "dv")
+  public void setDv(DVElement dvElement) {
+    this.dvElement = dvElement;
+    this.dv = (dvElement != null && dvElement.value != null) ? dvElement.value : 0;
+  }
+
+  /**
+   * Get AV element for serialization.
+   *
+   * @return av element
+   */
+  public AVElement getAv() {
+    AVElement elem = new AVElement();
+    elem.value = av;
+    return elem;
+  }
+
+  /**
+   * Get DV element for serialization.
+   *
+   * @return dv element or null if 0
+   */
+  public DVElement getDv() {
+    if (dv > 0) {
+      DVElement elem = new DVElement();
+      elem.value = dv;
+      return elem;
+    }
+    return null;
+  }
+
+  // No-arg constructor for Jackson deserialization
+  public RCreature() {
+    super("unknown");
+    subtypes = new ArrayList<>();
+    skills = new EnumMap<>(Skill.class);
+    // Initialize all skills to 0.0f
+    for (Skill skill : Skill.values()) {
+      skills.put(skill, 0f);
+    }
+  }
 
   public RCreature(String id, String... path) {
     super(id, path);
@@ -70,6 +309,7 @@ public class RCreature extends RData {
     av = "1d1";
   }
 
+  // Keep JDOM constructor for backward compatibility during migration
   public RCreature(Element properties, String... path) {
     super(properties, path);
     subtypes = new ArrayList<Subtype>();
@@ -135,64 +375,52 @@ public class RCreature extends RData {
     return list;
   }
 
+  /**
+   * Creates a JDOM Element from this resource using Jackson serialization.
+   *
+   * @return JDOM Element representation
+   */
   @Override
   public Element toElement() {
-    Element creature = new Element(type.toString());
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      Element element =
+          new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
 
-    creature.setAttribute("id", id);
-    creature.setAttribute("size", size.toString());
-    creature.setAttribute("char", text);
-    creature.setAttribute("color", color);
-    creature.setAttribute("hit", hit);
-    creature.setAttribute("speed", Integer.toString(speed));
+      // Fix root element name to match type (Jackson uses generic name)
+      element.setName(type.toString());
 
-    if (mana > 0) {
-      creature.setAttribute("mana", Integer.toString(mana));
+      return element;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize RCreature to Element", e);
     }
-    if (name != null && !name.isEmpty()) {
-      creature.setAttribute("name", name);
-    }
-    if (habitat != Habitat.LAND) {
-      creature.setAttribute("habitat", habitat.name());
-    }
+  }
 
-    Element stats = new Element("stats");
-    stats.setAttribute("str", Integer.toString((int) str));
-    stats.setAttribute("con", Integer.toString((int) con));
-    stats.setAttribute("dex", Integer.toString((int) dex));
-    stats.setAttribute("int", Integer.toString((int) iq));
-    stats.setAttribute("wis", Integer.toString((int) wis));
-    stats.setAttribute("cha", Integer.toString((int) cha));
-    creature.addContent(stats);
+  /**
+   * Creates a deep copy of this creature resource.
+   *
+   * <p>Used by GameLoader for player initialization to create an independent copy of the player's
+   * species template. The clone is created via Jackson serialization/deserialization to ensure all
+   * fields are properly copied.
+   *
+   * @return independent copy of this creature with all fields duplicated
+   * @throws RuntimeException if cloning fails
+   */
+  public RCreature clone() {
+    try {
+      JacksonMapper mapper = new JacksonMapper();
+      String xml = mapper.toXml(this).toString();
+      RCreature copy = mapper.fromXml(xml, RCreature.class);
 
-    if (av != null && !av.isEmpty()) {
-      Element avElement = new Element("av");
-      avElement.setText(av);
-      creature.addContent(avElement);
-    }
-    if (dv > 0) {
-      Element dvElement = new Element("dv");
-      dvElement.setText(Integer.toString(dv));
-      creature.addContent(dvElement);
-    }
-
-    if (aiAggr > 0 || aiConf > 0 || aiRange > 0 || aiType != null) {
-      Element ai = new Element("ai");
-      if (aiType != null) {
-        ai.setText(aiType.toString());
+      // Preserve path which isn't serialized by Jackson
+      if (this.path != null) {
+        copy.path = this.path.clone();
       }
-      if (aiAggr > 0) {
-        ai.setAttribute("a", Integer.toString(aiAggr));
-      }
-      if (aiConf > 0) {
-        ai.setAttribute("c", Integer.toString(aiConf));
-      }
-      if (aiRange > 0) {
-        ai.setAttribute("r", Integer.toString(aiRange));
-      }
-      creature.addContent(ai);
-    }
 
-    return creature;
+      return copy;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to clone RCreature: " + id, e);
+    }
   }
 }

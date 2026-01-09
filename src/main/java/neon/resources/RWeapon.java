@@ -18,6 +18,8 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import java.io.Serializable;
 import org.jdom2.Element;
 
@@ -49,16 +51,28 @@ public class RWeapon extends RItem implements Serializable {
   }
 
   // general properties
+  @JacksonXmlProperty(isAttribute = true, localName = "dmg")
   public String damage;
+
+  @JacksonXmlProperty(isAttribute = true, localName = "type")
   public WeaponType weaponType;
 
   // enchantment
+  @JacksonXmlProperty(isAttribute = true)
+  @JsonProperty(required = false)
   public int mana;
+
+  // No-arg constructor for Jackson deserialization
+  public RWeapon() {
+    super();
+    this.type = Type.weapon;
+  }
 
   public RWeapon(String id, Type type, String... path) {
     super(id, type, path);
   }
 
+  // Keep JDOM constructor for backward compatibility during migration
   public RWeapon(Element weapon, String... path) {
     super(weapon, path);
     damage = weapon.getAttributeValue("dmg");
@@ -68,6 +82,7 @@ public class RWeapon extends RItem implements Serializable {
     }
   }
 
+  @Override
   public Element toElement() {
     Element weapon = super.toElement();
     weapon.setAttribute("dmg", damage);

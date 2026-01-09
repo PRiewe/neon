@@ -18,6 +18,7 @@
 
 package neon.resources;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import java.io.Serializable;
 import org.jdom2.Element;
 
@@ -28,8 +29,13 @@ import org.jdom2.Element;
  */
 public abstract class RData extends Resource implements Serializable {
   // this is actually only for items and creatures
+  @JacksonXmlProperty(isAttribute = true, localName = "char")
   public String text = "x";
+
+  @JacksonXmlProperty(isAttribute = true)
   public String color = "white";
+
+  @JacksonXmlProperty(isAttribute = true)
   public String name;
 
   /**

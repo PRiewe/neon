@@ -36,7 +36,6 @@ import neon.resources.RItem;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
 import neon.util.Dice;
-import org.jdom2.Element;
 
 /**
  * Generates a piece of wilderness. The following types are supported:
@@ -310,15 +309,15 @@ public class WildernessGenerator {
 
   private void addFeatures(int width, int height, RRegionTheme theme) {
     double ratio = (width * height) / 10000d;
-    for (Element feature : theme.features) {
-      int n = (int) Float.parseFloat(feature.getAttributeValue("n")) * 100;
+    for (RRegionTheme.Feature feature : theme.features) {
+      int n = (int) Float.parseFloat(feature.n) * 100;
       if (n > 100) {
         n = mapUtils.random(0, (int) (n * ratio / 100));
       } else {
         n = (mapUtils.random(0, (int) (n * ratio)) > 50) ? 1 : 0;
       }
-      if (feature.getText().equals("lake")) { // large patch that just overwrites everything
-        int size = 100 / Integer.parseInt(feature.getAttributeValue("s"));
+      if (feature.value.equals("lake")) { // large patch that just overwrites everything
+        int size = 100 / Integer.parseInt(feature.s);
         ArrayList<Rectangle> lakes =
             blocksGenerator.createSparseRectangles(
                 width, height, width / size, height / size, 2, n);
@@ -328,7 +327,7 @@ public class WildernessGenerator {
           for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
               if (lake.contains(x, y)) {
-                terrain[y + 1][x + 1] = feature.getAttributeValue("t");
+                terrain[y + 1][x + 1] = feature.t;
               }
             }
           }
@@ -351,7 +350,13 @@ public class WildernessGenerator {
         Creature creature =
             EntityFactory.getCreature(id, rx + x, ry + y, entityStore.createNewEntityUID());
         RTerrain terrain = (RTerrain) resourceProvider.getResource(region, "terrain");
-        if (terrain.modifier == Region.Modifier.SWIM && creature.species.habitat == Habitat.LAND) {
+        // Only spawn creatures if their habitat matches the terrain
+        // LAND creatures should NOT spawn in SWIM terrain
+        boolean isWaterTerrain = terrain.modifier == Region.Modifier.SWIM;
+        boolean isLandCreature = creature.species.habitat == Habitat.LAND;
+        boolean canSpawn = !(isWaterTerrain && isLandCreature);
+
+        if (canSpawn) {
           entityStore.addEntity(creature);
           zone.addCreature(creature);
         }
@@ -554,7 +559,7 @@ public class WildernessGenerator {
   }
 
   // from http://www.evilscience.co.uk/?p=53
-  private boolean[][] generateIslands(int width, int height, int p, int n, int i) {
+  boolean[][] generateIslands(int width, int height, int p, int n, int i) {
     boolean[][] map = new boolean[width][height];
 
     for (int x = 0; x < width; x++) {
