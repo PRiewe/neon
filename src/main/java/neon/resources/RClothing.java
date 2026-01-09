@@ -54,7 +54,7 @@ public class RClothing extends RItem implements Serializable {
   @com.fasterxml.jackson.annotation.JsonIgnore public Effect effect;
 
   /** Inner class for stats XML element */
-  public static class StatsElement {
+  public static class StatsElement implements Serializable {
     @JacksonXmlProperty(isAttribute = true)
     public Slot slot;
 
@@ -70,7 +70,7 @@ public class RClothing extends RItem implements Serializable {
   }
 
   /** Inner class for enchant XML element */
-  public static class EnchantElement {
+  public static class EnchantElement implements Serializable {
     @JacksonXmlProperty(isAttribute = true, localName = "mag")
     public int magnitude;
 

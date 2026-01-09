@@ -20,11 +20,13 @@ package neon.core;
 
 import java.util.EventObject;
 import lombok.Setter;
+import neon.core.event.TaskQueue;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
 import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
+import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
 import net.engio.mbassy.bus.MBassador;
@@ -48,6 +50,9 @@ public class DefaultGameContext implements GameContext {
   @Setter private PhysicsSystem physicsEngine;
   @Setter private Context scriptEngine;
   @Setter private MBassador<EventObject> bus;
+  @Setter private FileSystem fileSystem;
+  @Setter private TaskQueue queue;
+  @Setter private Engine engine;
 
   // Game-level state (set when a game starts)
   @Setter private Game game;
@@ -110,5 +115,27 @@ public class DefaultGameContext implements GameContext {
   @Override
   public void post(EventObject event) {
     bus.publishAsync(event);
+  }
+
+  @Override
+  public FileSystem getFileSystem() {
+    return fileSystem;
+  }
+
+  @Override
+  public TaskQueue getQueue() {
+    return queue;
+  }
+
+  @Override
+  public void startGame(Game game) {
+    // Delegate to Engine's startGame implementation
+    // Engine is responsible for registering handlers and setting up script bindings
+    if (engine != null) {
+      engine.startGame(game);
+    } else {
+      // Fallback for tests that don't have an Engine instance
+      setGame(game);
+    }
   }
 }

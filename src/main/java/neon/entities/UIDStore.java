@@ -22,6 +22,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.io.*;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import neon.maps.services.EntityStore;
 import org.h2.mvstore.MVStore;
 
@@ -32,6 +33,7 @@ import org.h2.mvstore.MVStore;
  *
  * @author mdriesen
  */
+@Slf4j
 public class UIDStore implements EntityStore, Closeable {
   // dummy uid for objects that don't actually exist
   public static final long DUMMY = 0;
@@ -73,8 +75,18 @@ public class UIDStore implements EntityStore, Closeable {
         return mod.uid;
       }
     }
-    System.out.println("Mod " + name + " not found");
-    return 0;
+    throw new RuntimeException("Mod " + name + " not found");
+    // System.out.println("Mod " + name + " not found");
+    // return 0;
+  }
+
+  public boolean isModUIDLoaded(String name) {
+    for (Mod mod : mods.values()) {
+      if (mod.name.equals(name)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -149,6 +161,10 @@ public class UIDStore implements EntityStore, Closeable {
    * @return the uid of the given map
    */
   public int getMapUID(String... path) {
+    var uid = maps.inverse().get(toString(path));
+    if (uid == null) {
+      log.warn("{} doesn't have uid", (Object) path);
+    }
     return maps.inverse().get(toString(path));
   }
 

@@ -51,6 +51,7 @@ public class Atlas implements Closeable, MapAtlas {
   private final ResourceProvider resourceProvider;
   private final QuestProvider questProvider;
   private final ZoneActivator zoneActivator;
+  private final MapLoader mapLoader;
 
   /**
    * Initializes this {@code Atlas} with the given {@code FileSystem} and cache path. The cache is
@@ -98,7 +99,7 @@ public class Atlas implements Closeable, MapAtlas {
     // files.delete(path);
     // String fileName = files.getFullPath(path);
     // log.warn("Creating new MVStore at {}", fileName);
-
+    this.mapLoader = new MapLoader(this.entityStore, this.resourceProvider);
     // db = MVStore.open(fileName);
     maps = atlasStore.openMap("maps");
   }
@@ -152,11 +153,20 @@ public class Atlas implements Closeable, MapAtlas {
   @Override
   public Map getMap(int uid) {
     if (!maps.containsKey(uid)) {
-      Map map = MapLoader.loadMap(entityStore.getMapPath(uid), uid, files);
+      if (entityStore.getMapPath(uid) == null) {
+        throw new RuntimeException(String.format("No existing mappath for uid %d", uid));
+      }
+      Map map = mapLoader.load(entityStore.getMapPath(uid), uid, files);
       System.out.println("Loaded map " + map.toString());
       maps.put(uid, map);
     }
     return maps.get(uid);
+  }
+
+  @Override
+  public Map getMap(int uid, String... path) {
+    Map map = mapLoader.load(path, uid, files);
+    return map;
   }
 
   /**

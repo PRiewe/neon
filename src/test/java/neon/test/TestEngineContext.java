@@ -45,6 +45,7 @@ public class TestEngineContext {
   private static EntityStore testEntityStore;
   private static ZoneActivator testZoneActivator;
   @Getter private static StubFileSystem stubFileSystem;
+  @Getter private static neon.core.DefaultGameContext testContext;
 
   static {
     try {
@@ -112,6 +113,17 @@ public class TestEngineContext {
 
     // Create stub PhysicsSystem
     setStaticField(Engine.class, "physics", new StubPhysicsSystem());
+
+    // Create and initialize test GameContext
+    testContext = new neon.core.DefaultGameContext();
+    testContext.setResources(testResources);
+    testContext.setFileSystem(stubFileSystem);
+    testContext.setPhysicsEngine(new StubPhysicsSystem());
+    testContext.setQueue(new neon.core.event.TaskQueue());
+    testContext.setGame(testGame);
+
+    // Note: We don't set Engine reference in tests since we don't have a real Engine instance
+    setStaticField(Engine.class, "context", testContext);
   }
 
   /**
@@ -134,10 +146,12 @@ public class TestEngineContext {
       setStaticField(Engine.class, "game", null);
       setStaticField(Engine.class, "files", null);
       setStaticField(Engine.class, "physics", null);
+      setStaticField(Engine.class, "context", null);
 
       testResources = null;
       testGame = null;
       testStore = null;
+      testContext = null;
 
     } catch (Exception e) {
       log.error("Failed to reset test engine context", e);

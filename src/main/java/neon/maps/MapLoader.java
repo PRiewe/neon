@@ -47,6 +47,7 @@ import neon.systems.files.JacksonMapper;
 import neon.systems.files.XMLTranslator;
 import org.jdom2.*;
 import org.jdom2.output.XMLOutputter;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This class loads a map from an xml file.
@@ -93,20 +94,6 @@ public class MapLoader {
   }
 
   /**
-   * Returns a map described in an xml file with the given name.
-   *
-   * @param path the pathname of a map file
-   * @param uid the unique identifier of this map
-   * @param files the file system
-   * @return the <code>Map</code> described by the map file
-   * @deprecated Use instance method {@link #load(String[], int, FileSystem)} instead
-   */
-  @Deprecated
-  public static Map loadMap(String[] path, int uid, FileSystem files) {
-    return createDefault().load(path, uid, files);
-  }
-
-  /**
    * Returns a map described in an xml file with the given name (instance method).
    *
    * @param path the pathname of a map file
@@ -114,13 +101,15 @@ public class MapLoader {
    * @param files the file system
    * @return the <code>Map</code> described by the map file
    */
-  public Map load(String[] path, int uid, FileSystem files) {
+  public Map load(@NotNull String[] path, int uid, FileSystem files) {
     // For now, use JDOM to determine type, then build models
     // In the future, FileSystem can provide InputStream directly
+
     Document doc = files.getFile(new XMLTranslator(), path);
     Element root = doc.getRootElement();
 
     if (root.getName().equals("world")) {
+
       return loadWorld(root, uid);
     } else {
       return loadDungeon(root, uid);
