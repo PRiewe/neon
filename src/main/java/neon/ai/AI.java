@@ -306,7 +306,7 @@ public abstract class AI implements Serializable {
     }
     Point p = new Point(cBounds.x + dx, cBounds.y + dy);
 
-    if (Engine.getAtlas().getCurrentZone().getCreature(p) == null) {
+    if (Engine.getAtlasPosition().getCurrentZone().getCreature(p) == null) {
       byte result = MotionHandler.move(creature, p);
       if (result == MotionHandler.BLOCKED) {
         // try a random direction once (or multiple times?)
@@ -322,7 +322,7 @@ public abstract class AI implements Serializable {
 
   private boolean open(Point p) {
     Door door = null;
-    for (long uid : Engine.getAtlas().getCurrentZone().getItems(p)) {
+    for (long uid : Engine.getAtlasPosition().getCurrentZone().getItems(p)) {
       if (Engine.getStore().getEntity(uid) instanceof Door) {
         door = (Door) Engine.getStore().getEntity(uid);
       }
@@ -383,7 +383,7 @@ public abstract class AI implements Serializable {
     Point p = new Point(cBounds.x + dx, cBounds.y + dy);
     Point player = pBounds.getLocation();
 
-    if (Engine.getAtlas().getCurrentZone().getCreature(p) == null && !player.equals(p)) {
+    if (Engine.getAtlasPosition().getCurrentZone().getCreature(p) == null && !player.equals(p)) {
       MotionHandler.move(creature, p);
     }
   }
@@ -397,7 +397,8 @@ public abstract class AI implements Serializable {
 
     Point player = pBounds.getLocation();
     Point next = PathFinder.findPath(creature, cBounds.getLocation(), destination)[0];
-    if (Engine.getAtlas().getCurrentZone().getCreature(next) == null && !player.equals(next)) {
+    if (Engine.getAtlasPosition().getCurrentZone().getCreature(next) == null
+        && !player.equals(next)) {
       MotionHandler.move(creature, next);
     }
   }
@@ -466,7 +467,7 @@ public abstract class AI implements Serializable {
         equip(Slot.WEAPON);
       }
       Engine.post(new CombatEvent(creature, prey));
-    } else if (Engine.getAtlas().getCurrentZone().getCreature(p) == null) {
+    } else if (Engine.getAtlasPosition().getCurrentZone().getCreature(p) == null) {
       if (MotionHandler.move(creature, p) == MotionHandler.DOOR) {
         open(p); // open door if necessary
       }

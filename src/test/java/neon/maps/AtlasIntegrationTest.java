@@ -1,13 +1,11 @@
 package neon.maps;
 
-import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
 import java.util.Collection;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
+import neon.maps.services.*;
+import neon.narrative.QuestTracker;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
 import org.h2.mvstore.MVStore;
@@ -24,19 +22,20 @@ class AtlasIntegrationTest {
 
   private MVStore testDb;
   private Atlas atlas;
+  AtlasPosition atlasPosition;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
-    atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            testDb,
-            new EngineEntityStore(),
-            new EngineResourceProvider(),
-            new EngineQuestProvider(),
-            createDefaultZoneActivator());
+    atlas = new Atlas(TestEngineContext.getStubFileSystem(), "test-atlas", new EngineEntityStore());
+    atlasPosition =
+        new AtlasPosition(
+            atlas,
+            TestEngineContext.getTestZoneActivator(),
+            TestEngineContext.getTestResources(),
+            new QuestTracker(),
+            TestEngineContext.getTestEntityStore());
   }
 
   @AfterEach
@@ -51,9 +50,9 @@ class AtlasIntegrationTest {
   @Test
   void testZoneUsesAtlasDatabase() {
     World world = new World("DB Test World", 1000);
-    atlas.setMap(world);
+    atlasPosition.setMap(world);
 
-    Zone zone = atlas.getCurrentZone();
+    Zone zone = atlasPosition.getCurrentZone();
     assertNotNull(zone);
 
     // Add regions to the zone
@@ -75,12 +74,12 @@ class AtlasIntegrationTest {
     World world1 = new World("World 1", 1001);
     World world2 = new World("World 2", 1002);
 
-    atlas.setMap(world1);
-    Zone zone1 = atlas.getCurrentZone();
+    atlasPosition.setMap(world1);
+    Zone zone1 = atlasPosition.getCurrentZone();
     zone1.addRegion(MapTestFixtures.createTestRegion("zone1-region", 0, 0, 10, 10, 0));
 
-    atlas.setMap(world2);
-    Zone zone2 = atlas.getCurrentZone();
+    atlasPosition.setMap(world2);
+    Zone zone2 = atlasPosition.getCurrentZone();
     zone2.addRegion(MapTestFixtures.createTestRegion("zone2-region", 20, 20, 10, 10, 0));
 
     testDb.commit();
@@ -101,8 +100,8 @@ class AtlasIntegrationTest {
     // Create a world with populated zone
     World world = new World("Round Trip World", 1003);
 
-    atlas.setMap(world);
-    Zone zone = atlas.getCurrentZone();
+    atlasPosition.setMap(world);
+    Zone zone = atlasPosition.getCurrentZone();
 
     // Add multiple regions
     for (int i = 0; i < 20; i++) {
@@ -114,12 +113,12 @@ class AtlasIntegrationTest {
     testDb.commit();
 
     // Retrieve the map again
-    Map retrievedMap = atlas.getCurrentMap();
+    Map retrievedMap = atlasPosition.getCurrentMap();
     assertEquals(1003, retrievedMap.getUID());
     assertEquals("Round Trip World", retrievedMap.getName());
 
     // Verify zone data
-    Zone retrievedZone = atlas.getCurrentZone();
+    Zone retrievedZone = atlasPosition.getCurrentZone();
     assertEquals(20, retrievedZone.getRegions().size());
 
     // Test spatial query on retrieved zone
@@ -131,9 +130,9 @@ class AtlasIntegrationTest {
   @Test
   void testZoneSpatialIndexPersistence() {
     World world = new World("Spatial Index World", 1004);
-    atlas.setMap(world);
+    atlasPosition.setMap(world);
 
-    Zone zone = atlas.getCurrentZone();
+    Zone zone = atlasPosition.getCurrentZone();
 
     // Create a grid of regions
     for (int y = 0; y < 5; y++) {
@@ -166,15 +165,15 @@ class AtlasIntegrationTest {
     World world2 = new World("World B", 1006);
 
     // Populate world1
-    atlas.setMap(world1);
-    Zone zone1 = atlas.getCurrentZone();
+    atlasPosition.setMap(world1);
+    Zone zone1 = atlasPosition.getCurrentZone();
     for (int i = 0; i < 5; i++) {
       zone1.addRegion(MapTestFixtures.createTestRegion(i * 10, 0, 10, 10));
     }
 
     // Populate world2
-    atlas.setMap(world2);
-    Zone zone2 = atlas.getCurrentZone();
+    atlasPosition.setMap(world2);
+    Zone zone2 = atlasPosition.getCurrentZone();
     for (int i = 0; i < 10; i++) {
       zone2.addRegion(MapTestFixtures.createTestRegion(0, i * 10, 10, 10));
     }
@@ -182,20 +181,20 @@ class AtlasIntegrationTest {
     testDb.commit();
 
     // Switch back to world1 and verify data
-    atlas.setMap(world1);
-    assertEquals(5, atlas.getCurrentZone().getRegions().size());
+    atlasPosition.setMap(world1);
+    assertEquals(5, atlasPosition.getCurrentZone().getRegions().size());
 
     // Switch to world2 and verify data
-    atlas.setMap(world2);
-    assertEquals(10, atlas.getCurrentZone().getRegions().size());
+    atlasPosition.setMap(world2);
+    assertEquals(10, atlasPosition.getCurrentZone().getRegions().size());
   }
 
   @Test
   void testRegionScriptsPersistThroughAtlas() {
     World world = new World("Script World", 1007);
-    atlas.setMap(world);
+    atlasPosition.setMap(world);
 
-    Zone zone = atlas.getCurrentZone();
+    Zone zone = atlasPosition.getCurrentZone();
     Region region = MapTestFixtures.createTestRegion("scripted-region", 0, 0, 50, 50, 0);
     region.addScript("init.js", false);
     region.addScript("update.js", false);
@@ -218,9 +217,9 @@ class AtlasIntegrationTest {
   @Test
   void testLargeWorldIntegration() {
     World world = new World("Large World", 1008);
-    atlas.setMap(world);
+    atlasPosition.setMap(world);
 
-    Zone zone = atlas.getCurrentZone();
+    Zone zone = atlasPosition.getCurrentZone();
 
     // Add 100 regions in a 10x10 grid
     for (int y = 0; y < 10; y++) {
@@ -245,9 +244,9 @@ class AtlasIntegrationTest {
   @Test
   void testAtlasHandlesEmptyWorld() {
     World emptyWorld = new World("Empty World", 1009);
-    atlas.setMap(emptyWorld);
+    atlasPosition.setMap(emptyWorld);
 
-    Zone zone = atlas.getCurrentZone();
+    Zone zone = atlasPosition.getCurrentZone();
     assertNotNull(zone);
     assertTrue(zone.getRegions().isEmpty());
 
@@ -262,9 +261,9 @@ class AtlasIntegrationTest {
     // This tests that the testDb created in setUp is properly shared
     // through TestEngineContext
     World world = new World("Shared DB World", 1010);
-    atlas.setMap(world);
+    atlasPosition.setMap(world);
 
-    Zone zone = atlas.getCurrentZone();
+    Zone zone = atlasPosition.getCurrentZone();
     zone.addRegion(MapTestFixtures.createTestRegion(0, 0, 10, 10));
 
     testDb.commit();

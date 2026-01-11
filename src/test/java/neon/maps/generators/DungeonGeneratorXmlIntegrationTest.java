@@ -8,11 +8,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import neon.entities.Door;
 import neon.entities.Entity;
-import neon.maps.Atlas;
-import neon.maps.Dungeon;
-import neon.maps.MapTestFixtures;
-import neon.maps.MapUtils;
-import neon.maps.Zone;
+import neon.maps.*;
 import neon.maps.services.EntityStore;
 import neon.maps.services.QuestProvider;
 import neon.resources.RDungeonTheme;
@@ -326,6 +322,7 @@ class DungeonGeneratorXmlIntegrationTest {
     private MVStore testDb;
     private Atlas testAtlas;
     private EntityStore entityStore;
+    private AtlasPosition testAtlasPosition;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -340,6 +337,7 @@ class DungeonGeneratorXmlIntegrationTest {
       TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
       // TestEngineContext.loadTestResources("src/test/resources/sampleMod1");
       testAtlas = TestEngineContext.getTestAtlas();
+      testAtlasPosition = TestEngineContext.getAtlasPosition();
       entityStore = TestEngineContext.getTestEntityStore();
     }
 
@@ -374,7 +372,7 @@ class DungeonGeneratorXmlIntegrationTest {
       Zone targetZone = dungeon.getZone(1);
 
       previousZone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
-      testAtlas.setMap(dungeon);
+      testAtlasPosition.setMap(dungeon);
 
       // Create entry door in previous zone
       Door entryDoor =
@@ -414,7 +412,7 @@ class DungeonGeneratorXmlIntegrationTest {
       Zone targetZone = dungeon.getZone(1);
 
       previousZone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
-      testAtlas.setMap(dungeon);
+      testAtlasPosition.setMap(dungeon);
 
       Door entryDoor =
           MapTestFixtures.createTestPortalDoor(entityStore.createNewEntityUID(), 10, 10, 1, 0);

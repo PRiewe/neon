@@ -121,15 +121,15 @@ public class JacksonMapper {
   public void parseMultiTypeXml(InputStream input, ElementHandler elementHandler)
       throws IOException {
     try {
+      ByteArrayInputStream byteInput = new ByteArrayInputStream(input.readAllBytes());
       // Read the entire stream into a string for manipulation
-      String xmlContent = new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
       input.close();
 
       // Parse with basic XML parsing to extract individual elements
       javax.xml.parsers.DocumentBuilderFactory factory =
           javax.xml.parsers.DocumentBuilderFactory.newInstance();
       javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
-      org.w3c.dom.Document doc = builder.parse(new ByteArrayInputStream(xmlContent.getBytes()));
+      org.w3c.dom.Document doc = builder.parse(byteInput);
 
       org.w3c.dom.Element root = doc.getDocumentElement();
       org.w3c.dom.NodeList children = root.getChildNodes();

@@ -9,12 +9,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import neon.entities.Door;
 import neon.entities.Entity;
-import neon.maps.Atlas;
-import neon.maps.Dungeon;
-import neon.maps.MapTestFixtures;
-import neon.maps.MapUtils;
-import neon.maps.Zone;
-import neon.maps.ZoneFactory;
+import neon.maps.*;
 import neon.maps.services.EntityStore;
 import neon.maps.services.QuestProvider;
 import neon.maps.services.ResourceProvider;
@@ -603,6 +598,7 @@ class DungeonGeneratorTest {
     private Atlas testAtlas;
     private ZoneFactory zoneFactory;
     private EntityStore entityStore;
+    private AtlasPosition testAtlasPosition;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -738,7 +734,7 @@ class DungeonGeneratorTest {
       previousZone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
 
       // Add the dungeon to the atlas
-      testAtlas.setMap(dungeon);
+      testAtlasPosition.setMap(dungeon);
 
       // Create a door in the previous zone that leads to zone 1
       Door entryDoor =
@@ -797,7 +793,7 @@ class DungeonGeneratorTest {
       // Add a region to the previous zone
       previousZone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
 
-      testAtlas.setMap(dungeon);
+      testAtlasPosition.setMap(dungeon);
 
       // Create entry door in previous zone
       Door entryDoor =
@@ -863,7 +859,7 @@ class DungeonGeneratorTest {
       dungeon.addConnection(1, 0);
       dungeon.addConnection(1, 2);
 
-      testAtlas.setMap(dungeon);
+      testAtlasPosition.setMap(dungeon);
 
       // Create entry door from zone 0 to zone 1
       Door entryDoor =
@@ -913,7 +909,7 @@ class DungeonGeneratorTest {
       // Add a region to the previous zone
       previousZone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
 
-      testAtlas.setMap(dungeon);
+      testAtlasPosition.setMap(dungeon);
 
       Door entryDoor =
           MapTestFixtures.createTestPortalDoor(entityStore.createNewEntityUID(), 25, 25, 1, 0);
@@ -988,7 +984,7 @@ class DungeonGeneratorTest {
       // Add a region to the previous zone
       previousZone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
 
-      testAtlas.setMap(dungeon);
+      testAtlasPosition.setMap(dungeon);
 
       Door entryDoor =
           MapTestFixtures.createTestPortalDoor(entityStore.createNewEntityUID(), 25, 25, 1, 0);
@@ -1070,7 +1066,7 @@ class DungeonGeneratorTest {
         // Add a region to the previous zone
         previousZone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
 
-        testAtlas.setMap(dungeon);
+        testAtlasPosition.setMap(dungeon);
 
         Door entryDoor =
             MapTestFixtures.createTestPortalDoor(entityStore.createNewEntityUID(), 25, 25, 1, 0);

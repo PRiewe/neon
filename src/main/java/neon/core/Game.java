@@ -24,6 +24,11 @@ import lombok.Getter;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
+import neon.maps.AtlasPosition;
+import neon.maps.ZoneActivator;
+import neon.maps.services.PhysicsManager;
+import neon.narrative.QuestTracker;
+import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 import neon.systems.timing.Timer;
 
@@ -33,11 +38,20 @@ public class Game implements Closeable {
   private final Player player;
   private final Timer timer = new Timer();
   private final Atlas atlas;
+  private final AtlasPosition atlasPosition;
 
-  public Game(Player player, FileSystem files) {
+  public Game(
+      Player player,
+      FileSystem files,
+      PhysicsManager physicsManager,
+      ResourceManager resourceManager,
+      QuestTracker questTracker) {
     store = new UIDStore(files.getFullPath("uidstore"));
-    atlas = new Atlas(files, files.getFullPath("atlas"));
+    atlas = new Atlas(files, files.getFullPath("atlas"), store);
     this.player = player;
+    this.atlasPosition =
+        new AtlasPosition(
+            atlas, new ZoneActivator(physicsManager), resourceManager, questTracker, store);
   }
 
   /**
@@ -47,10 +61,11 @@ public class Game implements Closeable {
    * @param atlas the atlas
    * @param store the UID store
    */
-  public Game(Player player, Atlas atlas, UIDStore store) {
+  public Game(Player player, Atlas atlas, UIDStore store, AtlasPosition atlasPosition) {
     this.player = player;
     this.atlas = atlas;
     this.store = store;
+    this.atlasPosition = atlasPosition;
   }
 
   @Override

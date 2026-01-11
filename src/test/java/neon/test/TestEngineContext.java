@@ -15,9 +15,11 @@ import neon.entities.UIDStore;
 import neon.entities.components.PhysicsComponent;
 import neon.entities.property.Gender;
 import neon.maps.Atlas;
+import neon.maps.AtlasPosition;
 import neon.maps.ZoneActivator;
 import neon.maps.ZoneFactory;
 import neon.maps.services.*;
+import neon.narrative.QuestTracker;
 import neon.resources.*;
 import neon.resources.builder.IniBuilder;
 import neon.systems.files.FileSystem;
@@ -37,14 +39,29 @@ import org.jdom2.input.SAXBuilder;
 public class TestEngineContext {
 
   private static MVStore testDb;
-  private static Atlas testAtlas;
+
+  /** -- GETTER -- Gets the test Atlas instance. */
+  @Getter private static Atlas testAtlas;
+
   private static StubResourceManager testResources;
   private static Game testGame;
   private static UIDStore testStore;
-  private static ZoneFactory testZoneFactory;
-  private static EntityStore testEntityStore;
-  private static ZoneActivator testZoneActivator;
+  @Getter private static PhysicsManager stubPhysicsManager;
+
+  @Getter private static AtlasPosition atlasPosition;
+
+  /** -- GETTER -- Gets the test ZoneFactory instance. */
+  @Getter private static ZoneFactory testZoneFactory;
+
+  /** -- GETTER -- Gets the test ResourceProvider instance. */
+  @Getter private static EntityStore testEntityStore;
+
+  @Getter private static ZoneActivator testZoneActivator;
+  @Getter private static PhysicsSystem physicsSystem;
+
   @Getter private static StubFileSystem stubFileSystem;
+
+  @Getter private static QuestTracker questTracker;
 
   static {
     try {
@@ -81,30 +98,25 @@ public class TestEngineContext {
 
     // Create test UIDStore
     testStore = new UIDStore("test-store.dat");
-
+    questTracker = new QuestTracker();
     // Create test EntityStore
     testEntityStore = new StubEntityStore(testStore);
 
     // Create stub PhysicsManager and ZoneActivator
-    PhysicsManager stubPhysicsManager = new StubPhysicsManager();
+    stubPhysicsManager = new StubPhysicsManager();
     Player stubPlayer = new StubPlayer();
-    testZoneActivator = new ZoneActivator(stubPhysicsManager, () -> stubPlayer);
+    testZoneActivator = new ZoneActivator(stubPhysicsManager);
 
     // Create ZoneFactory for tests
     testZoneFactory = new ZoneFactory(db);
 
     // Create test Atlas with dependency injection (doesn't need Engine.game)
-    testAtlas =
-        new Atlas(
-            getStubFileSystem(),
-            db,
-            testEntityStore,
-            new EngineResourceProvider(),
-            new EngineQuestProvider(),
-            testZoneActivator);
-
+    testAtlas = new Atlas(getStubFileSystem(), "test-atlas", testEntityStore);
+    atlasPosition =
+        new AtlasPosition(
+            testAtlas, testZoneActivator, testResources, questTracker, testEntityStore);
     // Create test Game using new DI constructor
-    testGame = new Game(stubPlayer, testAtlas, testStore);
+    testGame = new Game(stubPlayer, testAtlas, testStore, atlasPosition);
     setStaticField(Engine.class, "game", testGame);
 
     // Create stub FileSystem
@@ -124,6 +136,7 @@ public class TestEngineContext {
       if (testStore != null) {
         testStore.getCache().close();
       }
+
       if (testAtlas != null) {
         testAtlas.close();
       }
@@ -144,29 +157,14 @@ public class TestEngineContext {
     }
   }
 
-  /** Gets the test Atlas instance. */
-  public static Atlas getTestAtlas() {
-    return testAtlas;
-  }
-
   /** Gets the test ResourceManager instance. */
   public static ResourceManager getTestResources() {
     return testResources;
   }
 
   /** Gets the test ResourceProvider instance. */
-  public static EntityStore getTestEntityStore() {
-    return testEntityStore;
-  }
-
-  /** Gets the test ResourceProvider instance. */
   public static ResourceProvider getTestResourceProvider() {
     return testResources;
-  }
-
-  /** Gets the test ZoneFactory instance. */
-  public static ZoneFactory getTestZoneFactory() {
-    return testZoneFactory;
   }
 
   public static void loadTestResourceViaConfig(String configFilename) throws Exception {

@@ -143,7 +143,7 @@ public class AimState extends State implements KeyListener {
   private void shoot() {
     Rectangle bounds = player.getShapeComponent();
     if (target.distance(bounds.x, bounds.y) < 5) {
-      Creature victim = context.getAtlas().getCurrentZone().getCreature(target);
+      Creature victim = context.getAtlasPosition().getCurrentZone().getCreature(target);
       if (victim != null) {
         Weapon ammo =
             (Weapon) context.getStore().getEntity(player.getInventoryComponent().get(Slot.AMMO));
@@ -186,7 +186,7 @@ public class AimState extends State implements KeyListener {
 
     // shoot
     prBounds.setLocation(vBounds.x, vBounds.y);
-    context.getAtlas().getCurrentZone().addItem(projectile);
+    context.getAtlasPosition().getCurrentZone().addItem(projectile);
     new Thread(
             new Translation(projectile, plBounds.x, plBounds.y, vBounds.x, vBounds.y, 100, panel))
         .start();
@@ -195,7 +195,7 @@ public class AimState extends State implements KeyListener {
   private void talk() {
     Rectangle bounds = player.getShapeComponent();
     if (target.distance(bounds.getLocation()) < 2) {
-      Creature creature = context.getAtlas().getCurrentZone().getCreature(target);
+      Creature creature = context.getAtlasPosition().getCurrentZone().getCreature(target);
       if (creature != null) {
         if (creature.hasDialog()) {
           // dialog module
@@ -231,7 +231,7 @@ public class AimState extends State implements KeyListener {
     // description of what is being looked at
     Rectangle bounds = player.getShapeComponent();
     if (target.distance(bounds.getLocation()) < 20) {
-      Zone zone = context.getAtlas().getCurrentZone();
+      Zone zone = context.getAtlasPosition().getCurrentZone();
       String items = "";
       String actors = "";
       ArrayList<Long> things = new ArrayList<Long>(zone.getItems(target));
@@ -240,7 +240,7 @@ public class AimState extends State implements KeyListener {
       } else if (things.size() > 1) {
         items = ", several items";
       }
-      Creature creature = context.getAtlas().getCurrentZone().getCreature(target);
+      Creature creature = context.getAtlasPosition().getCurrentZone().getCreature(target);
       if (creature != null) {
         actors = ", " + creature.toString();
       }
@@ -251,7 +251,7 @@ public class AimState extends State implements KeyListener {
   }
 
   private void act() {
-    for (long uid : context.getAtlas().getCurrentZone().getItems(target)) {
+    for (long uid : context.getAtlasPosition().getCurrentZone().getItems(target)) {
       if (context.getStore().getEntity(uid) instanceof Door) {
         bus.publishAsync(new TransitionEvent("door", "door", context.getStore().getEntity(uid)));
         break;

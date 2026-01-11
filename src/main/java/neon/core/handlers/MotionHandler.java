@@ -27,6 +27,7 @@ import neon.core.event.MessageEvent;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.Entity;
+import neon.entities.Player;
 import neon.entities.components.Lock;
 import neon.entities.property.Condition;
 import neon.entities.property.Habitat;
@@ -60,9 +61,9 @@ public class MotionHandler {
    * @param door the portal that the creature used
    * @return the result
    */
-  public static byte teleport(Creature creature, Door door) {
+  public static byte teleport(Player creature, Door door) {
     if (door.portal.isPortal()) {
-      Zone previous = Engine.getAtlas().getCurrentZone(); // briefly buffer current zone
+      Zone previous = Engine.getAtlasPosition().getCurrentZone(); // briefly buffer current zone
       if (door.portal.getDestMap() != 0) {
         // load map and have door refer back
         Map map = Engine.getAtlas().getMap(door.portal.getDestMap());
@@ -70,24 +71,24 @@ public class MotionHandler {
         for (long uid : zone.getItems(door.portal.getDestPos())) {
           Entity i = Engine.getStore().getEntity(uid);
           if (i instanceof Door) {
-            ((Door) i).portal.setDestMap(Engine.getAtlas().getCurrentMap());
+            ((Door) i).portal.setDestMap(Engine.getAtlasPosition().getCurrentMap());
           }
         }
-        Engine.getAtlas().setMap(map);
+        Engine.getAtlasPosition().setMap(map);
         Engine.getScriptEngine().getBindings("js").putMember("map", map);
-        door.portal.setDestMap(Engine.getAtlas().getCurrentMap());
+        door.portal.setDestMap(Engine.getAtlasPosition().getCurrentMap());
       } else if (door.portal.getDestTheme() != null) {
         Dungeon dungeon = MapLoader.loadDungeon(door.portal.getDestTheme());
-        Engine.getAtlas().setMap(dungeon);
-        door.portal.setDestMap(Engine.getAtlas().getCurrentMap());
+        Engine.getAtlasPosition().setMap(dungeon);
+        door.portal.setDestMap(Engine.getAtlasPosition().getCurrentMap());
       }
 
-      Engine.getAtlas().enterZone(door, previous);
+      Engine.getAtlasPosition().enterZone(door, previous, creature);
 
       walk(creature, door.portal.getDestPos());
       // check if there is a door at the destination, if so, unlock and open this door
       Rectangle bounds = creature.getShapeComponent();
-      for (long uid : Engine.getAtlas().getCurrentZone().getItems(bounds)) {
+      for (long uid : Engine.getAtlasPosition().getCurrentZone().getItems(bounds)) {
         Entity i = Engine.getStore().getEntity(uid);
         if (i instanceof Door) {
           ((Door) i).lock.open();
@@ -121,13 +122,13 @@ public class MotionHandler {
    * @return the result of the movement
    */
   public static byte move(Creature actor, Point p) {
-    Region region = Engine.getAtlas().getCurrentZone().getRegion(p);
+    Region region = Engine.getAtlasPosition().getCurrentZone().getRegion(p);
     if (p == null || region == null) {
       return NULL;
     }
 
     // check if there is no closed door present
-    Collection<Long> items = Engine.getAtlas().getCurrentZone().getItems(p);
+    Collection<Long> items = Engine.getAtlasPosition().getCurrentZone().getItems(p);
     for (long uid : items) {
       Entity i = Engine.getStore().getEntity(uid);
       if (i instanceof Door) {

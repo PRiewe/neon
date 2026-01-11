@@ -23,6 +23,7 @@ import lombok.Setter;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
+import neon.maps.AtlasPosition;
 import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
 import neon.systems.physics.PhysicsSystem;
@@ -60,6 +61,11 @@ public class DefaultGameContext implements GameContext {
   @Override
   public Atlas getAtlas() {
     return game != null ? game.getAtlas() : null;
+  }
+
+  @Override
+  public AtlasPosition getAtlasPosition() {
+    return game != null ? game.getAtlasPosition() : null;
   }
 
   @Override

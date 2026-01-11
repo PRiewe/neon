@@ -1,6 +1,5 @@
 package neon.maps;
 
-import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
@@ -10,8 +9,7 @@ import java.util.List;
 import neon.entities.Creature;
 import neon.entities.Item;
 import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
+import neon.narrative.QuestTracker;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
@@ -408,13 +406,14 @@ class MapPerformanceTest {
   @Test
   void testAtlasMapCachingPerformance() throws Exception {
     Atlas atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            testDb,
-            new EngineEntityStore(),
-            new EngineResourceProvider(),
-            new EngineQuestProvider(),
-            createDefaultZoneActivator());
+        new Atlas(TestEngineContext.getStubFileSystem(), "test-atlas", new EngineEntityStore());
+    AtlasPosition atlasPosition =
+        new AtlasPosition(
+            atlas,
+            TestEngineContext.getTestZoneActivator(),
+            TestEngineContext.getTestResources(),
+            new QuestTracker(),
+            TestEngineContext.getTestEntityStore());
     int mapCount = 100;
 
     PerformanceHarness.MeasuredResult<Integer> result =
@@ -422,7 +421,7 @@ class MapPerformanceTest {
             () -> {
               for (int i = 0; i < mapCount; i++) {
                 World world = new World("World " + i, 2000 + i);
-                atlas.setMap(world);
+                atlasPosition.setMap(world);
               }
               return mapCount;
             });
@@ -438,14 +437,25 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasMapSwitchingPerformance() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "switch-perf-atlas");
+    Atlas atlas =
+        new Atlas(
+            TestEngineContext.getStubFileSystem(),
+            "switch-perf-atlas",
+            TestEngineContext.getTestEntityStore());
+    AtlasPosition atlasPosition =
+        new AtlasPosition(
+            atlas,
+            TestEngineContext.getTestZoneActivator(),
+            TestEngineContext.getTestResources(),
+            new QuestTracker(),
+            TestEngineContext.getTestEntityStore());
 
     // Create and cache 50 maps
     List<World> worlds = new ArrayList<>();
     for (int i = 0; i < 50; i++) {
       World world = new World("World " + i, 3000 + i);
       worlds.add(world);
-      atlas.setMap(world);
+      atlasPosition.setMap(world);
     }
 
     int switchCount = 1000;
@@ -455,8 +465,8 @@ class MapPerformanceTest {
             () -> {
               for (int i = 0; i < switchCount; i++) {
                 World world = worlds.get(i % worlds.size());
-                atlas.setMap(world);
-                atlas.getCurrentMap();
+                atlasPosition.setMap(world);
+                atlasPosition.getCurrentMap();
               }
               return switchCount;
             });
@@ -474,12 +484,19 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasZoneAccessPerformance() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "zone-access-atlas");
+    Atlas atlas = TestEngineContext.getTestAtlas();
+    AtlasPosition atlasPosition =
+        new AtlasPosition(
+            atlas,
+            TestEngineContext.getTestZoneActivator(),
+            TestEngineContext.getTestResources(),
+            new QuestTracker(),
+            TestEngineContext.getTestEntityStore());
 
     World world = new World("Zone Access World", 4000);
-    atlas.setMap(world);
+    atlasPosition.setMap(world);
 
-    Zone zone = atlas.getCurrentZone();
+    Zone zone = atlasPosition.getCurrentZone();
     for (int i = 0; i < 100; i++) {
       Region region = MapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
       zone.addRegion(region);
@@ -494,7 +511,7 @@ class MapPerformanceTest {
             () -> {
               int sum = 0;
               for (int i = 0; i < accessCount; i++) {
-                Zone z = atlas.getCurrentZone();
+                Zone z = atlasPosition.getCurrentZone();
                 sum += z.getRegions().size();
               }
               return sum;
@@ -516,15 +533,22 @@ class MapPerformanceTest {
   @Test
   void testFullMapLoadAndQueryPerformance() throws Exception {
     Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "full-perf-atlas");
+    AtlasPosition atlasPosition =
+        new AtlasPosition(
+            atlas,
+            TestEngineContext.getTestZoneActivator(),
+            TestEngineContext.getTestResources(),
+            new QuestTracker(),
+            TestEngineContext.getTestEntityStore());
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(
             () -> {
               // Create a large world
               World world = new World("Large World", 5000);
-              atlas.setMap(world);
+              atlasPosition.setMap(world);
 
-              Zone zone = atlas.getCurrentZone();
+              Zone zone = atlasPosition.getCurrentZone();
 
               // Add 500 regions with creatures and items
               long uidCounter = 70000;
@@ -583,6 +607,13 @@ class MapPerformanceTest {
   @Test
   void testMemoryEfficiencyWithLargeMaps() throws Exception {
     Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "memory-test-atlas");
+    AtlasPosition atlasPosition =
+        new AtlasPosition(
+            atlas,
+            TestEngineContext.getTestZoneActivator(),
+            TestEngineContext.getTestResources(),
+            new QuestTracker(),
+            TestEngineContext.getTestEntityStore());
 
     Runtime runtime = Runtime.getRuntime();
     runtime.gc();
@@ -591,9 +622,9 @@ class MapPerformanceTest {
     // Create 10 large worlds
     for (int w = 0; w < 10; w++) {
       World world = new World("World " + w, 6000 + w);
-      atlas.setMap(world);
+      atlasPosition.setMap(world);
 
-      Zone zone = atlas.getCurrentZone();
+      Zone zone = atlasPosition.getCurrentZone();
       for (int i = 0; i < 200; i++) {
         Region region = MapTestFixtures.createTestRegion(i * 5, i * 5, 10, 10);
         zone.addRegion(region);

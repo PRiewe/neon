@@ -63,7 +63,7 @@ public class PathFinder {
           links.put(to, next);
           next = null;
           break;
-        } else if (Engine.getAtlas().getCurrentZone().getRegion(neighbour).getMovMod()
+        } else if (Engine.getAtlasPosition().getCurrentZone().getRegion(neighbour).getMovMod()
             == Region.Modifier.BLOCK) {
           continue; // if terrain is blocked, skip to next point
         }
@@ -125,7 +125,7 @@ public class PathFinder {
 
   private static int terrainPenalty(Point neighbour) {
     // better modifiers?
-    switch (Engine.getAtlas().getCurrentZone().getRegion(neighbour).getMovMod()) {
+    switch (Engine.getAtlasPosition().getCurrentZone().getRegion(neighbour).getMovMod()) {
       case SWIM:
         return (100 - mover.getSkill(Skill.SWIMMING)) / 5;
       case CLIMB:
@@ -136,7 +136,7 @@ public class PathFinder {
   }
 
   private static int doorPenalty(Point neighbour) {
-    for (long uid : Engine.getAtlas().getCurrentZone().getItems(neighbour)) {
+    for (long uid : Engine.getAtlasPosition().getCurrentZone().getItems(neighbour)) {
       if (Engine.getStore().getEntity(uid) instanceof Door) {
         Door door = (Door) Engine.getStore().getEntity(uid);
         if (door.lock.isLocked()) {

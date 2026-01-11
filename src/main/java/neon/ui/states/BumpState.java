@@ -109,7 +109,7 @@ public class BumpState extends State implements KeyListener {
           Rectangle pBounds = player.getShapeComponent();
           Rectangle cBounds = creature.getShapeComponent();
           pBounds.setLocation(cBounds.x, cBounds.y);
-          context.getAtlas().getCurrentZone().removeCreature(creature.getUID());
+          context.getAtlasPosition().getCurrentZone().removeCreature(creature.getUID());
           panel.repaint();
           bus.publishAsync(new TransitionEvent("return"));
         }

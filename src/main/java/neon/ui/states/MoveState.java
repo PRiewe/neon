@@ -72,7 +72,7 @@ public class MoveState extends State implements KeyListener {
     Point p = new Point(bounds.x + x, bounds.y + y);
 
     // check if creature is in the way
-    Creature other = context.getAtlas().getCurrentZone().getCreature(p);
+    Creature other = context.getAtlasPosition().getCurrentZone().getCreature(p);
     if (other != null && !other.hasCondition(Condition.DEAD)) {
       if (other.brain.isHostile()) {
         bus.publishAsync(new CombatEvent(player, other));
@@ -82,7 +82,7 @@ public class MoveState extends State implements KeyListener {
       }
     } else { // no one in the way, so move
       if (MotionHandler.move(player, p) == MotionHandler.DOOR) {
-        for (long uid : context.getAtlas().getCurrentZone().getItems(p)) {
+        for (long uid : context.getAtlasPosition().getCurrentZone().getItems(p)) {
           if (context.getStore().getEntity(uid) instanceof Door) {
             bus.publishAsync(
                 new TransitionEvent("door", "door", context.getStore().getEntity(uid)));
@@ -100,8 +100,8 @@ public class MoveState extends State implements KeyListener {
     // clone the list here, otherwise concurrent modification exceptions when picking up items
     Rectangle bounds = player.getShapeComponent();
     ArrayList<Long> items =
-        new ArrayList<Long>(context.getAtlas().getCurrentZone().getItems(bounds));
-    Creature c = context.getAtlas().getCurrentZone().getCreature(bounds.getLocation());
+        new ArrayList<Long>(context.getAtlasPosition().getCurrentZone().getItems(bounds));
+    Creature c = context.getAtlasPosition().getCurrentZone().getCreature(bounds.getLocation());
     if (c != null) {
       items.add(c.getUID());
     }
@@ -126,12 +126,12 @@ public class MoveState extends State implements KeyListener {
       } else if (entity instanceof Creature) {
         bus.publishAsync(new TransitionEvent("container", "holder", entity));
       } else {
-        context.getAtlas().getCurrentZone().removeItem((Item) entity);
+        context.getAtlasPosition().getCurrentZone().removeItem((Item) entity);
         InventoryHandler.addItem(player, entity.getUID());
       }
     } else if (items.size() > 1) {
       bus.publishAsync(
-          new TransitionEvent("container", "holder", context.getAtlas().getCurrentZone()));
+          new TransitionEvent("container", "holder", context.getAtlasPosition().getCurrentZone()));
     }
   }
 
@@ -171,7 +171,7 @@ public class MoveState extends State implements KeyListener {
       if (player.isMounted()) {
         Creature mount = player.getMount();
         player.unmount();
-        context.getAtlas().getCurrentZone().addCreature(mount);
+        context.getAtlasPosition().getCurrentZone().addCreature(mount);
         Rectangle pBounds = player.getShapeComponent();
         Rectangle mBounds = mount.getShapeComponent();
         mBounds.setLocation(pBounds.x, pBounds.y);

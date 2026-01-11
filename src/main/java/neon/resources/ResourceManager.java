@@ -20,8 +20,9 @@ package neon.resources;
 
 import java.util.HashMap;
 import java.util.Vector;
+import neon.maps.services.ResourceProvider;
 
-public class ResourceManager {
+public class ResourceManager implements ResourceProvider {
   private HashMap<String, Resource> resources = new HashMap<String, Resource>();
 
   public Resource getResource(String id) {

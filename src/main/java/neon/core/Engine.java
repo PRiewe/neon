@@ -18,6 +18,7 @@
 
 package neon.core;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.EventObject;
 import javax.script.*;
@@ -30,6 +31,9 @@ import neon.core.handlers.MagicHandler;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
+import neon.maps.AtlasPosition;
+import neon.maps.services.EnginePhysicsManager;
+import neon.maps.services.PhysicsManager;
 import neon.narrative.EventAdapter;
 import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
@@ -61,12 +65,13 @@ public class Engine implements Runnable {
   private static org.graalvm.polyglot.Engine polyengine;
   private static FileSystem files; // virtual file system
   private static PhysicsSystem physics; // the physics engine
+  private static PhysicsManager physicsManager;
   private static QuestTracker quests;
   private static MBassador<EventObject> bus; // event bus
   private static ResourceManager resources;
 
-  private TaskQueue queue;
-  private Configuration config;
+  private static TaskQueue queue;
+  private final Configuration config;
 
   // set externally
   private static Game game;
@@ -98,6 +103,7 @@ public class Engine implements Runnable {
 
     files = new FileSystem();
     physics = new PhysicsSystem();
+    physicsManager = new EnginePhysicsManager(physics);
     queue = new TaskQueue();
 
     // create a resourcemanager to keep track of all the resources
@@ -192,6 +198,11 @@ public class Engine implements Runnable {
     return game.getTimer();
   }
 
+  @Deprecated
+  public static TaskQueue getTaskQueue() {
+    return queue;
+  }
+
   /**
    * @return the virtual filesystem of the engine
    */
@@ -207,6 +218,11 @@ public class Engine implements Runnable {
   @Deprecated
   public static PhysicsSystem getPhysicsEngine() {
     return physics;
+  }
+
+  @Deprecated
+  public static PhysicsManager getPhysicsManager() {
+    return physicsManager;
   }
 
   /**
@@ -243,6 +259,11 @@ public class Engine implements Runnable {
   @Deprecated
   public static Atlas getAtlas() {
     return game.getAtlas();
+  }
+
+  @Deprecated
+  public static AtlasPosition getAtlasPosition() {
+    return game.getAtlasPosition();
   }
 
   public TaskQueue getQueue() {

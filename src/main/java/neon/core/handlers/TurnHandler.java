@@ -82,7 +82,7 @@ public class TurnHandler {
 
     // monsters controleren
     Player player = panel.getContext().getPlayer();
-    for (long uid : panel.getContext().getAtlas().getCurrentZone().getCreatures()) {
+    for (long uid : panel.getContext().getAtlasPosition().getCurrentZone().getCreatures()) {
       Creature creature = (Creature) panel.getContext().getStore().getEntity(uid);
       if (!creature.hasCondition(Condition.DEAD)) {
         HealthComponent health = creature.getHealthComponent();
@@ -93,7 +93,11 @@ public class TurnHandler {
         if (pBounds.getLocation().distance(cBounds.getLocation()) < range) {
           int spd = getSpeed(creature);
           Region region =
-              panel.getContext().getAtlas().getCurrentZone().getRegion(cBounds.getLocation());
+              panel
+                  .getContext()
+                  .getAtlasPosition()
+                  .getCurrentZone()
+                  .getRegion(cBounds.getLocation());
           if (creature.species.habitat == Habitat.LAND && region.getMovMod() == Modifier.SWIM) {
             spd = spd / 4; // zwemmende creatures hebben penalty
           }
@@ -134,7 +138,7 @@ public class TurnHandler {
    */
   private boolean checkRegions() { // die boolean is eigenlijk maar louche
     Rectangle window = panel.getVisibleRectangle();
-    Zone zone = panel.getContext().getAtlas().getCurrentZone();
+    Zone zone = panel.getContext().getAtlasPosition().getCurrentZone();
     boolean fixed = true;
     boolean generated = false; // om aan te geven dat er iets gegenereerd werd
 

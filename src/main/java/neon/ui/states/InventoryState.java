@@ -204,7 +204,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
           Rectangle pBounds = player.getShapeComponent();
           Rectangle iBounds = item.getShapeComponent();
           iBounds.setLocation(pBounds.x, pBounds.y);
-          context.getAtlas().getCurrentZone().addItem(item);
+          context.getAtlasPosition().getCurrentZone().addItem(item);
           initList();
           inventory.setSelectedIndex(0);
           inventory.repaint();

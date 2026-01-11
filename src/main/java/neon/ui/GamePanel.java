@@ -163,7 +163,7 @@ public class GamePanel extends JComponent {
       drawing.updateCamera(bounds.getLocation());
     }
     Collection<Renderable> renderables =
-        context.getAtlas().getCurrentZone().getRenderables(getVisibleRectangle());
+        context.getAtlasPosition().getCurrentZone().getRenderables(getVisibleRectangle());
     renderables.add(context.getPlayer().getRenderComponent());
     if (cursor != null) {
       renderables.add(cursor);
@@ -355,7 +355,7 @@ public class GamePanel extends JComponent {
                   (bounds.y - 8) * zoom - view.y * zoom,
                   (int) (17 * zoom),
                   (int) (17 * zoom))));
-      for (Point p : context.getAtlas().getCurrentZone().getLightMap().keySet()) {
+      for (Point p : context.getAtlasPosition().getCurrentZone().getLightMap().keySet()) {
         // 4 en 9: cirkel met diameter 8, gecentreerd op licht
         area.subtract(
             new Area(
@@ -376,7 +376,7 @@ public class GamePanel extends JComponent {
       g.clearRect(0, 0, src.getWidth(), src.getHeight());
       g.drawImage(src, src.getMinX(), src.getMinY(), null);
 
-      if (context.getAtlas().getCurrentMap() instanceof World) {
+      if (context.getAtlasPosition().getCurrentMap() instanceof World) {
         int hour = (context.getTimer().getTime() / (60 * 1) + 12) % 24;
         g.setColor(new Color(0, 0, 0, (hour - 12) * (hour - 12) * 3 / 2));
         g.fill(area);

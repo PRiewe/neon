@@ -22,6 +22,7 @@ import java.util.EventObject;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
+import neon.maps.AtlasPosition;
 import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
 import neon.systems.physics.PhysicsSystem;
@@ -37,74 +38,24 @@ import org.graalvm.polyglot.Context;
  */
 public interface GameContext {
 
-  // ========== Game State Accessors ==========
-
-  /**
-   * Returns the player entity.
-   *
-   * @return the player, or null if no game is active
-   */
   Player getPlayer();
 
-  /**
-   * Returns the atlas (map/world manager).
-   *
-   * @return the atlas
-   */
   Atlas getAtlas();
 
-  /**
-   * Returns the entity store.
-   *
-   * @return the UID store containing all game entities
-   */
+  AtlasPosition getAtlasPosition();
+
   UIDStore getStore();
 
-  /**
-   * Returns the game timer.
-   *
-   * @return the timer
-   */
   Timer getTimer();
 
-  // ========== System Accessors ==========
-
-  /**
-   * Returns the resource manager.
-   *
-   * @return the resource manager
-   */
   ResourceManager getResources();
 
-  /**
-   * Returns the quest tracker.
-   *
-   * @return the quest tracker
-   */
   QuestTracker getQuestTracker();
 
-  /**
-   * Returns the physics engine.
-   *
-   * @return the physics system
-   */
   PhysicsSystem getPhysicsEngine();
 
-  /**
-   * Returns the script engine (GraalVM Polyglot context).
-   *
-   * @return the script engine context
-   */
   Context getScriptEngine();
 
-  // ========== Actions ==========
-
-  /**
-   * Executes a JavaScript script.
-   *
-   * @param script the script to execute
-   * @return the result of the script execution
-   */
   Object execute(String script);
 
   /** Quits the application. */

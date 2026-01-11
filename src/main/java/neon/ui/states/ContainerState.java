@@ -159,7 +159,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
               Rectangle pBounds = player.getShapeComponent();
               Rectangle iBounds = item.getShapeComponent();
               iBounds.setLocation(pBounds.x, pBounds.y);
-              context.getAtlas().getCurrentZone().addItem(item);
+              context.getAtlasPosition().getCurrentZone().addItem(item);
             } else if (container instanceof Creature) {
               InventoryHandler.addItem(((Creature) container), item.getUID());
             }
@@ -177,7 +177,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
               bus.publishAsync(new TransitionEvent("container", "holder", item));
             } else {
               if (container instanceof Zone) {
-                context.getAtlas().getCurrentZone().removeItem((Item) item);
+                context.getAtlasPosition().getCurrentZone().removeItem((Item) item);
               } else if (container instanceof Creature) {
                 InventoryHandler.removeItem(((Creature) container), item.getUID());
               } else {

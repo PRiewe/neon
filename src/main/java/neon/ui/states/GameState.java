@@ -125,7 +125,8 @@ public class GameState extends State implements KeyListener, CollisionListener {
         break;
       default:
         if (code == keys.map) {
-          new MapDialog(ui.getWindow(), context.getAtlas().getCurrentZone(), context).show();
+          new MapDialog(ui.getWindow(), context.getAtlasPosition().getCurrentZone(), context)
+              .show();
         } else if (code == keys.sneak) {
           player.setSneaking(!player.isSneaking());
           panel.repaint();

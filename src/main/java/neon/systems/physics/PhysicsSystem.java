@@ -25,7 +25,7 @@ import net.phys2d.raw.shapes.Box;
 import net.phys2d.raw.strategies.QuadSpaceStrategy;
 
 public class PhysicsSystem {
-  private World world;
+  private final World world;
 
   public PhysicsSystem() {
     world = new World(new Vector2f(0, 0), 1, new QuadSpaceStrategy(50, 15));

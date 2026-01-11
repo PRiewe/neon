@@ -93,12 +93,12 @@ public class MagicHandler {
     if (spell.effect == Effect.SCRIPTED) {
       Engine.execute(spell.script);
     } else if (spell.effect.getHandler().onItem()) {
-      Collection<Long> items = game.getAtlas().getCurrentZone().getItems(box);
+      Collection<Long> items = game.getAtlasPosition().getCurrentZone().getItems(box);
       for (long uid : items) {
         castSpell((Item) game.getStore().getEntity(uid), spell);
       }
     } else {
-      Collection<Creature> creatures = game.getAtlas().getCurrentZone().getCreatures(box);
+      Collection<Creature> creatures = game.getAtlasPosition().getCurrentZone().getCreatures(box);
       for (Creature creature : creatures) {
         castSpell(creature, null, spell);
       }
@@ -111,8 +111,6 @@ public class MagicHandler {
   /**
    * This method lets a creature cast a spell on a target.
    *
-   * @param caster the creature casting the spell
-   * @param target the position of the target
    * @return the result of the casting
    */
   @Handler
@@ -166,12 +164,12 @@ public class MagicHandler {
       if (formula.effect == Effect.SCRIPTED) {
         Engine.execute(formula.script);
       } else if (formula.effect.getHandler().onItem()) {
-        Collection<Long> items = game.getAtlas().getCurrentZone().getItems(box);
+        Collection<Long> items = game.getAtlasPosition().getCurrentZone().getItems(box);
         for (long uid : items) {
           castSpell((Item) game.getStore().getEntity(uid), formula);
         }
       } else {
-        Collection<Creature> creatures = game.getAtlas().getCurrentZone().getCreatures(box);
+        Collection<Creature> creatures = game.getAtlasPosition().getCurrentZone().getCreatures(box);
         if (box.contains(game.getPlayer().getShapeComponent())) {
           creatures.add(game.getPlayer());
         }
@@ -188,9 +186,6 @@ public class MagicHandler {
   /**
    * This methods lets a creature using a magic item cast a spell on a point.
    *
-   * @param caster the spell caster
-   * @param item the spell caster's magic item
-   * @param target the target of the spell
    * @return the result of the cast
    */
   @Handler
@@ -229,12 +224,12 @@ public class MagicHandler {
       if (formula.effect == Effect.SCRIPTED) {
         Engine.execute(formula.script);
       } else if (formula.effect.getHandler().onItem()) {
-        Collection<Long> items = game.getAtlas().getCurrentZone().getItems(box);
+        Collection<Long> items = game.getAtlasPosition().getCurrentZone().getItems(box);
         for (long uid : items) {
           castSpell((Item) game.getStore().getEntity(uid), formula);
         }
       } else {
-        Collection<Creature> creatures = game.getAtlas().getCurrentZone().getCreatures(box);
+        Collection<Creature> creatures = game.getAtlasPosition().getCurrentZone().getCreatures(box);
         if (box.contains(game.getPlayer().getShapeComponent())) {
           creatures.add(game.getPlayer());
         }

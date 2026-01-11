@@ -31,7 +31,7 @@ import neon.entities.Player;
 import neon.entities.property.Feat;
 import neon.entities.property.Skill;
 import neon.magic.Spell;
-import neon.maps.Atlas;
+import neon.maps.AtlasPosition;
 import neon.resources.RSpell;
 import neon.systems.files.JacksonMapper;
 import neon.systems.files.StringTranslator;
@@ -153,7 +153,7 @@ public class GameSaver {
     data.sign = player.getSign();
 
     // Position
-    Atlas atlas = Engine.getAtlas();
+    AtlasPosition atlas = Engine.getAtlasPosition();
     data.map = atlas.getCurrentMap().getUID();
     data.level = atlas.getCurrentZoneIndex();
     Rectangle bounds = player.getShapeComponent();

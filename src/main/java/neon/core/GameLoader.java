@@ -121,7 +121,13 @@ public class GameLoader {
           new RCreature(((RCreature) Engine.getResources().getResource(race)).toElement());
       Player player = new Player(species, name, gender, spec, profession);
       player.species.text = "@";
-      engine.startGame(new Game(player, Engine.getFileSystem()));
+      engine.startGame(
+          new Game(
+              player,
+              Engine.getFileSystem(),
+              Engine.getPhysicsManager(),
+              Engine.getResources(),
+              engine.getContext().getQuestTracker()));
       setSign(player, sign);
       for (Skill skill : Skill.values()) {
         SkillHandler.checkFeat(skill, player);
@@ -148,8 +154,8 @@ public class GameLoader {
       bounds.setLocation(game.getStartPosition().x, game.getStartPosition().y);
       Map map = Engine.getAtlas().getMap(Engine.getStore().getMapUID(game.getStartMap()));
       Engine.getScriptEngine().getBindings("js").putMember("map", map);
-      Engine.getAtlas().setMap(map);
-      Engine.getAtlas().setCurrentZone(game.getStartZone());
+      Engine.getAtlasPosition().setMap(map);
+      Engine.getAtlasPosition().setCurrentZone(game.getStartZone(), player);
     } catch (RuntimeException re) {
       log.error("Error during initGame", re);
     }
@@ -270,15 +276,21 @@ public class GameLoader {
             Gender.valueOf(playerData.gender.toUpperCase()),
             Player.Specialisation.valueOf(playerData.specialisation),
             playerData.profession);
-    engine.startGame(new Game(player, Engine.getFileSystem()));
+    engine.startGame(
+        new Game(
+            player,
+            Engine.getFileSystem(),
+            Engine.getPhysicsManager(),
+            Engine.getResources(),
+            engine.getContext().getQuestTracker()));
     Rectangle bounds = player.getShapeComponent();
     bounds.setLocation(playerData.x, playerData.y);
     player.setSign(playerData.sign);
     player.species.text = "@";
 
     // start map
-    Engine.getAtlas().setMap(Engine.getAtlas().getMap(playerData.map));
-    Engine.getAtlas().setCurrentZone(playerData.level);
+    Engine.getAtlasPosition().setMap(Engine.getAtlas().getMap(playerData.map));
+    Engine.getAtlasPosition().setCurrentZone(playerData.level, player);
 
     // stats
     Stats stats = player.getStatsComponent();
