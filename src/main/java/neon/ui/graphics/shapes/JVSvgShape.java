@@ -24,10 +24,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -49,7 +46,7 @@ import java.nio.charset.StandardCharsets;
  * @since 0.5.0
  */
 public class JVSvgShape extends JVShape implements java.io.Externalizable {
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   // The SVGDocument is not serializable, so we don't serialize it
   // and store the original SVG content for re-parsing after deserialization

@@ -21,6 +21,7 @@ package neon.maps.model;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,7 +68,7 @@ public class WorldModel {
   }
 
   /** Map header with name and UID */
-  public static class Header {
+  public static class Header implements Serializable {
     @JacksonXmlProperty(isAttribute = true, localName = "uid")
     public int uid;
 
@@ -79,7 +80,7 @@ public class WorldModel {
   }
 
   /** Creature placement in the world */
-  public static class CreaturePlacement {
+  public static class CreaturePlacement implements Serializable {
     @JacksonXmlProperty(isAttribute = true, localName = "x")
     public int x;
 
@@ -94,7 +95,7 @@ public class WorldModel {
   }
 
   /** Base class for item placement (can be item, door, or container) */
-  public static class ItemPlacement {
+  public static class ItemPlacement implements Serializable {
     @JacksonXmlProperty(isAttribute = true, localName = "x")
     public int x;
 
@@ -129,7 +130,7 @@ public class WorldModel {
     public Destination destination;
 
     /** Door destination */
-    public static class Destination {
+    public static class Destination implements Serializable {
       @JacksonXmlProperty(isAttribute = true, localName = "x")
       public Integer x;
 
@@ -179,7 +180,7 @@ public class WorldModel {
   }
 
   /** Region data for terrain generation */
-  public static class RegionData {
+  public static class RegionData implements Serializable {
     @JacksonXmlProperty(isAttribute = true, localName = "x")
     public int x;
 
@@ -209,7 +210,7 @@ public class WorldModel {
     public List<ScriptReference> scripts = new ArrayList<>();
 
     /** Script reference */
-    public static class ScriptReference {
+    public static class ScriptReference implements Serializable {
       @JacksonXmlProperty(isAttribute = true, localName = "id")
       public String id;
     }

@@ -21,14 +21,16 @@ package neon.resources;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
+import lombok.Getter;
+import lombok.Setter;
 
 public class CGame extends Resource {
   private ArrayList<String> playableRaces = new ArrayList<>();
   private ArrayList<String> startingItems = new ArrayList<>();
   private ArrayList<String> startingSpells = new ArrayList<>();
-  private Point startPosition = new Point(0, 0);
-  private String[] startMap;
-  private int startZone = 0; // default
+  @Getter private Point startPosition = new Point(0, 0);
+  @Setter @Getter private String[] startMap;
+  @Setter @Getter private int startZone = 0; // default
 
   public CGame(String id, String... path) {
     super(id, path);
@@ -46,26 +48,6 @@ public class CGame extends Resource {
 
   public Collection<String> getStartingSpells() {
     return startingSpells;
-  }
-
-  public Point getStartPosition() {
-    return startPosition;
-  }
-
-  public String[] getStartMap() {
-    return startMap;
-  }
-
-  public void setStartMap(String[] map) {
-    startMap = map;
-  }
-
-  public int getStartZone() {
-    return startZone;
-  }
-
-  public void setStartZone(int zone) {
-    startZone = zone;
   }
 
   public Collection<String> getPlayableRaces() {

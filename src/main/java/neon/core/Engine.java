@@ -121,6 +121,9 @@ public class Engine implements Runnable {
     context.setPhysicsEngine(physics);
     context.setScriptEngine(engine);
     context.setBus(bus);
+    context.setFileSystem(files);
+    context.setQueue(queue);
+    context.setEngine(this);
   }
 
   /** This method is the run method of the gamethread. It sets up the event system. */
@@ -132,7 +135,7 @@ public class Engine implements Runnable {
     bus.subscribe(new InventoryHandler());
     bus.subscribe(adapter);
     bus.subscribe(quests);
-    bus.subscribe(new GameLoader(this, config));
+    bus.subscribe(new GameLoader(context, config));
     bus.subscribe(new GameSaver(queue));
   }
 

@@ -39,7 +39,7 @@ public class Atlas implements Closeable, MapAtlas {
   private final MVMap<Integer, Map> maps;
   private final EntityStore entityStore;
   private final FileSystem fileSystem;
-
+    private final MapLoader mapLoader;
   /**
    * Initializes this {@code Atlas} with the given {@code FileSystem} and cache path. The cache is
    * lazy initialised.
@@ -68,7 +68,7 @@ public class Atlas implements Closeable, MapAtlas {
     // files.delete(path);
     // String fileName = files.getFullPath(path);
     // log.warn("Creating new MVStore at {}", fileName);
-
+    this.mapLoader = new MapLoader(this.entityStore, this.resourceProvider);
     // db = MVStore.open(fileName);
     maps = db.openMap("maps");
   }
@@ -92,14 +92,63 @@ public class Atlas implements Closeable, MapAtlas {
   @Override
   public Map getMap(int uid) {
     if (!maps.containsKey(uid)) {
-      Map map = MapLoader.loadMap(entityStore.getMapPath(uid), uid, fileSystem);
+      if (entityStore.getMapPath(uid) == null) {
+        throw new RuntimeException(String.format("No existing mappath for uid %d", uid));
+      }
+      Map map = mapLoader.load(entityStore.getMapPath(uid), uid, files);
       System.out.println("Loaded map " + map.toString());
       maps.put(uid, map);
     }
     return maps.get(uid);
   }
 
-  public void putMapIfNeeded(Map map) {
+    @Override
+    public Map getMap(int uid, String... path) {
+        Map map = mapLoader.load(path, uid, files);
+        return map;
+    }
+
+    public void putMapIfNeeded(Map map) {
+        if (!maps.containsKey(map.getUID())) {
+            // could be a random map that's not in the database yet
+            maps.put(map.getUID(), map);
+        }
+    }
+  /**
+   * Sets the current zone.
+   *
+   * @param i the index of the current zone
+   */
+  public void setCurrentZone(int i) {
+    currentZone = i;
+    zoneActivator.activateZone(getCurrentZone());
+  }
+
+  /**
+   * Enter a new zone through a door.
+   *
+   * @param door
+   * @param previousZone
+   */
+  public void enterZone(Door door, Zone previousZone) {
+    if (door.portal.getDestZone() > -1) {
+      setCurrentZone(door.portal.getDestZone());
+    } else {
+      setCurrentZone(0);
+    }
+
+    if (getCurrentMap() instanceof Dungeon && getCurrentZone().isRandom()) {
+      new DungeonGenerator(getCurrentZone(), entityStore, resourceProvider, questProvider)
+          .generate(door, previousZone, this);
+    }
+  }
+
+  /**
+   * Set the current map.
+   *
+   * @param map the new current map
+   */
+  public void setMap(Map map) {
     if (!maps.containsKey(map.getUID())) {
       // could be a random map that's not in the database yet
       maps.put(map.getUID(), map);
