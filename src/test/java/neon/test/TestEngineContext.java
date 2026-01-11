@@ -96,7 +96,7 @@ public class TestEngineContext {
     setStaticField(Engine.class, "resources", testResources);
 
     // Create test UIDStore
-    testStore = new UIDStore("test-store.dat");
+    testStore = new UIDStore(testDb);
     questTracker = new QuestTracker();
     // Create test EntityStore
     testEntityStore = new StubEntityStore(testStore);
@@ -110,7 +110,7 @@ public class TestEngineContext {
     testZoneFactory = new ZoneFactory(db);
     mapLoader = new MapLoader(testEntityStore, testResources, getStubFileSystem());
     // Create test Atlas with dependency injection (doesn't need Engine.game)
-    testAtlas = new Atlas(getStubFileSystem(), "test-atlas", getTestEntityStore(), mapLoader);
+    testAtlas = new Atlas(getStubFileSystem(), testDb, getTestEntityStore(), mapLoader);
     atlasPosition =
         new AtlasPosition(
             testAtlas, testZoneActivator, testResources, questTracker, testEntityStore);

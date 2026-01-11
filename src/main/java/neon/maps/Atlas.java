@@ -42,6 +42,19 @@ public class Atlas implements Closeable, MapAtlas {
   private final FileSystem fileSystem;
   private final MapLoader mapLoader;
 
+  public Atlas(
+      FileSystem fileSystem, MapStore mapStore, EntityStore entityStore, MapLoader mapLoader) {
+    this.fileSystem = fileSystem;
+    this.entityStore = entityStore;
+    this.db = mapStore;
+    // files.delete(path);
+    // String fileName = files.getFullPath(path);
+    // log.warn("Creating new MVStore at {}", fileName);
+    this.mapLoader = mapLoader;
+    // db = MVStore.open(fileName);
+    maps = db.openMap("maps");
+  }
+
   /** Initializes this {@code Atlas} with dependency injection. */
   public Atlas(FileSystem fileSystem, String path, EntityStore entityStore, MapLoader mapLoader) {
     this.fileSystem = fileSystem;

@@ -27,12 +27,7 @@ class AtlasTest {
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
-    atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            "atlas-test",
-            TestEngineContext.getTestEntityStore(),
-            TestEngineContext.getMapLoader());
+    atlas = TestEngineContext.getTestAtlas();
     atlasPosition =
         new AtlasPosition(
             atlas,

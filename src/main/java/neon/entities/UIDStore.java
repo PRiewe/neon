@@ -60,6 +60,12 @@ public class UIDStore implements EntityStore, Closeable {
     mods = uidDb.openMap("mods");
   }
 
+  public UIDStore(MapStore mapStore) {
+    uidDb = mapStore;
+    objects = uidDb.openMap("object");
+    mods = uidDb.openMap("mods");
+  }
+
   /**
    * @return the jdbm3 cache used by this UIDStore
    */
