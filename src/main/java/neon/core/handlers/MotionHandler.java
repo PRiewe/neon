@@ -37,6 +37,7 @@ import neon.maps.*;
  *
  * @author mdriesen
  */
+@Slf4j
 public class MotionHandler {
   public static final byte OK = 0;
   public static final byte BLOCKED = 1;

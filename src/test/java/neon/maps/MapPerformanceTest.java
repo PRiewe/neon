@@ -8,10 +8,11 @@ import java.util.Collection;
 import java.util.List;
 import neon.entities.Creature;
 import neon.entities.Item;
+import neon.narrative.QuestTracker;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,7 @@ import org.junit.jupiter.api.Test;
  */
 class MapPerformanceTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
 
   @BeforeEach
   void setUp() throws Exception {

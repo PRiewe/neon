@@ -6,7 +6,7 @@ import java.awt.Rectangle;
 import neon.resources.RTerrain;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
  */
 class RegionIntegrationTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
 
   @BeforeEach
   void setUp() throws Exception {

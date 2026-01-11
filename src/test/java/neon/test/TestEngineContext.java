@@ -11,16 +11,14 @@ import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.entities.components.PhysicsComponent;
 import neon.entities.property.Gender;
-import neon.maps.Atlas;
-import neon.maps.MapLoader;
-import neon.maps.ZoneActivator;
-import neon.maps.ZoneFactory;
+import neon.maps.*;
 import neon.maps.services.*;
 import neon.narrative.QuestTracker;
 import neon.resources.*;
 import neon.resources.builder.IniBuilder;
 import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
+import neon.util.mapstorage.MapStore;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -31,7 +29,9 @@ import org.h2.mvstore.MVStore;
  */
 public class TestEngineContext {
 
-  private static MVStore testDb;
+  private static MapStore testDb;
+
+  /** -- GETTER -- Gets the test Atlas instance. */
   @Getter private static Atlas testAtlas;
   private static StubResourceManager testResources;
   private static Game testGame;
@@ -43,6 +43,9 @@ public class TestEngineContext {
   @Getter private static DefaultUIEngineContext testUiEngineContext;
   @Getter private static QuestTracker testQuestTracker;
   @Getter private static StubFileSystem stubFileSystem;
+  @Getter private static neon.core.DefaultGameContext testContext;
+  @Getter private static MapLoader mapLoader;
+  @Getter private static QuestTracker questTracker;
 
   static {
     try {
@@ -70,7 +73,7 @@ public class TestEngineContext {
    * @param db the MapDb database to use for Atlas
    * @throws RuntimeException if reflection fails
    */
-  public static void initialize(MVStore db) throws Exception {
+  public static void initialize(MapStore db) throws Exception {
     testDb = db;
 
     // Create stub ResourceManager

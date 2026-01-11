@@ -23,6 +23,8 @@ import lombok.Setter;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
+import neon.maps.AtlasPosition;
+import neon.maps.services.PhysicsManager;
 import neon.maps.services.ResourceProvider;
 import neon.narrative.QuestTracker;
 import neon.systems.files.FileSystem;
@@ -46,6 +48,11 @@ public class DefaultUIEngineContext implements UIEngineContext {
   @Setter private GameStore gameStore;
   @Setter private GameServices gameServices;
   private final QuestTracker questTracker;
+  @Setter private ResourceManager resources;
+  @Setter private QuestTracker questTracker;
+  @Setter private PhysicsSystem physicsEngine;
+  @Setter private PhysicsManager physicsManager;
+  @Setter private Context scriptEngine;
   @Setter private MBassador<EventObject> bus;
 
   // Game-level state (set when a game starts)
@@ -88,6 +95,11 @@ public class DefaultUIEngineContext implements UIEngineContext {
   @Override
   public FileSystem getFileSystem() {
     return gameStore.getFileSystem();
+  }
+
+  @Override
+  public PhysicsManager getPhysicsManager() {
+    return physicsManager;
   }
 
   @Override

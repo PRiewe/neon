@@ -20,6 +20,7 @@ package neon.maps;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentMap;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.GameStore;
 import neon.core.UIEngineContext;
@@ -30,7 +31,8 @@ import neon.maps.services.EntityStore;
 import neon.maps.services.MapAtlas;
 import neon.maps.services.QuestProvider;
 import neon.systems.files.FileSystem;
-import org.h2.mvstore.MVMap;
+import neon.util.mapstorage.MapStore;
+import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -40,37 +42,16 @@ import org.h2.mvstore.MVStore;
  */
 @Slf4j
 public class Atlas implements Closeable, MapAtlas {
-  private final MVStore db;
-  private final MVMap<Integer, Map> maps;
-  private int currentZone = 0;
-  private int currentMap = 0;
-  private final QuestProvider questProvider;
-  private final ZoneActivator zoneActivator;
-  private final GameStore gameStore;
+  private final MapStore db;
+  private final ConcurrentMap<Integer, Map> maps;
+  private final EntityStore entityStore;
+  private final FileSystem fileSystem;
   private final MapLoader mapLoader;
-  private final UIEngineContext uiEngineContext;
-
-  /**
-   * Initializes this {@code Atlas} with the given {@code FileSystem} and cache path. The cache is
-   * lazy initialised.
-   *
-   * @param gameStore a {@code FileSystem}
-   * @param path the path to the file used for caching
-   * @deprecated Use {@link #Atlas(GameStore, String, EntityStore, ZoneActivator)} to avoid
-   *     dependency on Engine singleton
-   */
-  @Deprecated
-  public Atlas(
-      GameStore gameStore, String path, MapLoader mapLoader, UIEngineContext uiEngineContext) {
-    this(
-        gameStore,
-        getMVStore(gameStore.getFileSystem(), path),
-        new EngineQuestProvider(),
-        createDefaultZoneActivator(gameStore),
-        mapLoader,
-        uiEngineContext);
-  }
-
+    private int currentZone = 0;
+    private int currentMap = 0;
+    private final QuestProvider questProvider;
+    private final ZoneActivator zoneActivator;
+    private final GameStore gameStore;
   /**
    * Initializes this {@code Atlas} with dependency injection.
    *
@@ -92,19 +73,19 @@ public class Atlas implements Closeable, MapAtlas {
     // files.delete(path);
     // String fileName = files.getFullPath(path);
     // log.warn("Creating new MVStore at {}", fileName);
-
+    this.mapLoader = new MapLoader(this.entityStore, this.resourceProvider);
     // db = MVStore.open(fileName);
     maps = atlasStore.openMap("maps");
     this.mapLoader = mapLoader;
     this.uiEngineContext = uiEngineContext;
   }
 
-  private static MVStore getMVStore(FileSystem files, String path) {
-    files.delete(path);
-    String fileName = files.getFullPath(path);
+  private MapStore getMapStore(FileSystem files, String fileName) {
+    files.delete(fileName);
+
     log.warn("Creating new MVStore at {}", fileName);
 
-    return MVStore.open(fileName);
+    return new MapStoreMVStoreAdapter(MVStore.open(fileName));
   }
 
   /**
@@ -116,7 +97,7 @@ public class Atlas implements Closeable, MapAtlas {
     return new ZoneActivator(new neon.maps.services.EnginePhysicsManager(), gameStore);
   }
 
-  public MVStore getCache() {
+  public MapStore getCache() {
     return db;
   }
 
@@ -148,6 +129,10 @@ public class Atlas implements Closeable, MapAtlas {
   @Override
   public Map getMap(int uid) {
     if (!maps.containsKey(uid)) {
+      if (entityStore.getMapPath(uid) == null) {
+        throw new RuntimeException(String.format("No existing mappath for uid %d", uid));
+      }
+      Map map = mapLoader.load(entityStore.getMapPath(uid), uid);
       Map map = mapLoader.loadMap(gameStore.getUidStore().getMapPath(uid), uid);
       System.out.println("Loaded map " + map.toString());
       maps.put(uid, map);
@@ -155,6 +140,13 @@ public class Atlas implements Closeable, MapAtlas {
     return maps.get(uid);
   }
 
+  @Override
+  public Map getMap(int uid, String... path) {
+    Map map = mapLoader.load(path, uid);
+    return map;
+  }
+
+  public void putMapIfNeeded(Map map) {
   /**
    * Sets the current zone.
    *

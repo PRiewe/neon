@@ -44,6 +44,8 @@ import neon.magic.Effect;
 import neon.magic.Spell;
 import neon.magic.SpellFactory;
 import neon.maps.Map;
+import neon.maps.MapLoader;
+import neon.maps.services.GameContextResourceProvider;
 import neon.resources.CGame;
 import neon.resources.RCreature;
 import neon.resources.RMod;
@@ -80,6 +82,9 @@ public class GameLoader {
     this.engine = engine;
     this.config = config;
     queue = engine.getQueue();
+    queue = context.getQueue();
+    resourceProvider = new GameContextResourceProvider(context);
+    mapLoader = new MapLoader(context.getStore(), resourceProvider, context.getFileSystem());
   }
 
   @Handler

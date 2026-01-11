@@ -18,8 +18,14 @@
 
 package neon.entities;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import java.io.*;
+import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import neon.maps.services.EntityStore;
+import neon.util.mapstorage.MapStore;
+import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -32,7 +38,13 @@ import org.h2.mvstore.MVStore;
 public class UIDStore extends AbstractUIDStore implements Closeable, EntityStore {
 
   // uid database
-  private final MVStore uidDb;
+  private final MapStore uidDb;
+  // uids of all objects in the game
+  private final Map<Long, Entity> objects;
+  // uids of all loaded mods
+  private final Map<Short, Mod> mods;
+  // uids of all loaded maps
+  private final BiMap<Integer, String> maps = HashBiMap.create();
 
   /**
    * Tells this UIDStore to use the given jdbm3 cache.
@@ -40,9 +52,50 @@ public class UIDStore extends AbstractUIDStore implements Closeable, EntityStore
    * @param file
    */
   public UIDStore(String file) {
-    uidDb = MVStore.open(file);
+    uidDb = new MapStoreMVStoreAdapter(MVStore.open(file));
     objects = uidDb.openMap("object");
     mods = uidDb.openMap("mods");
+  }
+
+  /**
+   * @return the jdbm3 cache used by this UIDStore
+   */
+  public MapStore getCache() {
+    return uidDb;
+  }
+
+  /**
+   * @param name the name of a mod
+   * @return the unique identifier of this mod
+   */
+  public short getModUID(String name) {
+    for (Mod mod : mods.values()) {
+      if (mod.name.equals(name)) {
+        return mod.uid;
+      }
+    }
+    throw new RuntimeException("Mod " + name + " not found");
+    // System.out.println("Mod " + name + " not found");
+    // return 0;
+  }
+
+  public boolean isModUIDLoaded(String name) {
+    for (Mod mod : mods.values()) {
+      if (mod.name.equals(name)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Adds a {@code Map} with the given uid and path.
+   *
+   * @param uid
+   * @param path
+   */
+  public void addMap(Integer uid, String... path) {
+    maps.put(uid, toString(path));
   }
 
   /**
@@ -50,19 +103,127 @@ public class UIDStore extends AbstractUIDStore implements Closeable, EntityStore
    *
    * @param entity the object to be added
    */
-  @Override
   public void addEntity(Entity entity) {
-    super.addEntity(entity);
+    objects.put(entity.getUID(), entity);
     if (objects.size() % 1000 == 0) { // do a commit every 1000 entities
       uidDb.commit();
     }
   }
 
   /**
-   * @return the jdbm3 cache used by this UIDStore
+   * Removes the object with the given UID.
+   *
+   * @param uid the UID of the object to be removed
    */
-  public MVStore getCache() {
-    return uidDb;
+  public void removeEntity(long uid) {
+    objects.remove(uid);
+  }
+
+  /**
+   * Returns the entity with the given UID. If the UID is a {@code DUMMY}, {@code null} is returned.
+   *
+   * @param uid the UID of an object
+   * @return the object with the given UID
+   */
+  public Entity getEntity(long uid) {
+    return (uid == DUMMY ? null : objects.get(uid));
+  }
+
+  /**
+   * Adds a mod with the given id.
+   *
+   * @param id
+   */
+  public void addMod(String id) {
+    short uid = (short) (Math.random() * Short.MAX_VALUE);
+    while (mods.containsKey(uid) || uid == 0) {
+      uid++;
+    }
+    Mod mod = new Mod(uid, id);
+    mods.put(mod.uid, mod);
+  }
+
+  /**
+   * @param uid the unique identifier of a map
+   * @return the full path of a map
+   */
+  public String[] getMapPath(int uid) {
+    if (maps.get(uid) != null) {
+      return maps.get(uid).split(",");
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * @param path the path to a map
+   * @return the uid of the given map
+   */
+  public int getMapUID(String... path) {
+    var uid = maps.inverse().get(toString(path));
+    if (uid == null) {
+      log.warn("{} doesn't have uid", (Object) path);
+    }
+    return maps.inverse().get(toString(path));
+  }
+
+  /**
+   * Creates a new uid for an entity.
+   *
+   * @return
+   */
+  public long createNewEntityUID() {
+    // random objects have a random negative long as uid
+    long uid = (long) (Math.random() * Long.MIN_VALUE);
+    while (objects.containsKey(uid)) {
+      uid = (uid >= 0) ? Long.MIN_VALUE : uid + 1;
+    }
+    return uid;
+  }
+
+  /**
+   * Creates a new uid for a map.
+   *
+   * @return
+   */
+  public int createNewMapUID() {
+    // random maps have a random negative int as uid
+    int uid = (int) (Math.random() * Integer.MIN_VALUE);
+    while (maps.containsKey(uid)) {
+      uid = (uid >= 0) ? Integer.MIN_VALUE : uid + 1;
+    }
+    return uid;
+  }
+
+  private static String toString(String... strings) {
+    StringBuilder result = new StringBuilder();
+    for (String s : strings) {
+      result.append(s);
+      result.append(",");
+    }
+    // remove last ","
+    result.replace(result.length(), result.length(), "");
+    return result.toString();
+  }
+
+  /**
+   * @param map
+   * @param object
+   * @return the full object UID
+   */
+  public static long getObjectUID(long map, long object) {
+    // this to avoid problems with two's complement
+    return (map << 32) | ((object << 32) >>> 32);
+  }
+
+  /**
+   * @param mod
+   * @param map
+   * @return the full map UID
+   */
+  public static int getMapUID(int mod, int map) {
+    // this to avoid problems with two's complement
+    return (mod << 16) | ((map << 16) >>> 16);
   }
 
   @Override
@@ -70,4 +231,6 @@ public class UIDStore extends AbstractUIDStore implements Closeable, EntityStore
     uidDb.commit();
     uidDb.close();
   }
+
+  private record Mod(short uid, String name) implements Serializable {}
 }
