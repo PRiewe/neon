@@ -25,6 +25,7 @@ import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
 import neon.maps.AtlasPosition;
+import neon.maps.MapLoader;
 import neon.maps.ZoneActivator;
 import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;
@@ -47,7 +48,8 @@ public class Game implements Closeable {
       ResourceManager resourceManager,
       QuestTracker questTracker) {
     store = new UIDStore(files.getFullPath("uidstore"));
-    atlas = new Atlas(files, files.getFullPath("atlas"), store);
+    MapLoader mapLoader = new MapLoader(store, resourceManager, files);
+    atlas = new Atlas(files, files.getFullPath("atlas"), store, mapLoader);
     this.player = player;
     this.atlasPosition =
         new AtlasPosition(

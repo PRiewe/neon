@@ -20,8 +20,10 @@ package neon.core.handlers;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.io.IOException;
 import java.util.Collection;
 import javax.swing.SwingConstants;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.event.MessageEvent;
 import neon.entities.Creature;
@@ -40,6 +42,7 @@ import neon.maps.*;
  *
  * @author mdriesen
  */
+@Slf4j
 public class MotionHandler {
   public static final byte OK = 0;
   public static final byte BLOCKED = 1;
@@ -78,9 +81,13 @@ public class MotionHandler {
         Engine.getScriptEngine().getBindings("js").putMember("map", map);
         door.portal.setDestMap(Engine.getAtlasPosition().getCurrentMap());
       } else if (door.portal.getDestTheme() != null) {
-        Dungeon dungeon = MapLoader.loadDungeon(door.portal.getDestTheme());
-        Engine.getAtlasPosition().setMap(dungeon);
-        door.portal.setDestMap(Engine.getAtlasPosition().getCurrentMap());
+        try {
+          Dungeon dungeon = MapLoader.loadDungeon(door.portal.getDestTheme());
+          Engine.getAtlasPosition().setMap(dungeon);
+          door.portal.setDestMap(Engine.getAtlasPosition().getCurrentMap());
+        } catch (IOException ioe) {
+          log.error("Error loading dungeon for theme {}", door.portal.getDestTheme(), ioe);
+        }
       }
 
       Engine.getAtlasPosition().enterZone(door, previous, creature);

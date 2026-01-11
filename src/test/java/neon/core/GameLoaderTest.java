@@ -25,7 +25,7 @@ import neon.entities.property.Gender;
 import neon.resources.RSign;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
  */
 public class GameLoaderTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
 
   @BeforeEach
   public void setUp() throws Exception {

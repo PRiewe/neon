@@ -19,7 +19,7 @@
 package neon.maps;
 
 import neon.resources.RZoneTheme;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 
 /**
  * Factory for creating Zone instances with proper dependency injection. Eliminates the constructor
@@ -28,14 +28,14 @@ import org.h2.mvstore.MVStore;
  * @author mdriesen
  */
 public class ZoneFactory {
-  private final MVStore cache;
+  private final MapStore cache;
 
   /**
    * Creates a new ZoneFactory with the given cache database.
    *
    * @param cache the MapDB cache database for spatial indices
    */
-  public ZoneFactory(MVStore cache) {
+  public ZoneFactory(MapStore cache) {
     this.cache = cache;
   }
 

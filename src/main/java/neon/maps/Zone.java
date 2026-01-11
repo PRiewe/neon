@@ -30,8 +30,8 @@ import neon.entities.Creature;
 import neon.entities.Item;
 import neon.resources.RZoneTheme;
 import neon.ui.graphics.*;
+import neon.util.mapstorage.MapStore;
 import neon.util.spatial.*;
-import org.h2.mvstore.MVStore;
 
 public class Zone implements Externalizable {
   private static final ZComparator comparator = new ZComparator();
@@ -89,7 +89,7 @@ public class Zone implements Externalizable {
    * @param index the zone index
    * @param cache the MapDB cache for spatial indices
    */
-  private Zone(String name, int map, int index, MVStore cache) {
+  private Zone(String name, int map, int index, MapStore cache) {
     this.map = map;
     this.name = name;
     this.index = index;
@@ -105,7 +105,7 @@ public class Zone implements Externalizable {
    * @param cache the MapDB cache for spatial indices
    * @return a new Zone instance
    */
-  static Zone create(String name, int mapUID, int index, MVStore cache) {
+  static Zone create(String name, int mapUID, int index, MapStore cache) {
     return new Zone(name, mapUID, index, cache);
   }
 
@@ -119,7 +119,7 @@ public class Zone implements Externalizable {
    * @param cache the MapDB cache for spatial indices
    * @return a new Zone instance with a theme
    */
-  static Zone create(String name, int mapUID, RZoneTheme theme, int index, MVStore cache) {
+  static Zone create(String name, int mapUID, RZoneTheme theme, int index, MapStore cache) {
     Zone zone = new Zone(name, mapUID, index, cache);
     zone.theme = theme;
     return zone;

@@ -20,7 +20,7 @@ import neon.resources.Resource;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
 import neon.util.Dice;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -594,7 +594,7 @@ class DungeonGeneratorTest {
   @Nested
   class GenerateWithContextTests {
 
-    private MVStore testDb;
+    private MapStore testDb;
     private Atlas testAtlas;
     private ZoneFactory zoneFactory;
     private EntityStore entityStore;

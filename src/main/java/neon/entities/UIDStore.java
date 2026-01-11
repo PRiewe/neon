@@ -24,6 +24,8 @@ import java.io.*;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import neon.maps.services.EntityStore;
+import neon.util.mapstorage.MapStore;
+import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -39,7 +41,7 @@ public class UIDStore implements EntityStore, Closeable {
   public static final long DUMMY = 0;
 
   // uid database
-  private final MVStore uidDb;
+  private final MapStore uidDb;
   // uids of all objects in the game
   private final Map<Long, Entity> objects;
   // uids of all loaded mods
@@ -53,7 +55,7 @@ public class UIDStore implements EntityStore, Closeable {
    * @param file
    */
   public UIDStore(String file) {
-    uidDb = MVStore.open(file);
+    uidDb = new MapStoreMVStoreAdapter(MVStore.open(file));
     objects = uidDb.openMap("object");
     mods = uidDb.openMap("mods");
   }
@@ -61,7 +63,7 @@ public class UIDStore implements EntityStore, Closeable {
   /**
    * @return the jdbm3 cache used by this UIDStore
    */
-  public MVStore getCache() {
+  public MapStore getCache() {
     return uidDb;
   }
 

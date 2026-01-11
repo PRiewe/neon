@@ -49,7 +49,6 @@ import neon.magic.SpellFactory;
 import neon.maps.Atlas;
 import neon.maps.Map;
 import neon.maps.MapLoader;
-import neon.maps.MapUtils;
 import neon.maps.services.GameContextResourceProvider;
 import neon.resources.CGame;
 import neon.resources.RCreature;
@@ -79,7 +78,7 @@ public class GameLoader {
     this.config = config;
     queue = context.getQueue();
     resourceProvider = new GameContextResourceProvider(context);
-    mapLoader = new MapLoader(context.getStore(), resourceProvider, new MapUtils());
+    mapLoader = new MapLoader(context.getStore(), resourceProvider, context.getFileSystem());
   }
 
   @Handler
@@ -131,14 +130,13 @@ public class GameLoader {
       RCreature species = ((RCreature) context.getResources().getResource(race)).clone();
       Player player = new Player(species, name, gender, spec, profession);
       player.species.text = "@";
-      context.startGame(new Game(player, context.getFileSystem()));
-        context.startGame(
+      context.startGame(
           new Game(
               player,
-                  context.getFileSystem(),
-                  context.getPhysicsManager(),
-                  context.getResources(),
-                  context.getQuestTracker()));
+              context.getFileSystem(),
+              context.getPhysicsManager(),
+              context.getResources(),
+              context.getQuestTracker()));
       setSign(player, sign);
       for (Skill skill : Skill.values()) {
         SkillHandler.checkFeat(skill, player);
@@ -169,8 +167,8 @@ public class GameLoader {
 
       Map map = atlas.getMap(store.getMapUID(startMap));
       context.getScriptEngine().getBindings("js").putMember("map", map);
-      context.getAtlas().setMap(map);
-      context.getAtlas().setCurrentZone(game.getStartZone());
+      context.getAtlasPosition().setMap(map);
+      context.getAtlasPosition().setCurrentZone(game.getStartZone(), player);
     } catch (RuntimeException re) {
       log.error("Error during initGame", re);
     }
@@ -291,22 +289,21 @@ public class GameLoader {
             Gender.valueOf(playerData.gender.toUpperCase()),
             Player.Specialisation.valueOf(playerData.specialisation),
             playerData.profession);
-    context.startGame(new Game(player, context.getFileSystem()));
-      context.startGame(
+    context.startGame(
         new Game(
             player,
-                context.getFileSystem(),
-                context.getPhysicsManager(),
-                context.getResources(),
-                context.getQuestTracker()));
+            context.getFileSystem(),
+            context.getPhysicsManager(),
+            context.getResources(),
+            context.getQuestTracker()));
     Rectangle bounds = player.getShapeComponent();
     bounds.setLocation(playerData.x, playerData.y);
     player.setSign(playerData.sign);
     player.species.text = "@";
 
     // start map
-    context.getAtlas().setMap(context.getAtlas().getMap(playerData.map));
-    context.getAtlas().setCurrentZone(playerData.level);
+    context.getAtlasPosition().setMap(context.getAtlas().getMap(playerData.map));
+    context.getAtlasPosition().setCurrentZone(playerData.level, player);
 
     // stats
     Stats stats = player.getStatsComponent();
@@ -388,7 +385,7 @@ public class GameLoader {
           Element map = context.getFileSystem().getFile(new XMLTranslator(), path).getRootElement();
           short mapUID = Short.parseShort(map.getChild("header").getAttributeValue("uid"));
           int uid = UIDStore.getMapUID(context.getStore().getModUID(path[0]), mapUID);
-          mapLoader.load(path, mapUID, context.getFileSystem());
+          mapLoader.load(path, mapUID);
           context.getStore().addMap(uid, path);
         } catch (Exception e) {
           log.info("Map error in mod {} : {}", path, e.toString());

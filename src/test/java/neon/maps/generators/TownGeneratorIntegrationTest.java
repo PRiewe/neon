@@ -14,7 +14,7 @@ import neon.maps.services.EntityStore;
 import neon.resources.RRegionTheme;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -109,7 +109,7 @@ class TownGeneratorIntegrationTest {
 
   @Nested
   class GenerateWithFullContextTests {
-    private MVStore testDb;
+    private MapStore testDb;
     private Atlas testAtlas;
     private EntityStore entityStore;
 

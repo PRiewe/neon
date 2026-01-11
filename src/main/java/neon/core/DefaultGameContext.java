@@ -25,6 +25,7 @@ import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
 import neon.maps.AtlasPosition;
+import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
@@ -49,6 +50,7 @@ public class DefaultGameContext implements GameContext {
   @Setter private ResourceManager resources;
   @Setter private QuestTracker questTracker;
   @Setter private PhysicsSystem physicsEngine;
+  @Setter private PhysicsManager physicsManager;
   @Setter private Context scriptEngine;
   @Setter private MBassador<EventObject> bus;
   @Setter private FileSystem fileSystem;
@@ -96,6 +98,11 @@ public class DefaultGameContext implements GameContext {
   @Override
   public PhysicsSystem getPhysicsEngine() {
     return physicsEngine;
+  }
+
+  @Override
+  public PhysicsManager getPhysicsManager() {
+    return physicsManager;
   }
 
   @Override

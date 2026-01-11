@@ -15,7 +15,7 @@ import neon.resources.RRegionTheme;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
 import neon.util.Dice;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -154,7 +154,7 @@ class WildernessGeneratorIntegrationTest {
 
   @Nested
   class GenerateWithFullContextTests {
-    private MVStore testDb;
+    private MapStore testDb;
     private Atlas testAtlas;
     private EntityStore entityStore;
 

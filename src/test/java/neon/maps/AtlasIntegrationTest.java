@@ -8,7 +8,7 @@ import neon.maps.services.*;
 import neon.narrative.QuestTracker;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
  */
 class AtlasIntegrationTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
   private Atlas atlas;
   AtlasPosition atlasPosition;
 
@@ -28,7 +28,12 @@ class AtlasIntegrationTest {
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
-    atlas = new Atlas(TestEngineContext.getStubFileSystem(), "test-atlas", new EngineEntityStore());
+    atlas =
+        new Atlas(
+            TestEngineContext.getStubFileSystem(),
+            "test-atlas",
+            TestEngineContext.getTestEntityStore(),
+            TestEngineContext.getMapLoader());
     atlasPosition =
         new AtlasPosition(
             atlas,

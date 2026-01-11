@@ -21,6 +21,7 @@ package neon.maps;
 import java.awt.Point;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import neon.core.*;
 import neon.entities.Container;
 import neon.entities.Creature;
@@ -60,6 +61,7 @@ public class MapLoader {
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
   private final MapUtils mapUtils;
+  private final FileSystem fileSystem;
 
   /**
    * Creates a MapLoader with dependency injection.
@@ -67,8 +69,9 @@ public class MapLoader {
    * @param entityStore the entity store service
    * @param resourceProvider the resource provider service
    */
-  public MapLoader(EntityStore entityStore, ResourceProvider resourceProvider) {
-    this(entityStore, resourceProvider, new MapUtils());
+  public MapLoader(
+      EntityStore entityStore, ResourceProvider resourceProvider, FileSystem fileSystem) {
+    this(entityStore, resourceProvider, new MapUtils(), fileSystem);
   }
 
   /**
@@ -78,10 +81,15 @@ public class MapLoader {
    * @param resourceProvider the resource provider service
    * @param mapUtils the MapUtils instance for random operations
    */
-  public MapLoader(EntityStore entityStore, ResourceProvider resourceProvider, MapUtils mapUtils) {
+  public MapLoader(
+      EntityStore entityStore,
+      ResourceProvider resourceProvider,
+      MapUtils mapUtils,
+      FileSystem fileSystem) {
     this.entityStore = entityStore;
     this.resourceProvider = resourceProvider;
     this.mapUtils = mapUtils;
+    this.fileSystem = fileSystem;
   }
 
   /**
@@ -89,8 +97,8 @@ public class MapLoader {
    *
    * @return a new MapLoader instance
    */
-  private static MapLoader createDefault() {
-    return new MapLoader(new EngineEntityStore(), new EngineResourceProvider());
+  private static MapLoader createDefault() throws IOException {
+    return new MapLoader(new EngineEntityStore(), new EngineResourceProvider(), new FileSystem());
   }
 
   /**
@@ -101,11 +109,11 @@ public class MapLoader {
    * @param files the file system
    * @return the <code>Map</code> described by the map file
    */
-  public Map load(@NotNull String[] path, int uid, FileSystem files) {
+  public Map load(@NotNull String[] path, int uid) {
     // For now, use JDOM to determine type, then build models
     // In the future, FileSystem can provide InputStream directly
 
-    Document doc = files.getFile(new XMLTranslator(), path);
+    Document doc = fileSystem.getFile(new XMLTranslator(), path);
     Element root = doc.getRootElement();
 
     if (root.getName().equals("world")) {
@@ -130,7 +138,7 @@ public class MapLoader {
    * @deprecated Use instance method {@link #loadThemedDungeon(String, String, int)} instead
    */
   @Deprecated
-  public static Dungeon loadDungeon(String theme) {
+  public static Dungeon loadDungeon(String theme) throws IOException {
     MapLoader loader = createDefault();
     return loader.loadThemedDungeon(theme, theme, loader.entityStore.createNewMapUID());
   }

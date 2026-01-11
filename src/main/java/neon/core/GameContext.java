@@ -24,6 +24,7 @@ import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
 import neon.maps.AtlasPosition;
+import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
@@ -74,6 +75,8 @@ public interface GameContext {
   QuestTracker getQuestTracker();
 
   PhysicsSystem getPhysicsEngine();
+
+  PhysicsManager getPhysicsManager();
 
   Context getScriptEngine();
 

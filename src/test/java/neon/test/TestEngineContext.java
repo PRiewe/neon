@@ -14,16 +14,14 @@ import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.entities.components.PhysicsComponent;
 import neon.entities.property.Gender;
-import neon.maps.Atlas;
-import neon.maps.AtlasPosition;
-import neon.maps.ZoneActivator;
-import neon.maps.ZoneFactory;
+import neon.maps.*;
 import neon.maps.services.*;
 import neon.narrative.QuestTracker;
 import neon.resources.*;
 import neon.resources.builder.IniBuilder;
 import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
+import neon.util.mapstorage.MapStore;
 import org.h2.mvstore.MVStore;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -38,7 +36,7 @@ import org.jdom2.input.SAXBuilder;
 @Slf4j
 public class TestEngineContext {
 
-  private static MVStore testDb;
+  private static MapStore testDb;
 
   /** -- GETTER -- Gets the test Atlas instance. */
   @Getter private static Atlas testAtlas;
@@ -61,7 +59,7 @@ public class TestEngineContext {
 
   @Getter private static StubFileSystem stubFileSystem;
   @Getter private static neon.core.DefaultGameContext testContext;
-
+  @Getter private static MapLoader mapLoader;
   @Getter private static QuestTracker questTracker;
 
   static {
@@ -90,7 +88,7 @@ public class TestEngineContext {
    * @param db the MapDb database to use for Atlas
    * @throws RuntimeException if reflection fails
    */
-  public static void initialize(MVStore db) throws Exception {
+  public static void initialize(MapStore db) throws Exception {
     testDb = db;
 
     // Create stub ResourceManager
@@ -110,13 +108,14 @@ public class TestEngineContext {
 
     // Create ZoneFactory for tests
     testZoneFactory = new ZoneFactory(db);
-
+    mapLoader = new MapLoader(testEntityStore, testResources, getStubFileSystem());
     // Create test Atlas with dependency injection (doesn't need Engine.game)
-    testAtlas = new Atlas(getStubFileSystem(), "test-atlas", testEntityStore);
+    testAtlas = new Atlas(getStubFileSystem(), "test-atlas", getTestEntityStore(), mapLoader);
     atlasPosition =
         new AtlasPosition(
             testAtlas, testZoneActivator, testResources, questTracker, testEntityStore);
     // Create test Game using new DI constructor
+
     testGame = new Game(stubPlayer, testAtlas, testStore, atlasPosition);
     setStaticField(Engine.class, "game", testGame);
 

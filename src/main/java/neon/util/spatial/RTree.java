@@ -24,7 +24,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -65,7 +65,7 @@ public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
    * @param nodeSize the requested node size
    * @param fillFactor the requested fill factor
    */
-  public RTree(int nodeSize, int fillFactor, MVStore db, String name)
+  public RTree(int nodeSize, int fillFactor, MapStore db, String name)
       throws IllegalArgumentException {
     if (fillFactor > nodeSize / 2) {
       throw new IllegalArgumentException("Fill factor too high.");
