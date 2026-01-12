@@ -24,6 +24,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import neon.core.Engine;
+import neon.core.GameStores;
 import neon.entities.Armor;
 import neon.entities.Container;
 import neon.entities.Door;
@@ -44,14 +45,22 @@ import neon.resources.RItem;
  */
 public class ItemSerializer {
   private static final long serialVersionUID = 2138679015831709732L;
+  private final GameStores gameStores;
+  private final EntityFactory entityFactory;
+  private final SpellFactory spellFactory;
+    public ItemSerializer(GameStores gameStores) {
+        this.gameStores = gameStores;
+        entityFactory = new EntityFactory(gameStores.getStore(),gameStores.getResources());
+        spellFactory= new SpellFactory(gameStores.getResources());
+    }
 
-  public Item deserialize(DataInput input) throws IOException {
+    public Item deserialize(DataInput input) throws IOException {
     // item aanmaken
     String id = input.readUTF();
     long uid = input.readLong();
     int x = input.readInt();
     int y = input.readInt();
-    Item item = EntityFactory.getItem(id, x, y, uid);
+    Item item = entityFactory.getItem(id, x, y, uid);
     item.setOwner(input.readLong());
 
     if (input.readBoolean()) {
@@ -116,7 +125,7 @@ public class ItemSerializer {
     String id = input.readUTF();
     int mana = input.readInt();
     float modifier = input.readFloat();
-    Enchantment enchantment = new Enchantment(SpellFactory.getSpell(id), mana, uid);
+    Enchantment enchantment = new Enchantment(spellFactory.getSpell(id), mana, uid);
     enchantment.setModifier(modifier);
     item.setMagicComponent(enchantment);
   }
@@ -183,7 +192,7 @@ public class ItemSerializer {
     lock.setState(input.readInt());
     String id = input.readUTF();
     if (!id.isEmpty()) {
-      lock.setKey((RItem) Engine.getResources().getResource(id));
+      lock.setKey((RItem) gameStores.getResources().getResource(id));
     }
   }
 

@@ -25,7 +25,7 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Armor;
 import neon.entities.Creature;
 import neon.entities.Item;
@@ -39,11 +39,11 @@ public class RepairDialog implements KeyListener {
   private JList<Item> items;
   private ArrayList<Item> listData;
   private UserInterface ui;
-  private final GameContext context;
+  private final GameStores gameStores;
 
-  public RepairDialog(UserInterface ui, GameContext context) {
+  public RepairDialog(UserInterface ui, GameStores gameStores) {
     this.ui = ui;
-    this.context = context;
+    this.gameStores = gameStores;
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -121,7 +121,7 @@ public class RepairDialog implements KeyListener {
   private void initItems() {
     listData = new ArrayList<Item>();
     for (long uid : player.getInventoryComponent()) {
-      Item item = (Item) context.getStore().getEntity(uid);
+      Item item = (Item) gameStores.getStore().getEntity(uid);
       if (item instanceof Weapon && ((Weapon) item).getState() < 100) {
         listData.add(item);
       } else if (item instanceof Armor && ((Armor) item).getState() < 100) {

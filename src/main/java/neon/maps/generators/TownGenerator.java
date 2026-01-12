@@ -22,13 +22,13 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import neon.entities.Door;
 import neon.entities.EntityFactory;
+import neon.entities.UIDStore;
 import neon.maps.MapUtils;
 import neon.maps.Region;
 import neon.maps.Zone;
-import neon.maps.services.EntityStore;
-import neon.maps.services.ResourceProvider;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
+import neon.resources.ResourceManager;
 
 /**
  * This class generates random towns.
@@ -37,10 +37,10 @@ import neon.resources.RTerrain;
  */
 public class TownGenerator {
   private final Zone zone;
-  private final EntityStore entityStore;
-  private final ResourceProvider resourceProvider;
+  private final UIDStore entityStore;
+  private final ResourceManager resourceProvider;
   private final MapUtils mapUtils;
-
+  private final EntityFactory entityFactory;
   /**
    * Creates a town generator with dependency injection. Uses default (non-deterministic) random
    * number generation.
@@ -49,8 +49,9 @@ public class TownGenerator {
    * @param entityStore the entity store service
    * @param resourceProvider the resource provider service
    */
-  public TownGenerator(Zone zone, EntityStore entityStore, ResourceProvider resourceProvider) {
+  public TownGenerator(Zone zone, UIDStore entityStore, ResourceManager resourceProvider) {
     this(zone, entityStore, resourceProvider, new MapUtils());
+
   }
 
   /**
@@ -61,14 +62,14 @@ public class TownGenerator {
    * @param entityStore the entity store service
    * @param resourceProvider the resource provider service
    * @param mapUtils the map utilities with configured random source
-   * @param dice the dice roller with configured random source
    */
   public TownGenerator(
-      Zone zone, EntityStore entityStore, ResourceProvider resourceProvider, MapUtils mapUtils) {
+      Zone zone, UIDStore entityStore, ResourceManager resourceProvider, MapUtils mapUtils) {
     this.zone = zone;
     this.entityStore = entityStore;
     this.resourceProvider = resourceProvider;
     this.mapUtils = mapUtils;
+    entityFactory = new EntityFactory(entityStore,resourceProvider);
   }
 
   /**
@@ -136,7 +137,7 @@ public class TownGenerator {
         };
 
     long uid = entityStore.createNewEntityUID();
-    Door door = (Door) EntityFactory.getItem(theme.door, x, y, uid);
+    Door door = (Door) entityFactory.getItem(theme.door, x, y, uid);
     entityStore.addEntity(door);
     door.lock.close();
     zone.addItem(door);

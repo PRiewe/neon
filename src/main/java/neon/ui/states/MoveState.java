@@ -25,6 +25,7 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.EventObject;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.core.event.TurnEvent;
@@ -46,12 +47,19 @@ public class MoveState extends State implements KeyListener {
   private CClient keys;
   private MBassador<EventObject> bus;
   private final GameContext context;
+  private final GameStores gameStores;
+  private final InventoryHandler inventoryHandler;
+  private final MotionHandler motionHandler;
 
-  public MoveState(State parent, MBassador<EventObject> bus, GameContext context) {
+  public MoveState(
+      State parent, MBassador<EventObject> bus, GameContext context, GameStores gameStores) {
     super(parent, "move module");
     this.bus = bus;
     this.context = context;
-    keys = (CClient) context.getResources().getResource("client", "config");
+    this.gameStores = gameStores;
+    keys = (CClient) gameStores.getResources().getResource("client", "config");
+    inventoryHandler = new InventoryHandler(gameStores.getStore());
+    motionHandler = new MotionHandler(context,gameStores);
   }
 
   @Override
@@ -81,11 +89,11 @@ public class MoveState extends State implements KeyListener {
         bus.publishAsync(new TransitionEvent("bump", "creature", other));
       }
     } else { // no one in the way, so move
-      if (MotionHandler.move(player, p) == MotionHandler.DOOR) {
+      if (motionHandler.move(player, p) == MotionHandler.DOOR) {
         for (long uid : context.getAtlasPosition().getCurrentZone().getItems(p)) {
-          if (context.getStore().getEntity(uid) instanceof Door) {
+          if (gameStores.getStore().getEntity(uid) instanceof Door) {
             bus.publishAsync(
-                new TransitionEvent("door", "door", context.getStore().getEntity(uid)));
+                new TransitionEvent("door", "door", gameStores.getStore().getEntity(uid)));
           }
         }
       }
@@ -107,7 +115,7 @@ public class MoveState extends State implements KeyListener {
     }
 
     if (items.size() == 1) {
-      Entity entity = context.getStore().getEntity(items.get(0));
+      Entity entity = gameStores.getStore().getEntity(items.get(0));
       if (entity instanceof Container) {
         Container container = (Container) entity;
         if (container.lock.isLocked()) {
@@ -120,14 +128,14 @@ public class MoveState extends State implements KeyListener {
           bus.publishAsync(new TransitionEvent("container", "holder", entity));
         }
       } else if (entity instanceof Door) {
-        if (MotionHandler.teleport(player, (Door) entity) == MotionHandler.OK) {
+        if (motionHandler.teleport(player, (Door) entity) == MotionHandler.OK) {
           bus.publishAsync(new TurnEvent(context.getTimer().addTick()));
         }
       } else if (entity instanceof Creature) {
         bus.publishAsync(new TransitionEvent("container", "holder", entity));
       } else {
         context.getAtlasPosition().getCurrentZone().removeItem((Item) entity);
-        InventoryHandler.addItem(player, entity.getUID());
+        inventoryHandler.addItem(player, entity.getUID());
       }
     } else if (items.size() > 1) {
       bus.publishAsync(
@@ -186,7 +194,7 @@ public class MoveState extends State implements KeyListener {
         }
       } else if (player.getInventoryComponent().hasEquiped(Slot.MAGIC)) {
         Item item =
-            (Item) context.getStore().getEntity(player.getInventoryComponent().get(Slot.MAGIC));
+            (Item) gameStores.getStore().getEntity(player.getInventoryComponent().get(Slot.MAGIC));
         if (item.getMagicComponent().getSpell().range > 0) {
           bus.publishAsync(new TransitionEvent("aim"));
         } else {
@@ -198,7 +206,7 @@ public class MoveState extends State implements KeyListener {
 
   private boolean hasItem(Creature creature, RItem item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (context.getStore().getEntity(uid).getID().equals(item.id)) {
+      if (gameStores.getStore().getEntity(uid).getID().equals(item.id)) {
         return true;
       }
     }

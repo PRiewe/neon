@@ -24,6 +24,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.handlers.CombatUtils;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Player;
@@ -53,18 +54,27 @@ public class JournalState extends State implements FocusListener {
   private JPanel stats, stuff, skills;
   private JPanel feats, traits, abilities;
   private JScrollPane skillScroller, featScroller, traitScroller, abilityScroller;
-
+  private final GameStores gameStores;
+  private final InventoryHandler inventoryHandler;
+  private final CombatUtils combatUtils;
   // spells panel
   private JList<RSpell> sList;
 
   public JournalState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(parent);
+
     this.bus = bus;
     this.ui = ui;
     this.context = context;
+    this.gameStores = gameStores;
     main = new JPanel(new BorderLayout());
-
+    inventoryHandler = new InventoryHandler(gameStores.getStore());
+    combatUtils = new CombatUtils(gameStores.getStore());
     // cardlayout om verschillende panels weer te geven.
     layout = new CardLayout();
     cards = new JPanel(layout);
@@ -221,7 +231,7 @@ public class JournalState extends State implements FocusListener {
     stuff.add(
         new JLabel(
             "Encumbrance: "
-                + InventoryHandler.getWeight(player)
+                + inventoryHandler.getWeight(player)
                 + " (of "
                 + light
                 + "/"
@@ -229,7 +239,7 @@ public class JournalState extends State implements FocusListener {
                 + "/"
                 + heavy
                 + ") kg"));
-    stuff.add(new JLabel("Defense value: " + CombatUtils.getDV(player)));
+    stuff.add(new JLabel("Defense value: " + combatUtils.getDV(player)));
     stuff.add(new JLabel("Attack value: " + player.getAVString()));
 
     for (Skill skill : Skill.values()) {

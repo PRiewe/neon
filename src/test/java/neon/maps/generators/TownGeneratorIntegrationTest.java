@@ -6,11 +6,12 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import neon.entities.UIDStore;
 import neon.maps.Atlas;
 import neon.maps.MapUtils;
 import neon.maps.Region;
 import neon.maps.Zone;
-import neon.maps.services.EntityStore;
 import neon.resources.RRegionTheme;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
@@ -111,7 +112,7 @@ class TownGeneratorIntegrationTest {
   class GenerateWithFullContextTests {
     private MapStore testDb;
     private Atlas testAtlas;
-    private EntityStore entityStore;
+    private UIDStore entityStore;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -119,7 +120,7 @@ class TownGeneratorIntegrationTest {
       TestEngineContext.initialize(testDb);
       TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
       testAtlas = TestEngineContext.getTestAtlas();
-      entityStore = TestEngineContext.getTestEntityStore();
+      entityStore = TestEngineContext.getTestEntityStore()
     }
 
     @AfterEach

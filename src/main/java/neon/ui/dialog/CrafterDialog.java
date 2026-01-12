@@ -28,6 +28,7 @@ import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.event.StoreEvent;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
@@ -47,11 +48,21 @@ public class CrafterDialog implements KeyListener {
   private MBassador<EventObject> bus;
   private UserInterface ui;
   private final GameContext context;
+  private final GameStores gameStores;
+  private final InventoryHandler inventoryHandler;
+  private final EntityFactory entityFactory;
 
   public CrafterDialog(
-      UserInterface ui, String coin, MBassador<EventObject> bus, GameContext context) {
+      UserInterface ui,
+      String coin,
+      MBassador<EventObject> bus,
+      GameContext context,
+      GameStores gameStores) {
     this.ui = ui;
     this.context = context;
+    this.gameStores = gameStores;
+    inventoryHandler = new InventoryHandler(gameStores.getStore());
+    entityFactory = new EntityFactory(gameStores.getStore(), gameStores.getResources());
     JFrame parent = ui.getWindow();
     this.coin = coin;
     this.bus = bus;
@@ -120,11 +131,12 @@ public class CrafterDialog implements KeyListener {
           RCraft craft = items.getSelectedValue();
           if (player.getInventoryComponent().getMoney() >= craft.cost) {
             Collection<Long> removed =
-                InventoryHandler.removeItems(player, craft.raw, craft.amount);
+                inventoryHandler.removeItems(player, craft.raw, craft.amount);
             for (long uid : removed) { // remove used items
               bus.publishAsync(new StoreEvent(this, uid));
             }
-            Item item = EntityFactory.getItem(craft.name, context.getStore().createNewEntityUID());
+            Item item =
+                entityFactory.getItem(craft.name, gameStores.getStore().createNewEntityUID());
             bus.publishAsync(new StoreEvent(this, item));
             player.getInventoryComponent().addItem(item.getUID());
             player.getInventoryComponent().addMoney(-craft.cost);
@@ -142,8 +154,8 @@ public class CrafterDialog implements KeyListener {
 
   private void initItems() {
     DefaultListModel<RCraft> model = new DefaultListModel<RCraft>();
-    for (RCraft thing : context.getResources().getResources(RCraft.class)) {
-      if (InventoryHandler.getAmount(player, thing.raw) >= thing.amount) {
+    for (RCraft thing : gameStores.getResources().getResources(RCraft.class)) {
+      if (inventoryHandler.getAmount(player, thing.raw) >= thing.amount) {
         model.addElement(thing);
       }
     }

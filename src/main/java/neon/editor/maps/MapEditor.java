@@ -33,6 +33,7 @@ import neon.editor.resources.IRegion;
 import neon.editor.resources.Instance;
 import neon.editor.resources.RMap;
 import neon.editor.resources.RZone;
+import neon.resources.ResourceManager;
 
 public class MapEditor {
   private static String terrain;
@@ -47,9 +48,10 @@ public class MapEditor {
   private JTabbedPane tabs;
   private JCheckBox levelBox;
   private JSpinner levelSpinner;
-
-  public MapEditor(JTabbedPane tabs, JPanel panel) {
-    activeMaps = new HashSet<RMap>();
+  private final ResourceManager resourceManager;
+  public MapEditor(JTabbedPane tabs, JPanel panel, ResourceManager resourceManager) {
+      this.resourceManager = resourceManager;
+      activeMaps = new HashSet<RMap>();
     mapUIDs = new HashMap<String, Short>();
     this.tabs = tabs;
 
@@ -135,14 +137,14 @@ public class MapEditor {
   public void deleteMap(String id) {
     // TODO: activeMaps is <RMap>, not <String>!
     activeMaps.remove(id);
-    Editor.resources.removeResource(id);
+    resourceManager.removeResource(id);
   }
 
   public void makeMap(MapDialog.Properties props) {
     if (!props.cancelled()) {
       // editableMap maken
       short uid = createNewUID();
-      RMap map = new RMap(uid, Editor.getStore().getActive().get("id"), props);
+      RMap map = new RMap(uid, Editor.getStore().getActive().get("id"), props,resourceManager);
       activeMaps.add(map);
       // en node maken
       DefaultTreeModel model = (DefaultTreeModel) mapTree.getModel();
@@ -153,7 +155,7 @@ public class MapEditor {
       }
       model.insertNodeInto(node, root, root.getChildCount());
       mapTree.expandPath(new TreePath(root));
-      Editor.resources.addResource(map, "maps");
+      resourceManager.addResource(map, "maps");
     }
   }
 

@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collection;
+
+import lombok.Getter;
+import lombok.Setter;
 import neon.resources.RZoneTheme;
 import neon.util.Graph;
 
@@ -31,19 +34,22 @@ import neon.util.Graph;
  * @author mdriesen
  */
 public class Dungeon implements Map {
+  @Setter
+  @Getter
   private String name;
   private int uid;
   private Graph<Zone> zones = new Graph<Zone>();
-
+  private ZoneFactory zoneFactory;
   /**
    * Initialize a dungeon.
    *
    * @param name the name of this dungeon
    * @param uid the unique identifier of this dungeon
    */
-  public Dungeon(String name, int uid) {
+  public Dungeon(String name, int uid,ZoneFactory zoneFactory) {
     this.name = name;
     this.uid = uid;
+    this.zoneFactory = zoneFactory;
   }
 
   public Dungeon() {}
@@ -56,22 +62,14 @@ public class Dungeon implements Map {
     return uid;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  /** Adds an empty zone to this dungeon. */
+    /** Adds an empty zone to this dungeon. */
   public void addZone(int zone, String name) {
-    zones.addNode(zone, new Zone(name, uid, zone));
+    zones.addNode(zone, zoneFactory.createZone(name, uid, zone));
   }
 
   /** Adds an empty zone to this dungeon. */
   public void addZone(int zone, String name, RZoneTheme theme) {
-    zones.addNode(zone, new Zone(name, uid, theme, zone));
+    zones.addNode(zone, zoneFactory.createZoneWithTheme(name, uid, zone, theme));
   }
 
   public Collection<Zone> getZones() {

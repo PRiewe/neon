@@ -29,8 +29,6 @@ import neon.core.handlers.DeathHandler;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MagicHandler;
 import neon.entities.Player;
-import neon.entities.UIDStore;
-import neon.maps.Atlas;
 import neon.maps.AtlasPosition;
 import neon.maps.services.EnginePhysicsManager;
 import neon.maps.services.PhysicsManager;
@@ -72,7 +70,7 @@ public class Engine implements Runnable {
 
   private static TaskQueue queue;
   private final Configuration config;
-
+  private static GameStores gameStores;
   // set externally
   private static Game game;
 
@@ -102,26 +100,28 @@ public class Engine implements Runnable {
             .build();
 
     files = new FileSystem();
+    resources = new ResourceManager();
+    gameStores = new DefaultGameStores(resources, files);
     physics = new PhysicsSystem();
     physicsManager = new EnginePhysicsManager(physics);
     queue = new TaskQueue();
 
     // create a resourcemanager to keep track of all the resources
-    resources = new ResourceManager();
+
     // we use an IniBuilder to add all resources to the manager
     new IniBuilder("neon.ini.xml", files, queue).build(resources);
 
     // set up remaining engine components
-    quests = new QuestTracker();
+    quests = new QuestTracker(gameStores);
     config = new Configuration(resources);
 
     // Initialize the GameContext with all engine systems
-    context.setResources(resources);
+
     context.setQuestTracker(quests);
     context.setPhysicsEngine(physics);
     context.setScriptEngine(engine);
     context.setBus(bus);
-    context.setFileSystem(files);
+
     context.setQueue(queue);
     context.setEngine(this);
   }
@@ -130,13 +130,13 @@ public class Engine implements Runnable {
   public void run() {
     EventAdapter adapter = new EventAdapter(quests);
     bus.subscribe(queue);
-    bus.subscribe(new CombatHandler());
-    bus.subscribe(new DeathHandler());
-    bus.subscribe(new InventoryHandler());
+    bus.subscribe(new CombatHandler(gameStores));
+    bus.subscribe(new DeathHandler(gameStores.getResources()));
+    bus.subscribe(new InventoryHandler(gameStores.getStore()));
     bus.subscribe(adapter);
     bus.subscribe(quests);
-    bus.subscribe(new GameLoader(context, config));
-    bus.subscribe(new GameSaver(queue));
+    bus.subscribe(new GameLoader(context, gameStores, config));
+    bus.subscribe(new GameSaver(queue,gameStores));
   }
 
   /**
@@ -237,33 +237,6 @@ public class Engine implements Runnable {
     return engine;
   }
 
-  /**
-   * @return the entity store
-   * @deprecated Use {@link GameContext#getStore()} instead
-   */
-  @Deprecated
-  public static UIDStore getStore() {
-    return game.getStore();
-  }
-
-  /**
-   * @return the resource manager
-   * @deprecated Use {@link GameContext#getResources()} instead
-   */
-  @Deprecated
-  public static ResourceManager getResources() {
-    return resources;
-  }
-
-  /**
-   * @return the atlas
-   * @deprecated Use {@link GameContext#getAtlas()} instead
-   */
-  @Deprecated
-  public static Atlas getAtlas() {
-    return game.getAtlas();
-  }
-
   @Deprecated
   public static AtlasPosition getAtlasPosition() {
     return game.getAtlasPosition();
@@ -283,14 +256,8 @@ public class Engine implements Runnable {
     return context;
   }
 
-  /**
-   * Returns the static GameContext instance. This is a transitional method to allow gradual
-   * migration from static accessors.
-   *
-   * @return the game context
-   */
-  public static GameContext getStaticContext() {
-    return context;
+  public GameStores getGameStores() {
+    return gameStores;
   }
 
   /** Starts a new game. */
@@ -300,7 +267,7 @@ public class Engine implements Runnable {
     context.setGame(game);
 
     // set up missing systems
-    bus.subscribe(new MagicHandler(queue, game));
+    bus.subscribe(new MagicHandler(queue, gameStores, context));
 
     // register player
     Player player = game.getPlayer();

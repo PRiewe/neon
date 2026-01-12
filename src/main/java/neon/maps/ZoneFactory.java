@@ -18,8 +18,11 @@
 
 package neon.maps;
 
+import neon.entities.UIDStore;
 import neon.resources.RZoneTheme;
+import neon.resources.ResourceManager;
 import neon.util.mapstorage.MapStore;
+import neon.util.spatial.RTree;
 
 /**
  * Factory for creating Zone instances with proper dependency injection. Eliminates the constructor
@@ -29,38 +32,28 @@ import neon.util.mapstorage.MapStore;
  */
 public class ZoneFactory {
   private final MapStore cache;
-
+  private final UIDStore uidStore;
+  private final ResourceManager resourceManager;
   /**
    * Creates a new ZoneFactory with the given cache database.
    *
    * @param cache the MapDB cache database for spatial indices
    */
-  public ZoneFactory(MapStore cache) {
+  public ZoneFactory(MapStore cache, UIDStore uidStore, ResourceManager resourceManager) {
     this.cache = cache;
+      this.uidStore = uidStore;
+      this.resourceManager = resourceManager;
+
   }
 
-  /**
-   * Creates a new zone with the given parameters.
-   *
-   * @param name the zone name
-   * @param mapUID the UID of the map containing this zone
-   * @param index the zone index within its map
-   * @return a new Zone instance
-   */
-  public Zone createZone(String name, int mapUID, int index) {
-    return Zone.create(name, mapUID, index, cache);
+  public Zone createZone(String name, int map, int index) {
+    RTree<Region> regions = new RTree<>(100, 40, cache, map + ":" + index);
+    return new Zone(name,map,index,uidStore,resourceManager,regions);
   }
 
-  /**
-   * Creates a new zone with a theme for random generation.
-   *
-   * @param name the zone name
-   * @param mapUID the UID of the map containing this zone
-   * @param theme the zone theme for random generation
-   * @param index the zone index within its map
-   * @return a new Zone instance with a theme
-   */
-  public Zone createZone(String name, int mapUID, RZoneTheme theme, int index) {
-    return Zone.create(name, mapUID, theme, index, cache);
+  public Zone createZoneWithTheme(String name, int map, int index, RZoneTheme theme) {
+    RTree<Region> regions = new RTree<>(100, 40, cache, map + ":" + index);
+    return new Zone(name,map,theme,index,uidStore,resourceManager,regions);
   }
+
 }

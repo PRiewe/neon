@@ -1,17 +1,17 @@
 package neon.test;
 
 import java.awt.Rectangle;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import neon.core.DefaultGameStores;
 import neon.core.Engine;
 import neon.core.Game;
+import neon.core.GameStores;
 import neon.core.event.TaskQueue;
 import neon.entities.Entity;
 import neon.entities.Player;
-import neon.entities.UIDStore;
 import neon.entities.components.PhysicsComponent;
 import neon.entities.property.Gender;
 import neon.maps.*;
@@ -23,9 +23,6 @@ import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import neon.util.mapstorage.MapStore;
 import org.h2.mvstore.MVStore;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
 
 /**
  * Test utility for managing Engine singleton dependencies in tests.
@@ -40,19 +37,18 @@ public class TestEngineContext {
 
   /** -- GETTER -- Gets the test Atlas instance. */
   @Getter private static Atlas testAtlas;
-
+@Getter
+  private static GameStores gameStores;
+  @Getter
   private static StubResourceManager testResources;
   private static Game testGame;
-  private static UIDStore testStore;
+  @Getter private static neon.entities.UIDStore testStore;
   @Getter private static PhysicsManager stubPhysicsManager;
 
   @Getter private static AtlasPosition atlasPosition;
 
   /** -- GETTER -- Gets the test ZoneFactory instance. */
   @Getter private static ZoneFactory testZoneFactory;
-
-  /** -- GETTER -- Gets the test ResourceProvider instance. */
-  @Getter private static EntityStore testEntityStore;
 
   @Getter private static ZoneActivator testZoneActivator;
   @Getter private static PhysicsSystem physicsSystem;
@@ -96,10 +92,10 @@ public class TestEngineContext {
     setStaticField(Engine.class, "resources", testResources);
 
     // Create test UIDStore
-    testStore = new UIDStore(testDb);
-    questTracker = new QuestTracker();
+    testStore = new neon.entities.UIDStore(testDb);
+
     // Create test EntityStore
-    testEntityStore = new StubEntityStore(testStore);
+
 
     // Create stub PhysicsManager and ZoneActivator
     stubPhysicsManager = new StubPhysicsManager();
@@ -108,15 +104,18 @@ public class TestEngineContext {
 
     // Create ZoneFactory for tests
     testZoneFactory = new ZoneFactory(db);
-    mapLoader = new MapLoader(testEntityStore, testResources, getStubFileSystem());
+    mapLoader = new MapLoader( getStubFileSystem(),testStore, testResources);
     // Create test Atlas with dependency injection (doesn't need Engine.game)
-    testAtlas = new Atlas(getStubFileSystem(), testDb, getTestEntityStore(), mapLoader);
+    testAtlas = new Atlas(getStubFileSystem(), testDb, testStore, mapLoader);
+    gameStores =
+        new DefaultGameStores(getTestResources(), getStubFileSystem(), testStore, testAtlas);
+    questTracker = new QuestTracker(gameStores);
     atlasPosition =
         new AtlasPosition(
-            testAtlas, testZoneActivator, testResources, questTracker, testEntityStore);
+            testAtlas, testZoneActivator, testResources, questTracker, testStore);
     // Create test Game using new DI constructor
 
-    testGame = new Game(stubPlayer, testAtlas, testStore, atlasPosition);
+    testGame = new Game(stubPlayer, gameStores, atlasPosition);
     setStaticField(Engine.class, "game", testGame);
 
     // Create stub FileSystem
@@ -127,8 +126,7 @@ public class TestEngineContext {
 
     // Create and initialize test GameContext
     testContext = new neon.core.DefaultGameContext();
-    testContext.setResources(testResources);
-    testContext.setFileSystem(stubFileSystem);
+
     testContext.setPhysicsEngine(new StubPhysicsSystem());
     testContext.setQueue(new neon.core.event.TaskQueue());
     testContext.setGame(testGame);
@@ -185,81 +183,6 @@ public class TestEngineContext {
     iniBuilder.build(getTestResources());
   }
 
-  /**
-   * Loads test resources from a mod path following the same pattern as ModLoader.
-   *
-   * <p>Loads items, creatures, terrain, and themes from XML files in the specified path.
-   *
-   * @param modPath the path to the mod directory (e.g., "src/test/resources/sampleMod1")
-   */
-  public static void loadTestResources(String modPath) throws Exception {
-    SAXBuilder builder = new SAXBuilder();
-
-    // Load items
-    File itemsFile = new File(modPath + "/objects/items.xml");
-    if (itemsFile.exists()) {
-      Document doc = builder.build(itemsFile);
-      for (Element e : doc.getRootElement().getChildren()) {
-        switch (e.getName()) {
-          case "book", "scroll" -> Engine.getResources().addResource(new RItem.Text(e));
-          case "weapon" -> Engine.getResources().addResource(new RWeapon(e));
-          case "door" -> Engine.getResources().addResource(new RItem.Door(e));
-          case "potion" -> Engine.getResources().addResource(new RItem.Potion(e));
-          case "container" -> Engine.getResources().addResource(new RItem.Container(e));
-          case "armor", "clothing" -> Engine.getResources().addResource(new RClothing(e));
-          case "list" -> Engine.getResources().addResource(new LItem(e));
-          default -> Engine.getResources().addResource(new RItem(e));
-        }
-      }
-    }
-
-    // Load creatures
-    File monstersFile = new File(modPath + "/objects/monsters.xml");
-    if (monstersFile.exists()) {
-      Document doc = builder.build(monstersFile);
-      for (Element c : doc.getRootElement().getChildren()) {
-        switch (c.getName()) {
-          case "list" -> Engine.getResources().addResource(new LCreature(c));
-          default -> Engine.getResources().addResource(new RCreature(c));
-        }
-      }
-    }
-
-    // Load terrain
-    File terrainFile = new File(modPath + "/terrain.xml");
-    if (terrainFile.exists()) {
-      Document doc = builder.build(terrainFile);
-      for (Element e : doc.getRootElement().getChildren()) {
-        Engine.getResources().addResource(new RTerrain(e), "terrain");
-      }
-    }
-
-    // Load themes
-    File dungeonsFile = new File(modPath + "/themes/dungeons.xml");
-    if (dungeonsFile.exists()) {
-      Document doc = builder.build(dungeonsFile);
-      for (Element theme : doc.getRootElement().getChildren("dungeon")) {
-        Engine.getResources().addResource(new RDungeonTheme(theme), "theme");
-      }
-    }
-
-    File zonesFile = new File(modPath + "/themes/zones.xml");
-    if (zonesFile.exists()) {
-      Document doc = builder.build(zonesFile);
-      for (Element theme : doc.getRootElement().getChildren("zone")) {
-        Engine.getResources().addResource(new RZoneTheme(theme), "theme");
-      }
-    }
-
-    File regionsFile = new File(modPath + "/themes/regions.xml");
-    if (regionsFile.exists()) {
-      Document doc = builder.build(regionsFile);
-      for (Element theme : doc.getRootElement().getChildren("region")) {
-        Engine.getResources().addResource(new RRegionTheme(theme), "theme");
-      }
-    }
-  }
-
   /** Sets a static field using reflection. */
   private static void setStaticField(Class<?> clazz, String fieldName, Object value)
       throws Exception {
@@ -301,9 +224,9 @@ public class TestEngineContext {
 
   /** Stub EntityStore for testing. */
   static class StubEntityStore implements EntityStore {
-    private final UIDStore store;
+    private final neon.entities.UIDStore store;
 
-    public StubEntityStore(UIDStore store) {
+    public StubEntityStore(neon.entities.UIDStore store) {
       this.store = store;
     }
 
@@ -356,7 +279,7 @@ public class TestEngineContext {
     private final PhysicsComponent physicsComponent;
 
     public StubPlayer() {
-      super(new RCreature("test"), "TestPlayer", Gender.MALE, Specialisation.combat, "Warrior");
+      super(new RCreature("test"), "TestPlayer", Gender.MALE, Specialisation.combat, "Warrior",getGameStores());
       this.physicsComponent = new PhysicsComponent(0L, new Rectangle(0, 0, 1, 1));
     }
 

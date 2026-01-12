@@ -29,6 +29,7 @@ import javax.swing.border.*;
 import javax.swing.text.DefaultCaret;
 import lombok.Getter;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.handlers.CombatUtils;
 import neon.entities.Player;
 import neon.entities.components.HealthComponent;
@@ -55,15 +56,16 @@ public class GamePanel extends JComponent {
   private TitledBorder sBorder, aBorder, cBorder;
   private JVectorPane drawing;
   @Getter private final GameContext context;
-
+ private final CombatUtils combatUtils;
   // components of the stats panel
   private JLabel intLabel, conLabel, dexLabel, strLabel, wisLabel, chaLabel;
   private JLabel healthLabel, magicLabel, AVLabel, DVLabel;
 
   /** Initializes this GamePanel. */
-  public GamePanel(GameContext context) {
+  public GamePanel(GameContext context, CombatUtils combatUtils) {
     this.context = context;
-    drawing = new JVectorPane();
+      this.combatUtils = combatUtils;
+      drawing = new JVectorPane();
     drawing.setFilter(new LightFilter());
 
     // stats field (hacky way to make it semi-transparent)
@@ -239,7 +241,7 @@ public class GamePanel extends JComponent {
               + (int) (player.species.mana * player.species.iq));
     }
     AVLabel.setText("AV: " + player.getAVString());
-    DVLabel.setText("DV: " + CombatUtils.getDV(player));
+    DVLabel.setText("DV: " + combatUtils.getDV(player));
 
     Stats stats = player.getStatsComponent();
     if (stats.getStr() > (int) player.species.str) {

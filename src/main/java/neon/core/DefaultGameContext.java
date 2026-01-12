@@ -22,13 +22,9 @@ import java.util.EventObject;
 import lombok.Setter;
 import neon.core.event.TaskQueue;
 import neon.entities.Player;
-import neon.entities.UIDStore;
-import neon.maps.Atlas;
 import neon.maps.AtlasPosition;
 import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;
-import neon.resources.ResourceManager;
-import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
 import net.engio.mbassy.bus.MBassador;
@@ -47,13 +43,12 @@ import org.graalvm.polyglot.Context;
 public class DefaultGameContext implements GameContext {
 
   // Engine-level systems (set during engine initialization)
-  @Setter private ResourceManager resources;
   @Setter private QuestTracker questTracker;
   @Setter private PhysicsSystem physicsEngine;
   @Setter private PhysicsManager physicsManager;
   @Setter private Context scriptEngine;
   @Setter private MBassador<EventObject> bus;
-  @Setter private FileSystem fileSystem;
+  @Setter private GameStores gamesStores;
   @Setter private TaskQueue queue;
   @Setter private Engine engine;
 
@@ -66,28 +61,13 @@ public class DefaultGameContext implements GameContext {
   }
 
   @Override
-  public Atlas getAtlas() {
-    return game != null ? game.getAtlas() : null;
-  }
-
-  @Override
   public AtlasPosition getAtlasPosition() {
     return game != null ? game.getAtlasPosition() : null;
   }
 
   @Override
-  public UIDStore getStore() {
-    return game != null ? game.getStore() : null;
-  }
-
-  @Override
   public Timer getTimer() {
     return game != null ? game.getTimer() : null;
-  }
-
-  @Override
-  public ResourceManager getResources() {
-    return resources;
   }
 
   @Override
@@ -128,11 +108,6 @@ public class DefaultGameContext implements GameContext {
   @Override
   public void post(EventObject event) {
     bus.publishAsync(event);
-  }
-
-  @Override
-  public FileSystem getFileSystem() {
-    return fileSystem;
   }
 
   @Override

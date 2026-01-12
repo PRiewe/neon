@@ -24,6 +24,7 @@ import neon.core.event.DeathEvent;
 import neon.entities.Creature;
 import neon.entities.components.ScriptComponent;
 import neon.resources.RScript;
+import neon.resources.ResourceManager;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
@@ -36,7 +37,11 @@ import org.graalvm.polyglot.Value;
 @Listener(references = References.Strong) // strong, om gc te vermijden
 @Slf4j
 public class DeathHandler {
-  public DeathHandler() {}
+  private final ResourceManager resourceManager;
+
+  public DeathHandler(ResourceManager resourceManager) {
+    this.resourceManager = resourceManager;
+  }
 
   @Handler
   public void handle(DeathEvent de) {
@@ -50,7 +55,7 @@ public class DeathHandler {
     ScriptComponent sc = creature.getScriptComponent();
 
     for (String s : sc.getScripts()) {
-      RScript rs = (RScript) Engine.getResources().getResource(s, "script");
+      RScript rs = (RScript) resourceManager.getResource(s, "script");
       Context se = Engine.getScriptEngine();
 
       se.eval("js", rs.script);

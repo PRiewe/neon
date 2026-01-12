@@ -26,6 +26,7 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Item;
 import neon.entities.Player;
 import neon.entities.components.Enchantment;
@@ -38,6 +39,7 @@ public class ChargeDialog implements KeyListener {
   private JScrollPane scroller;
   private UserInterface ui;
   private final GameContext context;
+  private final GameStores gameStores;
 
   public ChargeDialog(UserInterface ui, GameContext context) {
     this.ui = ui;
@@ -116,7 +118,7 @@ public class ChargeDialog implements KeyListener {
   private void initItems() {
     Vector<Item> listData = new Vector<Item>();
     for (long uid : player.getInventoryComponent()) {
-      Item item = (Item) context.getStore().getEntity(uid);
+      Item item = (Item) gameStores.getStore().getEntity(uid);
       Enchantment enchantment = item.getMagicComponent();
       if (enchantment != null && enchantment.getMana() < enchantment.getBaseMana()) {
         listData.add(item);

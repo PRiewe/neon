@@ -29,6 +29,7 @@ import javax.swing.border.*;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.model.NeonConfig;
 import neon.resources.CClient;
 import neon.systems.files.JacksonMapper;
@@ -40,10 +41,12 @@ public class OptionDialog {
   private ButtonGroup group;
   private JDialog frame;
   private final GameContext context;
+  private final GameStores gameStores;
 
-  public OptionDialog(JFrame parent, GameContext context) {
+  public OptionDialog(JFrame parent, GameContext context, GameStores gameStores) {
     this.context = context;
     frame = new JDialog(parent, false);
+    this.gameStores = gameStores;
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
     frame.setUndecorated(true);
     frame.setTitle("Options");
@@ -141,7 +144,7 @@ public class OptionDialog {
   }
 
   public void show() {
-    CClient keys = (CClient) context.getResources().getResource("client", "config");
+    CClient keys = (CClient) gameStores.getResources().getResource("client", "config");
 
     switch (keys.getSettings()) {
       case CClient.AZERTY:
@@ -206,7 +209,7 @@ public class OptionDialog {
       Configuration.audio = audioBox.isSelected();
 
       // Update keyboard layout
-      CClient keys = (CClient) context.getResources().getResource("client", "config");
+      CClient keys = (CClient) gameStores.getResources().getResource("client", "config");
       if (group.isSelected(numpad.getModel())) {
         keys.setKeys(CClient.NUMPAD);
         config.keys = "numpad";

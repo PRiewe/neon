@@ -26,6 +26,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MagicHandler;
 import neon.core.handlers.SkillHandler;
@@ -53,15 +54,24 @@ public class InventoryState extends State implements KeyListener, MouseListener 
   private MBassador<EventObject> bus;
   private UserInterface ui;
   private final GameContext context;
+  private final GameStores gameStores;
+  private final MagicHandler magicHandler;
+  private final InventoryHandler inventoryHandler;
 
   public InventoryState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(parent, "inventory module");
     this.bus = bus;
     this.ui = ui;
     this.context = context;
+    this.gameStores = gameStores;
     panel = new JPanel(new BorderLayout());
-
+    magicHandler = new MagicHandler(context.getQueue(), gameStores, context);
+    inventoryHandler = new InventoryHandler(gameStores.getStore());
     // info
     info = new JLabel();
     info.setBorder(
@@ -82,7 +92,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     scroller.setBorder(new TitledBorder("Inventory"));
     contents.add(scroller);
 
-    CClient ini = (CClient) context.getResources().getResource("client", "config");
+    CClient ini = (CClient) gameStores.getResources().getResource("client", "config");
     description = new DescriptionPanel(ini.getSmall());
     contents.add(description);
 
@@ -111,29 +121,29 @@ public class InventoryState extends State implements KeyListener, MouseListener 
   private void use(Item item) {
     //		System.out.println(item.getClass());
     if (item instanceof Item.Potion) {
-      InventoryHandler.removeItem(player, item.getUID());
-      MagicHandler.drink(player, (Item.Potion) item);
+      inventoryHandler.removeItem(player, item.getUID());
+      magicHandler.drink(player, (Item.Potion) item);
       initList();
     } else if (item instanceof Item.Book && !(item instanceof Item.Scroll)) {
       RText text =
           (RText)
-              context
+              gameStores
                   .getResources()
                   .getResource(((RItem.Text) item.resource).content + ".html", "text");
       new BookDialog(ui.getWindow()).show(item.toString(), text.getText());
     } else if (item instanceof Item.Food) {
-      InventoryHandler.removeItem(player, item.getUID());
-      MagicHandler.eat(player, (Item.Food) item);
+      inventoryHandler.removeItem(player, item.getUID());
+      magicHandler.eat(player, (Item.Food) item);
       initList();
     } else if (item instanceof Item.Aid) {
-      InventoryHandler.removeItem(player, item.getUID());
+      inventoryHandler.removeItem(player, item.getUID());
       initList();
       HealthComponent health = player.getHealthComponent();
       health.heal(SkillHandler.check(player, Skill.MEDICAL) / 5f);
     } else if (!player.getInventoryComponent().hasEquiped(item.getUID())) {
-      InventoryHandler.equip(item, player);
+      inventoryHandler.equip(item, player);
     } else {
-      InventoryHandler.unequip(item.getUID(), player);
+      inventoryHandler.unequip(item.getUID(), player);
     }
     inventory.repaint();
   }
@@ -143,7 +153,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     listData.clear();
 
     for (long uid : context.getPlayer().getInventoryComponent()) {
-      Item i = (Item) context.getStore().getEntity(uid);
+      Item i = (Item) gameStores.getStore().getEntity(uid);
       if (!listData.containsKey(i.getID())) {
         listData.put(i.getID(), 1);
         buffer.add(i);
@@ -154,7 +164,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
 
     info.setText(
         "Weight: "
-            + InventoryHandler.getWeight(player)
+            + inventoryHandler.getWeight(player)
             + " kg. Money: "
             + moneyString(player.getInventoryComponent().getMoney())
             + ".");
@@ -167,7 +177,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     } else {
       int gold = money / 100;
       int copper = money % 100;
-      CClient ini = (CClient) context.getResources().getResource("client", "config");
+      CClient ini = (CClient) gameStores.getResources().getResource("client", "config");
       return gold + " " + ini.getBig() + " and " + copper + " " + ini.getSmall();
     }
   }
@@ -200,7 +210,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
       case KeyEvent.VK_SPACE:
         if (inventory.getSelectedValue() != null) {
           Item item = inventory.getSelectedValue();
-          InventoryHandler.removeItem(player, item.getUID());
+          inventoryHandler.removeItem(player, item.getUID());
           Rectangle pBounds = player.getShapeComponent();
           Rectangle iBounds = item.getShapeComponent();
           iBounds.setLocation(pBounds.x, pBounds.y);

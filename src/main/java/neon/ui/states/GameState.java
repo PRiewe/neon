@@ -24,8 +24,10 @@ import java.util.EventObject;
 import java.util.Scanner;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.ScriptInterface;
 import neon.core.event.*;
+import neon.core.handlers.CombatUtils;
 import neon.core.handlers.TurnHandler;
 import neon.entities.Player;
 import neon.entities.components.HealthComponent;
@@ -48,20 +50,26 @@ public class GameState extends State implements KeyListener, CollisionListener {
   private MBassador<EventObject> bus;
   private UserInterface ui;
   private final GameContext context;
+  private final GameStores gameStores;
 
   public GameState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(parent, "game module");
     this.bus = bus;
     this.ui = ui;
     this.context = context;
-    keys = (CClient) context.getResources().getResource("client", "config");
-    panel = new GamePanel(context);
+    keys = (CClient) gameStores.getResources().getResource("client", "config");
+    panel = new GamePanel(context,new CombatUtils(gameStores.getStore()));
+    this.gameStores = gameStores;
     setVariable("panel", panel);
 
     // makes functions available for scripting:
-    context.getScriptEngine().getBindings("js").putMember("engine", new ScriptInterface(panel));
-    bus.subscribe(new TurnHandler(panel));
+    context.getScriptEngine().getBindings("js").putMember("engine", new ScriptInterface(panel,gameStores.getStore(),context));
+    bus.subscribe(new TurnHandler(panel, gameStores));
   }
 
   @Override
@@ -162,12 +170,12 @@ public class GameState extends State implements KeyListener, CollisionListener {
     try {
       if (one.equals(0L) && two instanceof neon.maps.Region) {
         for (String s : ((neon.maps.Region) two).getScripts()) {
-          RScript rs = (RScript) context.getResources().getResource(s, "script");
+          RScript rs = (RScript) gameStores.getResources().getResource(s, "script");
           context.execute(rs.script);
         }
       } else if (one instanceof neon.maps.Region && two.equals(0L)) {
         for (String s : ((neon.maps.Region) one).getScripts()) {
-          RScript rs = (RScript) context.getResources().getResource(s, "script");
+          RScript rs = (RScript) gameStores.getResources().getResource(s, "script");
           context.execute(rs.script);
         }
       }

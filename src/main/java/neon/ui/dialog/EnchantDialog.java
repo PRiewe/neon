@@ -28,6 +28,7 @@ import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Clothing;
 import neon.entities.Creature;
 import neon.entities.Item;
@@ -47,10 +48,12 @@ public class EnchantDialog implements KeyListener, ListSelectionListener {
   private DefaultListModel<Effect> spellModel;
   private UserInterface ui;
   private final GameContext context;
+  private final GameStores gameStores;
 
-  public EnchantDialog(UserInterface ui, GameContext context) {
+  public EnchantDialog(UserInterface ui, GameContext context, GameStores gameStores) {
     this.ui = ui;
     this.context = context;
+    this.gameStores = gameStores;
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -110,7 +113,7 @@ public class EnchantDialog implements KeyListener, ListSelectionListener {
     spellModel.clear();
 
     for (Long uid : context.getPlayer().getInventoryComponent()) {
-      Item item = (Item) context.getStore().getEntity(uid);
+      Item item = (Item) gameStores.getStore().getEntity(uid);
       if ((item instanceof Weapon || item instanceof Clothing)
           && item.getMagicComponent() == null) {
         itemModel.addElement(item);

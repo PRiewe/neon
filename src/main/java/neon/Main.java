@@ -21,6 +21,7 @@ package neon;
 import java.io.IOException;
 import neon.core.Engine;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.systems.io.LocalPort;
 import neon.ui.Client;
 
@@ -48,7 +49,8 @@ public class Main {
     // create engine and ui
     Engine engine = new Engine(sPort);
     GameContext context = engine.getContext();
-    Client client = new Client(cPort, version, context);
+    GameStores gameStores = engine.getGameStores();
+    Client client = new Client(cPort, version, context, gameStores);
 
     // custom look and feels are sometimes stricter than normal ones, apparently
     // the main problem is that parts of the ui are created outside the swing thread.

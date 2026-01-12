@@ -32,6 +32,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Player;
 import neon.entities.components.HealthComponent;
@@ -77,14 +78,20 @@ public class DialogState extends State implements KeyListener {
   private UserInterface ui;
   private Topic topic;
   private final GameContext context;
+  private final GameStores gameStores;
 
   public DialogState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(parent);
     this.bus = bus;
     this.ui = ui;
     this.context = context;
-    CClient ini = (CClient) context.getResources().getResource("client", "config");
+    this.gameStores = gameStores;
+    CClient ini = (CClient) gameStores.getResources().getResource("client", "config");
     big = ini.getSmall();
     small = ini.getBig();
     panel = new JPanel(new BorderLayout());
@@ -206,29 +213,30 @@ public class DialogState extends State implements KeyListener {
         } else {
           String value = list.getSelectedValue().toString();
           if (value.equals("travel")) {
-            new TravelDialog(ui, bus, context).show(context.getPlayer(), target);
+            new TravelDialog(ui, bus, gameStores).show(context.getPlayer(), target);
           } else if (value.equals("training")) {
-            new TrainingDialog(ui, bus, context).show(context.getPlayer(), target);
+            new TrainingDialog(ui, bus, gameStores).show(context.getPlayer(), target);
           } else if (value.equals("spells")) {
             new SpellTradeDialog(ui, big, small).show(context.getPlayer(), target);
           } else if (value.equals("trade")) {
-            new TradeDialog(ui, big, small, context).show(context.getPlayer(), target);
+            new TradeDialog(ui, big, small, context, gameStores).show(context.getPlayer(), target);
           } else if (value.equals("spell maker")) {
             new SpellMakerDialog(ui).show(context.getPlayer(), target);
           } else if (value.equals("potion maker")) {
-            new PotionDialog(ui, small, context).show(context.getPlayer(), target);
+            new PotionDialog(ui, small, gameStores).show(context.getPlayer(), target);
           } else if (value.equals("healer")) {
             heal();
           } else if (value.equals("charge")) {
             new ChargeDialog(ui, context).show(context.getPlayer());
           } else if (value.equals("craft")) {
-            new CrafterDialog(ui, small, bus, context).show(context.getPlayer(), target);
+            new CrafterDialog(ui, small, bus, context, gameStores)
+                .show(context.getPlayer(), target);
           } else if (value.equals("enchant")) {
-            new EnchantDialog(ui, context).show(context.getPlayer(), target);
+            new EnchantDialog(ui, context, gameStores).show(context.getPlayer(), target);
           } else if (value.equals("repair")) {
-            new RepairDialog(ui, context).show(context.getPlayer(), target);
+            new RepairDialog(ui, gameStores).show(context.getPlayer(), target);
           } else if (value.equals("tattoos")) {
-            new TattooDialog(ui, small, context).show(context.getPlayer(), target);
+            new TattooDialog(ui, small, gameStores).show(context.getPlayer(), target);
           } else {
             System.out.println("not implemented");
           }
@@ -305,7 +313,7 @@ public class DialogState extends State implements KeyListener {
 
   private boolean hasService(String name, String id) {
     try {
-      RPerson person = (RPerson) context.getResources().getResource(name);
+      RPerson person = (RPerson) gameStores.getResources().getResource(name);
       for (RPerson.Service service : person.services) {
         if (service.id.equals(id)) {
           return true;

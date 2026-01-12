@@ -43,9 +43,11 @@ import net.engio.mbassy.listener.References;
 @Listener(references = References.Strong)
 public class GameSaver {
   private TaskQueue queue;
+  private final GameStores gameStores;
 
-  public GameSaver(TaskQueue queue) {
+  public GameSaver(TaskQueue queue, GameStores gameStores) {
     this.queue = queue;
+    this.gameStores = gameStores;
   }
 
   /** Saves the current game. */
@@ -75,8 +77,8 @@ public class GameSaver {
     }
 
     // first copy everything from temp to save, to ensure savedoc is not overwritten
-    Engine.getAtlas().getCache().commit();
-    Engine.getStore().getCache().commit();
+    gameStores.getAtlas().getCache().commit();
+    gameStores.getStore().getCache().commit();
     Engine.getFileSystem().storeTemp(dir);
 
     // Serialize with Jackson

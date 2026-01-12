@@ -2,12 +2,14 @@ package neon.maps;
 
 import neon.entities.Door;
 import neon.entities.Player;
+import neon.entities.UIDStore;
 import neon.maps.generators.DungeonGenerator;
 import neon.maps.services.EntityStore;
-import neon.maps.services.PhysicsManager;
 import neon.maps.services.QuestProvider;
 import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
+
+import java.rmi.server.UID;
 
 public class AtlasPosition {
   private int currentZone = 0;
@@ -16,28 +18,19 @@ public class AtlasPosition {
   private final ZoneActivator zoneActivator;
   private final ResourceManager resourceProvider;
   private final QuestTracker questProvider;
-  private final EntityStore entityStore;
+  private final UIDStore entityStore;
 
   public AtlasPosition(
       Atlas atlas,
       ZoneActivator zoneActivator,
       ResourceManager resourceProvider,
       QuestTracker questProvider,
-      EntityStore entityStore) {
+      UIDStore entityStore) {
     this.atlas = atlas;
     this.zoneActivator = zoneActivator;
     this.resourceProvider = resourceProvider;
     this.questProvider = questProvider;
     this.entityStore = entityStore;
-  }
-
-  /**
-   * Creates a default zone activator using Engine singleton (for backward compatibility).
-   *
-   * @return a zone activator
-   */
-  static ZoneActivator createDefaultZoneActivator(PhysicsManager physicsManager) {
-    return new ZoneActivator(physicsManager);
   }
 
   /**

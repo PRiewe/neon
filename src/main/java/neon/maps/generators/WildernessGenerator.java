@@ -24,6 +24,8 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import neon.core.GameStores;
 import neon.entities.*;
 import neon.entities.property.Habitat;
 import neon.maps.Decomposer;
@@ -35,6 +37,7 @@ import neon.maps.services.ResourceProvider;
 import neon.resources.RItem;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
+import neon.resources.ResourceManager;
 import neon.util.Dice;
 
 /**
@@ -54,6 +57,7 @@ public class WildernessGenerator {
   private String[][] terrain; // general terrain info
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
+  private final EntityFactory entityFactory;
 
   // random sources
   private final MapUtils mapUtils;
@@ -71,8 +75,8 @@ public class WildernessGenerator {
    * @param resourceProvider the resource provider service
    */
   public WildernessGenerator(
-      Zone zone, EntityStore entityStore, ResourceProvider resourceProvider) {
-    this(zone, entityStore, resourceProvider, new MapUtils(), new Dice());
+          Zone zone, GameStores gameStores) {
+    this(zone, gameStores, new MapUtils(), new Dice());
   }
 
   /**
@@ -86,17 +90,17 @@ public class WildernessGenerator {
    */
   public WildernessGenerator(
       Zone zone,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
+      GameStores gameStores,
       MapUtils mapUtils,
       Dice dice) {
     this.zone = zone;
-    this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
+    this.entityStore = gameStores.getStore();
+    this.resourceProvider = gameStores.getResources();
     this.mapUtils = mapUtils;
     this.dice = dice;
     this.blocksGenerator = new BlocksGenerator(mapUtils);
     this.caveGenerator = new CaveGenerator(dice);
+    this.entityFactory = new EntityFactory(gameStores.getStore(),gameStores.getResources());
   }
 
   /**
@@ -107,7 +111,7 @@ public class WildernessGenerator {
    * @param resourceProvider the resource provider service
    */
   public WildernessGenerator(
-      String[][] terrain, EntityStore entityStore, ResourceProvider resourceProvider) {
+          String[][] terrain, UIDStore entityStore, ResourceManager resourceProvider) {
     this(terrain, entityStore, resourceProvider, new MapUtils(), new Dice());
   }
 
@@ -123,8 +127,8 @@ public class WildernessGenerator {
    */
   public WildernessGenerator(
       String[][] terrain,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
+      UIDStore entityStore,
+      ResourceManager resourceProvider,
       MapUtils mapUtils,
       Dice dice) {
     this.terrain = terrain;
@@ -134,6 +138,7 @@ public class WildernessGenerator {
     this.dice = dice;
     this.blocksGenerator = new BlocksGenerator(mapUtils);
     this.caveGenerator = new CaveGenerator(dice);
+    this.entityFactory = new EntityFactory(entityStore,resourceProvider);
   }
 
   /** Generates a piece of wilderness using the supplied parameters. */
@@ -348,7 +353,7 @@ public class WildernessGenerator {
         String region = t.isEmpty() ? base : t;
 
         Creature creature =
-            EntityFactory.getCreature(id, rx + x, ry + y, entityStore.createNewEntityUID());
+                entityFactory.getCreature(id, rx + x, ry + y, entityStore.createNewEntityUID());
         RTerrain terrain = (RTerrain) resourceProvider.getResource(region, "terrain");
         // Only spawn creatures if their habitat matches the terrain
         // LAND creatures should NOT spawn in SWIM terrain
@@ -374,11 +379,11 @@ public class WildernessGenerator {
             if (entry.startsWith("i:")) {
               String id = entry.replace("i:", "");
               long uid = entityStore.createNewEntityUID();
-              Item item = EntityFactory.getItem(id, region.getX() + i, region.getY() + j, uid);
+              Item item = entityFactory.getItem(id, region.getX() + i, region.getY() + j, uid);
               entityStore.addEntity(item);
               if (item instanceof Container) {
                 for (String s : ((RItem.Container) item.resource).contents) {
-                  Item content = EntityFactory.getItem(s, entityStore.createNewEntityUID());
+                  Item content = entityFactory.getItem(s, entityStore.createNewEntityUID());
                   ((Container) item).addItem(content.getUID());
                   entityStore.addEntity(content);
                 }
@@ -388,7 +393,7 @@ public class WildernessGenerator {
               String id = entry.replace("c:", "");
               long uid = entityStore.createNewEntityUID();
               Creature creature =
-                  EntityFactory.getCreature(id, region.getX() + i, region.getY() + j, uid);
+                      entityFactory.getCreature(id, region.getX() + i, region.getY() + j, uid);
               entityStore.addEntity(creature);
               zone.addCreature(creature);
             } else if (!entry.isEmpty() && !entry.equals(region.getTextureType())) {
@@ -441,7 +446,7 @@ public class WildernessGenerator {
       String[][] fauna = new String[width][height];
       for (String id : theme.vegetation.keySet()) {
         int abundance = theme.vegetation.get(id);
-        Item dummy = EntityFactory.getItem(id, 0);
+        Item dummy = entityFactory.getItem(id, 0);
         int size = dummy.getShapeComponent().width; // size van boom in rekening brengen
         int ratio = (width / size) * (height / size);
         boolean[][] fill = generateIslands(width / size, height / size, abundance, 5, ratio / size);

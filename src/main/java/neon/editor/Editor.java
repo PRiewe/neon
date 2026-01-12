@@ -39,8 +39,8 @@ import neon.ui.HelpWindow;
 // TODO: use mbassador for events
 public class Editor implements Runnable, ActionListener {
   public static JCheckBoxMenuItem tShow, tEdit, oShow, oEdit;
-  public static FileSystem files;
-  public static final ResourceManager resources = new ResourceManager();
+  private final FileSystem files;
+  private final ResourceManager resources;
   private static JFrame frame;
   private static DataStore store;
   private static JPanel toolPanel;
@@ -83,7 +83,8 @@ public class Editor implements Runnable, ActionListener {
 
     // stuff
     files = new FileSystem();
-    store = new DataStore();
+    resources = new ResourceManager();
+    store = new DataStore(resources,files);
 
     // menu bar
     menuBar = new JMenuBar();
@@ -203,7 +204,7 @@ public class Editor implements Runnable, ActionListener {
     // panels with maps
     mapTabbedPane = new JTabbedPane();
     JPanel mapPanel = new JPanel(new BorderLayout());
-    mapEditor = new MapEditor(mapTabbedPane, mapPanel);
+    mapEditor = new MapEditor(mapTabbedPane, mapPanel,resources);
 
     // panel with objects and terrain
     JTabbedPane editPanel = new JTabbedPane();

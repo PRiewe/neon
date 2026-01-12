@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import neon.core.Engine;
+import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.property.Skill;
@@ -37,7 +38,13 @@ public class PathFinder {
   private static Point to;
   private static Creature mover;
 
-  public static Point[] findPath(Creature creature, Point origin, Point destination) {
+  private final GameStores gameStores;
+
+  public PathFinder(GameStores gameStores) {
+    this.gameStores = gameStores;
+  }
+
+  public Point[] findPath(Creature creature, Point origin, Point destination) {
     // points
     Point from = origin;
     to = destination;
@@ -97,10 +104,10 @@ public class PathFinder {
       to = todo.poll(); // if path was interrupted, continue with current estimate
     } // this can sometimes give strange behavior
     while (!from.equals(to)) {
-      path.add(0, to);
+      path.addFirst(to);
       to = links.get(to);
     }
-    return path.toArray(new Point[path.size()]);
+    return path.toArray(new Point[0]);
   }
 
   private static Point[] neighbours(Point current) {
@@ -119,26 +126,23 @@ public class PathFinder {
   /*
    * manhattan distance between points
    */
-  private static int manhattan(Point one, Point two) {
+  private int manhattan(Point one, Point two) {
     return Math.abs(one.x - two.x) + Math.abs(one.y - two.y);
   }
 
-  private static int terrainPenalty(Point neighbour) {
+  private int terrainPenalty(Point neighbour) {
     // better modifiers?
-    switch (Engine.getAtlasPosition().getCurrentZone().getRegion(neighbour).getMovMod()) {
-      case SWIM:
-        return (100 - mover.getSkill(Skill.SWIMMING)) / 5;
-      case CLIMB:
-        return (100 - mover.getSkill(Skill.CLIMBING)) / 5;
-      default:
-        return 0;
-    }
+    return switch (Engine.getAtlasPosition().getCurrentZone().getRegion(neighbour).getMovMod()) {
+      case SWIM -> (100 - mover.getSkill(Skill.SWIMMING)) / 5;
+      case CLIMB -> (100 - mover.getSkill(Skill.CLIMBING)) / 5;
+      default -> 0;
+    };
   }
 
-  private static int doorPenalty(Point neighbour) {
+  private int doorPenalty(Point neighbour) {
     for (long uid : Engine.getAtlasPosition().getCurrentZone().getItems(neighbour)) {
-      if (Engine.getStore().getEntity(uid) instanceof Door) {
-        Door door = (Door) Engine.getStore().getEntity(uid);
+      if (gameStores.getStore().getEntity(uid) instanceof Door) {
+        Door door = (Door) gameStores.getStore().getEntity(uid);
         if (door.lock.isLocked()) {
           RItem key = door.lock.getKey();
           if (key != null && hasItem(mover, key)) {
@@ -155,15 +159,15 @@ public class PathFinder {
   }
 
   @SuppressWarnings("serial")
-  private static class NodeComparator implements Comparator<Point>, Serializable {
+  private class NodeComparator implements Comparator<Point>, Serializable {
     public int compare(Point one, Point two) {
       return (evaluated.get(one) + manhattan(one, to)) - (evaluated.get(two) + manhattan(two, to));
     }
   }
 
-  private static boolean hasItem(Creature creature, RItem item) {
+  private boolean hasItem(Creature creature, RItem item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (Engine.getStore().getEntity(uid).getID().equals(item.id)) {
+      if (gameStores.getStore().getEntity(uid).getID().equals(item.id)) {
         return true;
       }
     }

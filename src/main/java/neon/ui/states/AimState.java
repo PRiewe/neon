@@ -24,6 +24,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.Popup;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.core.handlers.*;
@@ -59,14 +60,23 @@ public class AimState extends State implements KeyListener {
   private MBassador<EventObject> bus;
   private UserInterface ui;
   private final GameContext context;
-
+  private final GameStores gameStores;
+  private final CombatUtils combatUtils;
   /** Constructs a new AimModule. */
-  public AimState(State state, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+  public AimState(
+      State state,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(state);
     this.bus = bus;
     this.ui = ui;
     this.context = context;
-    keys = (CClient) context.getResources().getResource("client", "config");
+    this.gameStores = gameStores;
+    this.combatUtils = new CombatUtils(gameStores.getStore());
+    keys = (CClient) gameStores.getResources().getResource("client", "config");
+
     target = new Point();
   }
 
@@ -146,12 +156,12 @@ public class AimState extends State implements KeyListener {
       Creature victim = context.getAtlasPosition().getCurrentZone().getCreature(target);
       if (victim != null) {
         Weapon ammo =
-            (Weapon) context.getStore().getEntity(player.getInventoryComponent().get(Slot.AMMO));
+            (Weapon) gameStores.getStore().getEntity(player.getInventoryComponent().get(Slot.AMMO));
         if (player.getInventoryComponent().hasEquiped(Slot.AMMO)
             && ammo.getWeaponType() == WeaponType.THROWN) {
           shoot(ammo, victim);
           bus.publishAsync(new CombatEvent(CombatEvent.FLING, player, victim));
-        } else if (CombatUtils.getWeaponType(player) == WeaponType.BOW) {
+        } else if (combatUtils.getWeaponType(player) == WeaponType.BOW) {
           if (player.getInventoryComponent().hasEquiped(Slot.AMMO)
               && ammo.getWeaponType() == WeaponType.ARROW) {
             shoot(ammo, victim);
@@ -159,7 +169,7 @@ public class AimState extends State implements KeyListener {
           } else {
             ui.showMessage("No arrows equiped!", 1);
           }
-        } else if (CombatUtils.getWeaponType(player) == WeaponType.CROSSBOW) {
+        } else if (combatUtils.getWeaponType(player) == WeaponType.CROSSBOW) {
           if (player.getInventoryComponent().hasEquiped(Slot.AMMO)
               && ammo.getWeaponType() == WeaponType.BOLT) {
             bus.publishAsync(new CombatEvent(CombatEvent.SHOOT, player, victim));
@@ -217,7 +227,7 @@ public class AimState extends State implements KeyListener {
       bus.publishAsync(new MagicEvent.CreatureOnPoint(this, player, target));
     } else if (player.getInventoryComponent().hasEquiped(Slot.MAGIC)) {
       Item item =
-          (Item) context.getStore().getEntity(player.getInventoryComponent().get(Slot.MAGIC));
+          (Item) gameStores.getStore().getEntity(player.getInventoryComponent().get(Slot.MAGIC));
       bus.publishAsync(new MagicEvent.ItemOnPoint(this, player, item, target));
     }
 
@@ -236,7 +246,7 @@ public class AimState extends State implements KeyListener {
       String actors = "";
       ArrayList<Long> things = new ArrayList<Long>(zone.getItems(target));
       if (things.size() == 1) {
-        items = ", " + context.getStore().getEntity(things.get(0));
+        items = ", " + gameStores.getStore().getEntity(things.get(0));
       } else if (things.size() > 1) {
         items = ", several items";
       }
@@ -252,8 +262,8 @@ public class AimState extends State implements KeyListener {
 
   private void act() {
     for (long uid : context.getAtlasPosition().getCurrentZone().getItems(target)) {
-      if (context.getStore().getEntity(uid) instanceof Door) {
-        bus.publishAsync(new TransitionEvent("door", "door", context.getStore().getEntity(uid)));
+      if (gameStores.getStore().getEntity(uid) instanceof Door) {
+        bus.publishAsync(new TransitionEvent("door", "door", gameStores.getStore().getEntity(uid)));
         break;
       }
     }

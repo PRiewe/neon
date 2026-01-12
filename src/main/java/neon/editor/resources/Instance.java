@@ -31,9 +31,9 @@ import neon.util.TextureFactory;
 import org.jdom2.Element;
 
 public abstract class Instance implements Renderable {
-  private static AlphaComposite alphaOn =
+  private static final AlphaComposite alphaOn =
       AlphaComposite.getInstance(AlphaComposite.SRC_OVER).derive(0.5f);
-  private static AlphaComposite alphaOff = AlphaComposite.getInstance(AlphaComposite.SRC);
+  private static final AlphaComposite alphaOff = AlphaComposite.getInstance(AlphaComposite.SRC);
 
   public int x, y, z, width, height;
   public RData resource;

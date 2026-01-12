@@ -21,13 +21,9 @@ package neon.core;
 import java.util.EventObject;
 import neon.core.event.TaskQueue;
 import neon.entities.Player;
-import neon.entities.UIDStore;
-import neon.maps.Atlas;
 import neon.maps.AtlasPosition;
 import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;
-import neon.resources.ResourceManager;
-import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
 import org.graalvm.polyglot.Context;
@@ -43,22 +39,9 @@ public interface GameContext {
 
   Player getPlayer();
 
-  Atlas getAtlas();
-
   AtlasPosition getAtlasPosition();
 
-  UIDStore getStore();
-
   Timer getTimer();
-
-  ResourceManager getResources();
-
-  /**
-   * Returns the file system.
-   *
-   * @return the file system for accessing game data files
-   */
-  FileSystem getFileSystem();
 
   /**
    * Returns the task queue.

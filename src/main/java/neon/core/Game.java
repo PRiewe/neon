@@ -22,57 +22,50 @@ import java.io.Closeable;
 import java.io.IOException;
 import lombok.Getter;
 import neon.entities.Player;
-import neon.entities.UIDStore;
-import neon.maps.Atlas;
 import neon.maps.AtlasPosition;
-import neon.maps.MapLoader;
 import neon.maps.ZoneActivator;
 import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;
-import neon.resources.ResourceManager;
-import neon.systems.files.FileSystem;
 import neon.systems.timing.Timer;
 
 @Getter
 public class Game implements Closeable {
-  private final UIDStore store;
+
   private final Player player;
   private final Timer timer = new Timer();
-  private final Atlas atlas;
   private final AtlasPosition atlasPosition;
+  @Getter private final GameStores gameStores;
 
   public Game(
       Player player,
-      FileSystem files,
+      GameStores gameStores,
       PhysicsManager physicsManager,
-      ResourceManager resourceManager,
       QuestTracker questTracker) {
-    store = new UIDStore(files.getFullPath("uidstore"));
-    MapLoader mapLoader = new MapLoader(store, resourceManager, files);
-    atlas = new Atlas(files, files.getFullPath("atlas"), store, mapLoader);
     this.player = player;
+    this.gameStores = gameStores;
     this.atlasPosition =
         new AtlasPosition(
-            atlas, new ZoneActivator(physicsManager), resourceManager, questTracker, store);
+            gameStores.getAtlas(),
+            new ZoneActivator(physicsManager),
+            gameStores.getResources(),
+            questTracker,
+            gameStores.getStore());
   }
 
   /**
    * Constructor with dependency injection for testing.
    *
    * @param player the player
-   * @param atlas the atlas
-   * @param store the UID store
    */
-  public Game(Player player, Atlas atlas, UIDStore store, AtlasPosition atlasPosition) {
+  public Game(Player player, GameStores gameStores, AtlasPosition atlasPosition) {
     this.player = player;
-    this.atlas = atlas;
-    this.store = store;
+    this.gameStores = gameStores;
     this.atlasPosition = atlasPosition;
   }
 
   @Override
   public void close() throws IOException {
-    store.close();
-    atlas.close();
+    this.gameStores.getStore().close();
+    this.gameStores.getAtlas().close();
   }
 }

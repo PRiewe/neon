@@ -26,6 +26,7 @@ import neon.maps.model.WorldModel;
 import neon.resources.RData;
 import neon.resources.RDungeonTheme;
 import neon.resources.RScript;
+import neon.resources.ResourceManager;
 import neon.systems.files.XMLTranslator;
 import neon.ui.graphics.Renderable;
 import org.jdom2.*;
@@ -48,12 +49,14 @@ public class RMap extends RData {
   public short uid;
   private boolean type;
   private ArrayList<Integer> uids;
+  private final ResourceManager resourceManager;
 
   // for already existing maps during loadMod
-  public RMap(String id, Element properties, String... path) {
+  public RMap(String id, Element properties, ResourceManager resourceManager, String... path) {
     super(id, path);
     uid = Short.parseShort(properties.getChild("header").getAttributeValue("uid"));
-    name = properties.getChild("header").getChildText("name");
+      this.resourceManager = resourceManager;
+      name = properties.getChild("header").getChildText("name");
     type = properties.getName().equals("dungeon");
 
     if (type == DUNGEON) {
@@ -73,11 +76,12 @@ public class RMap extends RData {
   }
 
   // for new maps to be created
-  public RMap(short uid, String mod, MapDialog.Properties props) {
+  public RMap(short uid, String mod, MapDialog.Properties props, ResourceManager resourceManager) {
     super(props.getID(), mod);
     this.uid = uid;
     type = props.isDungeon();
-    name = props.getName();
+      this.resourceManager = resourceManager;
+      name = props.getName();
 
     if (!props.isDungeon()) { // always set zone and base region for outdoor
       Element region = new Element("region");

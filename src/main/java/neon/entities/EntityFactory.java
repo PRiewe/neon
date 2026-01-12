@@ -21,7 +21,6 @@ package neon.entities;
 import java.awt.Rectangle;
 import java.util.*;
 import neon.ai.*;
-import neon.core.Engine;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.components.Enchantment;
 import neon.entities.components.FactionComponent;
@@ -35,23 +34,34 @@ import neon.ui.graphics.svg.SVGLoader;
 import neon.util.Dice;
 
 public class EntityFactory {
-  private static AIFactory aiFactory = new AIFactory();
+  private final AIFactory aiFactory = new AIFactory();
 
-  public static Item getItem(String id, long uid) {
+  private final InventoryHandler inventoryHandler;
+  private final UIDStore uidStore;
+  private final ResourceManager resourceManager;
+  private final SpellFactory spellFactory;
+
+  public EntityFactory(UIDStore uidStore, ResourceManager resourceManager) {
+    this.uidStore = uidStore;
+    this.resourceManager = resourceManager;
+    inventoryHandler = new InventoryHandler(uidStore);
+    spellFactory = new SpellFactory(resourceManager);
+  }
+
+  public Item getItem(String id, long uid) {
     Item item = getItem(id, -1, -1, uid);
     return item;
   }
 
-  public static Item getItem(String id, int x, int y, long uid) {
+  public Item getItem(String id, int x, int y, long uid) {
     // item aanmaken
     RItem resource;
-    if (Engine.getResources().getResource(id) instanceof LItem) {
-      LItem li = (LItem) Engine.getResources().getResource(id);
+    if (resourceManager.getResource(id) instanceof LItem) {
+      LItem li = (LItem) resourceManager.getResource(id);
       ArrayList<String> items = new ArrayList<String>(li.items.keySet());
-      resource =
-          (RItem) Engine.getResources().getResource(items.get(Dice.roll(1, items.size(), -1)));
+      resource = (RItem) resourceManager.getResource(items.get(Dice.roll(1, items.size(), -1)));
     } else {
-      resource = (RItem) Engine.getResources().getResource(id);
+      resource = (RItem) resourceManager.getResource(id);
     }
     Item item = getItem(resource, uid);
 
@@ -77,7 +87,7 @@ public class EntityFactory {
         mana = ((RWeapon) resource).mana;
       }
       item.setMagicComponent(
-          new Enchantment(SpellFactory.getSpell(resource.spell), mana, item.getUID()));
+          new Enchantment(spellFactory.getSpell(resource.spell), mana, item.getUID()));
     }
 
     return item;
@@ -85,42 +95,29 @@ public class EntityFactory {
 
   private static Item getItem(RItem resource, long uid) {
     // item aanmaken
-    switch (resource.type) {
-      case container:
-        return new Container(uid, (RItem.Container) resource);
-      case food:
-        return new Item.Food(uid, resource);
-      case aid:
-        return new Item.Aid(uid, resource);
-      case book:
-        return new Item.Book(uid, (RItem.Text) resource);
-      case clothing:
-        return new Clothing(uid, (RClothing) resource);
-      case armor:
-        return new Armor(uid, (RClothing) resource);
-      case coin:
-        return new Item.Coin(uid, resource);
-      case door:
-        return new Door(uid, resource);
-      case light:
-        return new Item.Light(uid, resource);
-      case potion:
-        return new Item.Potion(uid, resource);
-      case scroll:
-        return new Item.Scroll(uid, (RItem.Text) resource);
-      case weapon:
-        return new Weapon(uid, (RWeapon) resource);
-      default:
-        return new Item(uid, resource);
-    }
+    return switch (resource.type) {
+      case container -> new Container(uid, (RItem.Container) resource);
+      case food -> new Item.Food(uid, resource);
+      case aid -> new Item.Aid(uid, resource);
+      case book -> new Item.Book(uid, (RItem.Text) resource);
+      case clothing -> new Clothing(uid, (RClothing) resource);
+      case armor -> new Armor(uid, (RClothing) resource);
+      case coin -> new Item.Coin(uid, resource);
+      case door -> new Door(uid, resource);
+      case light -> new Item.Light(uid, resource);
+      case potion -> new Item.Potion(uid, resource);
+      case scroll -> new Item.Scroll(uid, (RItem.Text) resource);
+      case weapon -> new Weapon(uid, (RWeapon) resource);
+      default -> new Item(uid, resource);
+    };
   }
 
   /*
    * Returns a person with the given uid, position and properties.
    */
-  private static Creature getPerson(String id, int x, int y, long uid, RCreature species) {
+  private Creature getPerson(String id, int x, int y, long uid, RCreature species) {
     String name = id;
-    RPerson person = (RPerson) Engine.getResources().getResource(id);
+    RPerson person = (RPerson) resourceManager.getResource(id);
     if (person.name != null) {
       name = person.name;
     }
@@ -128,13 +125,13 @@ public class EntityFactory {
     Rectangle bounds = creature.getShapeComponent();
     bounds.setLocation(x, y);
     for (String i : person.items) {
-      long itemUID = Engine.getStore().createNewEntityUID();
-      Item item = EntityFactory.getItem(i, itemUID);
-      Engine.getStore().addEntity(item);
-      InventoryHandler.addItem(creature, itemUID);
+      long itemUID = uidStore.createNewEntityUID();
+      Item item = getItem(i, itemUID);
+      uidStore.addEntity(item);
+      inventoryHandler.addItem(creature, itemUID);
     }
     for (String s : person.spells) {
-      creature.getMagicComponent().addSpell(neon.magic.SpellFactory.getSpell(s));
+      creature.getMagicComponent().addSpell(spellFactory.getSpell(s));
     }
     FactionComponent factions = creature.getFactionComponent();
     for (String f : person.factions.keySet()) {
@@ -146,12 +143,12 @@ public class EntityFactory {
     return creature;
   }
 
-  public static Creature getCreature(String id, int x, int y, long uid) {
+  public Creature getCreature(String id, int x, int y, long uid) {
     Creature creature;
-    Resource resource = Engine.getResources().getResource(id);
+    Resource resource = resourceManager.getResource(id);
     if (resource instanceof RPerson) {
       RPerson rp = (RPerson) resource;
-      RCreature species = (RCreature) Engine.getResources().getResource(rp.species);
+      RCreature species = (RCreature) resourceManager.getResource(rp.species);
       creature = getPerson(id, x, y, uid, species);
       creature.brain = aiFactory.getAI(creature, rp);
     } else if (resource instanceof LCreature) {
@@ -159,27 +156,15 @@ public class EntityFactory {
       ArrayList<String> creatures = new ArrayList<String>(lc.creatures.keySet());
       return getCreature(creatures.get(Dice.roll(1, creatures.size(), -1)), x, y, uid);
     } else {
-      RCreature rc = (RCreature) Engine.getResources().getResource(id);
-      switch (rc.type) {
-        case construct:
-          creature = new Construct(id, uid, rc);
-          break;
-        case humanoid:
-          creature = new Hominid(id, uid, rc);
-          break;
-        case daemon:
-          creature = new Daemon(id, uid, rc);
-          break;
-        case dragon:
-          creature = new Dragon(id, uid, rc);
-          break;
-        case goblin:
-          creature = new Hominid(id, uid, rc);
-          break;
-        default:
-          creature = new Creature(id, uid, rc);
-          break;
-      }
+      RCreature rc = (RCreature) resourceManager.getResource(id);
+      creature =
+          switch (rc.type) {
+            case construct -> new Construct(id, uid, rc);
+            case humanoid, goblin -> new Hominid(id, uid, rc);
+            case daemon -> new Daemon(id, uid, rc);
+            case dragon -> new Dragon(id, uid, rc);
+            default -> new Creature(id, uid, rc);
+          };
 
       // positie
       Rectangle bounds = creature.getShapeComponent();

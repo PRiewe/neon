@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.*;
-import neon.core.Engine;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
 import neon.systems.scripting.Activator;
@@ -186,23 +185,23 @@ public class Region implements Renderable, Activator, Externalizable {
   }
 
   public void readExternal(ObjectInput input) throws IOException, ClassNotFoundException {
-    theme = (RRegionTheme) Engine.getResources().getResource(input.readUTF(), "theme");
-    label = input.readUTF();
-    if (label.isEmpty()) {
-      label = null;
-    }
-    id = input.readUTF();
-    terrain = (RTerrain) Engine.getResources().getResource(id, "terrain");
-    x = input.readInt();
-    y = input.readInt();
-    z = input.readInt();
-    width = input.readInt();
-    height = input.readInt();
-    int size = input.readInt();
-    scripts = new ArrayList<String>();
-    for (int i = 0; i < size; i++) {
-      scripts.add(input.readUTF());
-    }
+    //    theme = (RRegionTheme) Engine.getResources().getResource(input.readUTF(), "theme");
+    //    label = input.readUTF();
+    //    if (label.isEmpty()) {
+    //      label = null;
+    //    }
+    //    id = input.readUTF();
+    //    terrain = (RTerrain) Engine.getResources().getResource(id, "terrain");
+    //    x = input.readInt();
+    //    y = input.readInt();
+    //    z = input.readInt();
+    //    width = input.readInt();
+    //    height = input.readInt();
+    //    int size = input.readInt();
+    //    scripts = new ArrayList<String>();
+    //    for (int i = 0; i < size; i++) {
+    //      scripts.add(input.readUTF());
+    //    }
   }
 
   public void writeExternal(ObjectOutput output) throws IOException {

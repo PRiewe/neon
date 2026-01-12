@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.*;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * This class represents the surface of the game world. It can be seamlessly traversed.
@@ -29,7 +31,7 @@ import java.util.*;
  * @author mdriesen
  */
 public class World implements Map {
-  private String name;
+  @Getter @Setter private String name;
   private int uid;
   private Zone zone;
 
@@ -40,7 +42,6 @@ public class World implements Map {
    * @param uid the uid of this map
    */
   public World(String name, int uid) {
-    zone = new Zone("world", uid, 0);
     this.name = name;
     this.uid = uid;
   }
@@ -51,22 +52,12 @@ public class World implements Map {
     return zone;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public int getUID() {
     return uid;
   }
 
-  public String getName() {
-    return name;
-  }
-
   public Collection<Zone> getZones() {
-    ArrayList<Zone> zones = new ArrayList<Zone>();
-    zones.add(zone);
-    return zones;
+    return List.of(zone);
   }
 
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

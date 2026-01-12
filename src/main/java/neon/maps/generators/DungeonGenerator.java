@@ -23,21 +23,16 @@ import static neon.maps.generators.RoomGenerator.newExposed;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
+
+import neon.entities.*;
 import neon.entities.Container;
-import neon.entities.Creature;
-import neon.entities.Door;
-import neon.entities.EntityFactory;
-import neon.entities.Item;
 import neon.entities.property.Habitat;
 import neon.maps.*;
 import neon.maps.Region.Modifier;
 import neon.maps.services.EntityStore;
 import neon.maps.services.QuestProvider;
 import neon.maps.services.ResourceProvider;
-import neon.resources.RCreature;
-import neon.resources.RItem;
-import neon.resources.RTerrain;
-import neon.resources.RZoneTheme;
+import neon.resources.*;
 import neon.util.Dice;
 
 /**
@@ -56,7 +51,7 @@ public class DungeonGenerator {
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
   private final QuestProvider questProvider;
-
+  private final EntityFactory entityFactory;
   // random sources
   private final MapUtils mapUtils;
   private final Dice dice;
@@ -82,8 +77,8 @@ public class DungeonGenerator {
    */
   public DungeonGenerator(
       RZoneTheme theme,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
+      neon.entities.UIDStore entityStore,
+      ResourceManager resourceProvider,
       QuestProvider questProvider) {
     this(theme, entityStore, resourceProvider, questProvider, new MapUtils(), new Dice());
   }
@@ -100,8 +95,8 @@ public class DungeonGenerator {
    */
   public DungeonGenerator(
       RZoneTheme theme,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
+      neon.entities.UIDStore entityStore,
+      ResourceManager resourceProvider,
       QuestProvider questProvider,
       MapUtils mapUtils,
       Dice dice) {
@@ -117,6 +112,7 @@ public class DungeonGenerator {
     this.caveGenerator = new CaveGenerator(dice);
     this.mazeGenerator = new MazeGenerator(dice);
     this.featureGenerator = new FeatureGenerator(mapUtils);
+    this.entityFactory = new EntityFactory(entityStore,resourceProvider);
   }
 
   /**
@@ -129,8 +125,8 @@ public class DungeonGenerator {
    */
   public DungeonGenerator(
       Zone zone,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
+      UIDStore entityStore,
+      ResourceManager resourceProvider,
       QuestProvider questProvider) {
     this(zone, entityStore, resourceProvider, questProvider, new MapUtils(), new Dice());
   }
@@ -148,8 +144,8 @@ public class DungeonGenerator {
    */
   public DungeonGenerator(
       Zone zone,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
+      UIDStore entityStore,
+      ResourceManager resourceProvider,
       QuestProvider questProvider,
       MapUtils mapUtils,
       Dice dice) {
@@ -165,6 +161,7 @@ public class DungeonGenerator {
     this.caveGenerator = new CaveGenerator(dice);
     this.mazeGenerator = new MazeGenerator(dice);
     this.featureGenerator = new FeatureGenerator(mapUtils);
+    this.entityFactory = new EntityFactory(entityStore,resourceProvider);
   }
 
   /**
@@ -200,7 +197,7 @@ public class DungeonGenerator {
     int destMap = previous.getMap();
     int destZone = previous.getIndex();
     String doorType = theme.doors.split(",")[0];
-    Door tdoor = (Door) EntityFactory.getItem(doorType, p.x, p.y, entityStore.createNewEntityUID());
+    Door tdoor = (Door) entityFactory.getItem(doorType, p.x, p.y, entityStore.createNewEntityUID());
     entityStore.addEntity(tdoor);
     tiles[p.x][p.y] = MapUtils.DOOR;
     tdoor.portal.setDestination(destPoint, destZone, destMap);
@@ -223,7 +220,7 @@ public class DungeonGenerator {
 
           Door toDoor =
               (Door)
-                  EntityFactory.getItem(
+                      entityFactory.getItem(
                       theme.doors.split(",")[0], pos.x, pos.y, entityStore.createNewEntityUID());
           entityStore.addEntity(toDoor);
           tiles[pos.x][pos.y] = MapUtils.DOOR;
@@ -244,7 +241,7 @@ public class DungeonGenerator {
 
                 Door toDoor =
                     (Door)
-                        EntityFactory.getItem(
+                            entityFactory.getItem(
                             theme.doors.split(",")[0],
                             pos.x,
                             pos.y,
@@ -274,12 +271,12 @@ public class DungeonGenerator {
         p1.y = dice.rollDice(1, height, -1);
       } while (tiles[p1.x][p1.y] != MapUtils.FLOOR);
       if (resourceProvider.getResource(object) instanceof RItem) {
-        Item item = EntityFactory.getItem(object, p1.x, p1.y, entityStore.createNewEntityUID());
+        Item item = entityFactory.getItem(object, p1.x, p1.y, entityStore.createNewEntityUID());
         entityStore.addEntity(item);
         zone.addItem(item);
       } else if (resourceProvider.getResource(object) instanceof RCreature) {
         Creature creature =
-            EntityFactory.getCreature(object, p1.x, p1.y, entityStore.createNewEntityUID());
+                entityFactory.getCreature(object, p1.x, p1.y, entityStore.createNewEntityUID());
         entityStore.addEntity(creature);
         zone.addCreature(creature);
       }
@@ -495,7 +492,7 @@ public class DungeonGenerator {
   }
 
   private void addDoor(String terrain, String id, int x, int y, int layer) {
-    Door door = (Door) EntityFactory.getItem(id, x, y, entityStore.createNewEntityUID());
+    Door door = (Door) entityFactory.getItem(id, x, y, entityStore.createNewEntityUID());
     entityStore.addEntity(door);
     if (tiles[x][y] == MapUtils.DOOR_LOCKED) {
       door.lock.setLockDC(10);
@@ -510,7 +507,7 @@ public class DungeonGenerator {
 
   private void addCreature(String description, int x, int y) {
     String id = description.replace("c:", "");
-    Creature creature = EntityFactory.getCreature(id, x, y, entityStore.createNewEntityUID());
+    Creature creature = entityFactory.getCreature(id, x, y, entityStore.createNewEntityUID());
     // no land creatures in water
     Rectangle bounds = creature.getShapeComponent();
     Modifier modifier = zone.getRegion(bounds.getLocation()).getMovMod();
@@ -524,11 +521,11 @@ public class DungeonGenerator {
 
   private void addItem(String description, int x, int y) {
     String id = description.replace("i:", "");
-    Item item = EntityFactory.getItem(id, x, y, entityStore.createNewEntityUID());
+    Item item = entityFactory.getItem(id, x, y, entityStore.createNewEntityUID());
     entityStore.addEntity(item);
     if (item instanceof Container) {
       for (String s : ((RItem.Container) item.resource).contents) {
-        Item i = EntityFactory.getItem(s, entityStore.createNewEntityUID());
+        Item i = entityFactory.getItem(s, entityStore.createNewEntityUID());
         ((Container) item).addItem(i.getUID());
         entityStore.addEntity(i);
       }

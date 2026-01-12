@@ -43,7 +43,7 @@ public class Atlas implements Closeable, MapAtlas {
   private final MapLoader mapLoader;
 
   public Atlas(
-      FileSystem fileSystem, MapStore mapStore, EntityStore entityStore, MapLoader mapLoader) {
+          FileSystem fileSystem, MapStore mapStore, EntityStore entityStore, MapLoader mapLoader) {
     this.fileSystem = fileSystem;
     this.entityStore = entityStore;
     this.db = mapStore;
@@ -68,7 +68,7 @@ public class Atlas implements Closeable, MapAtlas {
     maps = db.openMap("maps");
   }
 
-  private MapStore getMapStore(FileSystem files, String fileName) {
+  public static MapStore getMapStore(FileSystem files, String fileName) {
     files.delete(fileName);
 
     log.warn("Creating new MVStore at {}", fileName);
