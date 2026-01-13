@@ -227,7 +227,7 @@ public class DialogState extends State implements KeyListener {
           } else if (value.equals("healer")) {
             heal();
           } else if (value.equals("charge")) {
-            new ChargeDialog(ui, context).show(context.getPlayer());
+            new ChargeDialog(ui, context, gameStores).show(context.getPlayer());
           } else if (value.equals("craft")) {
             new CrafterDialog(ui, small, bus, context, gameStores)
                 .show(context.getPlayer(), target);

@@ -21,7 +21,7 @@ package neon.entities.serialization;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
+import neon.core.GameContext;
 import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Entity;
@@ -31,18 +31,20 @@ public class EntitySerializer {
 
   private final ItemSerializer itemSerializer;
   private final CreatureSerializer creatureSerializer;
+  private final GameContext gameContext;
 
-  EntitySerializer(GameStores gameStores) {
+  EntitySerializer(GameStores gameStores, GameContext gameContext) {
     itemSerializer = new ItemSerializer(gameStores);
-    creatureSerializer = new CreatureSerializer(gameStores);
+    creatureSerializer = new CreatureSerializer(gameStores, gameContext);
+    this.gameContext = gameContext;
   }
 
   public Entity deserialize(DataInput input) throws IOException {
-      return switch (input.readUTF()) {
-          case "item" -> itemSerializer.deserialize(input);
-          case "creature" -> creatureSerializer.deserialize(input);
-          default -> null;
-      };
+    return switch (input.readUTF()) {
+      case "item" -> itemSerializer.deserialize(input);
+      case "creature" -> creatureSerializer.deserialize(input);
+      default -> null;
+    };
   }
 
   public void serialize(DataOutput output, Entity entity) throws IOException {

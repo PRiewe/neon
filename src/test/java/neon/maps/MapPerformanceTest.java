@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import neon.entities.Creature;
 import neon.entities.Item;
-import neon.narrative.QuestTracker;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
@@ -25,11 +24,13 @@ import org.junit.jupiter.api.Test;
 class MapPerformanceTest {
 
   private MapStore testDb;
+  ZoneFactory zoneFactory;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
   @AfterEach
@@ -137,7 +138,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneRegionInsertionPerformance() throws Exception {
-    Zone zone = new Zone("perf-zone", 1000, 0);
+    Zone zone = zoneFactory.createZone("perf-zone", 1000, 0);
     int regionCount = 500;
     int creaturesPerRegion = 10;
     int itemsPerRegion = 10;
@@ -190,7 +191,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneSpatialQueryPerformanceAtScale() throws Exception {
-    Zone zone = new Zone("spatial-perf-zone", 1001, 0);
+    Zone zone = zoneFactory.createZone("spatial-perf-zone", 1001, 0);
 
     // Create large zone with 500 regions, plus creatures and items
     long uidCounter = 20000;
@@ -240,7 +241,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneBulkRegionAddition() throws Exception {
-    Zone zone = new Zone("bulk-add-zone", 1002, 0);
+    Zone zone = zoneFactory.createZone("bulk-add-zone", 1002, 0);
 
     // Measure bulk addition time including creatures and items
     PerformanceHarness.MeasuredResult<Integer> result =
@@ -285,7 +286,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneGetRegionByPositionPerformance() throws Exception {
-    Zone zone = new Zone("position-perf-zone", 1003, 0);
+    Zone zone = zoneFactory.createZone("position-perf-zone", 1003, 0);
 
     // Create 100x100 grid (10,000 regions) with creatures and items
     long uidCounter = 40000;
@@ -341,7 +342,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneMultiLayerPerformance() throws Exception {
-    Zone zone = new Zone("multilayer-perf-zone", 1004, 0);
+    Zone zone = zoneFactory.createZone("multilayer-perf-zone", 1004, 0);
 
     int layerCount = 10;
     int regionsPerLayer = 50;
@@ -408,15 +409,13 @@ class MapPerformanceTest {
         new Atlas(
             TestEngineContext.getStubFileSystem(),
             "test-atlas",
-            TestEngineContext.getTestEntityStore(),
+            TestEngineContext.getTestStore(),
             TestEngineContext.getMapLoader());
     AtlasPosition atlasPosition =
         new AtlasPosition(
-            atlas,
-            TestEngineContext.getTestZoneActivator(),
-            TestEngineContext.getTestResources(),
-            new QuestTracker(),
-            TestEngineContext.getTestEntityStore());
+            TestEngineContext.getGameStores(),
+            TestEngineContext.getQuestTracker(),
+            TestEngineContext.getTestContext().getPlayer());
     int mapCount = 100;
 
     PerformanceHarness.MeasuredResult<Integer> result =
@@ -448,11 +447,9 @@ class MapPerformanceTest {
             TestEngineContext.getMapLoader());
     AtlasPosition atlasPosition =
         new AtlasPosition(
-            atlas,
-            TestEngineContext.getTestZoneActivator(),
-            TestEngineContext.getTestResources(),
-            new QuestTracker(),
-            TestEngineContext.getTestEntityStore());
+            TestEngineContext.getGameStores(),
+            TestEngineContext.getQuestTracker(),
+            TestEngineContext.getTestContext().getPlayer());
 
     // Create and cache 50 maps
     List<World> worlds = new ArrayList<>();
@@ -491,11 +488,9 @@ class MapPerformanceTest {
     Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
         new AtlasPosition(
-            atlas,
-            TestEngineContext.getTestZoneActivator(),
-            TestEngineContext.getTestResources(),
-            new QuestTracker(),
-            TestEngineContext.getTestEntityStore());
+            TestEngineContext.getGameStores(),
+            TestEngineContext.getQuestTracker(),
+            TestEngineContext.getTestContext().getPlayer());
 
     World world = new World("Zone Access World", 4000);
     atlasPosition.setMap(world);
@@ -544,11 +539,9 @@ class MapPerformanceTest {
             TestEngineContext.getMapLoader());
     AtlasPosition atlasPosition =
         new AtlasPosition(
-            atlas,
-            TestEngineContext.getTestZoneActivator(),
-            TestEngineContext.getTestResources(),
-            new QuestTracker(),
-            TestEngineContext.getTestEntityStore());
+            TestEngineContext.getGameStores(),
+            TestEngineContext.getQuestTracker(),
+            TestEngineContext.getTestContext().getPlayer());
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(
@@ -623,11 +616,9 @@ class MapPerformanceTest {
             TestEngineContext.getMapLoader());
     AtlasPosition atlasPosition =
         new AtlasPosition(
-            atlas,
-            TestEngineContext.getTestZoneActivator(),
-            TestEngineContext.getTestResources(),
-            new QuestTracker(),
-            TestEngineContext.getTestEntityStore());
+            TestEngineContext.getGameStores(),
+            TestEngineContext.getQuestTracker(),
+            TestEngineContext.getTestContext().getPlayer());
 
     Runtime runtime = Runtime.getRuntime();
     runtime.gc();

@@ -23,7 +23,7 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.editor.ColorCellRenderer;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.entities.property.Habitat;
@@ -45,10 +45,12 @@ public class CreatureEditor extends ObjectEditor {
   private JFormattedTextField strField, conField, dexField, intField, wisField, chaField;
   private JComboBox<RCreature.AIType> aiTypeBox;
   private JSpinner aggressionSpinner, confidenceSpinner;
+  private final DataStore dataStore;
 
-  public CreatureEditor(JFrame parent, RCreature rCreature) {
+  public CreatureEditor(JFrame parent, RCreature rCreature, DataStore dataStore) {
     super(parent, "Creature Editor: " + rCreature.id);
     this.data = rCreature;
+    this.dataStore = dataStore;
 
     // algemeen
     JPanel propPanel = new JPanel();
@@ -399,7 +401,7 @@ public class CreatureEditor extends ObjectEditor {
     data.aiAggr = (Integer) aggressionSpinner.getValue();
     data.aiConf = (Integer) confidenceSpinner.getValue();
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {

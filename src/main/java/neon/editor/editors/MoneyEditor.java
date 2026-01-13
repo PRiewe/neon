@@ -22,7 +22,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.editor.ColorCellRenderer;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RItem;
@@ -33,10 +33,14 @@ public class MoneyEditor extends ObjectEditor {
   private JFormattedTextField costField, charField;
   private JComboBox<String> colorBox;
   private RItem data;
+  private final DataStore dataStore;
+  private final HelpLabels helpLabels;
 
-  public MoneyEditor(JFrame parent, RItem data) {
+  public MoneyEditor(JFrame parent, RItem data, DataStore dataStore) {
     super(parent, "Money Editor: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
+    helpLabels = new HelpLabels(dataStore);
 
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
@@ -55,7 +59,7 @@ public class MoneyEditor extends ObjectEditor {
     colorBox.addActionListener(new ColorListener(colorBox));
     charField = new JFormattedTextField(getMaskFormatter("*", 'X'));
     JLabel nameHelpLabel = HelpLabels.getNameHelpLabel();
-    JLabel costHelpLabel = HelpLabels.getCostHelpLabel();
+    JLabel costHelpLabel = helpLabels.getCostHelpLabel();
     JLabel colorHelpLabel = HelpLabels.getColorHelpLabel();
     JLabel charHelpLabel = HelpLabels.getCharHelpLabel();
     layout.setVerticalGroup(
@@ -133,6 +137,6 @@ public class MoneyEditor extends ObjectEditor {
     data.color = colorBox.getSelectedItem().toString();
     data.text = charField.getText();
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 }

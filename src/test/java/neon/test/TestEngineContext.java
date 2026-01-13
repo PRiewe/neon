@@ -12,6 +12,7 @@ import neon.core.GameStores;
 import neon.core.event.TaskQueue;
 import neon.entities.Entity;
 import neon.entities.Player;
+import neon.entities.UIDStore;
 import neon.entities.components.PhysicsComponent;
 import neon.entities.property.Gender;
 import neon.maps.*;
@@ -37,10 +38,9 @@ public class TestEngineContext {
 
   /** -- GETTER -- Gets the test Atlas instance. */
   @Getter private static Atlas testAtlas;
-@Getter
-  private static GameStores gameStores;
-  @Getter
-  private static StubResourceManager testResources;
+
+  @Getter private static GameStores gameStores;
+  @Getter private static StubResourceManager testResources;
   private static Game testGame;
   @Getter private static neon.entities.UIDStore testStore;
   @Getter private static PhysicsManager stubPhysicsManager;
@@ -92,10 +92,9 @@ public class TestEngineContext {
     setStaticField(Engine.class, "resources", testResources);
 
     // Create test UIDStore
-    testStore = new neon.entities.UIDStore(testDb);
+    testStore = new neon.entities.UIDStore(getStubFileSystem(), testDb);
 
     // Create test EntityStore
-
 
     // Create stub PhysicsManager and ZoneActivator
     stubPhysicsManager = new StubPhysicsManager();
@@ -103,16 +102,14 @@ public class TestEngineContext {
     testZoneActivator = new ZoneActivator(stubPhysicsManager);
 
     // Create ZoneFactory for tests
-    testZoneFactory = new ZoneFactory(db);
-    mapLoader = new MapLoader( getStubFileSystem(),testStore, testResources);
+    testZoneFactory = new ZoneFactory(testDb, testStore, testResources);
+    mapLoader =
+        new MapLoader(getStubFileSystem(), testStore, testResources, testZoneFactory, stubPlayer);
     // Create test Atlas with dependency injection (doesn't need Engine.game)
     testAtlas = new Atlas(getStubFileSystem(), testDb, testStore, mapLoader);
-    gameStores =
-        new DefaultGameStores(getTestResources(), getStubFileSystem(), testStore, testAtlas);
+    gameStores = new DefaultGameStores(getTestResources(), getStubFileSystem(), stubPlayer);
     questTracker = new QuestTracker(gameStores);
-    atlasPosition =
-        new AtlasPosition(
-            testAtlas, testZoneActivator, testResources, questTracker, testStore);
+    atlasPosition = new AtlasPosition(gameStores, questTracker, stubPlayer);
     // Create test Game using new DI constructor
 
     testGame = new Game(stubPlayer, gameStores, atlasPosition);
@@ -176,6 +173,10 @@ public class TestEngineContext {
   /** Gets the test ResourceProvider instance. */
   public static ResourceProvider getTestResourceProvider() {
     return testResources;
+  }
+
+  public static UIDStore getTestEntityStore() {
+    return TestEngineContext.getTestStore();
   }
 
   public static void loadTestResourceViaConfig(String configFilename) throws Exception {
@@ -279,7 +280,13 @@ public class TestEngineContext {
     private final PhysicsComponent physicsComponent;
 
     public StubPlayer() {
-      super(new RCreature("test"), "TestPlayer", Gender.MALE, Specialisation.combat, "Warrior",getGameStores());
+      super(
+          new RCreature("test"),
+          "TestPlayer",
+          Gender.MALE,
+          Specialisation.combat,
+          "Warrior",
+          getGameStores());
       this.physicsComponent = new PhysicsComponent(0L, new Rectangle(0, 0, 1, 1));
     }
 

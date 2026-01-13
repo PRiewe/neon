@@ -21,7 +21,7 @@ package neon.editor.editors;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RDungeonTheme;
@@ -30,10 +30,12 @@ public class DungeonThemeEditor extends ObjectEditor {
   private JTextField zoneField;
   private JFormattedTextField minField, maxField, branchField;
   private RDungeonTheme theme;
+  private final DataStore dataStore;
 
-  public DungeonThemeEditor(JFrame parent, RDungeonTheme theme) {
+  public DungeonThemeEditor(JFrame parent, RDungeonTheme theme, DataStore dataStore) {
     super(parent, "Dungeon theme: " + theme.id);
     this.theme = theme;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel();
     GroupLayout layout = new GroupLayout(props);
@@ -120,7 +122,7 @@ public class DungeonThemeEditor extends ObjectEditor {
     theme.max = Integer.parseInt(maxField.getText());
     theme.branching = Integer.parseInt(branchField.getText());
     theme.zones = zoneField.getText();
-    theme.setPath(Editor.getStore().getActive().get("id"));
+    theme.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {

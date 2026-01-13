@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
+import neon.core.GameContext;
 import neon.core.GameStores;
 import neon.core.event.TurnEvent;
 import neon.core.event.UpdateEvent;
@@ -50,12 +51,14 @@ public class TurnHandler {
 
   private final GameStores gameStores;
   private final InventoryHandler inventoryHandler;
+  private final GameContext gameContext;
 
-  public TurnHandler(GamePanel panel, GameStores gameStores) {
+  public TurnHandler(GamePanel panel, GameStores gameStores, GameContext gameContext) {
     this.panel = panel;
 
     this.gameStores = gameStores;
     inventoryHandler = new InventoryHandler(gameStores.getStore());
+    this.gameContext = gameContext;
     CServer ini = (CServer) gameStores.getResources().getResource("ini", "config");
     range = ini.getAIRange();
   }
@@ -153,7 +156,8 @@ public class TurnHandler {
             new TownGenerator(zone, gameStores.getStore(), gameStores.getResources())
                 .generate(r.getX(), r.getY(), r.getWidth(), r.getHeight(), theme, r.getZ());
           } else {
-            new WildernessGenerator(zone, gameStores)
+            new WildernessGenerator(
+                    zone, gameStores.getResources(), gameStores.getStore(), gameContext.getPlayer())
                 .generate(r, theme);
           }
         }

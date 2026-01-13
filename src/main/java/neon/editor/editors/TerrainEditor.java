@@ -22,7 +22,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.editor.ColorCellRenderer;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.maps.Region.Modifier;
 import neon.resources.RTerrain;
@@ -33,10 +33,12 @@ public class TerrainEditor extends ObjectEditor {
   private JComboBox<String> colorBox;
   private JComboBox<Modifier> modBox;
   private RTerrain data;
+  private final DataStore dataStore;
 
-  public TerrainEditor(JFrame parent, RTerrain data) {
+  public TerrainEditor(JFrame parent, RTerrain data, DataStore dataStore) {
     super(parent, "Terrain Editor: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     JPanel terrainProps = new JPanel();
     GroupLayout layout = new GroupLayout(terrainProps);
@@ -113,6 +115,6 @@ public class TerrainEditor extends ObjectEditor {
     data.color = colorBox.getSelectedItem().toString();
     data.text = charField.getText();
     data.modifier = (Modifier) modBox.getSelectedItem();
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 }

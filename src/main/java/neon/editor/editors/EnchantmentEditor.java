@@ -23,7 +23,7 @@ import java.awt.event.*;
 import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.magic.Effect;
@@ -36,10 +36,12 @@ public class EnchantmentEditor extends ObjectEditor implements ActionListener {
   private JComboBox<String> itemBox;
   private JTextArea scriptArea;
   private RSpell.Enchantment data;
+  private final DataStore dataStore;
 
-  public EnchantmentEditor(JFrame parent, RSpell.Enchantment data) {
+  public EnchantmentEditor(JFrame parent, RSpell.Enchantment data, DataStore dataStore) {
     super(parent, "Enchantment: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel();
     GroupLayout layout = new GroupLayout(props);
@@ -181,7 +183,7 @@ public class EnchantmentEditor extends ObjectEditor implements ActionListener {
     data.effect = effectBox.getItemAt(effectBox.getSelectedIndex());
     data.duration = Integer.parseInt(durationField.getText());
     data.script = scriptArea.getText();
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   public void actionPerformed(ActionEvent e) {

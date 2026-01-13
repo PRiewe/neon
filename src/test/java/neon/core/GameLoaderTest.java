@@ -61,10 +61,10 @@ public class GameLoaderTest {
 
     // Create instance of GameLoader with GameContext
     // Configuration is not needed for initGame(), only for loadGame()
-    GameLoader gameLoader = new GameLoader(context, null);
+    GameLoader gameLoader = new GameLoader(context, TestEngineContext.getGameStores(), null);
 
     // Get RSign "alraun" from our resource manager
-    RSign alraun = (RSign) context.getResources().getResource("s_alraun", "magic");
+    RSign alraun = (RSign) TestEngineContext.getTestResources().getResource("s_alraun", "magic");
 
     // Call gameLoader.initGame
     gameLoader.initGame(

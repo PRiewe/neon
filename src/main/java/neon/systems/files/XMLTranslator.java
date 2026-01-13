@@ -26,8 +26,7 @@ import org.jdom2.output.*;
 /**
  * This class can load, save and translate an xml file from disk.
  *
- * @author mdriesen
- * @deprecated As of Phase 5 of JDOM2 elimination, this class is deprecated in favor of {@link
+ * @author mdriesen As of Phase 5 of JDOM2 elimination, this class is deprecated in favor of {@link
  *     JacksonMapper} for XML parsing and serialization. JDOM2-based XML handling will be removed in
  *     Phase 7. Current usages:
  *     <ul>
@@ -38,7 +37,7 @@ import org.jdom2.output.*;
  *     Migration path: Replace XMLTranslator with JacksonMapper for new code. Existing code will be
  *     migrated as part of Phase 7 cleanup when JDOM constructors are removed.
  */
-@Deprecated(since = "0.4.1", forRemoval = true)
+// Deprecated(since = "0.4.1", forRemoval = true)
 public class XMLTranslator implements Translator<Document> {
   public Document translate(InputStream input) {
     Document doc = new Document();

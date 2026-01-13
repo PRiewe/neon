@@ -21,7 +21,7 @@ package neon.editor.resources;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.maps.MapEditor;
 import neon.resources.RCreature;
 import neon.resources.RPerson;
@@ -32,14 +32,15 @@ import org.jdom2.Element;
 public class IPerson extends IObject {
   private RCreature species;
 
-  public IPerson(Element properties) {
-    super(properties);
-    resource = (RPerson) Editor.resources.getResource(properties.getAttributeValue("id"));
-    species = (RCreature) Editor.resources.getResource(((RPerson) resource).species);
+  public IPerson(Element properties, DataStore dataStore) {
+    super(properties, dataStore);
+    resource =
+        (RPerson) dataStore.getResourceManager().getResource(properties.getAttributeValue("id"));
+    species = (RCreature) dataStore.getResourceManager().getResource(((RPerson) resource).species);
   }
 
-  public IPerson(RPerson resource, int x, int y, int z, Element e) {
-    super(resource, x, y, z, 0);
+  public IPerson(RPerson resource, int x, int y, int z, Element e, DataStore dataStore) {
+    super(resource, x, y, z, 0, dataStore);
     this.resource = resource;
   }
 

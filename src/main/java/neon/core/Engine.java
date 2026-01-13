@@ -101,7 +101,8 @@ public class Engine implements Runnable {
 
     files = new FileSystem();
     resources = new ResourceManager();
-    gameStores = new DefaultGameStores(resources, files);
+
+    gameStores = new DefaultGameStores(resources, files, null);
     physics = new PhysicsSystem();
     physicsManager = new EnginePhysicsManager(physics);
     queue = new TaskQueue();
@@ -136,7 +137,7 @@ public class Engine implements Runnable {
     bus.subscribe(adapter);
     bus.subscribe(quests);
     bus.subscribe(new GameLoader(context, gameStores, config));
-    bus.subscribe(new GameSaver(queue,gameStores));
+    bus.subscribe(new GameSaver(queue, gameStores));
   }
 
   /**

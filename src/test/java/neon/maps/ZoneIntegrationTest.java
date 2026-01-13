@@ -19,11 +19,13 @@ import org.junit.jupiter.api.Test;
 class ZoneIntegrationTest {
 
   private MapStore testDb;
+  private ZoneFactory zoneFactory;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
   @AfterEach
@@ -34,9 +36,9 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneNameAndIndex() {
-    Zone zone1 = new Zone("Dungeon Level 1", 100, 0);
-    Zone zone2 = new Zone("Dungeon Level 2", 100, 1);
-    Zone zone3 = new Zone("Dungeon Level 3", 100, 2);
+    Zone zone1 = zoneFactory.createZone("Dungeon Level 1", 100, 0);
+    Zone zone2 = zoneFactory.createZone("Dungeon Level 2", 100, 1);
+    Zone zone3 = zoneFactory.createZone("Dungeon Level 3", 100, 2);
 
     assertEquals("Dungeon Level 1", zone1.getName());
     assertEquals(0, zone1.getIndex());
@@ -50,7 +52,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneDimensions() {
-    Zone zone = new Zone("test-zone", 1, 0);
+    Zone zone = zoneFactory.createZone("test-zone", 1, 0);
 
     // Add regions to establish zone bounds
     zone.addRegion(MapTestFixtures.createTestRegion(0, 0, 100, 50));
@@ -69,7 +71,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneRegionManagement() {
-    Zone zone = new Zone("region-test", 2, 0);
+    Zone zone = zoneFactory.createZone("region-test", 2, 0);
 
     // Start empty
     assertTrue(zone.getRegions().isEmpty());
@@ -99,7 +101,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneRegionSpatialQueries() {
-    Zone zone = new Zone("spatial-zone", 3, 0);
+    Zone zone = zoneFactory.createZone("spatial-zone", 3, 0);
 
     // Create a 5x5 grid of regions
     for (int y = 0; y < 5; y++) {
@@ -130,7 +132,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneGetRegionByPosition() {
-    Zone zone = new Zone("position-test", 4, 0);
+    Zone zone = zoneFactory.createZone("position-test", 4, 0);
 
     Region r1 = MapTestFixtures.createTestRegion("r1", 0, 0, 50, 50, 0);
     Region r2 = MapTestFixtures.createTestRegion("r2", 60, 60, 40, 40, 0);
@@ -154,7 +156,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneRegionFilteringByProperty() {
-    Zone zone = new Zone("filter-test", 5, 0);
+    Zone zone = zoneFactory.createZone("filter-test", 5, 0);
 
     // Add regions at different z-orders
     Region r0 = MapTestFixtures.createTestRegion("ground", 0, 0, 100, 100, 0);
@@ -179,7 +181,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneToString() {
-    Zone zone = new Zone("Test Zone Name", 6, 0);
+    Zone zone = zoneFactory.createZone("Test Zone Name", 6, 0);
 
     String str = zone.toString();
     assertNotNull(str);
@@ -188,7 +190,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneTheme() {
-    Zone zone = new Zone("themed-zone", 7, 0);
+    Zone zone = zoneFactory.createZone("themed-zone", 7, 0);
 
     // Theme is set via constructor, test that getTheme doesn't throw
     assertDoesNotThrow(() -> zone.getTheme());
@@ -196,7 +198,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneMapReference() {
-    Zone zone = new Zone("map-ref-zone", 8, 0);
+    Zone zone = zoneFactory.createZone("map-ref-zone", 8, 0);
 
     // getMap returns the map UID (int, protected method)
     assertDoesNotThrow(
@@ -208,7 +210,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneIsRandom() {
-    Zone zone = new Zone("random-zone", 9, 0);
+    Zone zone = zoneFactory.createZone("random-zone", 9, 0);
 
     // Test isRandom method
     assertDoesNotThrow(
@@ -221,7 +223,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneFix() {
-    Zone zone = new Zone("fix-zone", 10, 0);
+    Zone zone = zoneFactory.createZone("fix-zone", 10, 0);
 
     // Test fix method - sets theme to null (protected method)
     assertDoesNotThrow(
@@ -233,7 +235,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneLargeScaleRegionManagement() {
-    Zone zone = new Zone("large-zone", 11, 0);
+    Zone zone = zoneFactory.createZone("large-zone", 11, 0);
 
     // Add 200 regions
     for (int i = 0; i < 200; i++) {
@@ -255,7 +257,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneMultipleZOrderLayers() {
-    Zone zone = new Zone("layered-zone", 12, 0);
+    Zone zone = zoneFactory.createZone("layered-zone", 12, 0);
 
     // Add 10 regions at each z-order (0-4)
     for (int z = 0; z < 5; z++) {
@@ -281,7 +283,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneSpatialQueryPerformance() {
-    Zone zone = new Zone("perf-zone", 13, 0);
+    Zone zone = zoneFactory.createZone("perf-zone", 13, 0);
 
     // Add 100 regions in a grid
     for (int y = 0; y < 10; y++) {
@@ -313,7 +315,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneRegionAdditionCycles() {
-    Zone zone = new Zone("cycle-zone", 14, 0);
+    Zone zone = zoneFactory.createZone("cycle-zone", 14, 0);
 
     for (int cycle = 0; cycle < 10; cycle++) {
       // Add 20 regions
@@ -334,7 +336,7 @@ class ZoneIntegrationTest {
 
   @Test
   void testZoneEmptyOperations() {
-    Zone zone = new Zone("empty-zone", 15, 0);
+    Zone zone = zoneFactory.createZone("empty-zone", 15, 0);
 
     // Test operations on empty zone
     assertTrue(zone.getRegions().isEmpty());

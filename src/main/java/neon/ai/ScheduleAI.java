@@ -19,31 +19,40 @@
 package neon.ai;
 
 import java.awt.Point;
-import neon.core.Engine;
 import neon.entities.Creature;
+import neon.entities.Player;
+import neon.entities.UIDStore;
 import neon.entities.components.HealthComponent;
 import neon.entities.components.ShapeComponent;
+import neon.resources.ResourceManager;
 
 // TODO: schedule in editor
 public class ScheduleAI extends AI {
   private Point[] schedule;
   private int current = 0;
 
-  public ScheduleAI(Creature creature, byte aggression, byte confidence, Point[] schedule) {
-    super(creature, aggression, confidence);
+  public ScheduleAI(
+      Creature creature,
+      byte aggression,
+      byte confidence,
+      Point[] schedule,
+      ResourceManager resourceManager,
+      UIDStore uidStore,
+      Player player) {
+    super(creature, aggression, confidence, resourceManager, uidStore, player);
     this.schedule = schedule;
   }
 
   public void act() {
-    if (isHostile() && sees(Engine.getPlayer())) {
+    if (isHostile() && sees(player)) {
       HealthComponent health = creature.getHealthComponent();
       if (100 * health.getHealth() / health.getBaseHealth() < confidence) {
         // 80% chance to just flee, 20% chance to heal; if no heal spell, flee anyway
         if (Math.random() > 0.2 || !(cure() || heal())) {
-          flee(Engine.getPlayer());
+          flee(player);
         }
       } else {
-        hunt(Engine.getPlayer());
+        hunt(player);
       }
     } else {
       ShapeComponent bounds = creature.getShapeComponent();

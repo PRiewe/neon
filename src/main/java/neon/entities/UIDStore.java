@@ -22,8 +22,10 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.io.*;
 import java.util.Map;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import neon.maps.services.EntityStore;
+import neon.systems.files.FileSystem;
 import neon.util.mapstorage.MapStore;
 import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import org.h2.mvstore.MVStore;
@@ -39,7 +41,7 @@ import org.h2.mvstore.MVStore;
 public class UIDStore implements EntityStore, Closeable {
   // dummy uid for objects that don't actually exist
   public static final long DUMMY = 0;
-
+  @Getter private final FileSystem fileSystem;
   // uid database
   private final MapStore uidDb;
   // uids of all objects in the game
@@ -54,13 +56,15 @@ public class UIDStore implements EntityStore, Closeable {
    *
    * @param file
    */
-  public UIDStore(String file) {
+  public UIDStore(FileSystem fileSystem, String file) {
+    this.fileSystem = fileSystem;
     uidDb = new MapStoreMVStoreAdapter(MVStore.open(file));
     objects = uidDb.openMap("object");
     mods = uidDb.openMap("mods");
   }
 
-  public UIDStore(MapStore mapStore) {
+  public UIDStore(FileSystem fileSystem, MapStore mapStore) {
+    this.fileSystem = fileSystem;
     uidDb = mapStore;
     objects = uidDb.openMap("object");
     mods = uidDb.openMap("mods");

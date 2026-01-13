@@ -63,13 +63,16 @@ public class GameState extends State implements KeyListener, CollisionListener {
     this.ui = ui;
     this.context = context;
     keys = (CClient) gameStores.getResources().getResource("client", "config");
-    panel = new GamePanel(context,new CombatUtils(gameStores.getStore()));
+    panel = new GamePanel(context, new CombatUtils(gameStores.getStore()));
     this.gameStores = gameStores;
     setVariable("panel", panel);
 
     // makes functions available for scripting:
-    context.getScriptEngine().getBindings("js").putMember("engine", new ScriptInterface(panel,gameStores.getStore(),context));
-    bus.subscribe(new TurnHandler(panel, gameStores));
+    context
+        .getScriptEngine()
+        .getBindings("js")
+        .putMember("engine", new ScriptInterface(panel, gameStores.getStore(), context));
+    bus.subscribe(new TurnHandler(panel, gameStores, context));
   }
 
   @Override

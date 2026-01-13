@@ -20,11 +20,26 @@ package neon.ai;
 
 import java.awt.Point;
 import neon.entities.Creature;
+import neon.entities.Player;
+import neon.entities.UIDStore;
 import neon.resources.RCreature;
 import neon.resources.RCreature.AIType;
 import neon.resources.RPerson;
+import neon.resources.ResourceManager;
 
 public class AIFactory {
+
+  private final Player player;
+
+  private final ResourceManager resourceManager;
+  private final UIDStore uidStore;
+
+  public AIFactory(ResourceManager resourceManager, UIDStore uidStore, Player player) {
+    this.resourceManager = resourceManager;
+    this.uidStore = uidStore;
+    this.player = player;
+  }
+
   /**
    * Loads the AI of an NPC.
    *
@@ -73,13 +88,16 @@ public class AIFactory {
   private AI getAI(AIType type, Creature creature, byte aggression, byte confidence, int range) {
     switch (type) {
       case wander:
-        return new BasicAI(creature, aggression, confidence);
+        return new BasicAI(creature, aggression, confidence, resourceManager, uidStore, player);
       case guard:
-        return new GuardAI(creature, aggression, confidence, range);
+        return new GuardAI(
+            creature, aggression, confidence, range, resourceManager, uidStore, player);
       case schedule:
-        return new ScheduleAI(creature, aggression, confidence, new Point[0]);
+        return new ScheduleAI(
+            creature, aggression, confidence, new Point[0], resourceManager, uidStore, player);
       default:
-        return new GuardAI(creature, aggression, confidence, range);
+        return new GuardAI(
+            creature, aggression, confidence, range, resourceManager, uidStore, player);
     }
   }
 }

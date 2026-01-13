@@ -21,17 +21,19 @@ package neon.editor.editors;
 import java.awt.BorderLayout;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.editor.resources.RFaction;
 
 public class FactionEditor extends ObjectEditor {
   private RFaction faction;
   private JTextField nameField;
+  private final DataStore dataStore;
 
-  public FactionEditor(JFrame parent, RFaction data) {
+  public FactionEditor(JFrame parent, RFaction data, DataStore dataStore) {
     super(parent, "Faction Editor: " + data.id);
     faction = data;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel();
     props.add(new JLabel("Name: "));
@@ -44,7 +46,7 @@ public class FactionEditor extends ObjectEditor {
 
   protected void save() {
     faction.name = nameField.getText();
-    faction.setPath(Editor.getStore().getActive().get("id"));
+    faction.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {

@@ -23,7 +23,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import neon.ai.AIFactory;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.GameStores;
 import neon.entities.Construct;
 import neon.entities.Creature;
@@ -39,13 +39,21 @@ import neon.resources.ResourceManager;
 // TODO: factions
 public class CreatureSerializer {
   private static final long serialVersionUID = -2452444993764883434L;
-  private final AIFactory aiFactory = new AIFactory();
+  private final AIFactory aiFactory;
   private final SpellFactory spellFactory;
   private final ResourceManager resourceManager;
-  public CreatureSerializer(GameStores gameStores) {
+  private final GameContext gameContext;
+  private final GameStores gameStores;
+
+  public CreatureSerializer(GameStores gameStores, GameContext gameContext) {
     spellFactory = new SpellFactory(gameStores.getResources());
     resourceManager = gameStores.getResources();
+    this.gameStores = gameStores;
+    this.gameContext = gameContext;
+    aiFactory =
+        new AIFactory(gameStores.getResources(), gameStores.getStore(), gameContext.getPlayer());
   }
+
   public Creature deserialize(DataInput in) throws IOException {
     String id = in.readUTF();
     String species = in.readUTF();
@@ -135,14 +143,15 @@ public class CreatureSerializer {
     Creature creature;
 
     RCreature rc = (RCreature) resourceManager.getResource(species);
-      creature = switch (rc.type) {
+    creature =
+        switch (rc.type) {
           case construct -> new Construct(id, uid, rc);
           case humanoid -> new Hominid(id, uid, rc);
           case daemon -> new Daemon(id, uid, rc);
           case dragon -> new Dragon(id, uid, rc);
           case goblin -> new Hominid(id, uid, rc);
           default -> new Creature(id, uid, rc);
-      };
+        };
 
     return creature;
   }

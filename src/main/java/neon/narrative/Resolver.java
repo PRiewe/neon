@@ -18,7 +18,6 @@
 
 package neon.narrative;
 
-
 public class Resolver {
   //  QuestTracker tracker;
   //

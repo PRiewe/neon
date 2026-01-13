@@ -28,6 +28,7 @@ import java.util.jar.JarFile;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.tree.*;
+import lombok.Getter;
 import neon.editor.help.HelpLabels;
 import neon.editor.maps.*;
 import neon.editor.resources.*;
@@ -39,10 +40,10 @@ import neon.ui.HelpWindow;
 // TODO: use mbassador for events
 public class Editor implements Runnable, ActionListener {
   public static JCheckBoxMenuItem tShow, tEdit, oShow, oEdit;
-  private final FileSystem files;
-  private final ResourceManager resources;
-  private static JFrame frame;
-  private static DataStore store;
+  @Getter private final FileSystem files;
+  @Getter private final ResourceManager resources;
+  @Getter private static JFrame frame;
+  @Getter private final DataStore store;
   private static JPanel toolPanel;
   private static StatusBar status;
 
@@ -84,7 +85,7 @@ public class Editor implements Runnable, ActionListener {
     // stuff
     files = new FileSystem();
     resources = new ResourceManager();
-    store = new DataStore(resources,files);
+    store = new DataStore(resources, files);
 
     // menu bar
     menuBar = new JMenuBar();
@@ -204,7 +205,7 @@ public class Editor implements Runnable, ActionListener {
     // panels with maps
     mapTabbedPane = new JTabbedPane();
     JPanel mapPanel = new JPanel(new BorderLayout());
-    mapEditor = new MapEditor(mapTabbedPane, mapPanel,resources);
+    mapEditor = new MapEditor(mapTabbedPane, mapPanel, store);
 
     // panel with objects and terrain
     JTabbedPane editPanel = new JTabbedPane();
@@ -240,14 +241,6 @@ public class Editor implements Runnable, ActionListener {
     frame.pack();
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
-  }
-
-  public static DataStore getStore() {
-    return store;
-  }
-
-  public static JFrame getFrame() {
-    return frame;
   }
 
   private void createMain() {
@@ -335,7 +328,7 @@ public class Editor implements Runnable, ActionListener {
     }
     terrainList = new JList<RTerrain>(terrainListModel);
     terrainList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    TerrainListener listener = new TerrainListener(mapEditor, terrainList);
+    TerrainListener listener = new TerrainListener(mapEditor, terrainList, store);
     terrainList.addListSelectionListener(listener);
     terrainList.addMouseListener(listener);
     terrainPanel.add(new JScrollPane(terrainList));
@@ -345,94 +338,97 @@ public class Editor implements Runnable, ActionListener {
     DefaultMutableTreeNode top = new DefaultMutableTreeNode("Resources");
 
     // crafts
-    ResourceNode craftNode = new ResourceNode("Crafting", ResourceNode.ResourceType.CRAFT);
+    ResourceNode craftNode = new ResourceNode("Crafting", ResourceNode.ResourceType.CRAFT, store);
     for (RCraft craft : resources.getResources(RCraft.class)) {
-      craftNode.add(new ResourceNode(craft, ResourceNode.ResourceType.CRAFT));
+      craftNode.add(new ResourceNode(craft, ResourceNode.ResourceType.CRAFT, store));
     }
     top.add(craftNode);
 
     // factions
-    ResourceNode factionNode = new ResourceNode("Factions", ResourceNode.ResourceType.FACTION);
+    ResourceNode factionNode =
+        new ResourceNode("Factions", ResourceNode.ResourceType.FACTION, store);
     for (RFaction faction : resources.getResources(RFaction.class)) {
-      factionNode.add(new ResourceNode(faction, ResourceNode.ResourceType.FACTION));
+      factionNode.add(new ResourceNode(faction, ResourceNode.ResourceType.FACTION, store));
     }
     top.add(factionNode);
 
     // region themes
-    ResourceNode regionNode = new ResourceNode("Region themes", ResourceNode.ResourceType.REGION);
+    ResourceNode regionNode =
+        new ResourceNode("Region themes", ResourceNode.ResourceType.REGION, store);
     for (RRegionTheme region : resources.getResources(RRegionTheme.class)) {
-      regionNode.add(new ResourceNode(region, ResourceNode.ResourceType.REGION));
+      regionNode.add(new ResourceNode(region, ResourceNode.ResourceType.REGION, store));
     }
     top.add(regionNode);
 
     // zone themes
-    ResourceNode zoneNode = new ResourceNode("Zone themes", ResourceNode.ResourceType.ZONE);
+    ResourceNode zoneNode = new ResourceNode("Zone themes", ResourceNode.ResourceType.ZONE, store);
     for (RZoneTheme zone : resources.getResources(RZoneTheme.class)) {
-      zoneNode.add(new ResourceNode(zone, ResourceNode.ResourceType.ZONE));
+      zoneNode.add(new ResourceNode(zone, ResourceNode.ResourceType.ZONE, store));
     }
     top.add(zoneNode);
 
     // dungeon themes
     ResourceNode dungeonNode =
-        new ResourceNode("Dungeon themes", ResourceNode.ResourceType.DUNGEON);
+        new ResourceNode("Dungeon themes", ResourceNode.ResourceType.DUNGEON, store);
     for (RDungeonTheme dungeon : resources.getResources(RDungeonTheme.class)) {
-      dungeonNode.add(new ResourceNode(dungeon, ResourceNode.ResourceType.DUNGEON));
+      dungeonNode.add(new ResourceNode(dungeon, ResourceNode.ResourceType.DUNGEON, store));
     }
     top.add(dungeonNode);
 
     // quests
-    ResourceNode questNode = new ResourceNode("Quests", ResourceNode.ResourceType.QUEST);
+    ResourceNode questNode = new ResourceNode("Quests", ResourceNode.ResourceType.QUEST, store);
     for (RQuest quest : resources.getResources(RQuest.class)) {
-      questNode.add(new ResourceNode(quest, ResourceNode.ResourceType.QUEST));
+      questNode.add(new ResourceNode(quest, ResourceNode.ResourceType.QUEST, store));
     }
     top.add(questNode);
 
     // alchemy
-    ResourceNode alchemyNode = new ResourceNode("Alchemy", ResourceNode.ResourceType.RECIPE);
+    ResourceNode alchemyNode = new ResourceNode("Alchemy", ResourceNode.ResourceType.RECIPE, store);
     for (RRecipe rr : resources.getResources(RRecipe.class)) {
-      alchemyNode.add(new ResourceNode(rr, ResourceNode.ResourceType.RECIPE));
+      alchemyNode.add(new ResourceNode(rr, ResourceNode.ResourceType.RECIPE, store));
     }
     top.add(alchemyNode);
 
     // tattoos
-    ResourceNode tattooNode = new ResourceNode("Tattoos", ResourceNode.ResourceType.TATTOO);
+    ResourceNode tattooNode = new ResourceNode("Tattoos", ResourceNode.ResourceType.TATTOO, store);
     for (RTattoo rt : resources.getResources(RTattoo.class)) {
-      tattooNode.add(new ResourceNode(rt, ResourceNode.ResourceType.TATTOO));
+      tattooNode.add(new ResourceNode(rt, ResourceNode.ResourceType.TATTOO, store));
     }
     top.add(tattooNode);
 
     // spells
-    ResourceNode spellNode = new ResourceNode("Spells", ResourceNode.ResourceType.SPELL);
-    ResourceNode powerNode = new ResourceNode("Powers", ResourceNode.ResourceType.POWER);
-    ResourceNode curseNode = new ResourceNode("Curses", ResourceNode.ResourceType.CURSE);
-    ResourceNode poisonNode = new ResourceNode("Poison", ResourceNode.ResourceType.POISON);
+    ResourceNode spellNode = new ResourceNode("Spells", ResourceNode.ResourceType.SPELL, store);
+    ResourceNode powerNode = new ResourceNode("Powers", ResourceNode.ResourceType.POWER, store);
+    ResourceNode curseNode = new ResourceNode("Curses", ResourceNode.ResourceType.CURSE, store);
+    ResourceNode poisonNode = new ResourceNode("Poison", ResourceNode.ResourceType.POISON, store);
     ResourceNode enchantNode =
-        new ResourceNode("Enchantments", ResourceNode.ResourceType.ENCHANTMENT);
-    ResourceNode diseaseNode = new ResourceNode("Diseases", ResourceNode.ResourceType.DISEASE);
+        new ResourceNode("Enchantments", ResourceNode.ResourceType.ENCHANTMENT, store);
+    ResourceNode diseaseNode =
+        new ResourceNode("Diseases", ResourceNode.ResourceType.DISEASE, store);
     ResourceNode levelNode =
-        new ResourceNode("Leveled spells", ResourceNode.ResourceType.LEVEL_SPELL);
+        new ResourceNode("Leveled spells", ResourceNode.ResourceType.LEVEL_SPELL, store);
     for (RSpell rs : resources.getResources(RSpell.class)) {
       if (rs instanceof LSpell) {
-        levelNode.add(new ResourceNode(rs, ResourceNode.ResourceType.LEVEL_SPELL));
+        levelNode.add(new ResourceNode(rs, ResourceNode.ResourceType.LEVEL_SPELL, store));
       } else {
         switch (rs.type) {
           case CURSE:
-            curseNode.add(new ResourceNode(rs, ResourceNode.ResourceType.CURSE));
+            curseNode.add(new ResourceNode(rs, ResourceNode.ResourceType.CURSE, store));
             break;
           case DISEASE:
-            diseaseNode.add(new ResourceNode(rs, ResourceNode.ResourceType.DISEASE));
+            diseaseNode.add(new ResourceNode(rs, ResourceNode.ResourceType.DISEASE, store));
             break;
           case ENCHANT:
-            enchantNode.add(new ResourceNode(rs, ResourceNode.ResourceType.ENCHANTMENT));
+            enchantNode.add(new ResourceNode(rs, ResourceNode.ResourceType.ENCHANTMENT, store));
             break;
           case POISON:
-            poisonNode.add(new ResourceNode(rs, ResourceNode.ResourceType.POISON));
+            poisonNode.add(new ResourceNode(rs, ResourceNode.ResourceType.POISON, store));
             break;
           case POWER:
-            powerNode.add(new ResourceNode(rs, ResourceNode.ResourceType.POWER));
+            powerNode.add(new ResourceNode(rs, ResourceNode.ResourceType.POWER, store));
             break;
           case SPELL:
-            spellNode.add(new ResourceNode(rs, ResourceNode.ResourceType.SPELL));
+            spellNode.add(new ResourceNode(rs, ResourceNode.ResourceType.SPELL, store));
             break;
         }
       }
@@ -446,14 +442,14 @@ public class Editor implements Runnable, ActionListener {
     top.add(levelNode);
 
     // signs
-    ResourceNode signNode = new ResourceNode("Birth signs", ResourceNode.ResourceType.SIGN);
+    ResourceNode signNode = new ResourceNode("Birth signs", ResourceNode.ResourceType.SIGN, store);
     for (RSign rs : resources.getResources(RSign.class)) {
-      signNode.add(new ResourceNode(rs, ResourceNode.ResourceType.SIGN));
+      signNode.add(new ResourceNode(rs, ResourceNode.ResourceType.SIGN, store));
     }
     top.add(signNode);
 
     resourceTree.setModel(new DefaultTreeModel(top));
-    resourceTree.addMouseListener(new ResourceTreeListener(resourceTree, frame));
+    resourceTree.addMouseListener(new ResourceTreeListener(resourceTree, frame, store));
     resourcePanel.add(new JScrollPane(resourceTree));
   }
 
@@ -461,80 +457,81 @@ public class Editor implements Runnable, ActionListener {
     DefaultMutableTreeNode top = new DefaultMutableTreeNode("Objects");
 
     // creatures;
-    ObjectNode creatureNode = new ObjectNode("Creatures", ObjectNode.ObjectType.CREATURE);
+    ObjectNode creatureNode = new ObjectNode("Creatures", ObjectNode.ObjectType.CREATURE, store);
     ObjectNode levelCreatureNode =
-        new ObjectNode("Leveled creatures", ObjectNode.ObjectType.LEVEL_CREATURE);
+        new ObjectNode("Leveled creatures", ObjectNode.ObjectType.LEVEL_CREATURE, store);
     for (RCreature rc : resources.getResources(RCreature.class)) {
       if (rc instanceof LCreature) {
-        levelCreatureNode.add(new ObjectNode(rc, ObjectNode.ObjectType.LEVEL_CREATURE));
+        levelCreatureNode.add(new ObjectNode(rc, ObjectNode.ObjectType.LEVEL_CREATURE, store));
       } else {
-        creatureNode.add(new ObjectNode(rc, ObjectNode.ObjectType.CREATURE));
+        creatureNode.add(new ObjectNode(rc, ObjectNode.ObjectType.CREATURE, store));
       }
     }
     top.add(creatureNode);
     top.add(levelCreatureNode);
 
     // NPCs
-    ObjectNode npcNode = new ObjectNode("NPCs", ObjectNode.ObjectType.NPC);
+    ObjectNode npcNode = new ObjectNode("NPCs", ObjectNode.ObjectType.NPC, store);
     for (RPerson rp : resources.getResources(RPerson.class)) {
-      npcNode.add(new ObjectNode(rp, ObjectNode.ObjectType.NPC));
+      npcNode.add(new ObjectNode(rp, ObjectNode.ObjectType.NPC, store));
     }
     top.add(npcNode);
 
     // items
-    ObjectNode itemNode = new ObjectNode("Items", ObjectNode.ObjectType.ITEM);
-    ObjectNode weaponNode = new ObjectNode("Weapons", ObjectNode.ObjectType.WEAPON);
-    ObjectNode clothingNode = new ObjectNode("Clothing", ObjectNode.ObjectType.CLOTHING);
-    ObjectNode armorNode = new ObjectNode("Armor", ObjectNode.ObjectType.ARMOR);
-    ObjectNode lightNode = new ObjectNode("Light", ObjectNode.ObjectType.LIGHT);
-    ObjectNode doorNode = new ObjectNode("Doors", ObjectNode.ObjectType.DOOR);
-    ObjectNode containerNode = new ObjectNode("Containers", ObjectNode.ObjectType.CONTAINER);
-    ObjectNode potionNode = new ObjectNode("Potions", ObjectNode.ObjectType.POTION);
-    ObjectNode scrollNode = new ObjectNode("Scrolls", ObjectNode.ObjectType.SCROLL);
-    ObjectNode bookNode = new ObjectNode("Books", ObjectNode.ObjectType.BOOK);
-    ObjectNode coinNode = new ObjectNode("Money", ObjectNode.ObjectType.MONEY);
-    ObjectNode foodNode = new ObjectNode("Food", ObjectNode.ObjectType.FOOD);
-    ObjectNode levelItemNode = new ObjectNode("Leveled items", ObjectNode.ObjectType.LEVEL_ITEM);
+    ObjectNode itemNode = new ObjectNode("Items", ObjectNode.ObjectType.ITEM, store);
+    ObjectNode weaponNode = new ObjectNode("Weapons", ObjectNode.ObjectType.WEAPON, store);
+    ObjectNode clothingNode = new ObjectNode("Clothing", ObjectNode.ObjectType.CLOTHING, store);
+    ObjectNode armorNode = new ObjectNode("Armor", ObjectNode.ObjectType.ARMOR, store);
+    ObjectNode lightNode = new ObjectNode("Light", ObjectNode.ObjectType.LIGHT, store);
+    ObjectNode doorNode = new ObjectNode("Doors", ObjectNode.ObjectType.DOOR, store);
+    ObjectNode containerNode = new ObjectNode("Containers", ObjectNode.ObjectType.CONTAINER, store);
+    ObjectNode potionNode = new ObjectNode("Potions", ObjectNode.ObjectType.POTION, store);
+    ObjectNode scrollNode = new ObjectNode("Scrolls", ObjectNode.ObjectType.SCROLL, store);
+    ObjectNode bookNode = new ObjectNode("Books", ObjectNode.ObjectType.BOOK, store);
+    ObjectNode coinNode = new ObjectNode("Money", ObjectNode.ObjectType.MONEY, store);
+    ObjectNode foodNode = new ObjectNode("Food", ObjectNode.ObjectType.FOOD, store);
+    ObjectNode levelItemNode =
+        new ObjectNode("Leveled items", ObjectNode.ObjectType.LEVEL_ITEM, store);
     for (RItem ri : resources.getResources(RItem.class)) {
       if (ri instanceof LItem) {
-        levelItemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LEVEL_ITEM));
+        levelItemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LEVEL_ITEM, store));
       } else {
         switch (ri.type) {
           case armor:
-            armorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ARMOR));
+            armorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ARMOR, store));
             break;
           case book:
-            bookNode.add(new ObjectNode(ri, ObjectNode.ObjectType.BOOK));
+            bookNode.add(new ObjectNode(ri, ObjectNode.ObjectType.BOOK, store));
             break;
           case clothing:
-            clothingNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CLOTHING));
+            clothingNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CLOTHING, store));
             break;
           case coin:
-            coinNode.add(new ObjectNode(ri, ObjectNode.ObjectType.MONEY));
+            coinNode.add(new ObjectNode(ri, ObjectNode.ObjectType.MONEY, store));
             break;
           case container:
-            containerNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CONTAINER));
+            containerNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CONTAINER, store));
             break;
           case door:
-            doorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.DOOR));
+            doorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.DOOR, store));
             break;
           case food:
-            foodNode.add(new ObjectNode(ri, ObjectNode.ObjectType.FOOD));
+            foodNode.add(new ObjectNode(ri, ObjectNode.ObjectType.FOOD, store));
             break;
           case light:
-            lightNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LIGHT));
+            lightNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LIGHT, store));
             break;
           case potion:
-            potionNode.add(new ObjectNode(ri, ObjectNode.ObjectType.POTION));
+            potionNode.add(new ObjectNode(ri, ObjectNode.ObjectType.POTION, store));
             break;
           case scroll:
-            scrollNode.add(new ObjectNode(ri, ObjectNode.ObjectType.SCROLL));
+            scrollNode.add(new ObjectNode(ri, ObjectNode.ObjectType.SCROLL, store));
             break;
           case weapon:
-            weaponNode.add(new ObjectNode(ri, ObjectNode.ObjectType.WEAPON));
+            weaponNode.add(new ObjectNode(ri, ObjectNode.ObjectType.WEAPON, store));
             break;
           default:
-            itemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ITEM));
+            itemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ITEM, store));
         }
       }
     }
@@ -553,7 +550,7 @@ public class Editor implements Runnable, ActionListener {
     top.add(levelItemNode);
 
     objectTree.setModel(new DefaultTreeModel(top));
-    objectTree.addMouseListener(new ObjectTreeListener(objectTree, frame));
+    objectTree.addMouseListener(new ObjectTreeListener(objectTree, frame, store));
     objectPanel.add(new JScrollPane(objectTree));
     objectTree.setDragEnabled(true);
   }
@@ -571,22 +568,22 @@ public class Editor implements Runnable, ActionListener {
       createExtension();
     } else if (e.getActionCommand().equals("script")) {
       if (scriptEditor == null) {
-        scriptEditor = new ScriptEditor(frame);
+        scriptEditor = new ScriptEditor(frame, store);
       }
       scriptEditor.show();
     } else if (e.getActionCommand().equals("cc")) {
       if (ccEditor == null) {
-        ccEditor = new CCEditor(frame);
+        ccEditor = new CCEditor(frame, store);
       }
       ccEditor.show();
     } else if (e.getActionCommand().equals("game")) {
       if (infoEditor == null) {
-        infoEditor = new InfoEditor(frame);
+        infoEditor = new InfoEditor(frame, store);
       }
       infoEditor.show();
     } else if (e.getActionCommand().equals("events")) {
       if (eventEditor == null) {
-        eventEditor = new EventEditor(frame);
+        eventEditor = new EventEditor(frame, store);
       }
       eventEditor.show();
     } else if (e.getActionCommand().equals("pack")) {

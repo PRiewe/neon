@@ -22,7 +22,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.resources.RDungeonTheme;
 import neon.resources.RTerrain;
 
@@ -36,6 +36,11 @@ public class MapDialog implements ActionListener {
   private JComboBox<String> terrainBox;
   private JComboBox<String> randomBox;
   private boolean cancelled;
+  private final DataStore dataStore;
+
+  public MapDialog(DataStore dataStore) {
+    this.dataStore = dataStore;
+  }
 
   public Properties showInputDialog(JFrame frame) {
     dialog = new JDialog(frame, "Create new map", true);
@@ -62,7 +67,7 @@ public class MapDialog implements ActionListener {
     mapPanel.add(ySpinner);
 
     terrainBox = new JComboBox<String>();
-    for (RTerrain terrain : Editor.resources.getResources(RTerrain.class)) {
+    for (RTerrain terrain : dataStore.getResourceManager().getResources(RTerrain.class)) {
       terrainBox.addItem(terrain.id);
     }
     mapPanel.add(new JLabel("Base terrain: "));
@@ -72,7 +77,7 @@ public class MapDialog implements ActionListener {
     randomBox = new JComboBox<String>();
     randomBox.addItem("none");
     randomBox.setEnabled(false);
-    for (RDungeonTheme theme : Editor.resources.getResources(RDungeonTheme.class)) {
+    for (RDungeonTheme theme : dataStore.getResourceManager().getResources(RDungeonTheme.class)) {
       randomBox.addItem(theme.id);
     }
     mapPanel.add(new JLabel("Random"));

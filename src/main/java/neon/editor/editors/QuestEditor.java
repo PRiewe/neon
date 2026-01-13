@@ -25,6 +25,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import neon.editor.DataStore;
 import neon.editor.DialogEditor;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
@@ -44,10 +45,12 @@ public class QuestEditor extends ObjectEditor implements ActionListener, MouseLi
   private ClickAction vRemove = new ClickAction("Remove variable");
   private ClickAction tAdd = new ClickAction("Add topic");
   private ClickAction tRemove = new ClickAction("Remove topic");
+  private final DataStore dataStore;
 
-  public QuestEditor(JFrame parent, RQuest quest) {
+  public QuestEditor(JFrame parent, RQuest quest, DataStore dataStore) {
     super(parent, "Quest Editor: " + quest.id);
     this.quest = quest;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel(new GridLayout(0, 1));
     props.setBorder(new TitledBorder("Properties"));

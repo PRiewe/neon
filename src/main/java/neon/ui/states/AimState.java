@@ -62,6 +62,7 @@ public class AimState extends State implements KeyListener {
   private final GameContext context;
   private final GameStores gameStores;
   private final CombatUtils combatUtils;
+
   /** Constructs a new AimModule. */
   public AimState(
       State state,

@@ -22,7 +22,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.editor.ColorCellRenderer;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RItem;
@@ -36,11 +36,14 @@ public class ItemEditor extends ObjectEditor {
   private JCheckBox aidBox, topBox, svgBox;
   private JFormattedTextField costField, weightField, charField;
   private RItem data;
+  private final DataStore dataStore;
+  private final HelpLabels helpLabels;
 
-  public ItemEditor(JFrame parent, RItem data) {
+  public ItemEditor(JFrame parent, RItem data, DataStore dataStore) {
     super(parent, "Item Editor: " + data.id);
     this.data = data;
-
+    this.dataStore = dataStore;
+    helpLabels = new HelpLabels(dataStore);
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
     itemProps.setLayout(layout);
@@ -66,7 +69,7 @@ public class ItemEditor extends ObjectEditor {
     topBox = new JCheckBox();
     svgBox = new JCheckBox();
     JLabel nameHelpLabel = HelpLabels.getNameHelpLabel();
-    JLabel costHelpLabel = HelpLabels.getCostHelpLabel();
+    JLabel costHelpLabel = helpLabels.getCostHelpLabel();
     JLabel colorHelpLabel = HelpLabels.getColorHelpLabel();
     JLabel charHelpLabel = HelpLabels.getCharHelpLabel();
     JLabel weightHelpLabel = HelpLabels.getWeightHelpLabel();
@@ -196,7 +199,7 @@ public class ItemEditor extends ObjectEditor {
     data.name = nameField.getText();
     data.cost = Integer.parseInt(costField.getText());
     data.weight = Float.parseFloat(weightField.getText());
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
     data.top = topBox.isSelected();
     if (svgBox.isSelected()) {
       data.svg = svgArea.getText();

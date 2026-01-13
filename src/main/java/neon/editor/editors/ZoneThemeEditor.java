@@ -25,7 +25,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RCreature;
@@ -41,10 +41,12 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
   private JTable creatureTable, itemTable, featureTable;
   private RZoneTheme theme;
   private JComboBox<String> typeBox;
+  private final DataStore dataStore;
 
-  public ZoneThemeEditor(JFrame parent, RZoneTheme theme) {
+  public ZoneThemeEditor(JFrame parent, RZoneTheme theme, DataStore dataStore) {
     super(parent, "Zone theme: " + theme.id);
     this.theme = theme;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel();
     GroupLayout layout = new GroupLayout(props);
@@ -197,7 +199,7 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
     theme.doors = doorsField.getText();
     theme.min = Integer.parseInt(minField.getText());
     theme.max = Integer.parseInt(maxField.getText());
-    theme.setPath(Editor.getStore().getActive().get("id"));
+    theme.setPath(dataStore.getActive().get("id"));
 
     theme.creatures.clear();
     for (Vector<?> data : (Vector<Vector>) creatureModel.getDataVector()) {
@@ -286,7 +288,7 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add item")) {
-        Object[] items = Editor.resources.getResources(RItem.class).toArray();
+        Object[] items = dataStore.getResourceManager().getResources(RItem.class).toArray();
         String s =
             (String)
                 JOptionPane.showInputDialog(
@@ -304,7 +306,7 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
       } else if (e.getActionCommand().equals("Remove item")) {
         itemModel.removeRow(itemTable.getSelectedRow());
       } else if (e.getActionCommand().equals("Add feature")) {
-        Object[] terrain = Editor.resources.getResources(RTerrain.class).toArray();
+        Object[] terrain = dataStore.getResourceManager().getResources(RTerrain.class).toArray();
         String s =
             (String)
                 JOptionPane.showInputDialog(
@@ -322,7 +324,7 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
       } else if (e.getActionCommand().equals("Remove feature")) {
         featureModel.removeRow(featureTable.getSelectedRow());
       } else if (e.getActionCommand().equals("Add creature")) {
-        Object[] creatures = Editor.resources.getResources(RCreature.class).toArray();
+        Object[] creatures = dataStore.getResourceManager().getResources(RCreature.class).toArray();
         String s =
             JOptionPane.showInputDialog(
                     frame,

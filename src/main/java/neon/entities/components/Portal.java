@@ -19,19 +19,15 @@
 package neon.entities.components;
 
 import java.awt.Point;
-
 import lombok.Getter;
 import lombok.Setter;
 import neon.maps.Map;
 
 public class Portal implements Component {
   private int destMapUID = -1; // -1 is zelfde map
-    @Setter
-    @Getter
-    private Point destPos;
+  @Setter @Getter private Point destPos;
 
-    @Setter
-    private int destZone = -1; // -1 is zelfde zone
+  @Setter private int destZone = -1; // -1 is zelfde zone
   private String theme;
   private long uid;
 
@@ -77,14 +73,14 @@ public class Portal implements Component {
     destMapUID = map;
   }
 
-    /**
+  /**
    * @return the dungeon level this portal leads to
    */
   public Integer getDestZone() {
     return destZone;
   }
 
-    /**
+  /**
    * @return the theme of the dungeon this door leads to
    */
   public String getDestTheme() {

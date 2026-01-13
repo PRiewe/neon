@@ -23,7 +23,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.editor.resources.IContainer;
 import neon.editor.resources.IObject;
@@ -42,11 +42,14 @@ public class ContainerInstanceEditor implements ActionListener, MouseListener {
   private JSpinner lockSpinner, trapSpinner;
   private JComboBox<RItem> keyBox;
   private JComboBox<RSpell.Enchantment> spellBox;
+  private final DataStore dataStore;
 
-  public ContainerInstanceEditor(IContainer ic, JFrame parent, ZoneTreeNode node) {
+  public ContainerInstanceEditor(
+      IContainer ic, JFrame parent, ZoneTreeNode node, DataStore dataStore) {
     container = ic;
     this.node = node;
     frame = new JDialog(parent, "Container instance editor: " + container.resource.id);
+    this.dataStore = dataStore;
     JPanel content = new JPanel(new BorderLayout());
     frame.setContentPane(content);
 
@@ -190,7 +193,7 @@ public class ContainerInstanceEditor implements ActionListener, MouseListener {
     }
 
     // keys laden
-    for (RItem ri : Editor.resources.getResources(RItem.class)) {
+    for (RItem ri : dataStore.getResourceManager().getResources(RItem.class)) {
       if (ri.type == Type.item) {
         keyBox.addItem(ri);
       }
@@ -202,7 +205,8 @@ public class ContainerInstanceEditor implements ActionListener, MouseListener {
     keyBox.setSelectedItem(container.key);
 
     // spells laden
-    for (RSpell.Enchantment rs : Editor.resources.getResources(RSpell.Enchantment.class)) {
+    for (RSpell.Enchantment rs :
+        dataStore.getResourceManager().getResources(RSpell.Enchantment.class)) {
       if (rs.item.equals("trap")) {
         spellBox.addItem(rs);
       }
@@ -280,13 +284,13 @@ public class ContainerInstanceEditor implements ActionListener, MouseListener {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add item")) {
-        Object[] items = Editor.resources.getResources(RItem.class).toArray();
+        Object[] items = dataStore.getResourceManager().getResources(RItem.class).toArray();
         RItem ri =
             (RItem)
                 JOptionPane.showInputDialog(
                     frame, "Add item:", "Add item", JOptionPane.PLAIN_MESSAGE, null, items, 0);
         if (ri != null) {
-          IObject io = new IObject(ri, 0, 0, 0, 0);
+          IObject io = new IObject(ri, 0, 0, 0, 0, dataStore);
           model.addElement(io);
         }
       } else if (e.getActionCommand().equals("Delete item")) {

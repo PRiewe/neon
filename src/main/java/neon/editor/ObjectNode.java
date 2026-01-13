@@ -24,31 +24,27 @@ import java.util.Comparator;
 import java.util.Vector;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
+import lombok.Getter;
 import neon.resources.RData;
 
 @SuppressWarnings("serial")
 public class ObjectNode extends DefaultMutableTreeNode {
   private static NodeComparator nodeComparator = new NodeComparator();
-  private RData resource;
-  private ObjectType type;
+  @Getter private RData resource;
+  @Getter private ObjectType type;
   private String name;
+  private final DataStore dataStore;
 
-  public ObjectNode(RData r, ObjectType t) {
+  public ObjectNode(RData r, ObjectType t, DataStore dataStore) {
     resource = r;
     type = t;
+    this.dataStore = dataStore;
   }
 
-  public ObjectNode(String name, ObjectType t) {
+  public ObjectNode(String name, ObjectType t, DataStore dataStore) {
     this.name = name;
     type = t;
-  }
-
-  public RData getResource() {
-    return resource;
-  }
-
-  public ObjectType getType() {
-    return type;
+    this.dataStore = dataStore;
   }
 
   public String toString() {
@@ -57,7 +53,7 @@ public class ObjectNode extends DefaultMutableTreeNode {
     }
 
     String id = resource.id; // leaf node
-    if (!resource.getPath()[0].equals(Editor.getStore().getActive().get("id"))) {
+    if (!resource.getPath()[0].equals(dataStore.getActive().get("id"))) {
       // niet-actieve data is cursief weergegeven
       return "<html><i>" + id + "</i></html>";
     } else {

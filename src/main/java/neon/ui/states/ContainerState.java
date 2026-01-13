@@ -31,6 +31,7 @@ import neon.core.GameContext;
 import neon.core.GameStores;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MotionHandler;
+import neon.core.handlers.TeleportHandler;
 import neon.entities.Container;
 import neon.entities.Creature;
 import neon.entities.Door;
@@ -64,6 +65,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   private HashMap<String, Integer> cData, iData;
   private final InventoryHandler inventoryHandler;
   private final MotionHandler motionHandler;
+  private final TeleportHandler teleportHandler;
 
   public ContainerState(
       State parent,
@@ -77,7 +79,10 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     this.context = context;
     this.gameStores = gameStores;
     this.inventoryHandler = new InventoryHandler(gameStores.getStore());
-    this.motionHandler = new MotionHandler(context,gameStores);
+    this.motionHandler = new MotionHandler(gameStores.getStore(), player);
+    this.teleportHandler =
+        new TeleportHandler(
+            gameStores, context, context.getAtlasPosition(), context.getScriptEngine());
     panel = new JPanel(new BorderLayout());
     JPanel center = new JPanel(new java.awt.GridLayout(0, 3));
     panel.addKeyListener(this);
@@ -179,7 +184,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
               bus.publishAsync(new TransitionEvent("return"));
               bus.publishAsync(new TransitionEvent("container", "holder", item));
             } else if (item instanceof Door) {
-              motionHandler.teleport(player, (Door) item);
+              teleportHandler.teleport(player, (Door) item);
               bus.publishAsync(new TransitionEvent("return"));
             } else if (item instanceof Creature) {
               bus.publishAsync(new TransitionEvent("return"));

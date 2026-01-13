@@ -36,11 +36,9 @@ class AtlasIntegrationTest {
             TestEngineContext.getMapLoader());
     atlasPosition =
         new AtlasPosition(
-            atlas,
-            TestEngineContext.getTestZoneActivator(),
-            TestEngineContext.getTestResources(),
+            TestEngineContext.getGameStores(),
             new QuestTracker(TestEngineContext.getGameStores()),
-            TestEngineContext.getTestStore());
+            TestEngineContext.getTestContext().getPlayer());
   }
 
   @AfterEach
@@ -54,7 +52,7 @@ class AtlasIntegrationTest {
 
   @Test
   void testZoneUsesAtlasDatabase() {
-    Zone worldZone =
+
     World world = new World("DB Test World", 1000);
     atlasPosition.setMap(world);
 

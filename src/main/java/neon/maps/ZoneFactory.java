@@ -18,6 +18,7 @@
 
 package neon.maps;
 
+import neon.core.GameStores;
 import neon.entities.UIDStore;
 import neon.resources.RZoneTheme;
 import neon.resources.ResourceManager;
@@ -34,6 +35,7 @@ public class ZoneFactory {
   private final MapStore cache;
   private final UIDStore uidStore;
   private final ResourceManager resourceManager;
+
   /**
    * Creates a new ZoneFactory with the given cache database.
    *
@@ -41,19 +43,21 @@ public class ZoneFactory {
    */
   public ZoneFactory(MapStore cache, UIDStore uidStore, ResourceManager resourceManager) {
     this.cache = cache;
-      this.uidStore = uidStore;
-      this.resourceManager = resourceManager;
+    this.uidStore = uidStore;
+    this.resourceManager = resourceManager;
+  }
 
+  public ZoneFactory(GameStores gameStore) {
+    this(gameStore.getAtlas().getCache(), gameStore.getStore(), gameStore.getResources());
   }
 
   public Zone createZone(String name, int map, int index) {
     RTree<Region> regions = new RTree<>(100, 40, cache, map + ":" + index);
-    return new Zone(name,map,index,uidStore,resourceManager,regions);
+    return new Zone(name, map, index, uidStore, resourceManager, regions);
   }
 
   public Zone createZoneWithTheme(String name, int map, int index, RZoneTheme theme) {
     RTree<Region> regions = new RTree<>(100, 40, cache, map + ":" + index);
-    return new Zone(name,map,theme,index,uidStore,resourceManager,regions);
+    return new Zone(name, map, theme, index, uidStore, resourceManager, regions);
   }
-
 }

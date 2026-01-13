@@ -54,7 +54,7 @@ public class ZoneActivator {
         physicsManager.register(region, region.getBounds(), true);
       }
     }
-
+    player.setCurrentZone(zone);
     // Re-register the player
     physicsManager.register(player.getPhysicsComponent());
   }

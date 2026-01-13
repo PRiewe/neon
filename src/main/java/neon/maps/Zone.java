@@ -22,14 +22,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.*;
 import lombok.Getter;
-import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Item;
 import neon.entities.UIDStore;
 import neon.resources.RZoneTheme;
 import neon.resources.ResourceManager;
 import neon.ui.graphics.*;
-import neon.util.mapstorage.MapStore;
 import neon.util.spatial.*;
 
 public class Zone /* implements Externalizable */ {
@@ -55,7 +53,13 @@ public class Zone /* implements Externalizable */ {
    * @param map the map UID
    * @param index the zone index
    */
-  public Zone(String name, int map, int index, UIDStore uidStore, ResourceManager resourceManager,  RTree<Region> tree) {
+  public Zone(
+      String name,
+      int map,
+      int index,
+      UIDStore uidStore,
+      ResourceManager resourceManager,
+      RTree<Region> tree) {
     this.map = map;
     this.name = name;
     this.index = index;
@@ -63,7 +67,6 @@ public class Zone /* implements Externalizable */ {
     this.resourceManager = resourceManager;
     this.regions = tree;
   }
-
 
   /**
    * Initializes a new zone with a theme.
@@ -73,8 +76,15 @@ public class Zone /* implements Externalizable */ {
    * @param theme the zone theme
    * @param index the zone index
    */
-  public Zone(String name, int map, RZoneTheme theme, int index, UIDStore uidStore, ResourceManager resourceManager,  RTree<Region> tree) {
-    this(name, map, index, uidStore,resourceManager,tree);
+  public Zone(
+      String name,
+      int map,
+      RZoneTheme theme,
+      int index,
+      UIDStore uidStore,
+      ResourceManager resourceManager,
+      RTree<Region> tree) {
+    this(name, map, index, uidStore, resourceManager, tree);
     this.theme = theme;
   }
 

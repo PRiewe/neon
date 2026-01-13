@@ -28,6 +28,11 @@ public class NewObjectDialog implements ActionListener {
   private JDialog dialog;
   private boolean cancelled;
   private String namespace = null;
+  private final DataStore dataStore;
+
+  public NewObjectDialog(DataStore dataStore) {
+    this.dataStore = dataStore;
+  }
 
   public Properties showInputDialog(JFrame frame, String message, String namespace) {
     this.namespace = namespace;
@@ -81,9 +86,9 @@ public class NewObjectDialog implements ActionListener {
 
   public boolean exists(String id) {
     if (namespace == null) {
-      return Editor.resources.getResource(id) != null;
+      return dataStore.getResourceManager().getResource(id) != null;
     } else {
-      return Editor.resources.getResource(id, namespace) != null;
+      return dataStore.getResourceManager().getResource(id, namespace) != null;
     }
   }
 

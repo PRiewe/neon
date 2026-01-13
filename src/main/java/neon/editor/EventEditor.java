@@ -28,6 +28,7 @@ import javax.swing.event.*;
 
 public class EventEditor implements ListSelectionListener, ActionListener, MouseListener {
   private JDialog frame;
+  private final DataStore dataStore;
   private Multimap<String, String> events;
   private JList<String> times;
   private JList<String> list;
@@ -35,8 +36,9 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
   private DefaultListModel<String> stampModel;
   private String[] scripts;
 
-  public EventEditor(JFrame parent) {
+  public EventEditor(JFrame parent, DataStore dataStore) {
     frame = new JDialog(parent, "Event Editor");
+    this.dataStore = dataStore;
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     frame.setPreferredSize(new Dimension(480, 300));
 
@@ -74,10 +76,10 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
 
   public void show() {
     model.clear();
-    scripts = Editor.getStore().getScripts().keySet().toArray(new String[0]);
+    scripts = dataStore.getScripts().keySet().toArray(new String[0]);
     events = ArrayListMultimap.create();
-    for (String event : Editor.getStore().getEvents().keySet()) {
-      events.putAll(event, Editor.getStore().getEvents().get(event));
+    for (String event : dataStore.getEvents().keySet()) {
+      events.putAll(event, dataStore.getEvents().get(event));
       model.addElement(event);
     }
     frame.pack();
@@ -96,9 +98,9 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
   }
 
   private void save() {
-    Editor.getStore().getEvents().clear();
+    dataStore.getEvents().clear();
     for (String event : events.keySet()) {
-      Editor.getStore().getEvents().putAll(event, events.get(event));
+      dataStore.getEvents().putAll(event, events.get(event));
     }
   }
 

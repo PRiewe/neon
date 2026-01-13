@@ -32,8 +32,8 @@ import neon.core.GameStores;
 import neon.core.event.StoreEvent;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
-import neon.entities.EntityFactory;
 import neon.entities.Item;
+import neon.entities.ItemFactory;
 import neon.entities.Player;
 import neon.resources.RCraft;
 import neon.ui.UserInterface;
@@ -50,7 +50,7 @@ public class CrafterDialog implements KeyListener {
   private final GameContext context;
   private final GameStores gameStores;
   private final InventoryHandler inventoryHandler;
-  private final EntityFactory entityFactory;
+  private final ItemFactory itemFactory;
 
   public CrafterDialog(
       UserInterface ui,
@@ -62,7 +62,7 @@ public class CrafterDialog implements KeyListener {
     this.context = context;
     this.gameStores = gameStores;
     inventoryHandler = new InventoryHandler(gameStores.getStore());
-    entityFactory = new EntityFactory(gameStores.getStore(), gameStores.getResources());
+    itemFactory = new ItemFactory(gameStores.getResources());
     JFrame parent = ui.getWindow();
     this.coin = coin;
     this.bus = bus;
@@ -135,8 +135,7 @@ public class CrafterDialog implements KeyListener {
             for (long uid : removed) { // remove used items
               bus.publishAsync(new StoreEvent(this, uid));
             }
-            Item item =
-                entityFactory.getItem(craft.name, gameStores.getStore().createNewEntityUID());
+            Item item = itemFactory.getItem(craft.name, gameStores.getStore().createNewEntityUID());
             bus.publishAsync(new StoreEvent(this, item));
             player.getInventoryComponent().addItem(item.getUID());
             player.getInventoryComponent().addMoney(-craft.cost);

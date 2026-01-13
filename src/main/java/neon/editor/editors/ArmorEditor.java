@@ -22,7 +22,9 @@ import java.awt.*;
 import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.*;
+import neon.editor.ColorCellRenderer;
+import neon.editor.DataStore;
+import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.entities.property.Slot;
 import neon.resources.RClothing;
@@ -36,11 +38,14 @@ public class ArmorEditor extends ObjectEditor {
   private JComboBox<Slot> slotBox;
   private JComboBox<RClothing.ArmorType> classBox;
   private RClothing data;
+  private final DataStore dataStore;
+  private final HelpLabels helpLabels;
 
-  public ArmorEditor(JFrame parent, RClothing data) {
+  public ArmorEditor(JFrame parent, RClothing data, DataStore dataStore) {
     super(parent, "Armor Editor: " + data.id);
     this.data = data;
-
+    this.dataStore = dataStore;
+    this.helpLabels = new HelpLabels(dataStore);
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
     itemProps.setLayout(layout);
@@ -68,7 +73,7 @@ public class ArmorEditor extends ObjectEditor {
     ratingField = new JFormattedTextField(NeonFormat.getIntegerInstance());
     spellBox = new JComboBox<String>(loadSpells());
     JLabel nameHelpLabel = HelpLabels.getNameHelpLabel();
-    JLabel costHelpLabel = HelpLabels.getCostHelpLabel();
+    JLabel costHelpLabel = helpLabels.getCostHelpLabel();
     JLabel colorHelpLabel = HelpLabels.getColorHelpLabel();
     JLabel charHelpLabel = HelpLabels.getCharHelpLabel();
     JLabel weightHelpLabel = HelpLabels.getWeightHelpLabel();
@@ -208,13 +213,14 @@ public class ArmorEditor extends ObjectEditor {
       data.spell = spellBox.getSelectedItem().toString();
     }
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   private Vector<String> loadSpells() {
     Vector<String> spells = new Vector<String>();
     spells.add(null);
-    for (RSpell.Enchantment spell : Editor.resources.getResources(RSpell.Enchantment.class)) {
+    for (RSpell.Enchantment spell :
+        dataStore.getResourceManager().getResources(RSpell.Enchantment.class)) {
       if (spell.item.equals("clothing")) {
         spells.add(spell.id);
       }

@@ -41,9 +41,10 @@ public class ChargeDialog implements KeyListener {
   private final GameContext context;
   private final GameStores gameStores;
 
-  public ChargeDialog(UserInterface ui, GameContext context) {
+  public ChargeDialog(UserInterface ui, GameContext context, GameStores gameStores) {
     this.ui = ui;
     this.context = context;
+    this.gameStores = gameStores;
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));

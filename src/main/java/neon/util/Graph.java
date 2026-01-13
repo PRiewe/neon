@@ -25,8 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 public class Graph<T> implements Serializable {
-  @Serial
-  private static final long serialVersionUID = -6431348687813884897L;
+  @Serial private static final long serialVersionUID = -6431348687813884897L;
   private final HashMap<Integer, Node<T>> nodes = new HashMap<Integer, Node<T>>();
 
   /**
@@ -88,8 +87,7 @@ public class Graph<T> implements Serializable {
   }
 
   private static class Node<T> implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 2326885959259937816L;
+    @Serial private static final long serialVersionUID = 2326885959259937816L;
     private final T content;
     private final ArrayList<Integer> connections = new ArrayList<Integer>();
 

@@ -5,13 +5,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import neon.resources.RClothing;
 import neon.resources.RItem;
+import neon.systems.files.FileSystem;
+import neon.test.TestEngineContext;
 import org.junit.jupiter.api.Test;
 
 class UIDStoreTest {
+  FileSystem fileSystem = TestEngineContext.getStubFileSystem();
 
   @Test
   void addEntity() throws IOException {
-    UIDStore store = new UIDStore("testfile3.dat");
+    UIDStore store = new UIDStore(fileSystem, "testfile3.dat");
     var id = store.createNewMapUID();
     var entityId = store.createNewEntityUID();
     Entity entity = new Armor(entityId, new RClothing("one", RItem.Type.armor, "dummy"));
@@ -25,7 +28,7 @@ class UIDStoreTest {
 
   @Test
   void removeEntity() throws IOException {
-    UIDStore store = new UIDStore("testfile3.dat");
+    UIDStore store = new UIDStore(fileSystem, "testfile3.dat");
     var id = store.createNewMapUID();
     var entityId = store.createNewEntityUID();
     Entity entity = new Armor(entityId, new RClothing("one", RItem.Type.armor, "dummy"));

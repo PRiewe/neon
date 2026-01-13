@@ -28,8 +28,8 @@ import javax.swing.border.*;
 import neon.core.GameStores;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
-import neon.entities.EntityFactory;
 import neon.entities.Item;
+import neon.entities.ItemFactory;
 import neon.entities.Player;
 import neon.resources.RRecipe;
 import neon.ui.UserInterface;
@@ -41,7 +41,7 @@ public class PotionDialog implements KeyListener {
   private String coin;
   private UserInterface ui;
   private final GameStores gameStores;
-  private final EntityFactory entityFactory;
+  private final ItemFactory itemFactory;
   private final InventoryHandler inventoryHandler;
 
   public PotionDialog(UserInterface ui, String coin, GameStores gameStores) {
@@ -49,7 +49,7 @@ public class PotionDialog implements KeyListener {
     this.coin = coin;
     this.gameStores = gameStores;
     inventoryHandler = new InventoryHandler(gameStores.getStore());
-    entityFactory = new EntityFactory(gameStores.getStore(), gameStores.getResources());
+    itemFactory = new ItemFactory(gameStores.getResources());
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -119,8 +119,7 @@ public class PotionDialog implements KeyListener {
               gameStores.getStore().removeEntity(uid);
             }
             Item item =
-                    entityFactory.getItem(
-                    potion.toString(), gameStores.getStore().createNewEntityUID());
+                itemFactory.getItem(potion.toString(), gameStores.getStore().createNewEntityUID());
             gameStores.getStore().addEntity(item);
             player.getInventoryComponent().addItem(item.getUID());
             player.getInventoryComponent().addMoney(-potion.cost);

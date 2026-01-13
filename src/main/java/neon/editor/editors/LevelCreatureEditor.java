@@ -25,19 +25,21 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.resources.LCreature;
 import neon.resources.RCreature;
 
 public class LevelCreatureEditor extends ObjectEditor implements MouseListener {
   private LCreature data;
+  private final DataStore dataStore;
   private JTable table;
   private DefaultTableModel model;
 
   @SuppressWarnings("serial")
-  public LevelCreatureEditor(JFrame parent, LCreature data) {
+  public LevelCreatureEditor(JFrame parent, LCreature data, DataStore dataStore) {
     super(parent, "Leveled Creature Editor: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     // help
     JLabel help =
@@ -72,7 +74,7 @@ public class LevelCreatureEditor extends ObjectEditor implements MouseListener {
           (String) table.getModel().getValueAt(i, 0),
           Integer.parseInt(table.getModel().getValueAt(i, 1).toString()));
     }
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {
@@ -112,7 +114,7 @@ public class LevelCreatureEditor extends ObjectEditor implements MouseListener {
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add creature")) {
         ArrayList<String> creatures = new ArrayList<String>();
-        for (RCreature rc : Editor.resources.getResources(RCreature.class)) {
+        for (RCreature rc : dataStore.getResourceManager().getResources(RCreature.class)) {
           if (!rc.id.equals(data.id)) { // levelled creature niet in zichzelf steken
             creatures.add(rc.id);
           }

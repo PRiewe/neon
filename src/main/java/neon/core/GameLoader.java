@@ -34,8 +34,8 @@ import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.SkillHandler;
 import neon.core.model.SaveGameModel;
 import neon.entities.Entity;
-import neon.entities.EntityFactory;
 import neon.entities.Item;
+import neon.entities.ItemFactory;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.entities.components.Stats;
@@ -46,9 +46,7 @@ import neon.entities.property.Skill;
 import neon.magic.Effect;
 import neon.magic.Spell;
 import neon.magic.SpellFactory;
-import neon.maps.Atlas;
-import neon.maps.Map;
-import neon.maps.MapLoader;
+import neon.maps.*;
 import neon.resources.CGame;
 import neon.resources.RCreature;
 import neon.resources.RMod;
@@ -72,6 +70,7 @@ public class GameLoader {
   private final SpellFactory spellFactory;
   private final MapLoader mapLoader;
   @Getter @Setter private int worldMapUID;
+  private final ZoneFactory zoneFactory;
 
   public GameLoader(GameContext context, GameStores gameStores, Configuration config) {
     this.context = context;
@@ -79,7 +78,15 @@ public class GameLoader {
     this.config = config;
     queue = context.getQueue();
     mapLoader =
-        new MapLoader(gameStores.getFileSystem(), gameStores.getStore(), gameStores.getResources(),gameStores.getZoneFactory());
+        new MapLoader(
+            gameStores.getFileSystem(),
+            gameStores.getStore(),
+            gameStores.getResources(),
+            gameStores.getZoneFactory(),
+            context.getPlayer());
+    zoneFactory =
+        new ZoneFactory(
+            gameStores.getAtlas().getCache(), gameStores.getStore(), gameStores.getResources());
     spellFactory = new SpellFactory(gameStores.getResources());
   }
 
@@ -130,8 +137,7 @@ public class GameLoader {
 
       // initialize player
       RCreature species = ((RCreature) gameStores.getResources().getResource(race)).clone();
-      EntityFactory entityFactory =
-          new EntityFactory(gameStores.getStore(), gameStores.getResources());
+      ItemFactory itemFactory = new ItemFactory(gameStores.getResources());
       Player player = new Player(species, name, gender, spec, profession, gameStores);
       player.species.text = "@";
       context.startGame(
@@ -148,7 +154,7 @@ public class GameLoader {
       InventoryHandler inventoryHandler = new InventoryHandler(gameStores.getStore());
       // starting items
       for (String i : game.getStartingItems()) {
-        Item item = entityFactory.getItem(i, gameStores.getStore().createNewEntityUID());
+        Item item = itemFactory.getItem(i, gameStores.getStore().createNewEntityUID());
         gameStores.getStore().addEntity(item);
         inventoryHandler.addItem(player, item.getUID());
       }
@@ -165,9 +171,11 @@ public class GameLoader {
       String[] startMap = game.getStartMap();
 
       Map map = atlas.getMap(store.getMapUID(startMap));
+
       context.getScriptEngine().getBindings("js").putMember("map", map);
       context.getAtlasPosition().setMap(map);
-      context.getAtlasPosition().setCurrentZone(game.getStartZone(), player);
+      player.setCurrentZone(map.getZone(game.getStartZone()));
+
     } catch (RuntimeException re) {
       log.error("Error during initGame", re);
     }
@@ -295,10 +303,13 @@ public class GameLoader {
     bounds.setLocation(playerData.x, playerData.y);
     player.setSign(playerData.sign);
     player.species.text = "@";
-
+    Map currentMap = gameStores.getAtlas().getMap(playerData.map);
+    Zone currentZone =
+        zoneFactory.createZone(currentMap.getName(), currentMap.getUID(), playerData.level);
     // start map
-    context.getAtlasPosition().setMap(gameStores.getAtlas().getMap(playerData.map));
-    context.getAtlasPosition().setCurrentZone(playerData.level, player);
+    context.getAtlasPosition().setMap(currentMap);
+
+    player.setCurrentZone(currentZone);
 
     // stats
     Stats stats = player.getStatsComponent();

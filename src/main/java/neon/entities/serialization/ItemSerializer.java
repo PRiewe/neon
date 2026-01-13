@@ -23,13 +23,12 @@ import java.awt.Rectangle;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import neon.core.Engine;
 import neon.core.GameStores;
 import neon.entities.Armor;
 import neon.entities.Container;
 import neon.entities.Door;
-import neon.entities.EntityFactory;
 import neon.entities.Item;
+import neon.entities.ItemFactory;
 import neon.entities.Weapon;
 import neon.entities.components.Enchantment;
 import neon.entities.components.Lock;
@@ -46,21 +45,22 @@ import neon.resources.RItem;
 public class ItemSerializer {
   private static final long serialVersionUID = 2138679015831709732L;
   private final GameStores gameStores;
-  private final EntityFactory entityFactory;
+  private final ItemFactory itemFactory;
   private final SpellFactory spellFactory;
-    public ItemSerializer(GameStores gameStores) {
-        this.gameStores = gameStores;
-        entityFactory = new EntityFactory(gameStores.getStore(),gameStores.getResources());
-        spellFactory= new SpellFactory(gameStores.getResources());
-    }
 
-    public Item deserialize(DataInput input) throws IOException {
+  public ItemSerializer(GameStores gameStores) {
+    this.gameStores = gameStores;
+    itemFactory = new ItemFactory(gameStores.getResources());
+    spellFactory = new SpellFactory(gameStores.getResources());
+  }
+
+  public Item deserialize(DataInput input) throws IOException {
     // item aanmaken
     String id = input.readUTF();
     long uid = input.readLong();
     int x = input.readInt();
     int y = input.readInt();
-    Item item = entityFactory.getItem(id, x, y, uid);
+    Item item = itemFactory.getItem(id, x, y, uid);
     item.setOwner(input.readLong());
 
     if (input.readBoolean()) {

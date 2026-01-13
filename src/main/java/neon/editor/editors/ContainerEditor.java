@@ -24,7 +24,7 @@ import java.util.Enumeration;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.editor.ColorCellRenderer;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.resources.RItem;
 import neon.util.ColorFactory;
@@ -34,14 +34,15 @@ public class ContainerEditor extends ObjectEditor implements MouseListener {
   private JComboBox<String> colorBox;
   private JFormattedTextField charField;
   private RItem.Container data;
+  private final DataStore dataStore;
   private JList<RItem> items;
   private DefaultListModel<RItem> model;
 
-  public ContainerEditor(JFrame parent, RItem.Container data) {
+  public ContainerEditor(JFrame parent, RItem.Container data, DataStore dataStore) {
     super(parent, "Container Editor: " + data.id);
     frame.setPreferredSize(new Dimension(400, 200));
     this.data = data;
-
+    this.dataStore = dataStore;
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
     itemProps.setLayout(layout);
@@ -130,7 +131,7 @@ public class ContainerEditor extends ObjectEditor implements MouseListener {
       data.contents.add(ri.id);
     }
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {
@@ -138,7 +139,7 @@ public class ContainerEditor extends ObjectEditor implements MouseListener {
     colorBox.setSelectedItem(data.color);
     charField.setValue(data.text);
     for (String id : data.contents) {
-      model.addElement((RItem) Editor.resources.getResource(id));
+      model.addElement((RItem) dataStore.getResourceManager().getResource(id));
     }
   }
 
@@ -168,7 +169,7 @@ public class ContainerEditor extends ObjectEditor implements MouseListener {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add item")) {
-        Object[] items = Editor.resources.getResources(RItem.class).toArray();
+        Object[] items = dataStore.getResourceManager().getResources(RItem.class).toArray();
         RItem ri =
             (RItem)
                 JOptionPane.showInputDialog(

@@ -23,7 +23,7 @@ import java.text.ParseException;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.editor.ColorCellRenderer;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RItem;
@@ -34,10 +34,14 @@ public class LightEditor extends ObjectEditor {
   private JFormattedTextField costField, weightField, charField;
   private JComboBox<String> colorBox;
   private RItem data;
+  private final DataStore dataStore;
+  private final HelpLabels helpLabels;
 
-  public LightEditor(JFrame parent, RItem data) {
+  public LightEditor(JFrame parent, RItem data, DataStore dataStore) {
     super(parent, "Light Editor: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
+    this.helpLabels = new HelpLabels(dataStore);
 
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
@@ -58,7 +62,7 @@ public class LightEditor extends ObjectEditor {
     charField = new JFormattedTextField(getMaskFormatter("*", 'X'));
     weightField = new JFormattedTextField(NeonFormat.getFloatInstance());
     JLabel nameHelpLabel = HelpLabels.getNameHelpLabel();
-    JLabel costHelpLabel = HelpLabels.getCostHelpLabel();
+    JLabel costHelpLabel = helpLabels.getCostHelpLabel();
     JLabel colorHelpLabel = HelpLabels.getColorHelpLabel();
     JLabel charHelpLabel = HelpLabels.getCharHelpLabel();
     JLabel weightHelpLabel = HelpLabels.getWeightHelpLabel();
@@ -153,6 +157,6 @@ public class LightEditor extends ObjectEditor {
     data.text = charField.getText();
     data.weight = Float.parseFloat(weightField.getText());
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 }

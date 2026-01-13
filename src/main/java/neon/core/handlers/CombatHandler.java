@@ -51,6 +51,7 @@ public class CombatHandler {
   private final GameStores gameStores;
   private final InventoryHandler inventoryHandler;
   private final CombatUtils combatUtils;
+
   public CombatHandler(GameStores gameStores) {
     this.gameStores = gameStores;
     inventoryHandler = new InventoryHandler(gameStores.getStore());

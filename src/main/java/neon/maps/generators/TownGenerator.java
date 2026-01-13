@@ -21,7 +21,7 @@ package neon.maps.generators;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import neon.entities.Door;
-import neon.entities.EntityFactory;
+import neon.entities.ItemFactory;
 import neon.entities.UIDStore;
 import neon.maps.MapUtils;
 import neon.maps.Region;
@@ -40,7 +40,8 @@ public class TownGenerator {
   private final UIDStore entityStore;
   private final ResourceManager resourceProvider;
   private final MapUtils mapUtils;
-  private final EntityFactory entityFactory;
+  private final ItemFactory itemFactory;
+
   /**
    * Creates a town generator with dependency injection. Uses default (non-deterministic) random
    * number generation.
@@ -51,7 +52,6 @@ public class TownGenerator {
    */
   public TownGenerator(Zone zone, UIDStore entityStore, ResourceManager resourceProvider) {
     this(zone, entityStore, resourceProvider, new MapUtils());
-
   }
 
   /**
@@ -69,7 +69,36 @@ public class TownGenerator {
     this.entityStore = entityStore;
     this.resourceProvider = resourceProvider;
     this.mapUtils = mapUtils;
-    entityFactory = new EntityFactory(entityStore,resourceProvider);
+
+    // Create minimal GameStores wrapper for ItemFactory
+    neon.core.GameStores gameStores =
+        new neon.core.GameStores() {
+          @Override
+          public neon.maps.Atlas getAtlas() {
+            return null;
+          }
+
+          @Override
+          public neon.entities.UIDStore getStore() {
+            return entityStore;
+          }
+
+          @Override
+          public neon.resources.ResourceManager getResources() {
+            return resourceProvider;
+          }
+
+          @Override
+          public neon.systems.files.FileSystem getFileSystem() {
+            return null;
+          }
+
+          @Override
+          public neon.maps.ZoneFactory getZoneFactory() {
+            return null;
+          }
+        };
+    itemFactory = new ItemFactory(gameStores.getResources());
   }
 
   /**
@@ -137,7 +166,7 @@ public class TownGenerator {
         };
 
     long uid = entityStore.createNewEntityUID();
-    Door door = (Door) entityFactory.getItem(theme.door, x, y, uid);
+    Door door = (Door) itemFactory.getItem(theme.door, x, y, uid);
     entityStore.addEntity(door);
     door.lock.close();
     zone.addItem(door);

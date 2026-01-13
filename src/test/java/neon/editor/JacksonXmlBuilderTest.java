@@ -26,6 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 import neon.resources.RData;
 import neon.resources.RMod;
+import neon.resources.ResourceManager;
+import neon.systems.files.FileSystem;
+import neon.test.MapDbTestHelper;
+import neon.test.TestEngineContext;
+import neon.util.mapstorage.MapStore;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,8 +49,12 @@ public class JacksonXmlBuilderTest {
   private JacksonXmlBuilder builder;
 
   @BeforeEach
-  public void setUp() {
-    mockStore = new TestDataStore();
+  public void setUp() throws Exception {
+    MapStore store = MapDbTestHelper.createInMemoryDB();
+    TestEngineContext.initialize(store);
+    mockStore =
+        new TestDataStore(
+            TestEngineContext.getTestResources(), TestEngineContext.getStubFileSystem());
     testMod = createTestMod("testmod");
     builder = new JacksonXmlBuilder(mockStore);
   }
@@ -265,6 +274,10 @@ public class JacksonXmlBuilderTest {
 
   // Test DataStore implementation
   private static class TestDataStore extends DataStore {
+    public TestDataStore(ResourceManager resourceManager, FileSystem fileSystem) {
+      super(resourceManager, fileSystem);
+    }
+
     public Multimap<String, String> events = ArrayListMultimap.create();
 
     @Override

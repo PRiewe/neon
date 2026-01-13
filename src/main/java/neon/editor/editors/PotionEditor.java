@@ -23,7 +23,9 @@ import java.text.ParseException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.editor.*;
+import neon.editor.ColorCellRenderer;
+import neon.editor.DataStore;
+import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RItem;
 import neon.resources.RSpell;
@@ -34,11 +36,14 @@ public class PotionEditor extends ObjectEditor {
   private JFormattedTextField costField, weightField, charField;
   private JComboBox<String> colorBox, spellBox;
   private RItem data;
+  private final DataStore dataStore;
+  private final HelpLabels helpLabels;
 
-  public PotionEditor(JFrame parent, RItem data) {
+  public PotionEditor(JFrame parent, RItem data, DataStore dataStore) {
     super(parent, "Potion Editor: " + data.id);
     this.data = data;
-
+    this.dataStore = dataStore;
+    helpLabels = new HelpLabels(dataStore);
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
     itemProps.setLayout(layout);
@@ -60,7 +65,7 @@ public class PotionEditor extends ObjectEditor {
     weightField = new JFormattedTextField(NeonFormat.getFloatInstance());
     spellBox = new JComboBox<String>(loadSpells());
     JLabel nameHelpLabel = HelpLabels.getNameHelpLabel();
-    JLabel costHelpLabel = HelpLabels.getCostHelpLabel();
+    JLabel costHelpLabel = helpLabels.getCostHelpLabel();
     JLabel colorHelpLabel = HelpLabels.getColorHelpLabel();
     JLabel charHelpLabel = HelpLabels.getCharHelpLabel();
     JLabel weightHelpLabel = HelpLabels.getWeightHelpLabel();
@@ -169,13 +174,14 @@ public class PotionEditor extends ObjectEditor {
     } else {
       data.spell = null;
     }
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   private Vector<String> loadSpells() {
     Vector<String> spells = new Vector<String>();
     spells.add(null); // potion can also have no effect
-    for (RSpell.Enchantment spell : Editor.resources.getResources(RSpell.Enchantment.class)) {
+    for (RSpell.Enchantment spell :
+        dataStore.getResourceManager().getResources(RSpell.Enchantment.class)) {
       if (spell.item.equals("nutrition")) {
         spells.add(spell.id);
       }

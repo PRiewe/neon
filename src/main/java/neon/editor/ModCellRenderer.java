@@ -27,6 +27,12 @@ import neon.resources.Resource;
 
 @SuppressWarnings("serial")
 public class ModCellRenderer extends JLabel implements ListCellRenderer<Resource> {
+  private final DataStore dataStore;
+
+  public ModCellRenderer(DataStore dataStore) {
+    this.dataStore = dataStore;
+  }
+
   /**
    * Returns this renderer with the right properties (color, font, background color). If the cell
    * does not contain a resource from the currently active mod, the text is rendered in italics.
@@ -46,7 +52,7 @@ public class ModCellRenderer extends JLabel implements ListCellRenderer<Resource
       boolean cellHasFocus) {
     setOpaque(true);
     String text = value.toString();
-    if (value.getPath()[0].equals(Editor.getStore().getActive().get("id"))) {
+    if (value.getPath()[0].equals(dataStore.getActive().get("id"))) {
       setText(text);
     } else {
       setText("<html><i>" + text + "</i></html>");

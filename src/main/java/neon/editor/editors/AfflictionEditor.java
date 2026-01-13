@@ -22,7 +22,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.magic.Effect;
@@ -34,10 +34,12 @@ public class AfflictionEditor extends ObjectEditor implements ActionListener {
   private JComboBox<Effect> effectBox;
   private JTextArea scriptArea;
   private RSpell data;
+  private final DataStore dataStore;
 
-  public AfflictionEditor(JFrame parent, RSpell data) {
+  public AfflictionEditor(JFrame parent, RSpell data, DataStore dataStore) {
     super(parent, "Affliction: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel();
     GroupLayout layout = new GroupLayout(props);
@@ -125,7 +127,7 @@ public class AfflictionEditor extends ObjectEditor implements ActionListener {
     data.size = Integer.parseInt(sizeField.getText());
     data.effect = effectBox.getItemAt(effectBox.getSelectedIndex());
     data.script = scriptArea.getText();
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   public void actionPerformed(ActionEvent e) {

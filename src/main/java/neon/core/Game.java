@@ -23,7 +23,6 @@ import java.io.IOException;
 import lombok.Getter;
 import neon.entities.Player;
 import neon.maps.AtlasPosition;
-import neon.maps.ZoneActivator;
 import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;
 import neon.systems.timing.Timer;
@@ -43,13 +42,7 @@ public class Game implements Closeable {
       QuestTracker questTracker) {
     this.player = player;
     this.gameStores = gameStores;
-    this.atlasPosition =
-        new AtlasPosition(
-            gameStores.getAtlas(),
-            new ZoneActivator(physicsManager),
-            gameStores.getResources(),
-            questTracker,
-            gameStores.getStore());
+    this.atlasPosition = new AtlasPosition(gameStores, questTracker, player);
   }
 
   /**

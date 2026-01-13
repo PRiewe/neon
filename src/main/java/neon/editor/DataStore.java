@@ -22,7 +22,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.*;
-
 import lombok.Getter;
 import neon.editor.resources.RFaction;
 import neon.editor.resources.RMap;
@@ -35,25 +34,23 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 
 public class DataStore {
-  @Getter
-  private final HashMap<String, RScript> scripts = new HashMap<String, RScript>();
-  @Getter
-  private final Multimap<String, String> events = ArrayListMultimap.create();
+  @Getter private final HashMap<String, RScript> scripts = new HashMap<String, RScript>();
+  @Getter private final Multimap<String, String> events = ArrayListMultimap.create();
   private final HashMap<String, RMod> mods = new HashMap<String, RMod>();
-  private final ResourceManager resourceManager;
-  private final FileSystem fileSystem;
-  @Getter
-  private RMod active;
+  @Getter private final ResourceManager resourceManager;
+  @Getter private final FileSystem fileSystem;
+  @Getter private RMod active;
 
   public DataStore(ResourceManager resourceManager, FileSystem fileSystem) {
-      this.resourceManager = resourceManager;
-      this.fileSystem = fileSystem;
+    this.resourceManager = resourceManager;
+    this.fileSystem = fileSystem;
   }
-    public RMod getMod(String id) {
+
+  public RMod getMod(String id) {
     return mods.get(id);
   }
 
-    /**
+  /**
    * Loads all data from a mod.
    *
    * <p>NOTE (Phase 6 - Minimal Migration): Currently uses JDOM constructors for resource loading.
@@ -95,7 +92,7 @@ public class DataStore {
   private void loadEvents(RMod mod, String... file) {
     try {
       for (Element event :
-              fileSystem.getFile(new XMLTranslator(), file).getRootElement().getChildren()) {
+          fileSystem.getFile(new XMLTranslator(), file).getRootElement().getChildren()) {
         events.put(event.getAttributeValue("script"), event.getAttributeValue("tick"));
       }
     } catch (NullPointerException e) {
@@ -157,7 +154,8 @@ public class DataStore {
         s = s.substring(s.lastIndexOf(File.separator) + 1);
         path[file.length] = s;
         Element map = fileSystem.getFile(new XMLTranslator(), path).getRootElement();
-        resourceManager.addResource(new RMap(s.replace(".xml", ""), map,resourceManager, mod.get("id")), "maps");
+        resourceManager.addResource(
+            new RMap(s.replace(".xml", ""), map, this, mod.get("id")), "maps");
       }
     } catch (NullPointerException e) {
     }
@@ -184,15 +182,16 @@ public class DataStore {
     try {
       Document doc = fileSystem.getFile(new XMLTranslator(), path);
       for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-              case "sign" -> resourceManager.addResource(new RSign(e, mod.get("id")), "magic");
-              case "tattoo" -> resourceManager.addResource(new RTattoo(e, mod.get("id")), "magic");
-              case "recipe" -> resourceManager.addResource(new RRecipe(e, mod.get("id")), "magic");
-              case "list" -> resourceManager.addResource(new LSpell(e, mod.get("id")), "magic");
-              case "power" -> resourceManager.addResource(new RSpell.Power(e, mod.get("id")), "magic");
-              case "enchant" -> resourceManager.addResource(new RSpell.Enchantment(e, mod.get("id")), "magic");
-              default -> resourceManager.addResource(new RSpell(e, mod.get("id")), "magic");
-          }
+        switch (e.getName()) {
+          case "sign" -> resourceManager.addResource(new RSign(e, mod.get("id")), "magic");
+          case "tattoo" -> resourceManager.addResource(new RTattoo(e, mod.get("id")), "magic");
+          case "recipe" -> resourceManager.addResource(new RRecipe(e, mod.get("id")), "magic");
+          case "list" -> resourceManager.addResource(new LSpell(e, mod.get("id")), "magic");
+          case "power" -> resourceManager.addResource(new RSpell.Power(e, mod.get("id")), "magic");
+          case "enchant" ->
+              resourceManager.addResource(new RSpell.Enchantment(e, mod.get("id")), "magic");
+          default -> resourceManager.addResource(new RSpell(e, mod.get("id")), "magic");
+        }
       }
     } catch (NullPointerException e) {
     }
@@ -202,12 +201,12 @@ public class DataStore {
     try {
       Document doc = fileSystem.getFile(new XMLTranslator(), path);
       for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-              case "list" -> resourceManager.addResource(new LCreature(e, mod.get("id")));
-              case "npc" -> resourceManager.addResource(new RPerson(e, mod.get("id")));
-              case "group" -> {}
-              default -> resourceManager.addResource(new RCreature(e, mod.get("id")));
-          }
+        switch (e.getName()) {
+          case "list" -> resourceManager.addResource(new LCreature(e, mod.get("id")));
+          case "npc" -> resourceManager.addResource(new RPerson(e, mod.get("id")));
+          case "group" -> {}
+          default -> resourceManager.addResource(new RCreature(e, mod.get("id")));
+        }
       }
     } catch (NullPointerException e) {
       e.printStackTrace();
@@ -238,17 +237,17 @@ public class DataStore {
     try {
       Document doc = fileSystem.getFile(new XMLTranslator(), path);
       for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-              case "list" -> resourceManager.addResource(new LItem(e, mod.get("id")));
-              case "book", "scroll" -> resourceManager.addResource(new RItem.Text(e, mod.get("id")));
-              case "armor", "clothing" -> resourceManager.addResource(new RClothing(e, mod.get("id")));
-              case "weapon" -> resourceManager.addResource(new RWeapon(e, mod.get("id")));
-              case "craft" -> resourceManager.addResource(new RCraft(e, mod.get("id")));
-              case "door" -> resourceManager.addResource(new RItem.Door(e, mod.get("id")));
-              case "potion" -> resourceManager.addResource(new RItem.Potion(e, mod.get("id")));
-              case "container" -> resourceManager.addResource(new RItem.Container(e, mod.get("id")));
-              default -> resourceManager.addResource(new RItem(e, mod.get("id")));
-          }
+        switch (e.getName()) {
+          case "list" -> resourceManager.addResource(new LItem(e, mod.get("id")));
+          case "book", "scroll" -> resourceManager.addResource(new RItem.Text(e, mod.get("id")));
+          case "armor", "clothing" -> resourceManager.addResource(new RClothing(e, mod.get("id")));
+          case "weapon" -> resourceManager.addResource(new RWeapon(e, mod.get("id")));
+          case "craft" -> resourceManager.addResource(new RCraft(e, mod.get("id")));
+          case "door" -> resourceManager.addResource(new RItem.Door(e, mod.get("id")));
+          case "potion" -> resourceManager.addResource(new RItem.Potion(e, mod.get("id")));
+          case "container" -> resourceManager.addResource(new RItem.Container(e, mod.get("id")));
+          default -> resourceManager.addResource(new RItem(e, mod.get("id")));
+        }
       }
     } catch (NullPointerException e) {
     }
@@ -258,11 +257,12 @@ public class DataStore {
     try {
       Document doc = fileSystem.getFile(new XMLTranslator(), path);
       for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-              case "dungeon" -> resourceManager.addResource(new RDungeonTheme(e, mod.get("id")), "theme");
-              case "region" -> resourceManager.addResource(new RRegionTheme(e, mod.get("id")), "theme");
-              case "zone" -> resourceManager.addResource(new RZoneTheme(e, mod.get("id")), "theme");
-          }
+        switch (e.getName()) {
+          case "dungeon" ->
+              resourceManager.addResource(new RDungeonTheme(e, mod.get("id")), "theme");
+          case "region" -> resourceManager.addResource(new RRegionTheme(e, mod.get("id")), "theme");
+          case "zone" -> resourceManager.addResource(new RZoneTheme(e, mod.get("id")), "theme");
+        }
       }
     } catch (NullPointerException e) {
     }

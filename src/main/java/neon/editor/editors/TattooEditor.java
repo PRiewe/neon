@@ -21,7 +21,7 @@ package neon.editor.editors;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.entities.property.Ability;
@@ -33,10 +33,12 @@ public class TattooEditor extends ObjectEditor {
   private JSpinner abilitySpinner;
   private JTextField nameField;
   private JFormattedTextField costField;
+  private final DataStore dataStore;
 
-  public TattooEditor(JFrame parent, RTattoo tattoo) {
+  public TattooEditor(JFrame parent, RTattoo tattoo, DataStore dataStore) {
     super(parent, "Tattoo: " + tattoo.id);
     this.tattoo = tattoo;
+    this.dataStore = dataStore;
 
     JPanel abilityPanel = new JPanel();
     abilityPanel.setBorder(new TitledBorder("Properties"));
@@ -111,7 +113,7 @@ public class TattooEditor extends ObjectEditor {
     tattoo.ability = (Ability) abilityBox.getSelectedItem();
     tattoo.magnitude = (Integer) abilitySpinner.getValue();
     tattoo.cost = Integer.parseInt(costField.getText());
-    tattoo.setPath(Editor.getStore().getActive().get("id"));
+    tattoo.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {

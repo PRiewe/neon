@@ -29,13 +29,14 @@ public class ScriptInterface {
   private final GamePanel panel;
   private final UIDStore uidStore;
   private final GameContext gameContext;
+
   public ScriptInterface(GamePanel panel, UIDStore uidStore, GameContext gameContext) {
     this.panel = panel;
-      this.uidStore = uidStore;
-      this.gameContext = gameContext;
-      InputStream input = Engine.class.getResourceAsStream("scripts.js");
-      assert input != null;
-      Scanner scanner = new Scanner(input, StandardCharsets.UTF_8);
+    this.uidStore = uidStore;
+    this.gameContext = gameContext;
+    InputStream input = Engine.class.getResourceAsStream("scripts.js");
+    assert input != null;
+    Scanner scanner = new Scanner(input, StandardCharsets.UTF_8);
     gameContext.execute(scanner.useDelimiter("\\A").next());
     scanner.close();
   }

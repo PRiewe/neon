@@ -21,7 +21,7 @@ package neon.editor.editors;
 import java.awt.BorderLayout;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RCraft;
@@ -31,11 +31,14 @@ public class CraftingEditor extends ObjectEditor {
   private RCraft craft;
   private JComboBox<RItem> rawBox;
   private JFormattedTextField costField, amountField;
+  private final DataStore dataStore;
+  private final HelpLabels helpLabels;
 
-  public CraftingEditor(JFrame parent, RCraft data) {
+  public CraftingEditor(JFrame parent, RCraft data, DataStore dataStore) {
     super(parent, "Crafting Editor: " + data.id);
     craft = data;
-
+    this.dataStore = dataStore;
+    helpLabels = new HelpLabels(dataStore);
     JPanel props = new JPanel();
     GroupLayout layout = new GroupLayout(props);
     props.setLayout(layout);
@@ -45,12 +48,12 @@ public class CraftingEditor extends ObjectEditor {
     JLabel rawLabel = new JLabel("Raw material: ");
     JLabel amountLabel = new JLabel("Amount: ");
     JLabel costLabel = new JLabel("Cost: ");
-    rawBox = new JComboBox<RItem>(Editor.resources.getResources(RItem.class));
+    rawBox = new JComboBox<RItem>(dataStore.getResourceManager().getResources(RItem.class));
     amountField = new JFormattedTextField(NeonFormat.getIntegerInstance());
     costField = new JFormattedTextField(NeonFormat.getIntegerInstance());
     JLabel rawHelpLabel = HelpLabels.getRawHelpLabel();
     JLabel amountHelpLabel = HelpLabels.getAmountHelpLabel();
-    JLabel costHelpLabel = HelpLabels.getCraftingCostHelpLabel();
+    JLabel costHelpLabel = helpLabels.getCraftingCostHelpLabel();
     layout.setVerticalGroup(
         layout
             .createSequentialGroup()
@@ -106,7 +109,7 @@ public class CraftingEditor extends ObjectEditor {
   }
 
   protected void load() {
-    RItem raw = (RItem) Editor.resources.getResource(craft.raw);
+    RItem raw = (RItem) dataStore.getResourceManager().getResource(craft.raw);
     rawBox.setSelectedItem(raw);
     amountField.setValue(craft.amount);
     costField.setValue(craft.cost);
@@ -116,6 +119,6 @@ public class CraftingEditor extends ObjectEditor {
     craft.raw = ((RItem) rawBox.getSelectedItem()).id;
     craft.cost = Integer.parseInt(costField.getText());
     craft.amount = Integer.parseInt(amountField.getText());
-    craft.setPath(Editor.getStore().getActive().get("id"));
+    craft.setPath(dataStore.getActive().get("id"));
   }
 }

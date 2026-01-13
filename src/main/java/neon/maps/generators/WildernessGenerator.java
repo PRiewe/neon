@@ -19,14 +19,13 @@
 package neon.maps.generators;
 
 import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
-import java.util.ArrayList;
 import java.util.Collection;
-
 import neon.core.GameStores;
 import neon.entities.*;
+import neon.entities.CreatureFactory;
+import neon.entities.ItemFactory;
 import neon.entities.property.Habitat;
 import neon.maps.Decomposer;
 import neon.maps.MapUtils;
@@ -55,17 +54,12 @@ import neon.util.Dice;
 public class WildernessGenerator {
   private Zone zone;
   private String[][] terrain; // general terrain info
+  private final ItemFactory itemFactory;
+  private final CreatureFactory creatureFactory;
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
-  private final EntityFactory entityFactory;
-
-  // random sources
-  private final MapUtils mapUtils;
   private final Dice dice;
-
-  // helper generators
-  private final BlocksGenerator blocksGenerator;
-  private final CaveGenerator caveGenerator;
+  private final WildernessTerrainGenerator wildernessTerrainGenerator;
 
   /**
    * Creates a wilderness generator with dependency injection for engine use.
@@ -74,9 +68,8 @@ public class WildernessGenerator {
    * @param entityStore the entity store service
    * @param resourceProvider the resource provider service
    */
-  public WildernessGenerator(
-          Zone zone, GameStores gameStores) {
-    this(zone, gameStores, new MapUtils(), new Dice());
+  public WildernessGenerator(Zone zone, GameStores gameStores, Player gameContext) {
+    this(zone, gameStores, gameContext, new MapUtils(), new Dice());
   }
 
   /**
@@ -89,30 +82,35 @@ public class WildernessGenerator {
    * @param dice the Dice instance for random operations
    */
   public WildernessGenerator(
-      Zone zone,
-      GameStores gameStores,
-      MapUtils mapUtils,
-      Dice dice) {
+      Zone zone, GameStores gameStores, Player gameContext, MapUtils mapUtils, Dice dice) {
     this.zone = zone;
     this.entityStore = gameStores.getStore();
     this.resourceProvider = gameStores.getResources();
-    this.mapUtils = mapUtils;
     this.dice = dice;
-    this.blocksGenerator = new BlocksGenerator(mapUtils);
-    this.caveGenerator = new CaveGenerator(dice);
-    this.entityFactory = new EntityFactory(gameStores.getStore(),gameStores.getResources());
+    this.wildernessTerrainGenerator = new WildernessTerrainGenerator(mapUtils, dice);
+    this.itemFactory = new ItemFactory(gameStores.getResources());
+    this.creatureFactory = new CreatureFactory(gameStores, gameContext);
   }
 
-  /**
-   * Creates a wilderness generator with dependency injection for editor use.
-   *
-   * @param terrain the terrain array
-   * @param entityStore the entity store service
-   * @param resourceProvider the resource provider service
-   */
   public WildernessGenerator(
-          String[][] terrain, UIDStore entityStore, ResourceManager resourceProvider) {
-    this(terrain, entityStore, resourceProvider, new MapUtils(), new Dice());
+      Zone zone, ResourceManager resourceManeger, UIDStore uidStore, Player gameContext) {
+    this(zone, resourceManeger, uidStore, gameContext, new MapUtils(), new Dice());
+  }
+
+  public WildernessGenerator(
+      Zone zone,
+      ResourceManager resourceManeger,
+      UIDStore uidStore,
+      Player gameContext,
+      MapUtils mapUtils,
+      Dice dice) {
+    this.zone = zone;
+    this.entityStore = uidStore;
+    this.resourceProvider = resourceManeger;
+    this.dice = dice;
+    this.wildernessTerrainGenerator = new WildernessTerrainGenerator(mapUtils, dice);
+    this.itemFactory = new ItemFactory(resourceManeger);
+    this.creatureFactory = new CreatureFactory(resourceManeger, uidStore, gameContext);
   }
 
   /**
@@ -126,19 +124,14 @@ public class WildernessGenerator {
    * @param dice the Dice instance for random operations
    */
   public WildernessGenerator(
-      String[][] terrain,
-      UIDStore entityStore,
-      ResourceManager resourceProvider,
-      MapUtils mapUtils,
-      Dice dice) {
+      String[][] terrain, GameStores gameStores, Player gameContext, MapUtils mapUtils, Dice dice) {
     this.terrain = terrain;
-    this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
-    this.mapUtils = mapUtils;
+    this.entityStore = gameStores.getStore();
+    this.resourceProvider = gameStores.getResources();
     this.dice = dice;
-    this.blocksGenerator = new BlocksGenerator(mapUtils);
-    this.caveGenerator = new CaveGenerator(dice);
-    this.entityFactory = new EntityFactory(entityStore,resourceProvider);
+    this.wildernessTerrainGenerator = new WildernessTerrainGenerator(mapUtils, dice);
+    this.itemFactory = new ItemFactory(gameStores.getResources());
+    this.creatureFactory = new CreatureFactory(gameStores, gameContext);
   }
 
   /** Generates a piece of wilderness using the supplied parameters. */
@@ -180,10 +173,13 @@ public class WildernessGenerator {
       }
 
       // generate terrain
-      generateTerrain(region.getWidth(), region.getHeight(), theme, region.getTextureType());
+      terrain =
+          wildernessTerrainGenerator.generateTerrain(
+              region.getWidth(), region.getHeight(), theme, region.getTextureType());
 
       // add vegetation if needed
-      addVegetation(region.getWidth(), region.getHeight(), theme, region.getTextureType());
+      wildernessTerrainGenerator.addVegetation(
+          region.getWidth(), region.getHeight(), theme, region.getTextureType(), terrain);
 
       // add creatures
       addCreatures(
@@ -197,15 +193,6 @@ public class WildernessGenerator {
       // convert all info in terrain to regions
       generateEngineContent(region);
     }
-  }
-
-  public String[][] generate(Rectangle r, RRegionTheme theme, String base) {
-    // generate terrain
-    generateTerrain(r.width, r.height, theme, base);
-
-    // generate fauna
-    addVegetation(r.width, r.height, theme, base);
-    return terrain;
   }
 
   private boolean isOnTop(Region region, Collection<Region> regions) {
@@ -286,61 +273,6 @@ public class WildernessGenerator {
     }
   }
 
-  private void generateTerrain(int width, int height, RRegionTheme theme, String base) {
-    // create terrain and vegetation
-    switch (theme.type) {
-      case CHAOTIC:
-        generateSwamp(width, height, theme);
-        break;
-      case PLAIN:
-        generateForest(width, height, theme);
-        break;
-      case RIDGES:
-        generateRidges(width, height, theme);
-        break;
-      case TERRACE:
-        generateTerraces(width, height, theme);
-        break;
-      default:
-        break;
-    }
-
-    // blend into neighboring region
-    makeBorder(base);
-
-    // add features
-    addFeatures(width, height, theme);
-  }
-
-  private void addFeatures(int width, int height, RRegionTheme theme) {
-    double ratio = (width * height) / 10000d;
-    for (RRegionTheme.Feature feature : theme.features) {
-      int n = (int) Float.parseFloat(feature.n) * 100;
-      if (n > 100) {
-        n = mapUtils.random(0, (int) (n * ratio / 100));
-      } else {
-        n = (mapUtils.random(0, (int) (n * ratio)) > 50) ? 1 : 0;
-      }
-      if (feature.value.equals("lake")) { // large patch that just overwrites everything
-        int size = 100 / Integer.parseInt(feature.s);
-        ArrayList<Rectangle> lakes =
-            blocksGenerator.createSparseRectangles(
-                width, height, width / size, height / size, 2, n);
-        for (Rectangle r : lakes) {
-          // place lake
-          Polygon lake = mapUtils.randomPolygon(r, (r.width + r.height) / 2);
-          for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-              if (lake.contains(x, y)) {
-                terrain[y + 1][x + 1] = feature.t;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
   private void addCreatures(
       int rx, int ry, int width, int height, RRegionTheme theme, String base) {
     double ratio = (double) width * height / 10000;
@@ -353,7 +285,7 @@ public class WildernessGenerator {
         String region = t.isEmpty() ? base : t;
 
         Creature creature =
-                entityFactory.getCreature(id, rx + x, ry + y, entityStore.createNewEntityUID());
+            creatureFactory.getCreature(id, rx + x, ry + y, entityStore.createNewEntityUID());
         RTerrain terrain = (RTerrain) resourceProvider.getResource(region, "terrain");
         // Only spawn creatures if their habitat matches the terrain
         // LAND creatures should NOT spawn in SWIM terrain
@@ -379,11 +311,11 @@ public class WildernessGenerator {
             if (entry.startsWith("i:")) {
               String id = entry.replace("i:", "");
               long uid = entityStore.createNewEntityUID();
-              Item item = entityFactory.getItem(id, region.getX() + i, region.getY() + j, uid);
+              Item item = itemFactory.getItem(id, region.getX() + i, region.getY() + j, uid);
               entityStore.addEntity(item);
               if (item instanceof Container) {
                 for (String s : ((RItem.Container) item.resource).contents) {
-                  Item content = entityFactory.getItem(s, entityStore.createNewEntityUID());
+                  Item content = itemFactory.getItem(s, entityStore.createNewEntityUID());
                   ((Container) item).addItem(content.getUID());
                   entityStore.addEntity(content);
                 }
@@ -393,7 +325,7 @@ public class WildernessGenerator {
               String id = entry.replace("c:", "");
               long uid = entityStore.createNewEntityUID();
               Creature creature =
-                      entityFactory.getCreature(id, region.getX() + i, region.getY() + j, uid);
+                  creatureFactory.getCreature(id, region.getX() + i, region.getY() + j, uid);
               entityStore.addEntity(creature);
               zone.addCreature(creature);
             } else if (!entry.isEmpty() && !entry.equals(region.getTextureType())) {
@@ -410,200 +342,6 @@ public class WildernessGenerator {
                       terrain));
             }
           }
-        }
-      }
-    }
-  }
-
-  protected void generateTerraces(int width, int height, RRegionTheme theme) {
-    int[][] tiles = caveGenerator.generateOpenCave(width, height, 3);
-
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        if (tiles[x][y] > 0) {
-          terrain[y + 1][x + 1] = theme.floor;
-        }
-      }
-    }
-  }
-
-  protected void generateForest(int width, int height, RRegionTheme theme) {}
-
-  protected void generateRidges(int width, int height, RRegionTheme theme) {
-    // TODO: Replace with proper noise generation (AnimalStripe from jtexgen not available)
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        // Simple placeholder - generates ridges based on coordinate pattern
-        if ((x + y * 3) % 10 < 5) {
-          terrain[y + 1][x + 1] = theme.floor;
-        }
-      }
-    }
-  }
-
-  private void addVegetation(int width, int height, RRegionTheme theme, String base) {
-    if (!theme.vegetation.isEmpty()) {
-      String[][] fauna = new String[width][height];
-      for (String id : theme.vegetation.keySet()) {
-        int abundance = theme.vegetation.get(id);
-        Item dummy = entityFactory.getItem(id, 0);
-        int size = dummy.getShapeComponent().width; // size van boom in rekening brengen
-        int ratio = (width / size) * (height / size);
-        boolean[][] fill = generateIslands(width / size, height / size, abundance, 5, ratio / size);
-        for (int i = 0; i < fill.length; i++) {
-          for (int j = 0; j < fill[0].length; j++) {
-            if (fill[i][j]) {
-              fauna[i * size + mapUtils.random(0, size - 1)][
-                      j * size + mapUtils.random(0, size - 1)] =
-                  id;
-            }
-          }
-        }
-      }
-
-      for (int i = 0; i < fauna.length; i++) {
-        for (int j = 0; j < fauna[i].length; j++) {
-          String region = terrain[j + 1][i + 1] == null ? base : terrain[j + 1][i + 1];
-          RTerrain rt = (RTerrain) resourceProvider.getResource(region, "terrain");
-          if (fauna[i][j] != null && rt.modifier != Region.Modifier.SWIM) {
-            String t = (terrain[j + 1][i + 1] != null ? terrain[j + 1][i + 1] : "");
-            terrain[j + 1][i + 1] = t + ";i:" + fauna[i][j];
-          }
-        }
-      }
-    }
-  }
-
-  private void makeBorder(String type) {
-    int width = terrain[0].length - 2;
-    int height = terrain.length - 2;
-
-    if (terrain[0][1] != null) { // top
-      // overlap
-      int h = 0;
-      for (int i = 0; i < width; i++) {
-        if (!terrain[0][i + 1].equals(type)) {
-          if (h > 0) {
-            addTerrain(i + 1, 1, 1, h, terrain[0][i + 1]);
-          }
-
-          double c = mapUtils.getRandomSource().nextDouble();
-          if (c > 0.7 && h < height / 10) {
-            h++;
-          } else if (c < 0.3 && h > 0) {
-            h--;
-          }
-        }
-      }
-    }
-
-    if (terrain[height + 1][1] != null) { // bottom
-      // overlap
-      int h = 0;
-      for (int i = 0; i < width; i++) {
-        if (!terrain[height + 1][i + 1].equals(type)) {
-          if (h > 0) {
-            addTerrain(i + 1, height - h + 1, 1, h, terrain[height + 1][i + 1]);
-          }
-
-          double c = mapUtils.getRandomSource().nextDouble();
-          if (c > 0.7 && h < height / 10) {
-            h++;
-          } else if (c < 0.3 && h > 0) {
-            h--;
-          }
-        }
-      }
-    }
-
-    if (terrain[1][0] != null) { // left
-      // overlap
-      int w = 0;
-      for (int i = 0; i < height; i++) {
-        if (!terrain[i + 1][0].equals(type)) {
-          if (w > 0) {
-            addTerrain(1, i + 1, w, 1, terrain[i + 1][0]);
-          }
-
-          double c = mapUtils.getRandomSource().nextDouble();
-          if (c > 0.7 && w < width / 10) {
-            w++;
-          } else if (c < 0.3 && w > 0) {
-            w--;
-          }
-        }
-      }
-    }
-
-    if (terrain[1][width + 1] != null) { // right
-      // overlap
-      int w = 0;
-      for (int i = 0; i < height; i++) {
-        if (!type.equals(terrain[i][width + 1])) {
-          if (w > 0) {
-            addTerrain(width - w + 1, i + 1, w, 1, terrain[i + 1][width + 1]);
-          }
-
-          double c = mapUtils.getRandomSource().nextDouble();
-          if (c > 0.7 && w < width / 10) {
-            w++;
-          } else if (c < 0.3 && w > 0) {
-            w--;
-          }
-        }
-      }
-    }
-  }
-
-  private void addTerrain(int x, int y, int width, int height, String type) {
-    for (int i = y; i < y + height; i++) {
-      for (int j = x; j < x + width; j++) {
-        terrain[i][j] = type;
-      }
-    }
-  }
-
-  // from http://www.evilscience.co.uk/?p=53
-  boolean[][] generateIslands(int width, int height, int p, int n, int i) {
-    boolean[][] map = new boolean[width][height];
-
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        // p: initial chance that a cell contains something
-        map[x][y] = (mapUtils.random(0, 100) < p);
-      }
-    }
-
-    // iterate i times
-    for (; i > 0; i--) {
-      int x = mapUtils.random(0, width - 1);
-      int y = mapUtils.random(0, height - 1);
-      // approximately Conway's game of life with n neighbors
-      map[x][y] = (filledNeighbours(x, y, map) > n);
-    }
-
-    return map;
-  }
-
-  private int filledNeighbours(int x, int y, boolean[][] map) {
-    int c = 0;
-    for (int i = Math.max(0, x - 1); i < Math.min(x + 2, map.length); i++) {
-      for (int j = Math.max(0, y - 1); j < Math.min(y + 2, map[0].length); j++) {
-        if (map[i][j]) {
-          c++;
-        }
-      }
-    }
-    return c;
-  }
-
-  protected void generateSwamp(int width, int height, RRegionTheme theme) {
-    boolean[][] tiles = generateIslands(width, height, 20, 4, 5000);
-
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        if (tiles[x][y]) {
-          terrain[y + 1][x + 1] = theme.floor;
         }
       }
     }

@@ -25,10 +25,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Queue;
-import neon.core.Engine;
-import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Door;
+import neon.entities.Player;
+import neon.entities.UIDStore;
 import neon.entities.property.Skill;
 import neon.maps.Region;
 import neon.resources.RItem;
@@ -37,11 +37,12 @@ public class PathFinder {
   private static HashMap<Point, Integer> evaluated;
   private static Point to;
   private static Creature mover;
+  private final UIDStore uidStore;
+  private final Player player;
 
-  private final GameStores gameStores;
-
-  public PathFinder(GameStores gameStores) {
-    this.gameStores = gameStores;
+  public PathFinder(UIDStore uidStore, Player player) {
+    this.uidStore = uidStore;
+    this.player = player;
   }
 
   public Point[] findPath(Creature creature, Point origin, Point destination) {
@@ -70,7 +71,7 @@ public class PathFinder {
           links.put(to, next);
           next = null;
           break;
-        } else if (Engine.getAtlasPosition().getCurrentZone().getRegion(neighbour).getMovMod()
+        } else if (player.getCurrentZone().getRegion(neighbour).getMovMod()
             == Region.Modifier.BLOCK) {
           continue; // if terrain is blocked, skip to next point
         }
@@ -132,7 +133,7 @@ public class PathFinder {
 
   private int terrainPenalty(Point neighbour) {
     // better modifiers?
-    return switch (Engine.getAtlasPosition().getCurrentZone().getRegion(neighbour).getMovMod()) {
+    return switch (player.getCurrentZone().getRegion(neighbour).getMovMod()) {
       case SWIM -> (100 - mover.getSkill(Skill.SWIMMING)) / 5;
       case CLIMB -> (100 - mover.getSkill(Skill.CLIMBING)) / 5;
       default -> 0;
@@ -140,9 +141,9 @@ public class PathFinder {
   }
 
   private int doorPenalty(Point neighbour) {
-    for (long uid : Engine.getAtlasPosition().getCurrentZone().getItems(neighbour)) {
-      if (gameStores.getStore().getEntity(uid) instanceof Door) {
-        Door door = (Door) gameStores.getStore().getEntity(uid);
+    for (long uid : player.getCurrentZone().getItems(neighbour)) {
+      if (uidStore.getEntity(uid) instanceof Door) {
+        Door door = (Door) uidStore.getEntity(uid);
         if (door.lock.isLocked()) {
           RItem key = door.lock.getKey();
           if (key != null && hasItem(mover, key)) {
@@ -167,7 +168,7 @@ public class PathFinder {
 
   private boolean hasItem(Creature creature, RItem item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (gameStores.getStore().getEntity(uid).getID().equals(item.id)) {
+      if (uidStore.getEntity(uid).getID().equals(item.id)) {
         return true;
       }
     }

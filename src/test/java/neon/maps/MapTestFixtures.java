@@ -185,66 +185,6 @@ public class MapTestFixtures {
   }
 
   /**
-   * Creates an empty dungeon map.
-   *
-   * @param name dungeon name
-   * @param uid dungeon UID
-   * @return a new Dungeon instance
-   */
-  public static Dungeon createEmptyDungeon(String name, int uid) {
-    return new Dungeon(name, uid);
-  }
-
-  /**
-   * Creates an empty dungeon map with default name.
-   *
-   * @param uid dungeon UID
-   * @return a new Dungeon instance
-   */
-  public static Dungeon createEmptyDungeon(int uid) {
-    return new Dungeon("test-dungeon", uid);
-  }
-
-  /**
-   * Creates a dungeon with a specified number of zones.
-   *
-   * @param uid dungeon UID
-   * @param zoneCount number of zones to create
-   * @return a new Dungeon instance with zones
-   */
-  public static Dungeon createDungeonWithZones(int uid, int zoneCount) {
-    Dungeon dungeon = new Dungeon("test-dungeon", uid);
-
-    for (int i = 0; i < zoneCount; i++) {
-      dungeon.addZone(i, "zone-" + i);
-      // Add a simple region to the zone
-      Zone zone = dungeon.getZone(i);
-      Region region = createTestRegion(0, 0, 50, 50);
-      zone.addRegion(region);
-    }
-
-    return dungeon;
-  }
-
-  /**
-   * Creates a dungeon with connected zones (linear chain).
-   *
-   * @param uid dungeon UID
-   * @param zoneCount number of zones
-   * @return a new Dungeon with zones connected in a chain (0->1->2->...)
-   */
-  public static Dungeon createConnectedDungeon(int uid, int zoneCount) {
-    Dungeon dungeon = createDungeonWithZones(uid, zoneCount);
-
-    // Connect zones in a linear chain
-    for (int i = 0; i < zoneCount - 1; i++) {
-      dungeon.addConnection(i, i + 1);
-    }
-
-    return dungeon;
-  }
-
-  /**
    * Creates a bounding rectangle for testing spatial queries.
    *
    * @param x x-coordinate

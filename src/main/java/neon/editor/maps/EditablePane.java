@@ -21,6 +21,7 @@ package neon.editor.maps;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import neon.editor.DataStore;
 import neon.editor.Editor;
 import neon.editor.ObjectTransferHandler;
 import neon.editor.resources.IContainer;
@@ -49,9 +50,11 @@ public class EditablePane extends JScrollPane
   private Dimension delta;
   private JVectorPane pane;
   private IRegion newRegion;
+  private final DataStore dataStore;
 
   /** Initializes this <code>EditablePane</code>. */
-  public EditablePane(ZoneTreeNode node, float width, float height) {
+  public EditablePane(ZoneTreeNode node, float width, float height, DataStore dataStore) {
+    this.dataStore = dataStore;
     if (node.getZone().getScene() == null) {
       node.getZone().map.load();
     }
@@ -115,9 +118,10 @@ public class EditablePane extends JScrollPane
     Renderable selected = pane.getSelectedObject();
     if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1 && selected != null) {
       if (selected instanceof IDoor) {
-        new DoorInstanceEditor((IDoor) selected, Editor.getFrame()).show();
+        new DoorInstanceEditor((IDoor) selected, Editor.getFrame(), dataStore).show();
       } else if (selected instanceof IContainer) {
-        new ContainerInstanceEditor((IContainer) selected, Editor.getFrame(), node).show();
+        new ContainerInstanceEditor((IContainer) selected, Editor.getFrame(), node, dataStore)
+            .show();
       }
     } else if (e.getButton() == MouseEvent.BUTTON3) {
       JPopupMenu menu = new JPopupMenu();
@@ -174,7 +178,7 @@ public class EditablePane extends JScrollPane
         region.setAttribute("w", "1");
         region.setAttribute("h", "1");
         region.setAttribute("l", Integer.toString(layer));
-        newRegion = new IRegion(region);
+        newRegion = new IRegion(region, dataStore);
         scene.addElement(newRegion, newRegion.getBounds(), newRegion.z);
       }
     } else {
@@ -244,7 +248,8 @@ public class EditablePane extends JScrollPane
                 (int) (y / pane.getZoom()),
                 original.getZ(),
                 original.width,
-                original.height);
+                original.height,
+                dataStore);
       } else if (original instanceof IObject) {
         // copy state of doors and containers -> no?
         cloneElement.setAttribute("id", originalElement.getAttributeValue("id"));
@@ -254,7 +259,8 @@ public class EditablePane extends JScrollPane
                 (int) (x / pane.getZoom()),
                 (int) (y / pane.getZoom()),
                 original.getZ(),
-                0);
+                0,
+                dataStore);
       }
       return clone;
     }
@@ -299,11 +305,12 @@ public class EditablePane extends JScrollPane
         }
       } else if (e.getActionCommand().equals("Properties...")) {
         if (selected instanceof IDoor) {
-          new DoorInstanceEditor((IDoor) selected, Editor.getFrame()).show();
+          new DoorInstanceEditor((IDoor) selected, Editor.getFrame(), dataStore).show();
         } else if (selected instanceof IContainer) {
-          new ContainerInstanceEditor((IContainer) selected, Editor.getFrame(), node).show();
+          new ContainerInstanceEditor((IContainer) selected, Editor.getFrame(), node, dataStore)
+              .show();
         } else if (selected instanceof IRegion) {
-          new RegionInstanceEditor((IRegion) selected, Editor.getFrame(), node).show();
+          new RegionInstanceEditor((IRegion) selected, Editor.getFrame(), node, dataStore).show();
         }
       }
       repaint();

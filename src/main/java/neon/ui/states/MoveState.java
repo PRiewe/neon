@@ -50,6 +50,7 @@ public class MoveState extends State implements KeyListener {
   private final GameStores gameStores;
   private final InventoryHandler inventoryHandler;
   private final MotionHandler motionHandler;
+  private final TeleportHandler teleportHandler;
 
   public MoveState(
       State parent, MBassador<EventObject> bus, GameContext context, GameStores gameStores) {
@@ -59,7 +60,10 @@ public class MoveState extends State implements KeyListener {
     this.gameStores = gameStores;
     keys = (CClient) gameStores.getResources().getResource("client", "config");
     inventoryHandler = new InventoryHandler(gameStores.getStore());
-    motionHandler = new MotionHandler(context,gameStores);
+    motionHandler = new MotionHandler(gameStores.getStore(), player);
+    teleportHandler =
+        new TeleportHandler(
+            gameStores, context, context.getAtlasPosition(), context.getScriptEngine());
   }
 
   @Override
@@ -128,7 +132,7 @@ public class MoveState extends State implements KeyListener {
           bus.publishAsync(new TransitionEvent("container", "holder", entity));
         }
       } else if (entity instanceof Door) {
-        if (motionHandler.teleport(player, (Door) entity) == MotionHandler.OK) {
+        if (teleportHandler.teleport(player, (Door) entity) == MotionHandler.OK) {
           bus.publishAsync(new TurnEvent(context.getTimer().addTick()));
         }
       } else if (entity instanceof Creature) {

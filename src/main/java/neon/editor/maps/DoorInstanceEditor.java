@@ -25,7 +25,7 @@ import java.awt.event.*;
 import java.text.NumberFormat;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.editor.resources.IDoor;
 import neon.editor.resources.RMap;
@@ -48,9 +48,11 @@ public class DoorInstanceEditor implements ActionListener, ItemListener {
   private JComboBox<IDoor.State> stateBox;
   private JComboBox<RItem> keyBox;
   private JComboBox<RSpell.Enchantment> spellBox;
+  private final DataStore dataStore;
 
-  public DoorInstanceEditor(IDoor door, JFrame parent) {
+  public DoorInstanceEditor(IDoor door, JFrame parent, DataStore dataStore) {
     this.door = door;
+    this.dataStore = dataStore;
     frame = new JDialog(parent, "Door instance editor: " + door.resource.id);
     JPanel content = new JPanel(new BorderLayout());
     frame.setContentPane(content);
@@ -273,7 +275,7 @@ public class DoorInstanceEditor implements ActionListener, ItemListener {
 
   public void initDoor() {
     // maps laden
-    for (RMap map : Editor.resources.getResources(RMap.class)) {
+    for (RMap map : dataStore.getResourceManager().getResources(RMap.class)) {
       mapBox.addItem(map);
     }
 
@@ -285,7 +287,7 @@ public class DoorInstanceEditor implements ActionListener, ItemListener {
     }
 
     // themes laden
-    for (RDungeonTheme theme : Editor.resources.getResources(RDungeonTheme.class)) {
+    for (RDungeonTheme theme : dataStore.getResourceManager().getResources(RDungeonTheme.class)) {
       themeBox.addItem(theme);
     }
 
@@ -307,7 +309,7 @@ public class DoorInstanceEditor implements ActionListener, ItemListener {
     }
 
     // keys laden
-    for (RItem ri : Editor.resources.getResources(RItem.class)) {
+    for (RItem ri : dataStore.getResourceManager().getResources(RItem.class)) {
       if (ri.type == Type.item) {
         keyBox.addItem(ri);
       }
@@ -321,7 +323,8 @@ public class DoorInstanceEditor implements ActionListener, ItemListener {
     keyBox.setSelectedItem(door.key);
     stateBox.setSelectedItem(door.state);
     // spells laden
-    for (RSpell.Enchantment rs : Editor.resources.getResources(RSpell.Enchantment.class)) {
+    for (RSpell.Enchantment rs :
+        dataStore.getResourceManager().getResources(RSpell.Enchantment.class)) {
       if (rs.item.equals("trap")) {
         spellBox.addItem(rs);
       }

@@ -19,36 +19,36 @@
 package neon.editor.maps;
 
 import javax.swing.tree.*;
-import neon.editor.Editor;
+import lombok.Getter;
+import lombok.Setter;
+import neon.editor.DataStore;
 import neon.editor.resources.RZone;
 
 @SuppressWarnings("serial")
 public class ZoneTreeNode extends DefaultMutableTreeNode {
-  private RZone zone;
-  private EditablePane pane;
+  @Getter private RZone zone;
+  @Setter @Getter private EditablePane pane;
   private int level;
+  private final DataStore dataStore;
 
   /**
    * Initializes a new node representing a map level.
    *
    * @param level
    */
-  public ZoneTreeNode(int level, RZone zone) {
+  public ZoneTreeNode(int level, RZone zone, DataStore dataStore) {
     this.level = level;
     this.zone = zone;
+    this.dataStore = dataStore;
   }
 
   public String toString() {
-    if (!zone.getPath()[0].equals(Editor.getStore().getActive().get("id"))) {
+    if (!zone.getPath()[0].equals(dataStore.getActive().get("id"))) {
       // niet-actieve data is cursief weergegeven
       return "<html><i>" + zone.name + "</i></html>";
     } else {
       return zone.name;
     }
-  }
-
-  public RZone getZone() {
-    return zone;
   }
 
   public int getZoneLevel() {
@@ -57,13 +57,5 @@ public class ZoneTreeNode extends DefaultMutableTreeNode {
 
   public short getUID() {
     return zone.map.getUID();
-  }
-
-  public EditablePane getPane() {
-    return pane;
-  }
-
-  public void setPane(EditablePane pane) {
-    this.pane = pane;
   }
 }

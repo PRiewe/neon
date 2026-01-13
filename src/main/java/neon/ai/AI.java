@@ -24,16 +24,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import lombok.Getter;
 import neon.core.Engine;
-import neon.core.GameContext;
 import neon.core.GameStores;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.core.handlers.*;
-import neon.entities.Clothing;
-import neon.entities.Creature;
-import neon.entities.Door;
-import neon.entities.Item;
-import neon.entities.Weapon;
+import neon.entities.*;
 import neon.entities.components.FactionComponent;
 import neon.entities.property.Condition;
 import neon.entities.property.Skill;
@@ -42,6 +37,7 @@ import neon.magic.Effect;
 import neon.resources.RItem;
 import neon.resources.RSpell;
 import neon.resources.RWeapon.WeaponType;
+import neon.resources.ResourceManager;
 
 /**
  * This class implements a creature's AI.
@@ -49,28 +45,21 @@ import neon.resources.RWeapon.WeaponType;
  * @author mdriesen
  */
 public abstract class AI implements Serializable {
-  /**
-   * -- GETTER --
-   *
-   * @return the aggression of the creature with this AI
-   */
+
   @Getter protected byte aggression;
 
-  /**
-   * -- GETTER --
-   *
-   * @return the confidence of the creature with this AI
-   */
   @Getter protected byte confidence;
 
   protected Creature creature;
   protected HashMap<Long, Integer> dispositions = new HashMap<Long, Integer>();
-  protected final GameStores gameStores;
+  protected final ResourceManager resourceManager;
+  protected final UIDStore uidStore;
   protected final InventoryHandler inventoryHandler;
   protected final MotionHandler motionHandler;
   protected final PathFinder pathFinder;
   protected final CombatUtils combatUtils;
-  protected final GameContext gameContext;
+  protected final Player player;
+
   /**
    * Initializes a new AI.
    *
@@ -78,17 +67,39 @@ public abstract class AI implements Serializable {
    * @param aggression
    * @param confidence
    */
-  public AI(Creature creature, byte aggression, byte confidence, GameStores gameStores, GameContext gameContext) {
+  public AI(
+      Creature creature, byte aggression, byte confidence, GameStores gameStores, Player player) {
     this.aggression = aggression;
     this.confidence = confidence;
     this.creature = creature;
-    this.gameStores = gameStores;
-    this.gameContext = gameContext;
+    this.resourceManager = gameStores.getResources();
+    this.uidStore = gameStores.getStore();
+    this.player = player;
 
-    inventoryHandler = new InventoryHandler(gameStores.getStore());
-    motionHandler = new MotionHandler(gameContext,gameStores);
-    pathFinder = new PathFinder(gameStores);
-    combatUtils = new CombatUtils(gameStores.getStore());
+    inventoryHandler = new InventoryHandler(uidStore);
+    motionHandler = new MotionHandler(this.uidStore, player);
+    pathFinder = new PathFinder(this.uidStore, player);
+    combatUtils = new CombatUtils(this.uidStore);
+  }
+
+  public AI(
+      Creature creature,
+      byte aggression,
+      byte confidence,
+      ResourceManager resourceManager,
+      UIDStore uidStore,
+      Player player) {
+    this.aggression = aggression;
+    this.confidence = confidence;
+    this.creature = creature;
+    this.resourceManager = resourceManager;
+    this.uidStore = uidStore;
+    this.player = player;
+
+    inventoryHandler = new InventoryHandler(uidStore);
+    motionHandler = new MotionHandler(uidStore, player);
+    pathFinder = new PathFinder(uidStore, player);
+    combatUtils = new CombatUtils(uidStore);
   }
 
   /** Lets the creature with this AI act. */
@@ -101,7 +112,7 @@ public abstract class AI implements Serializable {
     if (creature.hasCondition(Condition.CALM)) {
       return false;
     } else {
-      return aggression > getDisposition(Engine.getPlayer());
+      return aggression > getDisposition(player);
     }
   }
 
@@ -186,7 +197,7 @@ public abstract class AI implements Serializable {
   protected boolean heal() {
     // first check potions and scrolls?
     for (long uid : creature.getInventoryComponent()) {
-      Item item = (Item) gameStores.getStore().getEntity(uid);
+      Item item = (Item) uidStore.getEntity(uid);
       if (item instanceof Item.Scroll || item instanceof Item.Potion) {
         RSpell formula = item.getMagicComponent().getSpell();
 
@@ -239,7 +250,7 @@ public abstract class AI implements Serializable {
   private boolean cure(Effect effect) {
     // first check potions and scrolls?
     for (long uid : creature.getInventoryComponent()) {
-      Item item = (Item) gameStores.getStore().getEntity(uid);
+      Item item = (Item) uidStore.getEntity(uid);
       if (item instanceof Item.Scroll || item instanceof Item.Potion) {
         RSpell formula = item.getMagicComponent().getSpell();
         if (formula.effect.equals(effect) && formula.range == 0) {
@@ -272,7 +283,7 @@ public abstract class AI implements Serializable {
    */
   private boolean equip(Slot slot) {
     for (long uid : creature.getInventoryComponent()) {
-      Item item = (Item) gameStores.getStore().getEntity(uid);
+      Item item = (Item) uidStore.getEntity(uid);
       if (item instanceof Weapon && slot.equals(((Weapon) item).getSlot())) {
         WeaponType type = ((Weapon) item).getWeaponType();
         inventoryHandler.equip(item, creature);
@@ -336,8 +347,8 @@ public abstract class AI implements Serializable {
   private boolean open(Point p) {
     Door door = null;
     for (long uid : Engine.getAtlasPosition().getCurrentZone().getItems(p)) {
-      if (gameStores.getStore().getEntity(uid) instanceof Door) {
-        door = (Door) gameStores.getStore().getEntity(uid);
+      if (uidStore.getEntity(uid) instanceof Door) {
+        door = (Door) uidStore.getEntity(uid);
       }
     }
     if (door != null) {
@@ -471,7 +482,7 @@ public abstract class AI implements Serializable {
 
     if (p.distance(preyPos.x, preyPos.y) < 1) {
       long uid = creature.getInventoryComponent().get(Slot.WEAPON);
-      Weapon weapon = (Weapon) gameStores.getStore().getEntity(uid);
+      Weapon weapon = (Weapon) uidStore.getEntity(uid);
       if (creature.getInventoryComponent().hasEquiped(Slot.WEAPON) && weapon.isRanged()) {
         if (!(combatUtils.getWeaponType(creature).equals(WeaponType.THROWN) || equip(Slot.AMMO))) {
           inventoryHandler.unequip(weapon.getUID(), creature);
@@ -491,7 +502,7 @@ public abstract class AI implements Serializable {
 
   private boolean hasItem(Creature creature, RItem item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (gameStores.getStore().getEntity(uid).getID().equals(item.id)) {
+      if (uidStore.getEntity(uid).getID().equals(item.id)) {
         return true;
       }
     }

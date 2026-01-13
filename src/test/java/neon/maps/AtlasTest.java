@@ -3,7 +3,6 @@ package neon.maps;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-import neon.narrative.QuestTracker;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
@@ -30,11 +29,9 @@ class AtlasTest {
     atlas = TestEngineContext.getTestAtlas();
     atlasPosition =
         new AtlasPosition(
-            atlas,
-            TestEngineContext.getTestZoneActivator(),
-            TestEngineContext.getTestResources(),
-            new QuestTracker(),
-            TestEngineContext.getTestEntityStore());
+            TestEngineContext.getGameStores(),
+            TestEngineContext.getQuestTracker(),
+            TestEngineContext.getTestContext().getPlayer());
   }
 
   @AfterEach
@@ -210,11 +207,9 @@ class AtlasTest {
             TestEngineContext.getMapLoader());
     AtlasPosition atlasPosition =
         new AtlasPosition(
-            atlas1,
-            TestEngineContext.getTestZoneActivator(),
-            TestEngineContext.getTestResources(),
-            new QuestTracker(),
-            TestEngineContext.getTestEntityStore());
+            TestEngineContext.getGameStores(),
+            TestEngineContext.getQuestTracker(),
+            TestEngineContext.getTestContext().getPlayer());
 
     World world = new World("Persistent World", 900);
 

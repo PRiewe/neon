@@ -19,6 +19,9 @@
 package neon.entities;
 
 import java.util.EnumMap;
+import java.util.concurrent.atomic.AtomicReference;
+import lombok.Getter;
+import lombok.Setter;
 import neon.core.GameStores;
 import neon.core.handlers.SkillHandler;
 import neon.entities.components.Inventory;
@@ -28,20 +31,33 @@ import neon.entities.components.RenderComponent;
 import neon.entities.property.Gender;
 import neon.entities.property.Skill;
 import neon.entities.property.Slot;
+import neon.maps.Map;
+import neon.maps.Zone;
 import neon.narrative.Journal;
 import neon.resources.RCreature;
 import neon.resources.RWeapon.WeaponType;
 
 public class Player extends Hominid {
   private final int baseLevel;
-  private Journal journal = new Journal();
-  private Specialisation spec;
-  private String profession;
-  private EnumMap<Skill, Float> mods;
-  private String sign;
+
+  /**
+   * -- GETTER --
+   *
+   * @return the player's journal
+   */
+  @Getter private final Journal journal = new Journal();
+
+  private final Specialisation spec;
+  @Getter private final String profession;
+  private final EnumMap<Skill, Float> mods;
   private boolean sneak = false;
-  private Creature mount;
   private final GameStores gameStores;
+
+  @Setter @Getter private String sign;
+  @Getter private Creature mount;
+
+  private final AtomicReference<Zone> currentZone = new AtomicReference<>();
+  private final AtomicReference<Map> currentMap = new AtomicReference<>();
 
   public Player(
       RCreature species,
@@ -69,15 +85,27 @@ public class Player extends Hominid {
     return "player";
   }
 
+  public Zone getCurrentZone() {
+    return currentZone.get();
+  }
+
+  public void setCurrentZone(Zone zone) {
+    currentZone.set(zone);
+  }
+
+  public Map getCurrentMap() {
+    return currentMap.get();
+  }
+
+  public void setCurrentMap(Map map) {
+    currentMap.set(map);
+  }
+
   /*
    * allerlei actions die de player kan ondernemen en niet in een aparte handler staan
    */
   public boolean pickLock(Lock lock) {
-    if (SkillHandler.check(this, Skill.LOCKPICKING) > lock.getLockDC()) {
-      return true;
-    } else {
-      return false;
-    }
+    return SkillHandler.check(this, Skill.LOCKPICKING) > lock.getLockDC();
   }
 
   public void setSneaking(boolean sneaking) {
@@ -108,13 +136,6 @@ public class Player extends Hominid {
     }
 
     return damage;
-  }
-
-  /**
-   * @return the player's journal
-   */
-  public Journal getJournal() {
-    return journal;
   }
 
   // algehele level van de player. Wordt berekend a.d.h.v. de stats
@@ -218,14 +239,10 @@ public class Player extends Hominid {
     species.iq += amount;
   }
 
-  public String getProfession() {
-    return profession;
-  }
-
   public enum Specialisation {
     combat,
     magic,
-    stealth;
+    stealth
   }
 
   public void trainSkill(Skill skill, float mod) {
@@ -239,24 +256,12 @@ public class Player extends Hominid {
         skill, Math.min(species.skills.get(skill) + mods.get(skill), skills.get(skill) + value));
   }
 
-  public String getSign() {
-    return sign;
-  }
-
-  public void setSign(String sign) {
-    this.sign = sign;
-  }
-
   public void mount(Creature mount) {
     this.mount = mount;
   }
 
   public void unmount() {
     mount = null;
-  }
-
-  public Creature getMount() {
-    return mount;
   }
 
   public boolean isMounted() {

@@ -29,7 +29,6 @@ import javax.swing.border.*;
 import javax.swing.text.DefaultCaret;
 import lombok.Getter;
 import neon.core.GameContext;
-import neon.core.GameStores;
 import neon.core.handlers.CombatUtils;
 import neon.entities.Player;
 import neon.entities.components.HealthComponent;
@@ -56,7 +55,7 @@ public class GamePanel extends JComponent {
   private TitledBorder sBorder, aBorder, cBorder;
   private JVectorPane drawing;
   @Getter private final GameContext context;
- private final CombatUtils combatUtils;
+  private final CombatUtils combatUtils;
   // components of the stats panel
   private JLabel intLabel, conLabel, dexLabel, strLabel, wisLabel, chaLabel;
   private JLabel healthLabel, magicLabel, AVLabel, DVLabel;
@@ -64,8 +63,8 @@ public class GamePanel extends JComponent {
   /** Initializes this GamePanel. */
   public GamePanel(GameContext context, CombatUtils combatUtils) {
     this.context = context;
-      this.combatUtils = combatUtils;
-      drawing = new JVectorPane();
+    this.combatUtils = combatUtils;
+    drawing = new JVectorPane();
     drawing.setFilter(new LightFilter());
 
     // stats field (hacky way to make it semi-transparent)

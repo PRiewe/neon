@@ -6,7 +6,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
 import neon.maps.MapUtils;
@@ -120,7 +119,7 @@ class TownGeneratorIntegrationTest {
       TestEngineContext.initialize(testDb);
       TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
       testAtlas = TestEngineContext.getTestAtlas();
-      entityStore = TestEngineContext.getTestEntityStore()
+      entityStore = TestEngineContext.getTestStore();
     }
 
     @AfterEach
@@ -139,7 +138,7 @@ class TownGeneratorIntegrationTest {
           new TownGenerator(
               zone,
               entityStore,
-              TestEngineContext.getTestResourceProvider(),
+              TestEngineContext.getTestResources(),
               MapUtils.withSeed(scenario.seed()));
 
       // When
@@ -172,7 +171,7 @@ class TownGeneratorIntegrationTest {
           new TownGenerator(
               zone,
               entityStore,
-              TestEngineContext.getTestResourceProvider(),
+              TestEngineContext.getTestResources(),
               MapUtils.withSeed(scenario.seed()));
 
       // When
@@ -199,7 +198,7 @@ class TownGeneratorIntegrationTest {
           new TownGenerator(
               zone,
               entityStore,
-              TestEngineContext.getTestResourceProvider(),
+              TestEngineContext.getTestResources(),
               MapUtils.withSeed(scenario.seed()));
 
       // When
@@ -236,7 +235,7 @@ class TownGeneratorIntegrationTest {
           new TownGenerator(
               zone,
               entityStore,
-              TestEngineContext.getTestResourceProvider(),
+              TestEngineContext.getTestResources(),
               MapUtils.withSeed(scenario.seed()));
 
       // When

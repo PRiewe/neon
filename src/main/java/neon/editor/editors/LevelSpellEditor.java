@@ -24,7 +24,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.resources.LSpell;
 import neon.resources.RSpell;
 
@@ -37,12 +37,14 @@ import neon.resources.RSpell;
 @SuppressWarnings("serial")
 public class LevelSpellEditor extends ObjectEditor implements MouseListener {
   private LSpell data;
+  private final DataStore dataStore;
   private JTable table;
   private DefaultTableModel model;
 
-  public LevelSpellEditor(JFrame parent, LSpell data) {
+  public LevelSpellEditor(JFrame parent, LSpell data, DataStore dataStore) {
     super(parent, "Levelled spell: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     // tabel
     String[] columns = {"id", "level"};
@@ -68,7 +70,7 @@ public class LevelSpellEditor extends ObjectEditor implements MouseListener {
           (String) table.getModel().getValueAt(i, 0),
           Integer.parseInt(table.getModel().getValueAt(i, 1).toString()));
     }
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {
@@ -107,7 +109,7 @@ public class LevelSpellEditor extends ObjectEditor implements MouseListener {
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add spell")) {
         ArrayList<String> spells = new ArrayList<String>();
-        for (RSpell spell : Editor.resources.getResources(RSpell.class)) {
+        for (RSpell spell : dataStore.getResourceManager().getResources(RSpell.class)) {
           spells.add(spell.id);
         }
         String s =

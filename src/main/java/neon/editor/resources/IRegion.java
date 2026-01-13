@@ -19,7 +19,7 @@
 package neon.editor.resources;
 
 import java.util.ArrayList;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.resources.RData;
 import neon.resources.RRegionTheme;
 import neon.resources.RScript;
@@ -31,19 +31,24 @@ public class IRegion extends Instance {
   public ArrayList<RScript> scripts = new ArrayList<RScript>();
   public String label;
 
-  public IRegion(RTerrain terrain, int x, int y, int z, int w, int h) {
-    super(terrain, x, y, z, w, h);
+  public IRegion(RTerrain terrain, int x, int y, int z, int w, int h, DataStore dataStore) {
+    super(terrain, x, y, z, w, h, dataStore);
   }
 
-  public IRegion(Element properties) {
-    super(properties);
+  public IRegion(Element properties, DataStore dataStore) {
+    super(properties, dataStore);
     resource =
-        (RData) Editor.resources.getResource(properties.getAttributeValue("text"), "terrain");
+        (RData)
+            dataStore
+                .getResourceManager()
+                .getResource(properties.getAttributeValue("text"), "terrain");
     theme =
         (RRegionTheme)
-            Editor.resources.getResource(properties.getAttributeValue("random"), "theme");
+            dataStore
+                .getResourceManager()
+                .getResource(properties.getAttributeValue("random"), "theme");
     for (Element script : properties.getChildren("script")) {
-      scripts.add(Editor.getStore().getScripts().get(script.getAttributeValue("id")));
+      scripts.add(dataStore.getScripts().get(script.getAttributeValue("id")));
     }
     label = properties.getAttributeValue("label");
   }

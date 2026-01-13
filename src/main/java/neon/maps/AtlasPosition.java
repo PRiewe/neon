@@ -1,57 +1,49 @@
 package neon.maps;
 
+import lombok.Getter;
+import neon.core.GameStores;
 import neon.entities.Door;
 import neon.entities.Player;
-import neon.entities.UIDStore;
 import neon.maps.generators.DungeonGenerator;
-import neon.maps.services.EntityStore;
 import neon.maps.services.QuestProvider;
 import neon.narrative.QuestTracker;
-import neon.resources.ResourceManager;
-
-import java.rmi.server.UID;
 
 public class AtlasPosition {
-  private int currentZone = 0;
-  private int currentMap = 0;
+  // private int currentZone = 0;
+  // private int currentMap = 0;
   private final Atlas atlas;
-  private final ZoneActivator zoneActivator;
-  private final ResourceManager resourceProvider;
   private final QuestTracker questProvider;
-  private final UIDStore entityStore;
+  @Getter private final Player player;
+  private final GameStores gameStores;
+  public final ZoneFactory zoneFactory;
 
-  public AtlasPosition(
-      Atlas atlas,
-      ZoneActivator zoneActivator,
-      ResourceManager resourceProvider,
-      QuestTracker questProvider,
-      UIDStore entityStore) {
-    this.atlas = atlas;
-    this.zoneActivator = zoneActivator;
-    this.resourceProvider = resourceProvider;
+  public AtlasPosition(GameStores gameStores, QuestTracker questProvider, Player player) {
+    this.atlas = gameStores.getAtlas();
     this.questProvider = questProvider;
-    this.entityStore = entityStore;
+    this.player = player;
+    this.gameStores = gameStores;
+    zoneFactory = new ZoneFactory(gameStores);
   }
 
   /**
    * @return the current map
    */
   public Map getCurrentMap() {
-    return atlas.getMap(currentMap);
+    return player.getCurrentMap();
   }
 
   /**
    * @return the current zone
    */
   public Zone getCurrentZone() {
-    return atlas.getMap(currentMap).getZone(currentZone);
+    return player.getCurrentZone();
   }
 
   /**
    * @return the current zone
    */
   public int getCurrentZoneIndex() {
-    return currentZone;
+    return player.getCurrentZone().getIndex();
   }
 
   /**
@@ -59,10 +51,10 @@ public class AtlasPosition {
    *
    * @param i the index of the current zone
    */
-  public void setCurrentZone(int i, Player player) {
-    currentZone = i;
-    zoneActivator.activateZone(getCurrentZone(), player);
-  }
+  //  public void setCurrentZone(int i, Player player) {
+  //    currentZone = i;
+  //    zoneActivator.activateZone(getCurrentZone(), player);
+  //  }
 
   /**
    * Enter a new zone through a door.
@@ -72,14 +64,16 @@ public class AtlasPosition {
    */
   public void enterZone(Door door, Zone previousZone, Player player) {
     if (door.portal.getDestZone() > -1) {
-      setCurrentZone(door.portal.getDestZone(), player);
+      Zone destinationZone =
+          zoneFactory.createZone(
+              getCurrentMap().getName(), getCurrentMap().getUID(), door.portal.getDestZone());
+      player.setCurrentZone(destinationZone);
     } else {
-      setCurrentZone(0, player);
+      player.setCurrentZone(getCurrentMap().getZone(0));
     }
 
     if (getCurrentMap() instanceof Dungeon && getCurrentZone().isRandom()) {
-      new DungeonGenerator(
-              getCurrentZone(), entityStore, resourceProvider, (QuestProvider) questProvider)
+      new DungeonGenerator(getCurrentZone(), (QuestProvider) questProvider, player, gameStores)
           .generate(door, previousZone, atlas);
     }
   }
@@ -91,6 +85,6 @@ public class AtlasPosition {
    */
   public void setMap(Map map) {
     atlas.putMapIfNeeded(map);
-    currentMap = map.getUID();
+    player.setCurrentMap(map);
   }
 }

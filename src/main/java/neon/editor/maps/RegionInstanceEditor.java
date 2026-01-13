@@ -25,12 +25,11 @@ import java.text.NumberFormat;
 import java.util.Enumeration;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.resources.IRegion;
 import neon.editor.resources.Instance;
 import neon.editor.resources.RZone;
-import neon.editor.services.EditorResourceProvider;
-import neon.maps.generators.WildernessGenerator;
+import neon.maps.generators.WildernessTerrainGenerator;
 import neon.resources.RRegionTheme;
 import neon.resources.RScript;
 import neon.resources.RTerrain;
@@ -45,13 +44,15 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
   private JComboBox<RTerrain> terrainBox;
   private JList<RScript> scriptList;
   private DefaultListModel<RScript> scriptListModel;
-  private RZone zone;
+  private final RZone zone;
   private JSpinner zSpinner;
+  private final DataStore dataStore;
 
-  public RegionInstanceEditor(IRegion r, JFrame parent, ZoneTreeNode zone) {
+  public RegionInstanceEditor(IRegion r, JFrame parent, ZoneTreeNode zone, DataStore dataStore) {
     this.zone = zone.getZone();
     region = r;
     frame = new JDialog(parent, "Region instance editor: " + region.resource.id);
+    this.dataStore = dataStore;
     JPanel content = new JPanel(new BorderLayout());
     frame.setContentPane(content);
 
@@ -86,7 +87,8 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
     wField = new JFormattedTextField(NumberFormat.getIntegerInstance());
     wField.setColumns(10);
     hField = new JFormattedTextField(NumberFormat.getIntegerInstance());
-    terrainBox = new JComboBox<RTerrain>(Editor.resources.getResources(RTerrain.class));
+    terrainBox =
+        new JComboBox<RTerrain>(dataStore.getResourceManager().getResources(RTerrain.class));
     zSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 124, 1));
     labelField = new JTextField();
     destLayout.setVerticalGroup(
@@ -163,7 +165,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
     JPanel randomPanel = new JPanel();
     themeBox = new JComboBox<RRegionTheme>();
     themeBox.addItem(null);
-    for (RRegionTheme theme : Editor.resources.getResources(RRegionTheme.class)) {
+    for (RRegionTheme theme : dataStore.getResourceManager().getResources(RRegionTheme.class)) {
       themeBox.addItem(theme);
     }
     JButton randomButton = new JButton("Generate randomly");
@@ -244,8 +246,8 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
           }
         }
         String[][] content =
-            new WildernessGenerator(terrain, null, new EditorResourceProvider())
-                .generate(region.getBounds(), region.theme, region.resource.id);
+            new WildernessTerrainGenerator()
+                .generateTerrainOnly(region.getBounds(), region.theme, region.resource.id);
         makeContent(content);
       }
       themeBox.setSelectedItem(null);
@@ -295,7 +297,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add script")) {
-        Object[] spells = Editor.getStore().getScripts().values().toArray();
+        Object[] spells = dataStore.getScripts().values().toArray();
         RScript rs =
             (RScript)
                 JOptionPane.showInputDialog(
@@ -326,7 +328,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
               e.setAttribute("y", Integer.toString(y + region.y));
               e.setAttribute("id", id);
               e.setAttribute("uid", Integer.toString(zone.map.createUID(e)));
-              Instance instance = RZone.getInstance(e, zone);
+              Instance instance = zone.getInstance(e, zone);
               zone.getScene().addElement(instance, instance.getBounds(), instance.z);
             } else if (entry.startsWith("c:")) {
             } else if (!entry.isEmpty()) {
@@ -337,7 +339,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
               element.setAttribute("w", "1");
               element.setAttribute("h", "1");
               element.setAttribute("l", Integer.toString(region.z + 1));
-              Instance instance = new IRegion(element);
+              Instance instance = new IRegion(element, dataStore);
               zone.getScene()
                   .addElement(
                       instance, new Rectangle(x + region.x, y + region.y, 1, 1), region.z + 1);

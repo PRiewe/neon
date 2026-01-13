@@ -25,7 +25,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
-import neon.editor.*;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.editor.resources.RFaction;
 import neon.entities.property.Skill;
@@ -35,6 +35,7 @@ import org.jdom2.Element;
 
 public class NPCEditor extends ObjectEditor implements MouseListener {
   private RPerson data;
+  private final DataStore dataStore;
   private JList<String> spellList, itemList, destList;
   private JTextField nameField;
   private JComboBox<RFaction> factionBox;
@@ -62,12 +63,13 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
   private Element currentDest;
   private ArrayList<String> spells;
 
-  public NPCEditor(JFrame parent, RPerson data) {
+  public NPCEditor(JFrame parent, RPerson data, DataStore dataStore) {
     super(parent, "NPC Editor: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     spells = new ArrayList<String>();
-    for (RSpell spell : Editor.resources.getResources(RSpell.class)) {
+    for (RSpell spell : dataStore.getResourceManager().getResources(RSpell.class)) {
       if (spell.type == SpellType.SPELL) {
         spells.add(spell.id);
       }
@@ -81,7 +83,8 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     JPanel generalPanel = new JPanel();
     generalPanel.setBorder(new TitledBorder("General"));
     nameField = new JTextField(10);
-    raceBox = new JComboBox<RCreature>(Editor.resources.getResources(RCreature.class));
+    raceBox =
+        new JComboBox<RCreature>(dataStore.getResourceManager().getResources(RCreature.class));
     generalPanel.add(new JLabel("Name: "));
     generalPanel.add(nameField);
     generalPanel.add(new JLabel(" "));
@@ -278,7 +281,8 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     joinedFactions = new HashMap<String, Integer>();
     FactionListListener fl = new FactionListListener();
 
-    factionBox = new JComboBox<RFaction>(Editor.resources.getResources(RFaction.class));
+    factionBox =
+        new JComboBox<RFaction>(dataStore.getResourceManager().getResources(RFaction.class));
     factionBox.addActionListener(fl);
     factionPanel.add(factionBox);
     factionCheckBox = new JCheckBox();
@@ -301,7 +305,7 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
 
   protected void load() {
     nameField.setText(data.name);
-    RCreature species = (RCreature) Editor.resources.getResource(data.species);
+    RCreature species = (RCreature) dataStore.getResourceManager().getResource(data.species);
     raceBox.setSelectedItem(species);
 
     for (String s : data.factions.keySet()) {
@@ -528,7 +532,7 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
       data.services.add(service);
     }
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   private class SkillListListener implements ActionListener {
@@ -626,7 +630,7 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add item")) {
-        Object[] items = Editor.resources.getResources(RItem.class).toArray();
+        Object[] items = dataStore.getResourceManager().getResources(RItem.class).toArray();
         String s =
             (String)
                 JOptionPane.showInputDialog(

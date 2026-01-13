@@ -23,10 +23,15 @@ import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EtchedBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 
 public class HelpLabels {
   private static ToolTipListener listener = new ToolTipListener();
+  private final DataStore dataStore;
+
+  public HelpLabels(DataStore dataStore) {
+    this.dataStore = dataStore;
+  }
 
   public static JLabel getAggressionHelpLabel() {
     return getLabel(
@@ -139,13 +144,12 @@ public class HelpLabels {
         "Constitution determines healing rate, starting health and speed increases on level up.");
   }
 
-  public static JLabel getCostHelpLabel() {
-    return getLabel("The cost of this item in " + Editor.getStore().getActive().get("small") + ".");
+  public JLabel getCostHelpLabel() {
+    return getLabel("The cost of this item in " + dataStore.getActive().get("small") + ".");
   }
 
-  public static JLabel getCraftingCostHelpLabel() {
-    return getLabel(
-        "The cost to craft this item (in " + Editor.getStore().getActive().get("small") + ").");
+  public JLabel getCraftingCostHelpLabel() {
+    return getLabel("The cost to craft this item (in " + dataStore.getActive().get("small") + ").");
   }
 
   public static JLabel getCreatureTypeHelpLabel() {

@@ -29,10 +29,12 @@ import neon.resources.RTerrain;
 public class TerrainListener implements ListSelectionListener, MouseListener {
   private MapEditor editor;
   private JList<RTerrain> list;
+  private final DataStore dataStore;
 
-  public TerrainListener(MapEditor editor, JList<RTerrain> list) {
+  public TerrainListener(MapEditor editor, JList<RTerrain> list, DataStore dataStore) {
     this.editor = editor;
     this.list = list;
+    this.dataStore = dataStore;
   }
 
   public void valueChanged(ListSelectionEvent e) {
@@ -53,7 +55,7 @@ public class TerrainListener implements ListSelectionListener, MouseListener {
     if (e.getButton() == MouseEvent.BUTTON1) {
       if (e.getClickCount() == 2) {
         if (list.getSelectedValue() != null) {
-          new TerrainEditor(Editor.getFrame(), list.getSelectedValue()).show();
+          new TerrainEditor(Editor.getFrame(), list.getSelectedValue(), dataStore).show();
         }
       }
     }
@@ -86,16 +88,16 @@ public class TerrainListener implements ListSelectionListener, MouseListener {
                     "New terrain",
                     JOptionPane.QUESTION_MESSAGE);
         if ((s != null) && (s.length() > 0)) {
-          RTerrain type = new RTerrain(s, Editor.getStore().getActive().get("id"));
+          RTerrain type = new RTerrain(s, dataStore.getActive().get("id"));
           model.addElement(type);
           list.setSelectedValue(type, true);
-          Editor.resources.addResource(type, "terrain");
-          new TerrainEditor(Editor.getFrame(), type).show();
+          dataStore.getResourceManager().addResource(type, "terrain");
+          new TerrainEditor(Editor.getFrame(), type, dataStore).show();
         }
       } else if (e.getActionCommand().equals("Delete terrain type")) {
         try {
           if (list.getSelectedIndex() >= 0) {
-            Editor.resources.removeResource(list.getSelectedValue(), "terrain");
+            dataStore.getResourceManager().removeResource(list.getSelectedValue(), "terrain");
             model.removeElement(list.getSelectedValue());
           }
         } catch (ArrayIndexOutOfBoundsException a) {

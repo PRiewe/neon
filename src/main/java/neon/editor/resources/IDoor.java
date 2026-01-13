@@ -19,7 +19,7 @@
 package neon.editor.resources;
 
 import java.awt.Point;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.resources.RData;
 import neon.resources.RDungeonTheme;
 import neon.resources.RItem;
@@ -38,12 +38,12 @@ public class IDoor extends IObject {
   public String text;
   public RSpell.Enchantment spell;
 
-  public IDoor(RData resource, int x, int y, int z, int uid) {
-    super(resource, x, y, z, uid);
+  public IDoor(RData resource, int x, int y, int z, int uid, DataStore dataStore) {
+    super(resource, x, y, z, uid, dataStore);
   }
 
-  public IDoor(Element properties, RZone zone) {
-    super(properties);
+  public IDoor(Element properties, RZone zone, DataStore dataStore) {
+    super(properties, dataStore);
     if (properties.getAttribute("state") != null) {
       state = State.valueOf(properties.getAttributeValue("state"));
     } else {
@@ -51,23 +51,28 @@ public class IDoor extends IObject {
     }
     if (properties.getAttribute("lock") != null) {
       lock = Integer.parseInt(properties.getAttributeValue("lock"));
-      key = (RItem) Editor.resources.getResource(properties.getAttributeValue("key"));
+      key = (RItem) dataStore.getResourceManager().getResource(properties.getAttributeValue("key"));
     }
     if (properties.getAttribute("trap") != null) {
       trap = Integer.parseInt(properties.getAttributeValue("trap"));
       spell =
           (RSpell.Enchantment)
-              Editor.resources.getResource(properties.getAttributeValue("spell"), "magic");
+              dataStore
+                  .getResourceManager()
+                  .getResource(properties.getAttributeValue("spell"), "magic");
     }
     if (properties.getChild("dest") != null) {
       Element dest = properties.getChild("dest");
       if (dest.getAttribute("theme") != null) {
         destTheme =
-            (RDungeonTheme) Editor.resources.getResource(dest.getAttributeValue("theme"), "theme");
+            (RDungeonTheme)
+                dataStore
+                    .getResourceManager()
+                    .getResource(dest.getAttributeValue("theme"), "theme");
       } else {
         if (dest.getAttribute("map") != null) {
           int uid = Integer.parseInt(dest.getAttributeValue("map"));
-          for (RMap map : Editor.resources.getResources(RMap.class)) {
+          for (RMap map : dataStore.getResourceManager().getResources(RMap.class)) {
             if (map.uid == uid) {
               destMap = map;
             }

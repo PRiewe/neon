@@ -25,7 +25,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.resources.RMap;
 import neon.resources.RDungeonTheme;
 
@@ -37,10 +37,12 @@ public class MapInfoEditor implements ActionListener {
   private RMap data;
   private MapTreeNode node;
   private JTree tree;
+  private final DataStore dataStore;
 
-  public MapInfoEditor(JFrame parent, MapTreeNode node, JTree tree) {
+  public MapInfoEditor(JFrame parent, MapTreeNode node, JTree tree, DataStore dataStore) {
     data = node.getMap();
     frame = new JDialog(parent, "Map editor: " + data.id);
+    this.dataStore = dataStore;
     JPanel content = new JPanel(new BorderLayout());
     frame.setContentPane(content);
     this.node = node;
@@ -66,7 +68,9 @@ public class MapInfoEditor implements ActionListener {
     JLabel nameLabel = new JLabel("Name: ");
     JLabel themeLabel = new JLabel("Theme: ");
     nameField = new JTextField(15);
-    themeBox = new JComboBox<RDungeonTheme>(Editor.resources.getResources(RDungeonTheme.class));
+    themeBox =
+        new JComboBox<RDungeonTheme>(
+            dataStore.getResourceManager().getResources(RDungeonTheme.class));
     themeBox.addItem(null);
     themeBox.setEnabled(node.getMap().isDungeon());
     themeBox.addActionListener(this);
@@ -137,7 +141,7 @@ public class MapInfoEditor implements ActionListener {
         data.theme = (RDungeonTheme) themeBox.getSelectedItem();
       }
     }
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   public void actionPerformed(ActionEvent e) {

@@ -19,14 +19,13 @@
 package neon.editor.resources;
 
 import java.util.*;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.maps.*;
 import neon.maps.model.DungeonModel;
 import neon.maps.model.WorldModel;
 import neon.resources.RData;
 import neon.resources.RDungeonTheme;
 import neon.resources.RScript;
-import neon.resources.ResourceManager;
 import neon.systems.files.XMLTranslator;
 import neon.ui.graphics.Renderable;
 import org.jdom2.*;
@@ -49,22 +48,25 @@ public class RMap extends RData {
   public short uid;
   private boolean type;
   private ArrayList<Integer> uids;
-  private final ResourceManager resourceManager;
+
+  private final DataStore dataStore;
 
   // for already existing maps during loadMod
-  public RMap(String id, Element properties, ResourceManager resourceManager, String... path) {
+  public RMap(String id, Element properties, DataStore dataStore, String... path) {
     super(id, path);
     uid = Short.parseShort(properties.getChild("header").getAttributeValue("uid"));
-      this.resourceManager = resourceManager;
-      name = properties.getChild("header").getChildText("name");
+
+    this.dataStore = dataStore;
+    name = properties.getChild("header").getChildText("name");
     type = properties.getName().equals("dungeon");
 
     if (type == DUNGEON) {
       if (properties.getChild("header").getAttribute("theme") != null) {
         theme =
             (RDungeonTheme)
-                Editor.resources.getResource(
-                    properties.getChild("header").getAttributeValue("theme"), "theme");
+                dataStore
+                    .getResourceManager()
+                    .getResource(properties.getChild("header").getAttributeValue("theme"), "theme");
       } else {
         for (Element zone : properties.getChildren("level")) {
           zones.put(Integer.parseInt(zone.getAttributeValue("l")), new RZone(zone, this, path));
@@ -76,12 +78,12 @@ public class RMap extends RData {
   }
 
   // for new maps to be created
-  public RMap(short uid, String mod, MapDialog.Properties props, ResourceManager resourceManager) {
+  public RMap(short uid, String mod, MapDialog.Properties props, DataStore dataStore) {
     super(props.getID(), mod);
     this.uid = uid;
     type = props.isDungeon();
-      this.resourceManager = resourceManager;
-      name = props.getName();
+    this.dataStore = dataStore;
+    name = props.getName();
 
     if (!props.isDungeon()) { // always set zone and base region for outdoor
       Element region = new Element("region");
@@ -91,7 +93,7 @@ public class RMap extends RData {
       region.setAttribute("h", Integer.toString(props.getHeight()));
       region.setAttribute("text", props.getTerrain());
       region.setAttribute("l", "0");
-      Instance ri = new IRegion(region);
+      Instance ri = new IRegion(region, dataStore);
       RZone zone = new RZone(name, mod, ri, this);
       zones.put(0, zone);
     }
@@ -397,9 +399,12 @@ public class RMap extends RData {
     if (uids == null) { // avoid loading map twice
       uids = new ArrayList<Integer>();
       try {
-        String file = Editor.getStore().getMod(path[0]).getPath()[0];
+        String file = dataStore.getMod(path[0]).getPath()[0];
         Element root =
-            Editor.files.getFile(new XMLTranslator(), file, "maps", id + ".xml").getRootElement();
+            dataStore
+                .getFileSystem()
+                .getFile(new XMLTranslator(), file, "maps", id + ".xml")
+                .getRootElement();
 
         if (root.getName().equals("world")) {
           uids.addAll(zones.get(0).load(root));

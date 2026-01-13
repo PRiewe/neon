@@ -55,7 +55,7 @@ public class BumpState extends State implements KeyListener {
       GameStores gameStores) {
     super(parent);
     this.gameStores = gameStores;
-    this.motionHandler = new MotionHandler(context,gameStores);
+    this.motionHandler = new MotionHandler(gameStores.getStore(), context.getPlayer());
     this.bus = bus;
     this.ui = ui;
     this.context = context;
