@@ -1,6 +1,5 @@
 package neon.maps;
 
-import java.awt.Rectangle;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.Item;

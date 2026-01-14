@@ -26,8 +26,13 @@ import neon.core.GameContext;
 import neon.core.GameStore;
 import neon.entities.Door;
 import neon.maps.generators.DungeonGenerator;
+import neon.entities.UIDStore;
+import neon.maps.mvstore.IntegerDataType;
+import neon.maps.mvstore.MapDataType;
+import neon.maps.mvstore.WorldDataType;
 import neon.maps.services.MapAtlas;
 import neon.maps.services.QuestProvider;
+import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 import neon.util.mapstorage.MapStore;
 import neon.util.mapstorage.MapStoreMVStoreAdapter;
@@ -43,6 +48,10 @@ public class Atlas implements Closeable, MapAtlas {
   private final MapStore db;
   private final ConcurrentMap<Integer, Map> maps;
   private final MapLoader mapLoader;
+  private final ZoneFactory zoneFactory;
+  private final WorldDataType worldDataType;
+  private final Dungeon.DungeonDataType dungeonDataType;
+  private final MapDataType mapDataType;
   private final GameContext gameContext;
   private int currentZone = 0;
   private int currentMap = 0;
@@ -71,9 +80,20 @@ public class Atlas implements Closeable, MapAtlas {
     // files.delete(path);
     // String fileName = files.getFullPath(path);
     // log.warn("Creating new MVStore at {}", fileName);
+    this.mapLoader = mapLoader;
+    zoneFactory = new ZoneFactory(mapStore, entityStore, resourceManager);
+    worldDataType = new WorldDataType(zoneFactory);
+    dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
+    mapDataType = new MapDataType(worldDataType, dungeonDataType);
     // db = MVStore.open(fileName);
     maps = atlasStore.openMap("maps");
     this.mapLoader = mapLoader;
+    zoneFactory = new ZoneFactory(db, entityStore, resourceManager);
+    worldDataType = new WorldDataType(zoneFactory);
+    dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
+    mapDataType = new MapDataType(worldDataType, dungeonDataType);
+    // db = MVStore.open(fileName);
+    maps = db.openMap("maps", IntegerDataType.INSTANCE, mapDataType);
     this.gameContext = gameContext;
   }
 

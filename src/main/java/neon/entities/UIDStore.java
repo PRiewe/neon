@@ -39,7 +39,7 @@ import org.h2.mvstore.MVStore;
 public class UIDStore extends AbstractUIDStore implements Closeable, EntityStore {
 
   // uid database
-  private final MapStore uidDb;
+  @Getter private final MapStore uidDb;
   // uids of all objects in the game
   private final Map<Long, Entity> objects;
   // uids of all loaded mods

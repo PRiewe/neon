@@ -120,8 +120,7 @@ class WildernessGeneratorIntegrationTest {
     String[][] terrain = new String[height + 2][width + 2];
     MapUtils mapUtils = MapUtils.withSeed(scenario.seed());
     Dice dice = Dice.withSeed(scenario.seed());
-    return new WildernessTerrainGenerator(
-        mapUtils, dice, TestEngineContext.getTestUiEngineContext());
+    return new WildernessTerrainGenerator(mapUtils, dice);
   }
 
   // ==================== LAYER 1: Lightweight Terrain Generation Tests ====================

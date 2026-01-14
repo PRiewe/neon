@@ -132,9 +132,9 @@ public class GameLoader {
       log.debug("Engine.initGame() start");
 
       // initialize player
-      RCreature species =
-          new RCreature(((RCreature) gameStore.getResourceManager().getResource(race)).toElement());
-      Player player = new Player(species, name, gender, spec, profession);
+      RCreature species = ((RCreature) gameStores.getResources().getResource(race)).clone();
+      ItemFactory itemFactory = new ItemFactory(gameStores.getResources());
+      Player player = new Player(species, name, gender, spec, profession, gameStores.getStore());
       player.species.text = "@";
       Atlas atlas =
           new Atlas(
@@ -299,6 +299,14 @@ public class GameLoader {
             gameStore.getResourceManager().getResource(playerData.getAttributeValue("race"));
     Player player =
         new Player(
+            species.clone(),
+            playerData.name,
+            Gender.valueOf(playerData.gender.toUpperCase()),
+            Player.Specialisation.valueOf(playerData.specialisation),
+            playerData.profession,
+            gameStores.getStore());
+    context.startGame(
+        new Game(player, gameStores, context.getPhysicsManager(), context.getQuestTracker()));
             new RCreature(species.toElement()),
             playerData.getAttributeValue("name"),
             Gender.valueOf(playerData.getAttributeValue("gender").toUpperCase()),

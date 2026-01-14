@@ -234,11 +234,8 @@ public class Zone implements Externalizable {
     creatures.insert(c.getUID(), bounds);
   }
 
-  /**
-   * @return the name of this zone
-   */
-  public String getName() {
-    return name;
+  public void addCreature(long uid, Rectangle bounds) {
+    creatures.insert(uid, bounds);
   }
 
   /**
@@ -363,6 +360,14 @@ public class Zone implements Externalizable {
     }
   }
 
+  public int getTopSize() {
+    return top.size();
+  }
+
+  public Collection<Long> getTopElements() {
+    return top.getElements();
+  }
+
   /**
    * @return a hashmap with all lights in this zone
    */
@@ -370,69 +375,75 @@ public class Zone implements Externalizable {
     return lights;
   }
 
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    index = in.readInt();
-    map = in.readInt();
-    name = in.readUTF();
-    String t = in.readUTF();
-    if (!t.isEmpty()) {
-      theme = (RZoneTheme) Engine.getResources().getResource(t, "theme");
-    }
-
-    // items
-    top = new RTree<Long>(100, 40);
-    items = new GridIndex<Long>();
-    lights = new HashMap<Point, Integer>();
-    int iSize = in.readInt();
-    for (int i = 0; i < iSize; i++) {
-      long uid = in.readLong();
-      Item item = (Item) Engine.getStore().getEntity(uid);
-      addItem(item);
-    }
-    int tSize = in.readInt();
-    for (int i = 0; i < tSize; i++) {
-      long uid = in.readLong();
-      Item item = (Item) Engine.getStore().getEntity(uid);
-      addItem(item);
-    }
-
-    // creatures
-    creatures = new SimpleIndex<Long>();
-    int cSize = in.readInt();
-    for (int i = 0; i < cSize; i++) {
-      long uid = in.readLong();
-      Rectangle bounds = Engine.getStore().getEntity(uid).getShapeComponent();
-      creatures.insert(uid, bounds);
-    }
-
-    // regions
-    regions = new RTree<Region>(100, 40, Engine.getAtlas().getCache(), map + ":" + index);
+  public int getEstimatedMemory() {
+    return 32
+        + (top.getElements().size() + creatures.getElements().size() + items.getElements().size())
+            * 8;
   }
 
-  public void writeExternal(ObjectOutput out) throws IOException {
-    out.writeInt(index);
-    out.writeInt(map);
-    out.writeUTF(name);
-    if (theme != null) {
-      out.writeUTF(theme.id);
-    } else {
-      out.writeUTF("");
-    }
-
-    // items
-    out.writeInt(items.getElements().size());
-    for (long l : items.getElements()) {
-      out.writeLong(l);
-    }
-    out.writeInt(top.getElements().size());
-    for (long l : top.getElements()) {
-      out.writeLong(l);
-    }
-
-    // creatures
-    out.writeInt(creatures.getElements().size());
-    for (long l : creatures.getElements()) {
-      out.writeLong(l);
-    }
-  }
+  //  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+  //    index = in.readInt();
+  //    map = in.readInt();
+  //    name = in.readUTF();
+  //    String t = in.readUTF();
+  //    if (!t.isEmpty()) {
+  //      theme = (RZoneTheme) Engine.getResources().getResource(t, "theme");
+  //    }
+  //
+  //    // items
+  //    top = new RTree<Long>(100, 40);
+  //    items = new GridIndex<Long>();
+  //    lights = new HashMap<Point, Integer>();
+  //    int iSize = in.readInt();
+  //    for (int i = 0; i < iSize; i++) {
+  //      long uid = in.readLong();
+  //      Item item = (Item) Engine.getStore().getEntity(uid);
+  //      addItem(item);
+  //    }
+  //    int tSize = in.readInt();
+  //    for (int i = 0; i < tSize; i++) {
+  //      long uid = in.readLong();
+  //      Item item = (Item) Engine.getStore().getEntity(uid);
+  //      addItem(item);
+  //    }
+  //
+  //    // creatures
+  //    creatures = new SimpleIndex<Long>();
+  //    int cSize = in.readInt();
+  //    for (int i = 0; i < cSize; i++) {
+  //      long uid = in.readLong();
+  //      Rectangle bounds = Engine.getStore().getEntity(uid).getShapeComponent();
+  //      creatures.insert(uid, bounds);
+  //    }
+  //
+  //    // regions
+  //    regions = new RTree<Region>(100, 40, Engine.getAtlas().getCache(), map + ":" + index);
+  //  }
+  //
+  //  public void writeExternal(ObjectOutput out) throws IOException {
+  //    out.writeInt(index);
+  //    out.writeInt(map);
+  //    out.writeUTF(name);
+  //    if (theme != null) {
+  //      out.writeUTF(theme.id);
+  //    } else {
+  //      out.writeUTF("");
+  //    }
+  //
+  //    // items
+  //    out.writeInt(items.getElements().size());
+  //    for (long l : items.getElements()) {
+  //      out.writeLong(l);
+  //    }
+  //    out.writeInt(top.getElements().size());
+  //    for (long l : top.getElements()) {
+  //      out.writeLong(l);
+  //    }
+  //
+  //    // creatures
+  //    out.writeInt(creatures.getElements().size());
+  //    for (long l : creatures.getElements()) {
+  //      out.writeLong(l);
+  //    }
+  //  }
 }

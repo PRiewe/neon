@@ -50,8 +50,8 @@ public class WildernessTerrainGenerator {
     return terrain;
   }
 
-  public void generateTerrain(
-      int width, int height, RRegionTheme theme, String base, String[][] terrain) {
+  String[][] generateTerrain(int width, int height, RRegionTheme theme, String base) {
+    String[][] terrain = new String[width + 2][height + 2];
     // create terrain and vegetation
     switch (theme.type) {
       case CHAOTIC -> generateSwamp(width, height, theme, terrain);

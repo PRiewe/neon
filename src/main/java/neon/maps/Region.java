@@ -19,12 +19,11 @@
 package neon.maps;
 
 import java.awt.*;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.*;
-import neon.core.Engine;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import neon.resources.RRegionTheme;
 import neon.resources.RTerrain;
 import neon.systems.scripting.Activator;
@@ -37,7 +36,9 @@ import neon.util.TextureFactory;
  *
  * @author mdriesen
  */
-public class Region implements Renderable, Activator, Externalizable {
+@Builder
+@AllArgsConstructor
+public class Region implements Renderable, Activator {
   public enum Modifier {
     NONE,
     SWIM,
@@ -48,10 +49,22 @@ public class Region implements Renderable, Activator, Externalizable {
   }
 
   // TODO: destructable muren (opgeven welk terrein het wordt na destructie)
-  protected String id, label;
-  protected int x, y, z, width, height;
-  private ArrayList<String> scripts = new ArrayList<String>();
-  protected RRegionTheme theme;
+  protected String id;
+  @Setter @Getter protected String label;
+  @Getter protected int x;
+  @Getter protected int y;
+  @Setter @Getter protected int z;
+  @Getter protected int width;
+  @Getter protected int height;
+  private final ArrayList<String> scripts = new ArrayList<>();
+
+  /**
+   * -- GETTER --
+   *
+   * @return the type of this region for random generation
+   */
+  @Getter protected RRegionTheme theme;
+
   private RTerrain terrain;
 
   /**
@@ -79,10 +92,6 @@ public class Region implements Renderable, Activator, Externalizable {
 
   public Region() {}
 
-  public void setLabel(String label) {
-    this.label = label;
-  }
-
   /** Sets whether this region should be random generated, or can be used as it is. */
   public void fix() {
     theme = null;
@@ -90,14 +99,6 @@ public class Region implements Renderable, Activator, Externalizable {
 
   public String getTextureType() {
     return id;
-  }
-
-  public int getHeight() {
-    return height;
-  }
-
-  public int getWidth() {
-    return width;
   }
 
   /**
@@ -108,27 +109,8 @@ public class Region implements Renderable, Activator, Externalizable {
     return theme == null;
   }
 
-  public int getZ() {
-    return z;
-  }
-
-  public int getY() {
-    return y;
-  }
-
-  public int getX() {
-    return x;
-  }
-
   public Color getColor() {
     return ColorFactory.getColor(terrain.color);
-  }
-
-  /**
-   * @return the type of this region for random generation
-   */
-  public RRegionTheme getTheme() {
-    return theme;
   }
 
   /**
@@ -138,11 +120,7 @@ public class Region implements Renderable, Activator, Externalizable {
     return terrain.modifier;
   }
 
-  /**
-   * An active region is one which has scripts added to it.
-   *
-   * @return
-   */
+  /** An active region is one which has scripts added to it. */
   public boolean isActive() {
     return !scripts.isEmpty();
   }
@@ -170,53 +148,10 @@ public class Region implements Renderable, Activator, Externalizable {
     return terrain.description.isEmpty() ? id : terrain.description;
   }
 
-  public void setZ(int z) {
-    this.z = z;
-  }
-
   /**
    * @return the bounding rectangle of this region
    */
   public Rectangle getBounds() {
     return new Rectangle(x, y, width, height);
-  }
-
-  public String getLabel() {
-    return label;
-  }
-
-  public void readExternal(ObjectInput input) throws IOException, ClassNotFoundException {
-    theme = (RRegionTheme) Engine.getResources().getResource(input.readUTF(), "theme");
-    label = input.readUTF();
-    if (label.isEmpty()) {
-      label = null;
-    }
-    id = input.readUTF();
-    terrain = (RTerrain) Engine.getResources().getResource(id, "terrain");
-    x = input.readInt();
-    y = input.readInt();
-    z = input.readInt();
-    width = input.readInt();
-    height = input.readInt();
-    int size = input.readInt();
-    scripts = new ArrayList<String>();
-    for (int i = 0; i < size; i++) {
-      scripts.add(input.readUTF());
-    }
-  }
-
-  public void writeExternal(ObjectOutput output) throws IOException {
-    output.writeUTF(theme != null ? theme.id : "");
-    output.writeUTF(label != null ? label : "");
-    output.writeUTF(id);
-    output.writeInt(x);
-    output.writeInt(y);
-    output.writeInt(z);
-    output.writeInt(width);
-    output.writeInt(height);
-    output.writeInt(scripts.size());
-    for (String script : scripts) {
-      output.writeUTF(script);
-    }
   }
 }

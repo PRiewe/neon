@@ -19,7 +19,9 @@
 package neon.entities;
 
 import java.util.EnumMap;
-import neon.core.Engine;
+import java.util.concurrent.atomic.AtomicReference;
+import lombok.Getter;
+import lombok.Setter;
 import neon.core.handlers.SkillHandler;
 import neon.entities.components.Inventory;
 import neon.entities.components.Lock;
@@ -43,11 +45,23 @@ public class Player extends Hominid {
   private final EnumMap<Skill, Float> mods;
   private String sign;
   private boolean sneak = false;
-  private Creature mount;
+  private final UIDStore uidStore;
+
+  @Setter @Getter private String sign;
+  @Getter private Creature mount;
+
+  private final AtomicReference<Zone> currentZone = new AtomicReference<>();
+  private final AtomicReference<Map> currentMap = new AtomicReference<>();
 
   public Player(
-      RCreature species, String name, Gender gender, Specialisation spec, String profession) {
+      RCreature species,
+      String name,
+      Gender gender,
+      Specialisation spec,
+      String profession,
+      UIDStore gameStores) {
     super(species.id, 0, species);
+    this.uidStore = gameStores;
     components.putInstance(RenderComponent.class, new PlayerRenderComponent(this));
     this.name = name;
     this.gender = gender;
@@ -85,15 +99,15 @@ public class Player extends Hominid {
     String damage;
 
     if (inventory.hasEquiped(Slot.WEAPON)) {
-      Weapon weapon = (Weapon) Engine.getStore().getEntity(inventory.get(Slot.WEAPON));
+      Weapon weapon = (Weapon) uidStore.getEntity(inventory.get(Slot.WEAPON));
       damage = weapon.getDamage();
       if (weapon.getWeaponType().equals(WeaponType.BOW)
           || weapon.getWeaponType().equals(WeaponType.CROSSBOW)) {
-        Weapon ammo = (Weapon) Engine.getStore().getEntity(inventory.get(Slot.AMMO));
+        Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
         damage += " : " + ammo.getDamage();
       }
     } else if (inventory.hasEquiped(Slot.AMMO)) {
-      Weapon ammo = (Weapon) Engine.getStore().getEntity(inventory.get(Slot.AMMO));
+      Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
       damage = ammo.getDamage();
     } else {
       damage = species.av;

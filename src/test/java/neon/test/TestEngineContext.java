@@ -6,7 +6,6 @@ import java.lang.reflect.Field;
 import lombok.Getter;
 import neon.core.*;
 import neon.core.event.TaskQueue;
-import neon.entities.Entity;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.entities.components.PhysicsComponent;
@@ -19,7 +18,6 @@ import neon.resources.builder.IniBuilder;
 import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import neon.util.mapstorage.MapStore;
-import org.h2.mvstore.MVStore;
 
 /**
  * Test utility for managing Engine singleton dependencies in tests.
@@ -81,13 +79,25 @@ public class TestEngineContext {
     setStaticField(Engine.class, "resources", testResources);
 
     // Create test UIDStore
-    testStore = new UIDStore("test-store.dat");
+    testStore = new neon.entities.UIDStore(getStubFileSystem(), testDb);
+    // Create test Game using new DI constructor
+    Player stubPlayer =
+        new Player(
+            new RCreature("test"),
+            "TestPlayer",
+            Gender.MALE,
+            Player.Specialisation.combat,
+            "Warrior",
+            testStore);
 
     // Create test EntityStore
     testEntityStore = testStore;
 
     gameStore = new GameStore(stubFileSystem, testResources);
     // Create stub PhysicsManager and ZoneActivator
+    stubPhysicsManager = new StubPhysicsManager();
+
+    testZoneActivator = new ZoneActivator(stubPhysicsManager);
     PhysicsManager stubPhysicsManager = new StubPhysicsManager();
     PhysicsSystem physicsSystem = new PhysicsSystem();
     GameServices gameServices = new GameServices(physicsSystem, Engine.createScriptEngine());
@@ -103,6 +113,11 @@ public class TestEngineContext {
     testZoneFactory = new ZoneFactory(db);
     MapLoader testMapLoader = new MapLoader(testUiEngineContext);
     // Create test Atlas with dependency injection (doesn't need Engine.game)
+    testAtlas = new Atlas(getStubFileSystem(), testDb, testStore, testResources, mapLoader);
+    gameStores = new DefaultGameStores(getTestResources(), getStubFileSystem(), stubPlayer);
+    questTracker = new QuestTracker(gameStores);
+    atlasPosition = new AtlasPosition(gameStores, questTracker, stubPlayer);
+    testGame = new Game(stubPlayer, gameStores, atlasPosition);
     testAtlas =
         new Atlas(
             gameStore, db, testQuestTracker, testZoneActivator, testMapLoader, testUiEngineContext);
@@ -127,7 +142,7 @@ public class TestEngineContext {
   public static void reset() {
     try {
       if (testStore != null) {
-        testStore.getCache().close();
+        testStore.close();
       }
       if (testAtlas != null) {
         testAtlas.close();
@@ -135,6 +150,14 @@ public class TestEngineContext {
       if (testDb != null) {
         testDb.close();
       }
+      if (gameStores.getZoneMapStore() != null) {
+        gameStores.getZoneMapStore().close();
+      }
+
+      if (gameStores.getStore() != null) {
+        gameStores.getStore().close();
+      }
+
       gameStore.close();
       testEntityStore.close();
       setStaticField(Engine.class, "resources", null);
@@ -174,19 +197,6 @@ public class TestEngineContext {
     field.set(null, value);
   }
 
-  /** Sets the Atlas's DB field using reflection (it's private). */
-  private static void setAtlasDb(Atlas atlas, MVStore db) throws Exception {
-
-    Field dbField = Atlas.class.getDeclaredField("db");
-    dbField.setAccessible(true);
-    dbField.set(atlas, db);
-
-    // Also need to recreate the maps HTreeMap with the new DB
-    Field mapsField = Atlas.class.getDeclaredField("maps");
-    mapsField.setAccessible(true);
-    mapsField.set(atlas, db.openMap("maps"));
-  }
-
   /** Stub ResourceManager that returns dummy resources. */
   static class StubResourceManager extends ResourceManager implements ResourceProvider {}
 
@@ -196,47 +206,9 @@ public class TestEngineContext {
     private StubFileSystem() throws IOException {}
   }
 
-  public static StubFileSystem createNewStubFileSystem() throws IOException {
-    return new StubFileSystem();
-  }
-
   /** Stub PhysicsSystem (minimal implementation). */
   static class StubPhysicsSystem extends PhysicsSystem {
     // Minimal stub - can be extended if needed
-  }
-
-  /** Stub EntityStore for testing. */
-  static class StubEntityStore implements EntityStore {
-    private final UIDStore store;
-
-    public StubEntityStore(UIDStore store) {
-      this.store = store;
-    }
-
-    @Override
-    public Entity getEntity(long uid) {
-      return store.getEntity(uid);
-    }
-
-    @Override
-    public void addEntity(Entity entity) {
-      store.addEntity(entity);
-    }
-
-    @Override
-    public long createNewEntityUID() {
-      return store.createNewEntityUID();
-    }
-
-    @Override
-    public int createNewMapUID() {
-      return store.createNewMapUID();
-    }
-
-    @Override
-    public String[] getMapPath(int uid) {
-      return store.getMapPath(uid);
-    }
   }
 
   /** Stub PhysicsManager for testing. */
@@ -254,21 +226,6 @@ public class TestEngineContext {
     @Override
     public void register(PhysicsComponent component) {
       // No-op for tests
-    }
-  }
-
-  /** Stub Player for testing. */
-  static class StubPlayer extends Player {
-    private final PhysicsComponent physicsComponent;
-
-    public StubPlayer() {
-      super(new RCreature("test"), "TestPlayer", Gender.MALE, Specialisation.combat, "Warrior");
-      this.physicsComponent = new PhysicsComponent(0L, new Rectangle(0, 0, 1, 1));
-    }
-
-    @Override
-    public PhysicsComponent getPhysicsComponent() {
-      return physicsComponent;
     }
   }
 }

@@ -18,9 +18,6 @@
 
 package neon.maps;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.*;
 
 /**
@@ -31,19 +28,7 @@ import java.util.*;
 public class World implements Map {
   private String name;
   private int uid;
-  private Zone zone;
-
-  /**
-   * Initializes this {@code World} with the given parameters.
-   *
-   * @param name the name of this map
-   * @param uid the uid of this map
-   */
-  public World(String name, int uid) {
-    zone = new Zone("world", uid, 0);
-    this.name = name;
-    this.uid = uid;
-  }
+  @Getter private Zone zone;
 
   /**
    * Initializes this {@code World} with the given parameters.
@@ -52,9 +37,21 @@ public class World implements Map {
    * @param uid the uid of this map
    */
   public World(String name, int uid, ZoneFactory zoneFactory) {
-    zone = new Zone("world", uid, 0);
     this.name = name;
     this.uid = uid;
+    this.zone = zoneFactory.createZone("world", uid, 0);
+  }
+
+  /**
+   * Initializes this {@code World} with the given parameters.
+   *
+   * @param name the name of this map
+   * @param uid the uid of this map
+   */
+  public World(String name, int uid, Zone zone) {
+    this.name = name;
+    this.uid = uid;
+    this.zone = zone;
   }
 
   public World() {}
@@ -79,17 +76,5 @@ public class World implements Map {
     ArrayList<Zone> zones = new ArrayList<Zone>();
     zones.add(zone);
     return zones;
-  }
-
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    name = in.readUTF();
-    uid = in.readInt();
-    zone = (Zone) in.readObject();
-  }
-
-  public void writeExternal(ObjectOutput out) throws IOException {
-    out.writeUTF(name);
-    out.writeInt(uid);
-    out.writeObject(zone);
   }
 }

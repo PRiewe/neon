@@ -60,6 +60,8 @@ public class TownGenerator {
     this.gameContext = gameContext;
     this.entityFactory = new EntityFactory(gameContext);
     this.mapUtils = mapUtils;
+
+    itemFactory = new ItemFactory(resourceProvider);
   }
 
   /**

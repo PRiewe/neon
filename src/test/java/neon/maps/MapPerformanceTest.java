@@ -412,8 +412,8 @@ class MapPerformanceTest {
         PerformanceHarness.measure(
             () -> {
               for (int i = 0; i < mapCount; i++) {
-                World world = new World("World " + i, 2000 + i);
-                atlas.setMap(world);
+                World world = new World("World " + i, 2000 + i, zoneFactory);
+                atlasPosition.setMap(world);
               }
               return mapCount;
             });
@@ -434,7 +434,7 @@ class MapPerformanceTest {
     // Create and cache 50 maps
     List<World> worlds = new ArrayList<>();
     for (int i = 0; i < 50; i++) {
-      World world = new World("World " + i, 3000 + i);
+      World world = new World("World " + i, 3000 + i, zoneFactory);
       worlds.add(world);
       atlas.setMap(world);
     }
@@ -467,8 +467,8 @@ class MapPerformanceTest {
   void testAtlasZoneAccessPerformance() throws Exception {
     Atlas atlas = TestEngineContext.getTestAtlas();
 
-    World world = new World("Zone Access World", 4000);
-    atlas.setMap(world);
+    World world = new World("Zone Access World", 4000, zoneFactory);
+    atlasPosition.setMap(world);
 
     Zone zone = atlas.getCurrentZone();
     for (int i = 0; i < 100; i++) {
@@ -507,13 +507,18 @@ class MapPerformanceTest {
   @Test
   void testFullMapLoadAndQueryPerformance() throws Exception {
     Atlas atlas = TestEngineContext.getTestAtlas();
+    AtlasPosition atlasPosition =
+        new AtlasPosition(
+            TestEngineContext.getGameStores(),
+            TestEngineContext.getQuestTracker(),
+            TestEngineContext.getTestContext().getPlayer());
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(
             () -> {
               // Create a large world
-              World world = new World("Large World", 5000);
-              atlas.setMap(world);
+              World world = new World("Large World", 5000, zoneFactory);
+              atlasPosition.setMap(world);
 
               Zone zone = atlas.getCurrentZone();
 
@@ -567,6 +572,46 @@ class MapPerformanceTest {
     assertTrue(
         result.getDurationMillis() < 10000,
         "Full workflow with creatures and items should complete within 10 seconds");
+
+    atlas.getCache().close();
+  }
+
+  @Test
+  void testMemoryEfficiencyWithLargeMaps() throws Exception {
+    Atlas atlas = TestEngineContext.getTestAtlas();
+    AtlasPosition atlasPosition =
+        new AtlasPosition(
+            TestEngineContext.getGameStores(),
+            TestEngineContext.getQuestTracker(),
+            TestEngineContext.getTestContext().getPlayer());
+
+    Runtime runtime = Runtime.getRuntime();
+    runtime.gc();
+    long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
+
+    // Create 10 large worlds
+    for (int w = 0; w < 10; w++) {
+      World world = new World("World " + w, 6000 + w, zoneFactory);
+      atlasPosition.setMap(world);
+
+      Zone zone = atlasPosition.getCurrentZone();
+      for (int i = 0; i < 200; i++) {
+        Region region = MapTestFixtures.createTestRegion(i * 5, i * 5, 10, 10);
+        zone.addRegion(region);
+      }
+
+      testDb.commit();
+    }
+
+    runtime.gc();
+    long memoryAfter = runtime.totalMemory() - runtime.freeMemory();
+    long memoryUsed = (memoryAfter - memoryBefore) / 1024 / 1024; // MB
+
+    System.out.printf(
+        "[PERF] Memory used for 10 worlds (2000 total regions): ~%d MB%n", memoryUsed);
+
+    // Very lenient assertion - just checking it doesn't explode
+    assertTrue(memoryUsed < 500, "Memory usage should be reasonable");
 
     atlas.getCache().close();
   }

@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
 import neon.util.mapstorage.MapStore;
+import org.h2.mvstore.WriteBuffer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ class ZoneSerializationTest {
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
+
     TestEngineContext.initialize(testDb);
     mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
   }
@@ -216,7 +219,7 @@ class ZoneSerializationTest {
 
       System.out.printf("[PERF] Zone with %d regions: %d ms%n", size, durationMillis);
 
-      assertEquals(size, deserialized.getRegions().size());
+      assertEquals(zone.getRegions().size(), deserialized.getRegions().size());
     }
   }
 
@@ -274,13 +277,11 @@ class ZoneSerializationTest {
     ObjectOutputStream oos = new ObjectOutputStream(baos);
     original.writeExternal(oos);
     oos.flush();
+    WriteBuffer writeBuffer = new WriteBuffer();
+    zoneFactory.writeZoneToWriteBuffer(writeBuffer, original);
 
-    // Deserialize
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    ObjectInputStream ois = new ObjectInputStream(bais);
-    Zone deserialized = new Zone();
-    deserialized.readExternal(ois);
-
-    return deserialized;
+    byte[] serialized = writeBuffer.getBuffer().array();
+    ByteBuffer readBuffer = ByteBuffer.wrap(serialized);
+    return zoneFactory.readZoneByteBuffer(readBuffer);
   }
 }

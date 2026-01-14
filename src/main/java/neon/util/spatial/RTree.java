@@ -24,7 +24,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import neon.maps.mvstore.IntegerDataType;
 import neon.util.mapstorage.MapStore;
+import org.h2.mvstore.type.DataType;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -65,7 +67,7 @@ public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
    * @param nodeSize the requested node size
    * @param fillFactor the requested fill factor
    */
-  public RTree(int nodeSize, int fillFactor, MapStore db, String name)
+  public RTree(int nodeSize, int fillFactor, MapStore db, String name, DataType<E> valueType)
       throws IllegalArgumentException {
     if (fillFactor > nodeSize / 2) {
       throw new IllegalArgumentException("Fill factor too high.");
@@ -75,7 +77,7 @@ public class RTree<E> implements Iterable<E>, SpatialIndex<E> {
     max = nodeSize;
     root = new RNode<E>(max, min, this);
 
-    objects = db.openMap(name);
+    objects = db.openMap(name, IntegerDataType.INSTANCE, valueType);
     if (!objects.isEmpty()) {
       objectsMaxIndex.set(objects.keySet().stream().mapToInt(x -> x).max().orElse(0));
     }
