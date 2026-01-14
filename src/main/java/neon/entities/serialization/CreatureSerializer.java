@@ -25,11 +25,7 @@ import java.io.IOException;
 import neon.ai.AIFactory;
 import neon.core.GameContext;
 import neon.core.GameStores;
-import neon.entities.Construct;
-import neon.entities.Creature;
-import neon.entities.Daemon;
-import neon.entities.Dragon;
-import neon.entities.Hominid;
+import neon.entities.*;
 import neon.entities.components.HealthComponent;
 import neon.entities.property.Slot;
 import neon.magic.SpellFactory;
@@ -42,16 +38,17 @@ public class CreatureSerializer {
   private final AIFactory aiFactory;
   private final SpellFactory spellFactory;
   private final ResourceManager resourceManager;
-  private final GameContext gameContext;
-  private final GameStores gameStores;
 
-  public CreatureSerializer(GameStores gameStores, GameContext gameContext) {
-    spellFactory = new SpellFactory(gameStores.getResources());
-    resourceManager = gameStores.getResources();
-    this.gameStores = gameStores;
-    this.gameContext = gameContext;
+
+  public CreatureSerializer(ResourceManager resourceManager, UIDStore uidStore, Player player) {
+    spellFactory = new SpellFactory(resourceManager);
+    this.resourceManager = resourceManager;
+
+    // AIFactory can be null if gameContext is null (for write-only or test scenarios)
     aiFactory =
-        new AIFactory(gameStores.getResources(), gameStores.getStore(), gameContext.getPlayer());
+             new AIFactory(
+                resourceManager, uidStore, player);
+
   }
 
   public Creature deserialize(DataInput in) throws IOException {

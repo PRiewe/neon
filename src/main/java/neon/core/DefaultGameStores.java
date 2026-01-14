@@ -3,6 +3,9 @@ package neon.core;
 import lombok.Getter;
 import neon.entities.Player;
 import neon.entities.UIDStore;
+import neon.entities.mvstore.EntityDataType;
+import neon.entities.mvstore.ModDataType;
+import neon.entities.serialization.EntityFactory;
 import neon.maps.Atlas;
 import neon.maps.MapLoader;
 import neon.maps.ZoneFactory;
@@ -23,7 +26,21 @@ public class DefaultGameStores implements GameStores {
   public DefaultGameStores(ResourceManager resources, FileSystem fileSystem, Player player) {
     this.resources = resources;
     this.fileSystem = fileSystem;
+
+    // Phase 1: Create UIDStore without DataTypes
     this.store = new UIDStore(fileSystem, fileSystem.getFullPath("uidstore"));
+
+    // Phase 2: Create EntityFactory with dependencies (GameContext is null at this stage)
+    EntityFactory entityFactory = new EntityFactory(this, null);
+
+    // Phase 3: Create DataTypes
+    EntityDataType entityDataType = new EntityDataType(entityFactory);
+    ModDataType modDataType = new ModDataType();
+
+    // Phase 4: Initialize UIDStore's maps with DataTypes
+    store.setDataTypes(entityDataType, modDataType);
+
+    // Continue with rest of initialization
     zoneMapStore = Atlas.getMapStore(fileSystem, "zones");
     this.zoneFactory = new ZoneFactory(zoneMapStore, store, resources);
     MapLoader mapLoader = new MapLoader(fileSystem, store, resources, zoneFactory, player);
