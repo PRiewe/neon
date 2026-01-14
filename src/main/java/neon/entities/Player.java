@@ -22,7 +22,6 @@ import java.util.EnumMap;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.Getter;
 import lombok.Setter;
-import neon.core.GameStores;
 import neon.core.handlers.SkillHandler;
 import neon.entities.components.Inventory;
 import neon.entities.components.Lock;
@@ -51,7 +50,7 @@ public class Player extends Hominid {
   @Getter private final String profession;
   private final EnumMap<Skill, Float> mods;
   private boolean sneak = false;
-  private final GameStores gameStores;
+  private final UIDStore uidStore;
 
   @Setter @Getter private String sign;
   @Getter private Creature mount;
@@ -65,9 +64,9 @@ public class Player extends Hominid {
       Gender gender,
       Specialisation spec,
       String profession,
-      GameStores gameStores) {
+      UIDStore gameStores) {
     super(species.id, 0, species);
-    this.gameStores = gameStores;
+    this.uidStore = gameStores;
     components.putInstance(RenderComponent.class, new PlayerRenderComponent(this));
     this.name = name;
     this.gender = gender;
@@ -121,15 +120,15 @@ public class Player extends Hominid {
     String damage;
 
     if (inventory.hasEquiped(Slot.WEAPON)) {
-      Weapon weapon = (Weapon) gameStores.getStore().getEntity(inventory.get(Slot.WEAPON));
+      Weapon weapon = (Weapon) uidStore.getEntity(inventory.get(Slot.WEAPON));
       damage = weapon.getDamage();
       if (weapon.getWeaponType().equals(WeaponType.BOW)
           || weapon.getWeaponType().equals(WeaponType.CROSSBOW)) {
-        Weapon ammo = (Weapon) gameStores.getStore().getEntity(inventory.get(Slot.AMMO));
+        Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
         damage += " : " + ammo.getDamage();
       }
     } else if (inventory.hasEquiped(Slot.AMMO)) {
-      Weapon ammo = (Weapon) gameStores.getStore().getEntity(inventory.get(Slot.AMMO));
+      Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
       damage = ammo.getDamage();
     } else {
       damage = species.av;

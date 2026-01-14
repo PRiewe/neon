@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
 import java.io.*;
+import java.nio.ByteBuffer;
+import neon.maps.mvstore.RegionDataType;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
 import neon.util.mapstorage.MapStore;
+import org.h2.mvstore.WriteBuffer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,11 +24,13 @@ import org.junit.jupiter.api.Test;
 class RegionSerializationTest {
 
   private MapStore testDb;
+  private RegionDataType regionDataType;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    regionDataType = new RegionDataType(TestEngineContext.getTestResources());
   }
 
   @AfterEach
@@ -190,20 +195,13 @@ class RegionSerializationTest {
   }
 
   /** Helper method to serialize and deserialize a region. */
-  private static Region serializeAndDeserialize(Region original)
+  private Region serializeAndDeserialize(Region original)
       throws IOException, ClassNotFoundException {
-    // Serialize
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(baos);
-    original.writeExternal(oos);
-    oos.flush();
+    WriteBuffer writeBuffer = new WriteBuffer();
+    regionDataType.write(writeBuffer, original);
 
-    // Deserialize
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    ObjectInputStream ois = new ObjectInputStream(bais);
-    Region deserialized = new Region();
-    deserialized.readExternal(ois);
-
-    return deserialized;
+    byte[] serialized = writeBuffer.getBuffer().array();
+    ByteBuffer readBuffer = ByteBuffer.wrap(serialized);
+    return regionDataType.read(readBuffer);
   }
 }

@@ -33,6 +33,7 @@ import neon.test.TestEngineContext;
 import neon.util.mapstorage.MapStore;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,20 +44,26 @@ import org.junit.jupiter.api.Test;
  * save operations.
  */
 public class JacksonXmlBuilderTest {
-
+  MapStore store;
   private DataStore mockStore;
   private RMod testMod;
   private JacksonXmlBuilder builder;
 
   @BeforeEach
   public void setUp() throws Exception {
-    MapStore store = MapDbTestHelper.createInMemoryDB();
+    store = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(store);
     mockStore =
         new TestDataStore(
             TestEngineContext.getTestResources(), TestEngineContext.getStubFileSystem());
     testMod = createTestMod("testmod");
     builder = new JacksonXmlBuilder(mockStore);
+  }
+
+  @AfterEach
+  public void cleanup() {
+    TestEngineContext.reset();
+    MapDbTestHelper.cleanup(store);
   }
 
   @Test

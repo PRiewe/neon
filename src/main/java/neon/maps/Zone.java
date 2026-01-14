@@ -177,6 +177,10 @@ public class Zone /* implements Externalizable */ {
     creatures.insert(c.getUID(), bounds);
   }
 
+  public void addCreature(long uid, Rectangle bounds) {
+    creatures.insert(uid, bounds);
+  }
+
   /**
    * @return the height of this zone
    */
@@ -299,11 +303,25 @@ public class Zone /* implements Externalizable */ {
     }
   }
 
+  public int getTopSize() {
+    return top.size();
+  }
+
+  public Collection<Long> getTopElements() {
+    return top.getElements();
+  }
+
   /**
    * @return a hashmap with all lights in this zone
    */
   public HashMap<Point, Integer> getLightMap() {
     return lights;
+  }
+
+  public int getEstimatedMemory() {
+    return 32
+        + (top.getElements().size() + creatures.getElements().size() + items.getElements().size())
+            * 8;
   }
 
   //  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

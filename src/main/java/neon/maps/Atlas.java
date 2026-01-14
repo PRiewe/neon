@@ -22,8 +22,12 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentMap;
 import lombok.extern.slf4j.Slf4j;
-import neon.maps.services.EntityStore;
+import neon.entities.UIDStore;
+import neon.maps.mvstore.IntegerDataType;
+import neon.maps.mvstore.MapDataType;
+import neon.maps.mvstore.WorldDataType;
 import neon.maps.services.MapAtlas;
+import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 import neon.util.mapstorage.MapStore;
 import neon.util.mapstorage.MapStoreMVStoreAdapter;
@@ -38,34 +42,58 @@ import org.h2.mvstore.MVStore;
 public class Atlas implements Closeable, MapAtlas {
   private final MapStore db;
   private final ConcurrentMap<Integer, Map> maps;
-  private final EntityStore entityStore;
+  private final UIDStore entityStore;
+  private final ResourceManager resourceManager;
   private final FileSystem fileSystem;
   private final MapLoader mapLoader;
+  private final ZoneFactory zoneFactory;
+  private final WorldDataType worldDataType;
+  private final Dungeon.DungeonDataType dungeonDataType;
+  private final MapDataType mapDataType;
 
   public Atlas(
-      FileSystem fileSystem, MapStore mapStore, EntityStore entityStore, MapLoader mapLoader) {
+      FileSystem fileSystem,
+      MapStore mapStore,
+      UIDStore entityStore,
+      ResourceManager resourceManager,
+      MapLoader mapLoader) {
     this.fileSystem = fileSystem;
     this.entityStore = entityStore;
     this.db = mapStore;
+    this.resourceManager = resourceManager;
     // files.delete(path);
     // String fileName = files.getFullPath(path);
     // log.warn("Creating new MVStore at {}", fileName);
     this.mapLoader = mapLoader;
+    zoneFactory = new ZoneFactory(mapStore, entityStore, resourceManager);
+    worldDataType = new WorldDataType(zoneFactory);
+    dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
+    mapDataType = new MapDataType(worldDataType, dungeonDataType);
     // db = MVStore.open(fileName);
-    maps = db.openMap("maps");
+    maps = db.openMap("maps", IntegerDataType.INSTANCE, mapDataType);
   }
 
   /** Initializes this {@code Atlas} with dependency injection. */
-  public Atlas(FileSystem fileSystem, String path, EntityStore entityStore, MapLoader mapLoader) {
+  public Atlas(
+      FileSystem fileSystem,
+      String path,
+      UIDStore entityStore,
+      ResourceManager resourceManager,
+      MapLoader mapLoader) {
     this.fileSystem = fileSystem;
     this.entityStore = entityStore;
+    this.resourceManager = resourceManager;
     this.db = getMapStore(fileSystem, path);
     // files.delete(path);
     // String fileName = files.getFullPath(path);
     // log.warn("Creating new MVStore at {}", fileName);
     this.mapLoader = mapLoader;
+    zoneFactory = new ZoneFactory(db, entityStore, resourceManager);
+    worldDataType = new WorldDataType(zoneFactory);
+    dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
+    mapDataType = new MapDataType(worldDataType, dungeonDataType);
     // db = MVStore.open(fileName);
-    maps = db.openMap("maps");
+    maps = db.openMap("maps", IntegerDataType.INSTANCE, mapDataType);
   }
 
   public static MapStore getMapStore(FileSystem files, String fileName) {

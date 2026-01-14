@@ -1,6 +1,5 @@
 package neon.maps;
 
-import java.awt.Rectangle;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.Item;
@@ -127,74 +126,6 @@ public class MapTestFixtures {
     }
 
     return zone;
-  }
-
-  /**
-   * Creates an empty world map with the given parameters.
-   *
-   * @param name world name
-   * @param uid world UID
-   * @return a new World instance
-   */
-  public static World createEmptyWorld(String name, int uid) {
-    return new World(name, uid);
-  }
-
-  /**
-   * Creates an empty world map with default name.
-   *
-   * @param uid world UID
-   * @return a new World instance
-   */
-  public static World createEmptyWorld(int uid) {
-    return new World("test-world", uid);
-  }
-
-  /**
-   * Creates a world map with a single region.
-   *
-   * @param uid world UID
-   * @return a new World instance with one region
-   */
-  public static World createWorldWithSingleRegion(int uid) {
-    World world = new World("test-world", uid);
-    Region region = createTestRegion(0, 0, 100, 100);
-    world.getZone(0).addRegion(region);
-    return world;
-  }
-
-  /**
-   * Creates a world map with multiple regions.
-   *
-   * @param uid world UID
-   * @param regionCount number of regions to add
-   * @return a new World instance with regions
-   */
-  public static World createWorldWithRegions(int uid, int regionCount) {
-    World world = new World("test-world", uid);
-    Zone zone = world.getZone(0);
-
-    for (int i = 0; i < regionCount; i++) {
-      int x = (i % 10) * 10;
-      int y = (i / 10) * 10;
-      Region region = createTestRegion("region-" + i, x, y, 10, 10, 0);
-      zone.addRegion(region);
-    }
-
-    return world;
-  }
-
-  /**
-   * Creates a bounding rectangle for testing spatial queries.
-   *
-   * @param x x-coordinate
-   * @param y y-coordinate
-   * @param width width
-   * @param height height
-   * @return a new Rectangle
-   */
-  public static Rectangle createBounds(int x, int y, int width, int height) {
-    return new Rectangle(x, y, width, height);
   }
 
   /**

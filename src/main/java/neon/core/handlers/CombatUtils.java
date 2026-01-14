@@ -18,6 +18,7 @@
 
 package neon.core.handlers;
 
+import java.io.Serializable;
 import neon.entities.*;
 import neon.entities.components.Inventory;
 import neon.entities.property.Skill;
@@ -26,7 +27,7 @@ import neon.resources.RClothing;
 import neon.resources.RWeapon.WeaponType;
 import neon.util.Dice;
 
-public class CombatUtils {
+public class CombatUtils implements Serializable {
 
   private final UIDStore uidStore;
 
@@ -41,25 +42,14 @@ public class CombatUtils {
    * @return an attack roll
    */
   protected int attack(Creature creature) {
-    switch (getWeaponType(creature)) {
-      case BLADE_ONE:
-      case BLADE_TWO:
-        return SkillHandler.check(creature, Skill.BLADE);
-      case BLUNT_ONE:
-      case BLUNT_TWO:
-        return SkillHandler.check(creature, Skill.BLUNT);
-      case AXE_ONE:
-      case AXE_TWO:
-        return SkillHandler.check(creature, Skill.AXE);
-      case SPEAR:
-        return SkillHandler.check(creature, Skill.SPEAR);
-      case BOW:
-      case CROSSBOW:
-      case THROWN:
-        return SkillHandler.check(creature, Skill.ARCHERY);
-      default:
-        return SkillHandler.check(creature, Skill.UNARMED);
-    }
+    return switch (getWeaponType(creature)) {
+      case BLADE_ONE, BLADE_TWO -> SkillHandler.check(creature, Skill.BLADE);
+      case BLUNT_ONE, BLUNT_TWO -> SkillHandler.check(creature, Skill.BLUNT);
+      case AXE_ONE, AXE_TWO -> SkillHandler.check(creature, Skill.AXE);
+      case SPEAR -> SkillHandler.check(creature, Skill.SPEAR);
+      case BOW, CROSSBOW, THROWN -> SkillHandler.check(creature, Skill.ARCHERY);
+      default -> SkillHandler.check(creature, Skill.UNARMED);
+    };
   }
 
   /**
@@ -88,22 +78,10 @@ public class CombatUtils {
 
     float mod = 1f;
     switch (getWeaponType(creature)) {
-      case BLADE_ONE:
-      case BLADE_TWO:
-      case BLUNT_ONE:
-      case BLUNT_TWO:
-      case AXE_ONE:
-      case AXE_TWO:
-      case SPEAR:
-        mod = creature.species.dex / 20;
-        break;
-      case BOW:
-      case CROSSBOW:
-      case THROWN:
-        mod = creature.species.str / 20;
-        break;
-      default:
-        break;
+      case BLADE_ONE, BLADE_TWO, BLUNT_ONE, BLUNT_TWO, AXE_ONE, AXE_TWO, SPEAR ->
+          mod = creature.species.dex / 20;
+      case BOW, CROSSBOW, THROWN -> mod = creature.species.str / 20;
+      default -> {}
     }
     return (int) (damage * mod);
   }
@@ -119,17 +97,10 @@ public class CombatUtils {
       float mod = 1f;
       Armor armor = (Armor) uidStore.getEntity(creature.getInventoryComponent().get(Slot.SHIELD));
       switch (((RClothing) (armor.resource)).kind) {
-        case LIGHT:
-          mod = creature.getSkill(Skill.LIGHT_ARMOR) / 20f;
-          break;
-        case MEDIUM:
-          mod = creature.getSkill(Skill.MEDIUM_ARMOR) / 20f;
-          break;
-        case HEAVY:
-          mod = creature.getSkill(Skill.HEAVY_ARMOR) / 20f;
-          break;
-        default:
-          break;
+        case LIGHT -> mod = creature.getSkill(Skill.LIGHT_ARMOR) / 20f;
+        case MEDIUM -> mod = creature.getSkill(Skill.MEDIUM_ARMOR) / 20f;
+        case HEAVY -> mod = creature.getSkill(Skill.HEAVY_ARMOR) / 20f;
+        default -> {}
       }
 
       return (int) (SkillHandler.check(creature, Skill.BLOCK) * mod);
@@ -160,17 +131,10 @@ public class CombatUtils {
         Armor c = (Armor) item;
         int mod = 0;
         switch (((RClothing) c.resource).kind) {
-          case LIGHT:
-            mod = 1 + creature.getSkill(Skill.LIGHT_ARMOR) / 20;
-            break;
-          case MEDIUM:
-            mod = 1 + creature.getSkill(Skill.MEDIUM_ARMOR) / 20;
-            break;
-          case HEAVY:
-            mod = 1 + creature.getSkill(Skill.HEAVY_ARMOR) / 20;
-            break;
-          default:
-            break;
+          case LIGHT -> mod = 1 + creature.getSkill(Skill.LIGHT_ARMOR) / 20;
+          case MEDIUM -> mod = 1 + creature.getSkill(Skill.MEDIUM_ARMOR) / 20;
+          case HEAVY -> mod = 1 + creature.getSkill(Skill.HEAVY_ARMOR) / 20;
+          default -> {}
         }
         AR += ((RClothing) c.resource).rating * s.getArmorModifier() * mod;
       }

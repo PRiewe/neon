@@ -405,12 +405,7 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasMapCachingPerformance() throws Exception {
-    Atlas atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            "test-atlas",
-            TestEngineContext.getTestStore(),
-            TestEngineContext.getMapLoader());
+    Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
         new AtlasPosition(
             TestEngineContext.getGameStores(),
@@ -422,7 +417,7 @@ class MapPerformanceTest {
         PerformanceHarness.measure(
             () -> {
               for (int i = 0; i < mapCount; i++) {
-                World world = new World("World " + i, 2000 + i);
+                World world = new World("World " + i, 2000 + i, zoneFactory);
                 atlasPosition.setMap(world);
               }
               return mapCount;
@@ -439,12 +434,7 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasMapSwitchingPerformance() throws Exception {
-    Atlas atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            "switch-perf-atlas",
-            TestEngineContext.getTestEntityStore(),
-            TestEngineContext.getMapLoader());
+    Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
         new AtlasPosition(
             TestEngineContext.getGameStores(),
@@ -454,7 +444,7 @@ class MapPerformanceTest {
     // Create and cache 50 maps
     List<World> worlds = new ArrayList<>();
     for (int i = 0; i < 50; i++) {
-      World world = new World("World " + i, 3000 + i);
+      World world = new World("World " + i, 3000 + i, zoneFactory);
       worlds.add(world);
       atlasPosition.setMap(world);
     }
@@ -492,7 +482,7 @@ class MapPerformanceTest {
             TestEngineContext.getQuestTracker(),
             TestEngineContext.getTestContext().getPlayer());
 
-    World world = new World("Zone Access World", 4000);
+    World world = new World("Zone Access World", 4000, zoneFactory);
     atlasPosition.setMap(world);
 
     Zone zone = atlasPosition.getCurrentZone();
@@ -531,12 +521,7 @@ class MapPerformanceTest {
 
   @Test
   void testFullMapLoadAndQueryPerformance() throws Exception {
-    Atlas atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            "full-perf-atlas",
-            TestEngineContext.getTestEntityStore(),
-            TestEngineContext.getMapLoader());
+    Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
         new AtlasPosition(
             TestEngineContext.getGameStores(),
@@ -547,7 +532,7 @@ class MapPerformanceTest {
         PerformanceHarness.measure(
             () -> {
               // Create a large world
-              World world = new World("Large World", 5000);
+              World world = new World("Large World", 5000, zoneFactory);
               atlasPosition.setMap(world);
 
               Zone zone = atlasPosition.getCurrentZone();
@@ -608,12 +593,7 @@ class MapPerformanceTest {
 
   @Test
   void testMemoryEfficiencyWithLargeMaps() throws Exception {
-    Atlas atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            "memory-test-atlas",
-            TestEngineContext.getTestEntityStore(),
-            TestEngineContext.getMapLoader());
+    Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
         new AtlasPosition(
             TestEngineContext.getGameStores(),
@@ -626,7 +606,7 @@ class MapPerformanceTest {
 
     // Create 10 large worlds
     for (int w = 0; w < 10; w++) {
-      World world = new World("World " + w, 6000 + w);
+      World world = new World("World " + w, 6000 + w, zoneFactory);
       atlasPosition.setMap(world);
 
       Zone zone = atlasPosition.getCurrentZone();

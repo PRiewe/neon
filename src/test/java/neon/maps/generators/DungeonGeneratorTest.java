@@ -620,6 +620,7 @@ class DungeonGeneratorTest {
     @AfterEach
     void tearDown() {
       TestEngineContext.reset();
+      MapDbTestHelper.cleanup(testDb);
       new File("test-store.dat").delete();
       new File("testfile3.dat").delete();
     }

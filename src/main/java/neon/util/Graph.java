@@ -20,9 +20,8 @@ package neon.util;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
+import lombok.Getter;
 
 public class Graph<T> implements Serializable {
   @Serial private static final long serialVersionUID = -6431348687813884897L;
@@ -58,9 +57,17 @@ public class Graph<T> implements Serializable {
    * @param index
    * @return the content of the node with the given index
    */
-  public T getNode(int index) {
+  public T getNodeContent(int index) {
     //		System.out.println(index);
     return nodes.get(index).content;
+  }
+
+  /**
+   * @param index
+   * @return the node with the given index
+   */
+  public Node<T> getNode(int index) {
+    return nodes.get(index);
   }
 
   /**
@@ -86,17 +93,25 @@ public class Graph<T> implements Serializable {
     return content;
   }
 
-  private static class Node<T> implements Serializable {
+  public Collection<Map.Entry<Integer, Node<T>>> getGraphContent() {
+    return nodes.entrySet();
+  }
+
+  public static class Node<T> implements Serializable {
     @Serial private static final long serialVersionUID = 2326885959259937816L;
-    private final T content;
+    @Getter private final T content;
     private final ArrayList<Integer> connections = new ArrayList<Integer>();
 
-    private Node(T content) {
+    public Node(T content) {
       this.content = content;
     }
 
-    private void addConnection(int to) {
+    public void addConnection(int to) {
       connections.add(to);
+    }
+
+    public List<Integer> getConnections() {
+      return Collections.unmodifiableList(connections);
     }
   }
 }

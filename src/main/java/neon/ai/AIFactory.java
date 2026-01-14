@@ -86,18 +86,14 @@ public class AIFactory {
   }
 
   private AI getAI(AIType type, Creature creature, byte aggression, byte confidence, int range) {
-    switch (type) {
-      case wander:
-        return new BasicAI(creature, aggression, confidence, resourceManager, uidStore, player);
-      case guard:
-        return new GuardAI(
-            creature, aggression, confidence, range, resourceManager, uidStore, player);
-      case schedule:
-        return new ScheduleAI(
-            creature, aggression, confidence, new Point[0], resourceManager, uidStore, player);
-      default:
-        return new GuardAI(
-            creature, aggression, confidence, range, resourceManager, uidStore, player);
-    }
+    return switch (type) {
+      case wander ->
+          new BasicAI(creature, aggression, confidence, resourceManager, uidStore, player);
+      case schedule ->
+          new ScheduleAI(
+              creature, aggression, confidence, new Point[0], resourceManager, uidStore, player);
+      default ->
+          new GuardAI(creature, aggression, confidence, range, resourceManager, uidStore, player);
+    };
   }
 }

@@ -21,6 +21,7 @@ package neon.maps;
 import java.awt.Point;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import lombok.Setter;
 import neon.core.*;
 import neon.entities.*;
 import neon.entities.components.Enchantment;
@@ -48,7 +49,7 @@ public class MapLoader {
   private final ResourceManager resourceManager;
   private final FileSystem fileSystem;
   private final ZoneFactory zoneFactory;
-  private Player player;
+  @Setter private Player player;
 
   /** Creates a MapLoader with dependency injection. */
   public MapLoader(
@@ -178,7 +179,7 @@ public class MapLoader {
    * @return the constructed World
    */
   private World buildWorldFromModel(WorldModel model, int uid) {
-    World world = new World(model.header.name, uid);
+    World world = new World(model.header.name, uid, zoneFactory);
     Zone zone = world.getZone(0); // outdoor maps have only zone 0
     ItemFactory itemFactory = new ItemFactory(resourceManager);
     CreatureFactory creatureFactory = new CreatureFactory(resourceManager, uidStore, player);

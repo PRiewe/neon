@@ -18,7 +18,6 @@
 
 package neon.maps;
 
-import java.io.Externalizable;
 import java.util.*;
 
 /**
@@ -26,7 +25,7 @@ import java.util.*;
  *
  * @author mdriesen
  */
-public interface Map extends Externalizable {
+public interface Map {
   /**
    * @return the name of this map
    */

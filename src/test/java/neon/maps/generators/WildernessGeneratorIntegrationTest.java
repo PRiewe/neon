@@ -106,12 +106,12 @@ class WildernessGeneratorIntegrationTest {
 
   // ==================== Helper Methods ====================
 
-  private WildernessGenerator createGeneratorForTerrainOnly(
+  private WildernessTerrainGenerator createGeneratorForTerrainOnly(
       WildernessScenario scenario, int width, int height) {
     String[][] terrain = new String[height + 2][width + 2];
     MapUtils mapUtils = MapUtils.withSeed(scenario.seed());
     Dice dice = Dice.withSeed(scenario.seed());
-    return new WildernessGenerator(terrain, null, null, mapUtils, dice);
+    return new WildernessTerrainGenerator(mapUtils, dice);
   }
 
   // ==================== LAYER 1: Lightweight Terrain Generation Tests ====================
@@ -122,7 +122,7 @@ class WildernessGeneratorIntegrationTest {
     // Given
     int width = 50;
     int height = 50;
-    WildernessGenerator generator = createGeneratorForTerrainOnly(scenario, width, height);
+    var generator = createGeneratorForTerrainOnly(scenario, width, height);
 
     // When - Note: WildernessGenerator doesn't have a public generateTerrain() method
     // We'll test through the generate() method in the full context tests
@@ -142,8 +142,8 @@ class WildernessGeneratorIntegrationTest {
     // When: generate twice with same seed
     // Note: Since generateTerrain is private, we can't test it directly
     // Determinism will be tested in the full context tests
-    WildernessGenerator generator1 = createGeneratorForTerrainOnly(scenario, width, height);
-    WildernessGenerator generator2 = createGeneratorForTerrainOnly(scenario, width, height);
+    var generator1 = createGeneratorForTerrainOnly(scenario, width, height);
+    var generator2 = createGeneratorForTerrainOnly(scenario, width, height);
 
     // Then: verify both generators created successfully
     assertNotNull(generator1, "First generator should be created");

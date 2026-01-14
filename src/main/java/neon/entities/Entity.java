@@ -20,7 +20,7 @@ package neon.entities;
 
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
-import java.io.Serializable;
+import java.io.*;
 import neon.entities.components.Component;
 import neon.entities.components.PhysicsComponent;
 import neon.entities.components.RenderComponent;
@@ -33,13 +33,14 @@ import neon.entities.components.ShapeComponent;
  * @author mdriesen
  */
 public abstract class Entity implements Serializable {
+
   // components
   public final ShapeComponent bounds;
 
   protected ClassToInstanceMap<Component> components = MutableClassToInstanceMap.create();
 
-  private final long uid;
-  private final String id;
+  private long uid;
+  private String id;
 
   /**
    * @param id the id of the resource this entity is an instance of

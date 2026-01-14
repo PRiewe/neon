@@ -2,6 +2,7 @@ package neon.util.mapstorage;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
+import org.h2.mvstore.type.DataType;
 
 public interface MapStore {
   void close();
@@ -9,6 +10,8 @@ public interface MapStore {
   long commit();
 
   <K, V> ConcurrentMap<K, V> openMap(String filename);
+
+  <K, V> ConcurrentMap<K, V> openMap(String filename, DataType<K> keyType, DataType<V> valueType);
 
   boolean isClosed();
 

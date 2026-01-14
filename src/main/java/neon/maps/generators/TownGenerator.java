@@ -70,35 +70,7 @@ public class TownGenerator {
     this.resourceProvider = resourceProvider;
     this.mapUtils = mapUtils;
 
-    // Create minimal GameStores wrapper for ItemFactory
-    neon.core.GameStores gameStores =
-        new neon.core.GameStores() {
-          @Override
-          public neon.maps.Atlas getAtlas() {
-            return null;
-          }
-
-          @Override
-          public neon.entities.UIDStore getStore() {
-            return entityStore;
-          }
-
-          @Override
-          public neon.resources.ResourceManager getResources() {
-            return resourceProvider;
-          }
-
-          @Override
-          public neon.systems.files.FileSystem getFileSystem() {
-            return null;
-          }
-
-          @Override
-          public neon.maps.ZoneFactory getZoneFactory() {
-            return null;
-          }
-        };
-    itemFactory = new ItemFactory(gameStores.getResources());
+    itemFactory = new ItemFactory(resourceProvider);
   }
 
   /**

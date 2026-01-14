@@ -44,16 +44,22 @@ class DungeonGeneratorXmlIntegrationTest {
   private static final String THEMES_PATH = "src/test/resources/sampleMod1/themes/";
 
   // ==================== Static Theme Data ====================
-
+  MapStore testDb;
   private static Map<String, RDungeonTheme> dungeonThemes;
   private static Map<String, RZoneTheme> zoneThemes;
   ZoneFactory zoneFactory;
 
   @BeforeEach
   void setUp() throws Exception {
-    MapStore testDb = MapDbTestHelper.createInMemoryDB();
+    testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
     zoneFactory = TestEngineContext.getTestZoneFactory();
+  }
+
+  @AfterEach
+  public void cleanup() {
+    TestEngineContext.reset();
+    MapDbTestHelper.cleanup(testDb);
   }
 
   // ==================== Setup ====================
@@ -352,6 +358,7 @@ class DungeonGeneratorXmlIntegrationTest {
     @AfterEach
     void tearDown() {
       TestEngineContext.reset();
+      MapDbTestHelper.cleanup(testDb);
       new File("test-store.dat").delete();
       new File("testfile3.dat").delete();
     }

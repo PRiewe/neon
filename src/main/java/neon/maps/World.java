@@ -18,9 +18,6 @@
 
 package neon.maps;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +30,7 @@ import lombok.Setter;
 public class World implements Map {
   @Getter @Setter private String name;
   private int uid;
-  private Zone zone;
+  @Getter private Zone zone;
 
   /**
    * Initializes this {@code World} with the given parameters.
@@ -41,9 +38,22 @@ public class World implements Map {
    * @param name the name of this map
    * @param uid the uid of this map
    */
-  public World(String name, int uid) {
+  public World(String name, int uid, ZoneFactory zoneFactory) {
     this.name = name;
     this.uid = uid;
+    this.zone = zoneFactory.createZone("world", uid, 0);
+  }
+
+  /**
+   * Initializes this {@code World} with the given parameters.
+   *
+   * @param name the name of this map
+   * @param uid the uid of this map
+   */
+  public World(String name, int uid, Zone zone) {
+    this.name = name;
+    this.uid = uid;
+    this.zone = zone;
   }
 
   public World() {}
@@ -58,17 +68,5 @@ public class World implements Map {
 
   public Collection<Zone> getZones() {
     return List.of(zone);
-  }
-
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    name = in.readUTF();
-    uid = in.readInt();
-    zone = (Zone) in.readObject();
-  }
-
-  public void writeExternal(ObjectOutput out) throws IOException {
-    out.writeUTF(name);
-    out.writeInt(uid);
-    out.writeObject(zone);
   }
 }

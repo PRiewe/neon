@@ -87,4 +87,15 @@ public class AtlasPosition {
     atlas.putMapIfNeeded(map);
     player.setCurrentMap(map);
   }
+
+  /**
+   * Set the current map.
+   *
+   * @param map the new current map
+   */
+  public void setMap(World map) {
+    atlas.putMapIfNeeded(map);
+    player.setCurrentMap(map);
+    player.setCurrentZone(map.getZone());
+  }
 }

@@ -138,7 +138,7 @@ public class GameLoader {
       // initialize player
       RCreature species = ((RCreature) gameStores.getResources().getResource(race)).clone();
       ItemFactory itemFactory = new ItemFactory(gameStores.getResources());
-      Player player = new Player(species, name, gender, spec, profession, gameStores);
+      Player player = new Player(species, name, gender, spec, profession, gameStores.getStore());
       player.species.text = "@";
       context.startGame(
           new Game(player, gameStores, context.getPhysicsManager(), context.getQuestTracker()));
@@ -296,7 +296,7 @@ public class GameLoader {
             Gender.valueOf(playerData.gender.toUpperCase()),
             Player.Specialisation.valueOf(playerData.specialisation),
             playerData.profession,
-            gameStores);
+            gameStores.getStore());
     context.startGame(
         new Game(player, gameStores, context.getPhysicsManager(), context.getQuestTracker()));
     Rectangle bounds = player.getShapeComponent();

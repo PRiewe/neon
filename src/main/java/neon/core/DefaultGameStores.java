@@ -18,14 +18,15 @@ public class DefaultGameStores implements GameStores {
   private final UIDStore store;
   private final Atlas atlas;
   private final ZoneFactory zoneFactory;
+  private final MapStore zoneMapStore;
 
   public DefaultGameStores(ResourceManager resources, FileSystem fileSystem, Player player) {
     this.resources = resources;
     this.fileSystem = fileSystem;
     this.store = new UIDStore(fileSystem, fileSystem.getFullPath("uidstore"));
-    MapStore mapStore = Atlas.getMapStore(fileSystem, "zones");
-    this.zoneFactory = new ZoneFactory(mapStore, store, resources);
+    zoneMapStore = Atlas.getMapStore(fileSystem, "zones");
+    this.zoneFactory = new ZoneFactory(zoneMapStore, store, resources);
     MapLoader mapLoader = new MapLoader(fileSystem, store, resources, zoneFactory, player);
-    atlas = new Atlas(fileSystem, mapStore, store, mapLoader);
+    atlas = new Atlas(fileSystem, zoneMapStore, store, resources, mapLoader);
   }
 }
