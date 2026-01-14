@@ -44,7 +44,10 @@ import neon.resources.RItem;
  * @author mdriesen
  */
 public class ItemSerializer {
-  private static final long serialVersionUID = 2138679015831709732L;
+
+  private final GameStores gameStores;
+  private final ItemFactory itemFactory;
+  private final SpellFactory spellFactory;
 
   private final GameContext gameContext;
   private final EntityFactory entityFactory;

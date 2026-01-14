@@ -79,7 +79,7 @@ public class TestEngineContext {
     setStaticField(Engine.class, "resources", testResources);
 
     // Create test UIDStore
-    testStore = new neon.entities.UIDStore(getStubFileSystem(), testDb);
+    testStore = new UIDStore(getStubFileSystem(), testDb);
     // Create test Game using new DI constructor
     Player stubPlayer =
         new Player(
