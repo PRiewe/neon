@@ -140,9 +140,9 @@ public class JacksonXmlBuilder {
   /**
    * Builds a resource document, filtering by mod and optionally sorting by ID.
    *
-   * <p>This method uses each resource's {@code toElement()} method to serialize individual
-   * resources. Many resources (RCreature, RSpell, etc.) internally use Jackson in their {@code
-   * toElement()} implementation, following the established bridge pattern.
+   * <p>This method uses Jackson to serialize each resource directly, eliminating the need for
+   * {@code toElement()} methods in resource classes. Each resource is serialized individually and
+   * combined under a common root element.
    *
    * @param resources the collection of resources
    * @param rootName the XML root element name
@@ -164,10 +164,21 @@ public class JacksonXmlBuilder {
       filtered.sort(Comparator.comparing(r -> r.id));
     }
 
-    // Build JDOM element with children using toElement() bridge
+    // Build JDOM element with children using Jackson serialization
     Element root = new Element(rootName);
     for (RData resource : filtered) {
-      root.addContent(resource.toElement());
+      try {
+        // Serialize resource to XML with Jackson
+        String xml = mapper.toXml(resource).toString();
+
+        // Parse XML to Element
+        Element element =
+            new SAXBuilder().build(new ByteArrayInputStream(xml.getBytes())).getRootElement();
+        element.detach();
+        root.addContent(element);
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to serialize resource: " + resource.id, e);
+      }
     }
 
     return new Document(root);

@@ -284,6 +284,7 @@ public class ModFiler {
   }
 
   private void saveQuests() {
+    JacksonMapper mapper = new JacksonMapper();
     for (String name : files.listFiles(dataStore.getActive().getPath()[0], "quests")) {
       String quest =
           name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 for ".xml"
@@ -292,7 +293,15 @@ public class ModFiler {
       }
     }
     for (RQuest quest : dataStore.getResourceManager().getResources(RQuest.class)) {
-      saveFile(new Document(quest.toElement()), "quests", quest.id + ".xml");
+      try {
+        // Serialize quest with Jackson
+        ByteArrayOutputStream out = mapper.toXml(quest);
+        String xml = out.toString(StandardCharsets.UTF_8);
+        saveFile(xml, "quests", quest.id + ".xml");
+      } catch (Exception e) {
+        System.err.println("Failed to save quest: " + quest.id);
+        e.printStackTrace();
+      }
     }
   }
 

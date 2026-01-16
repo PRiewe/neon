@@ -24,7 +24,6 @@ import java.io.File;
 import java.util.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import neon.editor.resources.RFaction;
 import neon.editor.resources.RMap;
 import neon.resources.*;
 import neon.resources.quest.RQuest;
@@ -41,6 +40,8 @@ public class DataStore {
   @Getter private final ResourceManager resourceManager;
   @Getter private final FileSystem fileSystem;
   @Getter private RMod active;
+  private final neon.systems.files.JacksonMapper jacksonMapper =
+      new neon.systems.files.JacksonMapper();
 
   public DataStore(ResourceManager resourceManager, FileSystem fileSystem) {
     this.resourceManager = resourceManager;
@@ -219,119 +220,228 @@ public class DataStore {
         quest = quest.substring(quest.lastIndexOf("/") + 1);
         quest = quest.substring(quest.lastIndexOf(File.separator) + 1);
         path[file.length] = quest;
-        Document doc = loadAsDocument(path);
-        if (doc != null) {
-          Element root = doc.getRootElement();
+
+        java.io.InputStream stream = fileSystem.getStream(path);
+        if (stream != null) {
           String id = quest.replace(".xml", "");
-          resourceManager.addResource(new RQuest(id, root, mod.get("id")), "quest");
+          RQuest rquest = jacksonMapper.fromXml(stream, RQuest.class);
+          if (rquest != null) {
+            // Set ID from filename (RQuest uses filename as ID like JDOM path did)
+            try {
+              java.lang.reflect.Field idField =
+                  neon.resources.Resource.class.getDeclaredField("id");
+              idField.setAccessible(true);
+              idField.set(rquest, id);
+            } catch (Exception e) {
+              log.error("Failed to set quest ID", e);
+            }
+            resourceManager.addResource(rquest, "quest");
+          }
+          stream.close();
         }
       }
-    } catch (NullPointerException e) {
+    } catch (Exception e) {
+      log.error("Failed to load quests", e);
     }
   }
 
   private void loadMagic(RMod mod, String... path) {
     try {
-      Document doc = loadAsDocument(path);
-      if (doc != null) {
-        for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-            case "sign" -> resourceManager.addResource(new RSign(e, mod.get("id")), "magic");
-            case "tattoo" -> resourceManager.addResource(new RTattoo(e, mod.get("id")), "magic");
-            case "recipe" -> resourceManager.addResource(new RRecipe(e, mod.get("id")), "magic");
-            case "list" -> resourceManager.addResource(new LSpell(e, mod.get("id")), "magic");
-            case "power" ->
-                resourceManager.addResource(new RSpell.Power(e, mod.get("id")), "magic");
-            case "enchant" ->
-                resourceManager.addResource(new RSpell.Enchantment(e, mod.get("id")), "magic");
-            default -> resourceManager.addResource(new RSpell(e, mod.get("id")), "magic");
-          }
-        }
+      java.io.InputStream stream = fileSystem.getStream(path);
+      if (stream == null) {
+        return;
       }
-    } catch (NullPointerException e) {
+
+      jacksonMapper.parseMultiTypeXml(
+          stream,
+          (elementName, elementXml) -> {
+            switch (elementName) {
+              case "sign" -> {
+                RSign sign = jacksonMapper.fromXml(elementXml, RSign.class);
+                if (sign != null) resourceManager.addResource(sign, "magic");
+              }
+              case "tattoo" -> {
+                RTattoo tattoo = jacksonMapper.fromXml(elementXml, RTattoo.class);
+                if (tattoo != null) resourceManager.addResource(tattoo, "magic");
+              }
+              case "recipe" -> {
+                RRecipe recipe = jacksonMapper.fromXml(elementXml, RRecipe.class);
+                if (recipe != null) resourceManager.addResource(recipe, "magic");
+              }
+              case "list" -> {
+                LSpell list = jacksonMapper.fromXml(elementXml, LSpell.class);
+                if (list != null) resourceManager.addResource(list, "magic");
+              }
+              case "power" -> {
+                RSpell.Power power = jacksonMapper.fromXml(elementXml, RSpell.Power.class);
+                if (power != null) resourceManager.addResource(power, "magic");
+              }
+              case "enchant" -> {
+                RSpell.Enchantment enchant =
+                    jacksonMapper.fromXml(elementXml, RSpell.Enchantment.class);
+                if (enchant != null) resourceManager.addResource(enchant, "magic");
+              }
+              default -> {
+                RSpell spell = jacksonMapper.fromXml(elementXml, RSpell.class);
+                if (spell != null) resourceManager.addResource(spell, "magic");
+              }
+            }
+          });
+    } catch (Exception e) {
+      log.error("Failed to load magic from " + java.util.Arrays.toString(path), e);
     }
   }
 
   private void loadCreatures(RMod mod, String... path) {
     try {
-      Document doc = loadAsDocument(path);
-      if (doc != null) {
-        for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-            case "list" -> resourceManager.addResource(new LCreature(e, mod.get("id")));
-            case "npc" -> resourceManager.addResource(new RPerson(e, mod.get("id")));
-            case "group" -> {}
-            default -> resourceManager.addResource(new RCreature(e, mod.get("id")));
-          }
-        }
+      java.io.InputStream stream = fileSystem.getStream(path);
+      if (stream == null) {
+        return;
       }
-    } catch (NullPointerException e) {
-      e.printStackTrace();
+
+      jacksonMapper.parseMultiTypeXml(
+          stream,
+          (elementName, elementXml) -> {
+            switch (elementName) {
+              case "list" -> {
+                LCreature list = jacksonMapper.fromXml(elementXml, LCreature.class);
+                if (list != null) resourceManager.addResource(list);
+              }
+              case "npc" -> {
+                RPerson npc = jacksonMapper.fromXml(elementXml, RPerson.class);
+                if (npc != null) resourceManager.addResource(npc);
+              }
+              case "group" -> {} // Groups are ignored
+              default -> {
+                RCreature creature = jacksonMapper.fromXml(elementXml, RCreature.class);
+                if (creature != null) resourceManager.addResource(creature);
+              }
+            }
+          });
+    } catch (Exception e) {
+      log.error("Failed to load creatures from " + java.util.Arrays.toString(path), e);
     }
   }
 
   private void loadFactions(RMod mod, String... path) {
     try {
-      Document doc = loadAsDocument(path);
-      if (doc != null) {
-        for (Element e : doc.getRootElement().getChildren()) {
-          resourceManager.addResource(new RFaction(e, mod.get("id")), "faction");
-        }
+      java.io.InputStream stream = fileSystem.getStream(path);
+      if (stream == null) {
+        return;
       }
-    } catch (NullPointerException e) {
+
+      jacksonMapper.parseMultiTypeXml(
+          stream,
+          (elementName, elementXml) -> {
+            neon.editor.resources.RFaction faction =
+                jacksonMapper.fromXml(elementXml, neon.editor.resources.RFaction.class);
+            if (faction != null) resourceManager.addResource(faction, "faction");
+          });
+    } catch (Exception e) {
+      log.error("Failed to load factions from " + java.util.Arrays.toString(path), e);
     }
   }
 
   private void loadTerrain(RMod mod, String... path) {
     try {
-      Document doc = loadAsDocument(path);
-      if (doc != null) {
-        for (Element e : doc.getRootElement().getChildren()) {
-          resourceManager.addResource(new RTerrain(e, mod.get("id")), "terrain");
-        }
+      java.io.InputStream stream = fileSystem.getStream(path);
+      if (stream == null) {
+        return;
       }
-    } catch (NullPointerException e) {
+
+      jacksonMapper.parseMultiTypeXml(
+          stream,
+          (elementName, elementXml) -> {
+            RTerrain terrain = jacksonMapper.fromXml(elementXml, RTerrain.class);
+            if (terrain != null) resourceManager.addResource(terrain, "terrain");
+          });
+    } catch (Exception e) {
+      log.error("Failed to load terrain from " + java.util.Arrays.toString(path), e);
     }
   }
 
   private void loadItems(RMod mod, String... path) {
     try {
-      Document doc = loadAsDocument(path);
-      if (doc != null) {
-        for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-            case "list" -> resourceManager.addResource(new LItem(e, mod.get("id")));
-            case "book", "scroll" -> resourceManager.addResource(new RItem.Text(e, mod.get("id")));
-            case "armor", "clothing" ->
-                resourceManager.addResource(new RClothing(e, mod.get("id")));
-            case "weapon" -> resourceManager.addResource(new RWeapon(e, mod.get("id")));
-            case "craft" -> resourceManager.addResource(new RCraft(e, mod.get("id")));
-            case "door" -> resourceManager.addResource(new RItem.Door(e, mod.get("id")));
-            case "potion" -> resourceManager.addResource(new RItem.Potion(e, mod.get("id")));
-            case "container" -> resourceManager.addResource(new RItem.Container(e, mod.get("id")));
-            default -> resourceManager.addResource(new RItem(e, mod.get("id")));
-          }
-        }
+      java.io.InputStream stream = fileSystem.getStream(path);
+      if (stream == null) {
+        return;
       }
-    } catch (NullPointerException e) {
+
+      jacksonMapper.parseMultiTypeXml(
+          stream,
+          (elementName, elementXml) -> {
+            switch (elementName) {
+              case "list" -> {
+                LItem list = jacksonMapper.fromXml(elementXml, LItem.class);
+                if (list != null) resourceManager.addResource(list);
+              }
+              case "book", "scroll" -> {
+                RItem.Text text = jacksonMapper.fromXml(elementXml, RItem.Text.class);
+                if (text != null) resourceManager.addResource(text);
+              }
+              case "armor", "clothing" -> {
+                RClothing clothing = jacksonMapper.fromXml(elementXml, RClothing.class);
+                if (clothing != null) resourceManager.addResource(clothing);
+              }
+              case "weapon" -> {
+                RWeapon weapon = jacksonMapper.fromXml(elementXml, RWeapon.class);
+                if (weapon != null) resourceManager.addResource(weapon);
+              }
+              case "craft" -> {
+                RCraft craft = jacksonMapper.fromXml(elementXml, RCraft.class);
+                if (craft != null) resourceManager.addResource(craft);
+              }
+              case "door" -> {
+                RItem.Door door = jacksonMapper.fromXml(elementXml, RItem.Door.class);
+                if (door != null) resourceManager.addResource(door);
+              }
+              case "potion" -> {
+                RItem.Potion potion = jacksonMapper.fromXml(elementXml, RItem.Potion.class);
+                if (potion != null) resourceManager.addResource(potion);
+              }
+              case "container" -> {
+                RItem.Container container =
+                    jacksonMapper.fromXml(elementXml, RItem.Container.class);
+                if (container != null) resourceManager.addResource(container);
+              }
+              default -> {
+                RItem item = jacksonMapper.fromXml(elementXml, RItem.class);
+                if (item != null) resourceManager.addResource(item);
+              }
+            }
+          });
+    } catch (Exception e) {
+      log.error("Failed to load items from " + java.util.Arrays.toString(path), e);
     }
   }
 
   private void loadThemes(RMod mod, String... path) {
     try {
-      Document doc = loadAsDocument(path);
-      if (doc != null) {
-        for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-            case "dungeon" ->
-                resourceManager.addResource(new RDungeonTheme(e, mod.get("id")), "theme");
-            case "region" ->
-                resourceManager.addResource(new RRegionTheme(e, mod.get("id")), "theme");
-            case "zone" -> resourceManager.addResource(new RZoneTheme(e, mod.get("id")), "theme");
-          }
-        }
+      java.io.InputStream stream = fileSystem.getStream(path);
+      if (stream == null) {
+        return;
       }
-    } catch (NullPointerException e) {
+
+      jacksonMapper.parseMultiTypeXml(
+          stream,
+          (elementName, elementXml) -> {
+            switch (elementName) {
+              case "dungeon" -> {
+                RDungeonTheme dungeon = jacksonMapper.fromXml(elementXml, RDungeonTheme.class);
+                if (dungeon != null) resourceManager.addResource(dungeon, "theme");
+              }
+              case "region" -> {
+                RRegionTheme region = jacksonMapper.fromXml(elementXml, RRegionTheme.class);
+                if (region != null) resourceManager.addResource(region, "theme");
+              }
+              case "zone" -> {
+                RZoneTheme zone = jacksonMapper.fromXml(elementXml, RZoneTheme.class);
+                if (zone != null) resourceManager.addResource(zone, "theme");
+              }
+            }
+          });
+    } catch (Exception e) {
+      log.error("Failed to load themes from " + java.util.Arrays.toString(path), e);
     }
   }
 }

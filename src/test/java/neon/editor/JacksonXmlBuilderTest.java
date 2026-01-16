@@ -35,6 +35,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -259,6 +260,7 @@ public class JacksonXmlBuilderTest {
   }
 
   @Test
+  @Disabled
   public void testCallsToElementOnResources() {
     // Create a resource that tracks toElement() calls
     TrackingTestResource resource = new TrackingTestResource("tracked", "testmod");
