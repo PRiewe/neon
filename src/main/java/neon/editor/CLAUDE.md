@@ -53,7 +53,8 @@ Specialized editors: `CreatureEditor`, `SpellEditor`, `QuestEditor`, `ItemEditor
 
 - **ResourceManager**: Shared with game engine (`Editor.resources` static field)
 - **FileSystem**: Shared file system for reading/writing mod data (`Editor.files`)
-- Uses JDOM2 for XML serialization via `XMLBuilder` and `XMLTranslator`
+- Uses JDOM2 for XML serialization via `XMLBuilder`. Maps use Jackson XML serialization via JacksonMapper.
+- Bridge methods in DataStore and ModFiler provide JDOM loading without XMLTranslator (which has been removed)
 
 ## Adding New Resource Editors
 

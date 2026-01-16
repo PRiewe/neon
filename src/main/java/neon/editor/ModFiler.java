@@ -48,7 +48,6 @@ import neon.resources.quest.RQuest;
 import neon.systems.files.FileSystem;
 import neon.systems.files.JacksonMapper;
 import neon.systems.files.StringTranslator;
-import neon.systems.files.XMLTranslator;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -66,6 +65,51 @@ public class ModFiler {
     this.files = files;
     this.dataStore = dataStore;
     this.editor = editor;
+  }
+
+  /**
+   * Bridge method for loading XML files as JDOM Documents without using XMLTranslator.
+   *
+   * @param path the path components to the XML file
+   * @return JDOM Document, or null if file doesn't exist
+   */
+  private Document loadAsDocument(String... path) {
+    try {
+      java.io.InputStream stream = files.getStream(path);
+      if (stream == null) {
+        return null;
+      }
+      org.jdom2.input.SAXBuilder builder = new org.jdom2.input.SAXBuilder();
+      Document doc = builder.build(stream);
+      stream.close();
+      return doc;
+    } catch (Exception e) {
+      log.error("Failed to load XML as Document: {}", java.util.Arrays.toString(path), e);
+      return null;
+    }
+  }
+
+  /**
+   * Saves a JDOM Document to the file system without using XMLTranslator.
+   *
+   * @param doc the JDOM Document to save
+   * @param path the path components
+   */
+  private void saveDocument(Document doc, String... path) {
+    try {
+      org.jdom2.output.XMLOutputter outputter = new org.jdom2.output.XMLOutputter();
+      outputter.setFormat(org.jdom2.output.Format.getPrettyFormat());
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      outputter.output(doc, out);
+
+      // Write to file using FileSystem
+      String fullPath = files.getFullPath(String.join(File.separator, path));
+      java.io.FileOutputStream fileOut = new java.io.FileOutputStream(fullPath);
+      out.writeTo(fileOut);
+      fileOut.close();
+    } catch (Exception e) {
+      log.error("Failed to save Document: {}", java.util.Arrays.toString(path), e);
+    }
   }
 
   void loadMod() {
@@ -87,28 +131,30 @@ public class ModFiler {
         files.removePath(path);
       } else {
         if (isExtension(path)) { // if extension: load all masters
-          Document doc = files.getFile(new XMLTranslator(), path, "main.xml");
-          for (Object master : doc.getRootElement().getChildren("master")) {
-            String id = ((Element) master).getText();
-            Document ini = new Document();
-            try { // check in neon.ini.xml which mods exist
-              FileInputStream in = new FileInputStream("neon.ini.xml");
-              ini = new SAXBuilder().build(in);
-              in.close();
-            } catch (JDOMException e) {
-              log.error("Error reading", e);
-            }
+          Document doc = loadAsDocument(path, "main.xml");
+          if (doc != null) {
+            for (Object master : doc.getRootElement().getChildren("master")) {
+              String id = ((Element) master).getText();
+              Document ini = new Document();
+              try { // check in neon.ini.xml which mods exist
+                FileInputStream in = new FileInputStream("neon.ini.xml");
+                ini = new SAXBuilder().build(in);
+                in.close();
+              } catch (JDOMException e) {
+                log.error("Error reading", e);
+              }
 
-            // check if there is a mod with the correct id
-            for (Element mod : ini.getRootElement().getChild("files").getChildren()) {
-              if (!mod.getText().equals(path)) { // make sure current mod is not loaded again
-                System.out.println(mod.getText() + ", " + path);
-                files.mount(mod.getText());
-                Document d = files.getFile(new XMLTranslator(), mod.getText(), "main.xml");
-                if (d.getRootElement().getAttributeValue("id").equals(id)) {
-                  dataStore.loadData(mod.getText(), false, false);
-                } else {
-                  files.removePath(mod.getText());
+              // check if there is a mod with the correct id
+              for (Element mod : ini.getRootElement().getChild("files").getChildren()) {
+                if (!mod.getText().equals(path)) { // make sure current mod is not loaded again
+                  System.out.println(mod.getText() + ", " + path);
+                  files.mount(mod.getText());
+                  Document d = loadAsDocument(mod.getText(), "main.xml");
+                  if (d != null && d.getRootElement().getAttributeValue("id").equals(id)) {
+                    dataStore.loadData(mod.getText(), false, false);
+                  } else {
+                    files.removePath(mod.getText());
+                  }
                 }
               }
             }
@@ -201,9 +247,9 @@ public class ModFiler {
   /**
    * Saves all maps using Jackson XML serialization.
    *
-   * <p>NOTE (Phase 6 - Partial Migration): Maps use Jackson via toWorldModel()/toDungeonModel()
-   * (migrated in Phase 2D). Other resources still use toElement() bridge and XMLTranslator. Full
-   * migration of resource saving to Jackson deferred to Phase 7.
+   * <p>NOTE: Maps use Jackson via toWorldModel()/toDungeonModel(). Other resources still use
+   * toElement() bridge with JDOM. XMLTranslator has been eliminated. Full migration of resource
+   * saving to Jackson deferred to future phase.
    */
   private void saveMaps() {
     // Delete maps that no longer exist
@@ -274,17 +320,17 @@ public class ModFiler {
     String[] fullPath = new String[file.length + 1];
     System.arraycopy(file, 0, fullPath, 1, file.length);
     fullPath[0] = dataStore.getActive().getPath()[0];
-    files.saveFile(doc, new XMLTranslator(), fullPath);
+    saveDocument(doc, fullPath);
   }
 
   private boolean isExtension(String path) {
-    Document doc = files.getFile(new XMLTranslator(), path, "main.xml");
-    return doc.getRootElement().getName().equals("extension");
+    Document doc = loadAsDocument(path, "main.xml");
+    return doc != null && doc.getRootElement().getName().equals("extension");
   }
 
   private boolean isMod(String path) {
     try { // main.xml must exist and be valid xml
-      return files.getFile(new XMLTranslator(), path, "main.xml") != null;
+      return loadAsDocument(path, "main.xml") != null;
     } catch (NullPointerException e) {
       return false;
     }

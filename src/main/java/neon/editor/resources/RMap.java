@@ -27,7 +27,6 @@ import neon.maps.model.WorldModel;
 import neon.resources.RData;
 import neon.resources.RDungeonTheme;
 import neon.resources.RScript;
-import neon.systems.files.XMLTranslator;
 import neon.ui.graphics.Renderable;
 import org.jdom2.*;
 
@@ -395,20 +394,23 @@ public class RMap extends RData {
       uids = new ArrayList<Integer>();
       try {
         String file = dataStore.getMod(path[0]).getPath()[0];
-        Element root =
-            dataStore
-                .getFileSystem()
-                .getFile(new XMLTranslator(), file, "maps", id + ".xml")
-                .getRootElement();
+        // Load XML directly without XMLTranslator
+        java.io.InputStream stream = dataStore.getFileSystem().getStream(file, "maps", id + ".xml");
+        if (stream != null) {
+          org.jdom2.input.SAXBuilder builder = new org.jdom2.input.SAXBuilder();
+          org.jdom2.Document doc = builder.build(stream);
+          stream.close();
+          Element root = doc.getRootElement();
 
-        if (root.getName().equals("world")) {
-          uids.addAll(zones.get(0).load(root));
-        } else if (root.getName().equals("dungeon")) {
-          for (Element level : root.getChildren("level")) {
-            uids.addAll(zones.get(Integer.parseInt(level.getAttributeValue("l"))).load(level));
+          if (root.getName().equals("world")) {
+            uids.addAll(zones.get(0).load(root));
+          } else if (root.getName().equals("dungeon")) {
+            for (Element level : root.getChildren("level")) {
+              uids.addAll(zones.get(Integer.parseInt(level.getAttributeValue("l"))).load(level));
+            }
+          } else {
+            System.out.println("fout in EditableMap.load(" + id + ")");
           }
-        } else {
-          System.out.println("fout in EditableMap.load(" + id + ")");
         }
       } catch (Exception e) {
         log.error("load", e);

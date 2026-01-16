@@ -18,12 +18,13 @@
 
 package neon.editor;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import neon.editor.maps.*;
 import neon.editor.resources.IRegion;
 import neon.systems.files.FileSystem;
-import neon.systems.files.XMLTranslator;
 import neon.ui.graphics.Renderable;
 import neon.ui.graphics.ZComparator;
 import neon.util.ColorFactory;
@@ -63,12 +64,27 @@ public class SVGExporter {
         }
       }
 
-      files.saveFile(
-          doc,
-          new XMLTranslator(),
-          store.getActive().getPath()[0],
-          "shots",
-          node.getZone().map.id + ".svg");
+      // Save SVG document directly without XMLTranslator
+      try {
+        org.jdom2.output.XMLOutputter outputter = new org.jdom2.output.XMLOutputter();
+        outputter.setFormat(org.jdom2.output.Format.getPrettyFormat());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        outputter.output(doc, out);
+
+        String fullPath =
+            files.getFullPath(
+                store.getActive().getPath()[0]
+                    + File.separator
+                    + "shots"
+                    + File.separator
+                    + node.getZone().map.id
+                    + ".svg");
+        java.io.FileOutputStream fileOut = new java.io.FileOutputStream(fullPath);
+        out.writeTo(fileOut);
+        fileOut.close();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 }
