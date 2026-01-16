@@ -29,11 +29,12 @@ import neon.magic.Effect;
 import neon.resources.RSpell;
 
 public class PoisonEditor extends ObjectEditor implements ActionListener {
-  private JTextField nameField;
-  private JFormattedTextField sizeField, durationField;
-  private JComboBox<Effect> effectBox;
-  private JTextArea scriptArea;
-  private RSpell data;
+  private final JTextField nameField;
+  private final JFormattedTextField sizeField;
+  private final JFormattedTextField durationField;
+  private final JComboBox<Effect> effectBox;
+  private final JTextArea scriptArea;
+  private final RSpell data;
   private final DataStore dataStore;
 
   public PoisonEditor(JFrame parent, RSpell data, DataStore dataStore) {

@@ -47,10 +47,10 @@ public class RQuest extends RData {
   // initial quest is added as soon as game starts
   @JsonIgnore public boolean initial = false;
 
-  @JsonIgnore private ArrayList<String> conditions = new ArrayList<String>();
+  @JsonIgnore private final ArrayList<String> conditions = new ArrayList<String>();
 
   // Complex nested structure - handled manually in deserializer
-  @JsonIgnore private ArrayList<Conversation> conversations = new ArrayList<Conversation>();
+  @JsonIgnore private final ArrayList<Conversation> conversations = new ArrayList<Conversation>();
 
   // JDOM constructor for backward compatibility during migration
   public RQuest(String id, Element properties, String... path) {

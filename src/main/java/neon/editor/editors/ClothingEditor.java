@@ -32,11 +32,14 @@ import neon.resources.RSpell;
 import neon.util.ColorFactory;
 
 public class ClothingEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JFormattedTextField costField, weightField, charField;
-  private JComboBox<String> colorBox, spellBox;
-  private JComboBox<Slot> slotBox;
-  private RClothing data;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final JComboBox<String> spellBox;
+  private final JComboBox<Slot> slotBox;
+  private final RClothing data;
   private final DataStore dataStore;
   private final HelpLabels helpLabels;
 

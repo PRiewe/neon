@@ -23,12 +23,14 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.jar.JarFile;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.tree.*;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import neon.editor.help.HelpLabels;
 import neon.editor.maps.*;
 import neon.editor.resources.*;
@@ -38,6 +40,7 @@ import neon.systems.files.*;
 import neon.ui.HelpWindow;
 
 // TODO: use mbassador for events
+@Slf4j
 public class Editor implements Runnable, ActionListener {
   public static JCheckBoxMenuItem tShow, tEdit, oShow, oEdit;
   @Getter private final FileSystem files;
@@ -48,13 +51,25 @@ public class Editor implements Runnable, ActionListener {
   private static StatusBar status;
 
   protected MapEditor mapEditor;
-  private JTabbedPane mapTabbedPane;
-  private JMenuBar menuBar;
-  private JMenuItem pack, unpack, newMain, newExt, load, save, export, calculate;
-  private JMenu make, edit, tools;
-  private JPanel terrainPanel, objectPanel, resourcePanel;
-  private JTree objectTree, resourceTree;
-  private ModFiler filer;
+  private final JTabbedPane mapTabbedPane;
+  private final JMenuBar menuBar;
+  private final JMenuItem pack;
+  private final JMenuItem unpack;
+  private final JMenuItem newMain;
+  private final JMenuItem newExt;
+  private final JMenuItem load;
+  private final JMenuItem save;
+  private final JMenuItem export;
+  private final JMenuItem calculate;
+  private final JMenu make;
+  private final JMenu edit;
+  private final JMenu tools;
+  private final JPanel terrainPanel;
+  private final JPanel objectPanel;
+  private final JPanel resourcePanel;
+  private final JTree objectTree;
+  private final JTree resourceTree;
+  private final ModFiler filer;
   private JList<RTerrain> terrainList;
   private DefaultListModel<RTerrain> terrainListModel;
   private InfoEditor infoEditor;
@@ -69,7 +84,7 @@ public class Editor implements Runnable, ActionListener {
         | InstantiationException
         | IllegalAccessException
         | UnsupportedLookAndFeelException e) {
-      e.printStackTrace();
+      log.error("No look and feel", e);
     }
     Editor editor = new Editor();
     javax.swing.SwingUtilities.invokeLater(editor);
@@ -412,24 +427,15 @@ public class Editor implements Runnable, ActionListener {
         levelNode.add(new ResourceNode(rs, ResourceNode.ResourceType.LEVEL_SPELL, store));
       } else {
         switch (rs.type) {
-          case CURSE:
-            curseNode.add(new ResourceNode(rs, ResourceNode.ResourceType.CURSE, store));
-            break;
-          case DISEASE:
-            diseaseNode.add(new ResourceNode(rs, ResourceNode.ResourceType.DISEASE, store));
-            break;
-          case ENCHANT:
-            enchantNode.add(new ResourceNode(rs, ResourceNode.ResourceType.ENCHANTMENT, store));
-            break;
-          case POISON:
-            poisonNode.add(new ResourceNode(rs, ResourceNode.ResourceType.POISON, store));
-            break;
-          case POWER:
-            powerNode.add(new ResourceNode(rs, ResourceNode.ResourceType.POWER, store));
-            break;
-          case SPELL:
-            spellNode.add(new ResourceNode(rs, ResourceNode.ResourceType.SPELL, store));
-            break;
+          case CURSE -> curseNode.add(new ResourceNode(rs, ResourceNode.ResourceType.CURSE, store));
+          case DISEASE ->
+              diseaseNode.add(new ResourceNode(rs, ResourceNode.ResourceType.DISEASE, store));
+          case ENCHANT ->
+              enchantNode.add(new ResourceNode(rs, ResourceNode.ResourceType.ENCHANTMENT, store));
+          case POISON ->
+              poisonNode.add(new ResourceNode(rs, ResourceNode.ResourceType.POISON, store));
+          case POWER -> powerNode.add(new ResourceNode(rs, ResourceNode.ResourceType.POWER, store));
+          case SPELL -> spellNode.add(new ResourceNode(rs, ResourceNode.ResourceType.SPELL, store));
         }
       }
     }
@@ -497,41 +503,20 @@ public class Editor implements Runnable, ActionListener {
         levelItemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LEVEL_ITEM, store));
       } else {
         switch (ri.type) {
-          case armor:
-            armorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ARMOR, store));
-            break;
-          case book:
-            bookNode.add(new ObjectNode(ri, ObjectNode.ObjectType.BOOK, store));
-            break;
-          case clothing:
-            clothingNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CLOTHING, store));
-            break;
-          case coin:
-            coinNode.add(new ObjectNode(ri, ObjectNode.ObjectType.MONEY, store));
-            break;
-          case container:
-            containerNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CONTAINER, store));
-            break;
-          case door:
-            doorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.DOOR, store));
-            break;
-          case food:
-            foodNode.add(new ObjectNode(ri, ObjectNode.ObjectType.FOOD, store));
-            break;
-          case light:
-            lightNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LIGHT, store));
-            break;
-          case potion:
-            potionNode.add(new ObjectNode(ri, ObjectNode.ObjectType.POTION, store));
-            break;
-          case scroll:
-            scrollNode.add(new ObjectNode(ri, ObjectNode.ObjectType.SCROLL, store));
-            break;
-          case weapon:
-            weaponNode.add(new ObjectNode(ri, ObjectNode.ObjectType.WEAPON, store));
-            break;
-          default:
-            itemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ITEM, store));
+          case armor -> armorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ARMOR, store));
+          case book -> bookNode.add(new ObjectNode(ri, ObjectNode.ObjectType.BOOK, store));
+          case clothing ->
+              clothingNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CLOTHING, store));
+          case coin -> coinNode.add(new ObjectNode(ri, ObjectNode.ObjectType.MONEY, store));
+          case container ->
+              containerNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CONTAINER, store));
+          case door -> doorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.DOOR, store));
+          case food -> foodNode.add(new ObjectNode(ri, ObjectNode.ObjectType.FOOD, store));
+          case light -> lightNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LIGHT, store));
+          case potion -> potionNode.add(new ObjectNode(ri, ObjectNode.ObjectType.POTION, store));
+          case scroll -> scrollNode.add(new ObjectNode(ri, ObjectNode.ObjectType.SCROLL, store));
+          case weapon -> weaponNode.add(new ObjectNode(ri, ObjectNode.ObjectType.WEAPON, store));
+          default -> itemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ITEM, store));
         }
       }
     }
@@ -556,68 +541,64 @@ public class Editor implements Runnable, ActionListener {
   }
 
   public void actionPerformed(ActionEvent e) {
-    if (e.getActionCommand().equals("save")) {
-      filer.save();
-    } else if (e.getActionCommand().equals("load")) {
-      filer.loadMod();
-    } else if (e.getActionCommand().equals("quit")) {
-      System.exit(0);
-    } else if (e.getActionCommand().equals("newMain")) {
-      createMain();
-    } else if (e.getActionCommand().equals("newExt")) {
-      createExtension();
-    } else if (e.getActionCommand().equals("script")) {
-      if (scriptEditor == null) {
-        scriptEditor = new ScriptEditor(frame, store);
+    switch (e.getActionCommand()) {
+      case "save" -> filer.save();
+      case "load" -> filer.loadMod();
+      case "quit" -> System.exit(0);
+      case "newMain" -> createMain();
+      case "newExt" -> createExtension();
+      case "script" -> {
+        if (scriptEditor == null) {
+          scriptEditor = new ScriptEditor(frame, store);
+        }
+        scriptEditor.show();
       }
-      scriptEditor.show();
-    } else if (e.getActionCommand().equals("cc")) {
-      if (ccEditor == null) {
-        ccEditor = new CCEditor(frame, store);
+      case "cc" -> {
+        if (ccEditor == null) {
+          ccEditor = new CCEditor(frame, store);
+        }
+        ccEditor.show();
       }
-      ccEditor.show();
-    } else if (e.getActionCommand().equals("game")) {
-      if (infoEditor == null) {
-        infoEditor = new InfoEditor(frame, store);
+      case "game" -> {
+        if (infoEditor == null) {
+          infoEditor = new InfoEditor(frame, store);
+        }
+        infoEditor.show();
       }
-      infoEditor.show();
-    } else if (e.getActionCommand().equals("events")) {
-      if (eventEditor == null) {
-        eventEditor = new EventEditor(frame, store);
+      case "events" -> {
+        if (eventEditor == null) {
+          eventEditor = new EventEditor(frame, store);
+        }
+        eventEditor.show();
       }
-      eventEditor.show();
-    } else if (e.getActionCommand().equals("pack")) {
-      if (JOptionPane.showConfirmDialog(
-              frame,
-              "Do you wish to save the current data and pack it?",
-              "Pack mod",
-              JOptionPane.YES_NO_OPTION)
-          == 0) {
-        pack();
+      case "pack" -> {
+        if (JOptionPane.showConfirmDialog(
+                frame,
+                "Do you wish to save the current data and pack it?",
+                "Pack mod",
+                JOptionPane.YES_NO_OPTION)
+            == 0) {
+          pack();
+        }
       }
-    } else if (e.getActionCommand().equals("unpack")) {
-      unpack();
-    } else if (e.getActionCommand().equals("svg")) {
-      if ((EditablePane) mapTabbedPane.getSelectedComponent() != null) {
-        ZoneTreeNode node = ((EditablePane) mapTabbedPane.getSelectedComponent()).getNode();
-        SVGExporter.exportToSVG(node, files, store);
+      case "unpack" -> unpack();
+      case "svg" -> {
+        if (mapTabbedPane.getSelectedComponent() != null) {
+          ZoneTreeNode node = ((EditablePane) mapTabbedPane.getSelectedComponent()).getNode();
+          SVGExporter.exportToSVG(node, files, store);
+        }
       }
-    } else if (e.getActionCommand().equals("calculate")) {
-      new ChallengeCalculator().show();
-    } else if (e.getActionCommand().equals("scripting")) {
-      showHelp("scripting.html", "Scripting guide");
-    } else if (e.getActionCommand().equals("intro")) {
-      showHelp("intro.html", "Getting started");
-    } else if (e.getActionCommand().equals("mapping")) {
-      showHelp("maps.html", "Map editing");
-    } else if (e.getActionCommand().equals("resources")) {
-      showHelp("resources.html", "Resource editing");
+      case "calculate" -> new ChallengeCalculator().show();
+      case "scripting" -> showHelp("scripting.html", "Scripting guide");
+      case "intro" -> showHelp("intro.html", "Getting started");
+      case "mapping" -> showHelp("maps.html", "Map editing");
+      case "resources" -> showHelp("resources.html", "Resource editing");
     }
   }
 
   private void showHelp(String file, String title) {
     InputStream input = HelpLabels.class.getResourceAsStream(file);
-    Scanner scanner = new Scanner(input, "UTF-8");
+    Scanner scanner = new Scanner(input, StandardCharsets.UTF_8);
     String text = scanner.useDelimiter("\\A").next();
     scanner.close();
     new HelpWindow(frame).show(title, text);

@@ -30,13 +30,13 @@ import neon.editor.resources.RMap;
 import neon.resources.RDungeonTheme;
 
 public class MapInfoEditor implements ActionListener {
-  private JDialog frame;
-  private JPanel itemProps;
-  private JTextField nameField;
-  private JComboBox<RDungeonTheme> themeBox;
-  private RMap data;
-  private MapTreeNode node;
-  private JTree tree;
+  private final JDialog frame;
+  private final JPanel itemProps;
+  private final JTextField nameField;
+  private final JComboBox<RDungeonTheme> themeBox;
+  private final RMap data;
+  private final MapTreeNode node;
+  private final JTree tree;
   private final DataStore dataStore;
 
   public MapInfoEditor(JFrame parent, MapTreeNode node, JTree tree, DataStore dataStore) {
@@ -135,7 +135,7 @@ public class MapInfoEditor implements ActionListener {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         @SuppressWarnings("unchecked")
         Enumeration<?> mtn = node.children();
-        for (; mtn.hasMoreElements(); ) {
+        while (mtn.hasMoreElements()) {
           model.removeNodeFromParent((MutableTreeNode) mtn.nextElement());
         }
         data.theme = (RDungeonTheme) themeBox.getSelectedItem();

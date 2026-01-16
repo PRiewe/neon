@@ -103,7 +103,7 @@ public class Engine implements Runnable {
     files = new FileSystem();
     resources = new ResourceManager();
     UIDStore uidStore = new UIDStore(files.getFullPath("uidstore"));
-    gameStores = new DefaultGameStores(resources, files,uidStore);
+    gameStores = new DefaultGameStores(resources, files, uidStore);
     physics = new PhysicsSystem();
     physicsManager = new EnginePhysicsManager(physics);
     queue = new TaskQueue();

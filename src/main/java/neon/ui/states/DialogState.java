@@ -62,20 +62,22 @@ import net.engio.mbassy.bus.MBassador;
  * on the preconditions defined in quests.
  */
 public class DialogState extends State implements KeyListener {
-  private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+  private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
-  private JPanel panel, conversation;
+  private final JPanel panel;
+  private final JPanel conversation;
   private Creature target;
-  private JTextPane text = new JTextPane();
-  private JList<Topic> subjects;
-  private JList<String> services;
+  private final JTextPane text = new JTextPane();
+  private final JList<Topic> subjects;
+  private final JList<String> services;
   private JList<?> list;
-  private JScrollPane left;
-  private HTMLEditorKit kit = new HTMLEditorKit();
-  private HTMLDocument doc;
-  private String big, small;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JScrollPane left;
+  private final HTMLEditorKit kit = new HTMLEditorKit();
+  private final HTMLDocument doc;
+  private final String big;
+  private final String small;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private Topic topic;
   private final GameContext context;
   private final GameStores gameStores;
@@ -219,7 +221,8 @@ public class DialogState extends State implements KeyListener {
           } else if (value.equals("spells")) {
             new SpellTradeDialog(ui, big, small).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("trade")) {
-            new TradeDialog(ui, big, small, context, gameStores).show(gameStores.getStore().getPlayer(), target);
+            new TradeDialog(ui, big, small, context, gameStores)
+                .show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("spell maker")) {
             new SpellMakerDialog(ui).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("potion maker")) {
@@ -232,7 +235,8 @@ public class DialogState extends State implements KeyListener {
             new CrafterDialog(ui, small, bus, context, gameStores)
                 .show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("enchant")) {
-            new EnchantDialog(ui, context, gameStores).show(gameStores.getStore().getPlayer(), target);
+            new EnchantDialog(ui, context, gameStores)
+                .show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("repair")) {
             new RepairDialog(ui, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("tattoos")) {
@@ -325,7 +329,7 @@ public class DialogState extends State implements KeyListener {
   }
 
   private static class AutoScroller implements Runnable {
-    private JScrollBar bar;
+    private final JScrollBar bar;
 
     public AutoScroller(JScrollBar bar) {
       this.bar = bar;

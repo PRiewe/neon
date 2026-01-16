@@ -45,7 +45,7 @@ public class Region implements Renderable, Activator {
     CLIMB,
     BLOCK,
     ICE,
-    FIRE;
+    FIRE
   }
 
   // TODO: destructable muren (opgeven welk terrein het wordt na destructie)

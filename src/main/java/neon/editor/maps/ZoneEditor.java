@@ -35,12 +35,12 @@ import neon.resources.RZoneTheme;
 import neon.ui.graphics.Renderable;
 
 public class ZoneEditor implements ActionListener {
-  private JDialog frame;
-  private JTable table;
-  private ZoneTreeNode node;
-  private RZone zone;
-  private JTextField nameField;
-  private JComboBox<RZoneTheme> themeBox;
+  private final JDialog frame;
+  private final JTable table;
+  private final ZoneTreeNode node;
+  private final RZone zone;
+  private final JTextField nameField;
+  private final JComboBox<RZoneTheme> themeBox;
   private final DataStore dataStore;
 
   public ZoneEditor(ZoneTreeNode node, JFrame parent, DataStore dataStore) {

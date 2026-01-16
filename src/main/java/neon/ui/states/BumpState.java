@@ -41,8 +41,8 @@ public class BumpState extends State implements KeyListener {
   private Creature creature;
   private Popup popup;
   private GamePanel panel;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
   private final GameStores gameStores;
   private final MotionHandler motionHandler;

@@ -32,19 +32,28 @@ import neon.resources.RCreature.Size;
 import neon.resources.RCreature.Type;
 
 public class CreatureEditor extends ObjectEditor {
-  private RCreature data;
-  private JTextField nameField;
-  private JComboBox<String> colorBox;
-  private JFormattedTextField charField;
-  private JFormattedTextField speedField, defenseField, rangeField, manaField;
-  private JTextField hitField;
-  private JComboBox<Type> typeBox;
-  private JComboBox<Size> sizeBox;
-  private JComboBox<Habitat> habitatBox;
-  private JTextField attackField;
-  private JFormattedTextField strField, conField, dexField, intField, wisField, chaField;
-  private JComboBox<RCreature.AIType> aiTypeBox;
-  private JSpinner aggressionSpinner, confidenceSpinner;
+  private final RCreature data;
+  private final JTextField nameField;
+  private final JComboBox<String> colorBox;
+  private final JFormattedTextField charField;
+  private final JFormattedTextField speedField;
+  private final JFormattedTextField defenseField;
+  private final JFormattedTextField rangeField;
+  private final JFormattedTextField manaField;
+  private final JTextField hitField;
+  private final JComboBox<Type> typeBox;
+  private final JComboBox<Size> sizeBox;
+  private final JComboBox<Habitat> habitatBox;
+  private final JTextField attackField;
+  private final JFormattedTextField strField;
+  private final JFormattedTextField conField;
+  private final JFormattedTextField dexField;
+  private final JFormattedTextField intField;
+  private final JFormattedTextField wisField;
+  private final JFormattedTextField chaField;
+  private final JComboBox<RCreature.AIType> aiTypeBox;
+  private final JSpinner aggressionSpinner;
+  private final JSpinner confidenceSpinner;
   private final DataStore dataStore;
 
   public CreatureEditor(JFrame parent, RCreature rCreature, DataStore dataStore) {

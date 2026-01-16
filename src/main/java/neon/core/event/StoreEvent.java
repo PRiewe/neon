@@ -25,10 +25,10 @@ import neon.entities.Entity;
 public class StoreEvent extends EventObject {
   public enum Mode {
     ADD,
-    REMOVE;
+    REMOVE
   }
 
-  private Mode mode;
+  private final Mode mode;
   private long uid;
   private Entity entity;
 

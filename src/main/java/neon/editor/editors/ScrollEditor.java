@@ -33,12 +33,14 @@ import neon.resources.RSpell.SpellType;
 import neon.util.ColorFactory;
 
 public class ScrollEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JFormattedTextField costField, weightField, charField;
-  private JComboBox<String> colorBox;
-  private JComboBox<String> spellBox;
-  private JTextArea textArea;
-  private RItem.Text data;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final JComboBox<String> spellBox;
+  private final JTextArea textArea;
+  private final RItem.Text data;
   private final DataStore dataStore;
   private Vector<String> spells;
 

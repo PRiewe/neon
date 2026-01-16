@@ -65,16 +65,16 @@ class UIDStoreTest {
   }
 
   private UIDStore createInitializedUIDStore(String filename) {
-    UIDStore store = new UIDStore( fileSystem.getFullPath(filename));
+    UIDStore store = new UIDStore(fileSystem.getFullPath(filename));
     GameStores gameStores = new TestGameStores(fileSystem, store);
     Player stubPlayer =
-            new Player(
-                    new RCreature("test"),
-                    "TestPlayer",
-                    Gender.MALE,
-                    Player.Specialisation.combat,
-                    "Warrior",
-                    store);
+        new Player(
+            new RCreature("test"),
+            "TestPlayer",
+            Gender.MALE,
+            Player.Specialisation.combat,
+            "Warrior",
+            store);
     EntityFactory entityFactory =
         new EntityFactory(gameStores.getResources(), gameStores.getStore());
     EntityDataType entityDataType = new EntityDataType(entityFactory);

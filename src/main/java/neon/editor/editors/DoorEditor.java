@@ -28,12 +28,12 @@ import neon.resources.RItem;
 import neon.util.ColorFactory;
 
 public class DoorEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JComboBox<String> colorBox;
-  private JFormattedTextField openField;
-  private JFormattedTextField closedField;
-  private JFormattedTextField lockedField;
-  private RItem.Door data;
+  private final JTextField nameField;
+  private final JComboBox<String> colorBox;
+  private final JFormattedTextField openField;
+  private final JFormattedTextField closedField;
+  private final JFormattedTextField lockedField;
+  private final RItem.Door data;
   private final DataStore dataStore;
 
   public DoorEditor(JFrame parent, RItem.Door data, DataStore dataStore) {

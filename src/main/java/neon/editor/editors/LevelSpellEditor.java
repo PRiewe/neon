@@ -36,10 +36,10 @@ import neon.resources.RSpell;
  */
 @SuppressWarnings("serial")
 public class LevelSpellEditor extends ObjectEditor implements MouseListener {
-  private LSpell data;
+  private final LSpell data;
   private final DataStore dataStore;
-  private JTable table;
-  private DefaultTableModel model;
+  private final JTable table;
+  private final DefaultTableModel model;
 
   public LevelSpellEditor(JFrame parent, LSpell data, DataStore dataStore) {
     super(parent, "Levelled spell: " + data.id);

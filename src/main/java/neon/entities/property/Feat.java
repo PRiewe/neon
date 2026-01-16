@@ -34,7 +34,7 @@ public enum Feat {
 
   public String text;
 
-  private Feat(String text) {
+  Feat(String text) {
     this.text = text;
   }
 }

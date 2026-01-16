@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 import neon.core.GameStores;
 import neon.entities.Door;
 import neon.entities.Entity;
-import neon.entities.Player;
 import neon.maps.*;
 import neon.maps.services.EntityStore;
 import neon.maps.services.QuestProvider;
@@ -847,11 +846,7 @@ class DungeonGeneratorTest {
       // Create the dungeon generator
       DungeonGenerator generator =
           new DungeonGenerator(
-              zone0,
-              new NoQuestProvider(),
-              gameStores,
-              MapUtils.withSeed(42L),
-              Dice.withSeed(42L));
+              zone0, new NoQuestProvider(), gameStores, MapUtils.withSeed(42L), Dice.withSeed(42L));
 
       generator.generate(entryDoor, zone0, testAtlas);
 

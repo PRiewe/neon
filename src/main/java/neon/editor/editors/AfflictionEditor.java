@@ -29,11 +29,11 @@ import neon.magic.Effect;
 import neon.resources.RSpell;
 
 public class AfflictionEditor extends ObjectEditor implements ActionListener {
-  private JTextField nameField;
-  private JFormattedTextField sizeField;
-  private JComboBox<Effect> effectBox;
-  private JTextArea scriptArea;
-  private RSpell data;
+  private final JTextField nameField;
+  private final JFormattedTextField sizeField;
+  private final JComboBox<Effect> effectBox;
+  private final JTextArea scriptArea;
+  private final RSpell data;
   private final DataStore dataStore;
 
   public AfflictionEditor(JFrame parent, RSpell data, DataStore dataStore) {

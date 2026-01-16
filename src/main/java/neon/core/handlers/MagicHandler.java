@@ -57,7 +57,7 @@ public class MagicHandler {
   public static final int SILENCED = 8; // caster silenced
   public static final int INTERVAL = 9; // power interval niet gedaan
 
-  private TaskQueue queue;
+  private final TaskQueue queue;
   private final GameStores gameStores;
   private final GameContext gameContext;
   private final InventoryHandler inventoryHandler;

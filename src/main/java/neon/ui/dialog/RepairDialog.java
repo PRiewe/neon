@@ -34,11 +34,11 @@ import neon.entities.Weapon;
 import neon.ui.UserInterface;
 
 public class RepairDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<Item> items;
+  private final JList<Item> items;
   private ArrayList<Item> listData;
-  private UserInterface ui;
+  private final UserInterface ui;
   private final GameStores gameStores;
 
   public RepairDialog(UserInterface ui, GameStores gameStores) {

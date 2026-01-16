@@ -28,9 +28,10 @@ import neon.resources.RCraft;
 import neon.resources.RItem;
 
 public class CraftingEditor extends ObjectEditor {
-  private RCraft craft;
-  private JComboBox<RItem> rawBox;
-  private JFormattedTextField costField, amountField;
+  private final RCraft craft;
+  private final JComboBox<RItem> rawBox;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField amountField;
   private final DataStore dataStore;
   private final HelpLabels helpLabels;
 

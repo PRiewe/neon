@@ -22,9 +22,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import lombok.extern.slf4j.Slf4j;
 import neon.editor.resources.*;
 import neon.maps.model.DungeonModel;
 import neon.maps.model.WorldModel;
@@ -52,6 +54,7 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
+@Slf4j
 public class ModFiler {
   private final FileSystem files;
   private final DataStore dataStore;
@@ -93,6 +96,7 @@ public class ModFiler {
               ini = new SAXBuilder().build(in);
               in.close();
             } catch (JDOMException e) {
+              log.error("Error reading", e);
             }
 
             // check if there is a mod with the correct id
@@ -118,6 +122,7 @@ public class ModFiler {
         frame.pack();
       }
     } catch (IOException e1) {
+      log.error("File is not a mod", e1);
       JOptionPane.showMessageDialog(frame, "Selected file is not a valid mod.");
     }
   }
@@ -223,7 +228,7 @@ public class ModFiler {
           out = mapper.toXml(model);
         }
         // Convert ByteArrayOutputStream to String for saveFile
-        String xml = out.toString("UTF-8");
+        String xml = out.toString(StandardCharsets.UTF_8);
         saveFile(xml, "maps", map.id + ".xml");
       } catch (Exception e) {
         System.err.println("Failed to save map: " + map.id);

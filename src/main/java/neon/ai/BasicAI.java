@@ -19,7 +19,6 @@
 package neon.ai;
 
 import neon.entities.Creature;
-import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.entities.components.HealthComponent;
 import neon.resources.ResourceManager;

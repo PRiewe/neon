@@ -20,7 +20,6 @@ package neon.ai;
 
 import java.awt.Point;
 import neon.entities.Creature;
-import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.entities.components.HealthComponent;
 import neon.entities.components.ShapeComponent;
@@ -28,7 +27,7 @@ import neon.resources.ResourceManager;
 
 // TODO: schedule in editor
 public class ScheduleAI extends AI {
-  private Point[] schedule;
+  private final Point[] schedule;
   private int current = 0;
 
   public ScheduleAI(

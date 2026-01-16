@@ -34,34 +34,44 @@ import neon.resources.RSpell.SpellType;
 import org.jdom2.Element;
 
 public class NPCEditor extends ObjectEditor implements MouseListener {
-  private RPerson data;
+  private final RPerson data;
   private final DataStore dataStore;
-  private JList<String> spellList, itemList, destList;
-  private JTextField nameField;
-  private JComboBox<RFaction> factionBox;
-  private JComboBox<RCreature> raceBox;
-  private JComboBox<RCreature.AIType> aiTypeBox;
-  private JSpinner aggressionSpinner, confidenceSpinner, factionSpinner;
-  private JFormattedTextField rangeField, destX, destY, destCost, skillField;
+  private final JList<String> spellList;
+  private final JList<String> itemList;
+  private final JList<String> destList;
+  private final JTextField nameField;
+  private final JComboBox<RFaction> factionBox;
+  private final JComboBox<RCreature> raceBox;
+  private final JComboBox<RCreature.AIType> aiTypeBox;
+  private final JSpinner aggressionSpinner;
+  private final JSpinner confidenceSpinner;
+  private final JSpinner factionSpinner;
+  private final JFormattedTextField rangeField;
+  private final JFormattedTextField destX;
+  private final JFormattedTextField destY;
+  private final JFormattedTextField destCost;
+  private final JFormattedTextField skillField;
   private HashMap<Skill, Integer> skills;
-  private Set<Skill> trainedSkills;
-  private HashMap<String, Integer> joinedFactions;
-  private HashMap<String, Element> destMap;
-  private JCheckBox spellBox,
-      skillBox,
-      tradeBox,
-      travelBox,
-      trainBox,
-      spellMakerBox,
-      factionCheckBox,
-      potionBox,
-      healerBox,
-      tattooBox;
-  private JComboBox<Skill> skillComboBox;
-  private DefaultListModel<String> destListModel, spellListModel, itemListModel;
+  private final Set<Skill> trainedSkills;
+  private final HashMap<String, Integer> joinedFactions;
+  private final HashMap<String, Element> destMap;
+  private final JCheckBox spellBox;
+  private final JCheckBox skillBox;
+  private final JCheckBox tradeBox;
+  private final JCheckBox travelBox;
+  private final JCheckBox trainBox;
+  private final JCheckBox spellMakerBox;
+  private final JCheckBox factionCheckBox;
+  private final JCheckBox potionBox;
+  private final JCheckBox healerBox;
+  private final JCheckBox tattooBox;
+  private final JComboBox<Skill> skillComboBox;
+  private final DefaultListModel<String> destListModel;
+  private final DefaultListModel<String> spellListModel;
+  private final DefaultListModel<String> itemListModel;
   private Skill currentSkill;
   private Element currentDest;
-  private ArrayList<String> spells;
+  private final ArrayList<String> spells;
 
   public NPCEditor(JFrame parent, RPerson data, DataStore dataStore) {
     super(parent, "NPC Editor: " + data.id);
@@ -590,7 +600,7 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
       String faction = factionBox.getSelectedItem().toString();
       if (joinedFactions.containsKey(faction)) {
         joinedFactions.put(faction, (Integer) factionSpinner.getValue());
-        System.out.println("state.factions.put: " + (Integer) factionSpinner.getValue());
+        System.out.println("state.factions.put: " + factionSpinner.getValue());
       }
     }
   }
@@ -672,9 +682,8 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add destination")) {
         String s =
-            (String)
-                JOptionPane.showInputDialog(
-                    frame, "New destination:", "New destination", JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showInputDialog(
+                frame, "New destination:", "New destination", JOptionPane.QUESTION_MESSAGE);
         if ((s != null) && (s.length() > 0)) {
           destListModel.addElement(s);
           Element dest = new Element("dest");

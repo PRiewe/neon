@@ -27,11 +27,11 @@ import javax.swing.event.*;
 import neon.resources.RScript;
 
 public class ScriptEditor implements ListSelectionListener, ActionListener, MouseListener {
-  private JDialog frame;
+  private final JDialog frame;
   private final DataStore dataStore;
-  private JTextArea text;
-  private JList<RScript> list;
-  private DefaultListModel<RScript> model;
+  private final JTextArea text;
+  private final JList<RScript> list;
+  private final DefaultListModel<RScript> model;
 
   public ScriptEditor(JFrame parent, DataStore dataStore) {
     frame = new JDialog(parent, "Script Editor");
@@ -147,9 +147,8 @@ public class ScriptEditor implements ListSelectionListener, ActionListener, Mous
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("New script")) {
         String s =
-            (String)
-                JOptionPane.showInputDialog(
-                    frame, "Script name:", "New script", JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showInputDialog(
+                frame, "Script name:", "New script", JOptionPane.QUESTION_MESSAGE);
         if ((s != null) && (s.length() > 0)) {
           RScript script = new RScript(s, dataStore.getActive().get("id"));
           model.addElement(script);

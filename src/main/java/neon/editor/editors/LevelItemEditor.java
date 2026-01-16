@@ -30,10 +30,10 @@ import neon.resources.LItem;
 import neon.resources.RItem;
 
 public class LevelItemEditor extends ObjectEditor implements MouseListener {
-  private LItem data;
+  private final LItem data;
   private final DataStore dataStore;
-  private JTable table;
-  private DefaultTableModel model;
+  private final JTable table;
+  private final DefaultTableModel model;
 
   @SuppressWarnings("serial")
   public LevelItemEditor(JFrame parent, LItem data, DataStore dataStore) {

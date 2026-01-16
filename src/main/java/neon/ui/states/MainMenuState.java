@@ -40,9 +40,9 @@ import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.bus.MBassador;
 
 public class MainMenuState extends State {
-  private JPanel main;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JPanel main;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
   private final GameStores gameStores;
 

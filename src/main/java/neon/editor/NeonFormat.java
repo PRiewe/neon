@@ -22,8 +22,8 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 public class NeonFormat {
-  private static NumberFormat intFormat = NumberFormat.getIntegerInstance();
-  private static NumberFormat floatFormat = NumberFormat.getInstance(Locale.ENGLISH);
+  private static final NumberFormat intFormat = NumberFormat.getIntegerInstance();
+  private static final NumberFormat floatFormat = NumberFormat.getInstance(Locale.ENGLISH);
 
   public static NumberFormat getIntegerInstance() {
     intFormat.setGroupingUsed(false);

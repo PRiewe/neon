@@ -27,7 +27,6 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import neon.entities.Creature;
 import neon.entities.Door;
-import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.entities.property.Skill;
 import neon.maps.Region;
@@ -140,8 +139,7 @@ public class PathFinder {
 
   private int doorPenalty(Point neighbour) {
     for (long uid : uidStore.getPlayer().getCurrentZone().getItems(neighbour)) {
-      if (uidStore.getEntity(uid) instanceof Door) {
-        Door door = (Door) uidStore.getEntity(uid);
+      if (uidStore.getEntity(uid) instanceof Door door) {
         if (door.lock.isLocked()) {
           RItem key = door.lock.getKey();
           if (key != null && hasItem(mover, key)) {

@@ -50,19 +50,21 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
 
   private Player player;
   private Object container;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
   private final GameStores gameStores;
   // components of the JPanel
-  private JPanel panel;
-  private JList<Item> iList;
-  private JList<Entity> cList;
-  private JScrollPane cScroll, iScroll;
-  private DescriptionPanel description;
+  private final JPanel panel;
+  private final JList<Item> iList;
+  private final JList<Entity> cList;
+  private final JScrollPane cScroll;
+  private final JScrollPane iScroll;
+  private final DescriptionPanel description;
 
   // lists
-  private HashMap<String, Integer> cData, iData;
+  private final HashMap<String, Integer> cData;
+  private final HashMap<String, Integer> iData;
   private final InventoryHandler inventoryHandler;
   private final MotionHandler motionHandler;
   private final TeleportHandler teleportHandler;
@@ -165,7 +167,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
       case KeyEvent.VK_SPACE:
         try {
           if (iList.hasFocus()) { // drop something
-            Item item = (Item) iList.getSelectedValue();
+            Item item = iList.getSelectedValue();
             inventoryHandler.removeItem(player, item.getUID());
             if (container instanceof Container) { // register change
               ((Container) container).addItem(item.getUID());
@@ -179,7 +181,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
             }
             update();
           } else { // pick up something
-            Entity item = (Entity) cList.getSelectedValue();
+            Entity item = cList.getSelectedValue();
             if (item instanceof Container) {
               bus.publishAsync(new TransitionEvent("return"));
               bus.publishAsync(new TransitionEvent("container", "holder", item));
@@ -218,8 +220,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     cData.clear();
 
     ArrayList<Object> items = new ArrayList<Object>();
-    if (container instanceof Zone) {
-      Zone zone = (Zone) container;
+    if (container instanceof Zone zone) {
       Rectangle bounds = player.getShapeComponent();
       items.addAll(zone.getItems(bounds.getLocation()));
     } else if (container instanceof Creature) {

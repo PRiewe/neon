@@ -27,6 +27,7 @@ import javax.swing.event.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import lombok.extern.slf4j.Slf4j;
 import neon.editor.DataStore;
 import neon.editor.Editor;
 import neon.editor.resources.IObject;
@@ -35,19 +36,20 @@ import neon.editor.resources.Instance;
 import neon.editor.resources.RMap;
 import neon.editor.resources.RZone;
 
+@Slf4j
 public class MapEditor {
   private static String terrain;
   private static JToggleButton drawButton;
   private static JToggleButton selectButton;
   private static UndoAction undoAction;
   private static HashMap<String, Short> mapUIDs;
-  private JScrollPane mapScrollPane;
-  private JTree mapTree;
-  private JButton undo;
-  private HashSet<RMap> activeMaps;
-  private JTabbedPane tabs;
-  private JCheckBox levelBox;
-  private JSpinner levelSpinner;
+  private final JScrollPane mapScrollPane;
+  private final JTree mapTree;
+  private final JButton undo;
+  private final HashSet<RMap> activeMaps;
+  private final JTabbedPane tabs;
+  private final JCheckBox levelBox;
+  private final JSpinner levelSpinner;
   private final DataStore dataStore;
 
   public MapEditor(JTabbedPane tabs, JPanel panel, DataStore dataStore) {
@@ -112,11 +114,7 @@ public class MapEditor {
   public static boolean isVisible(Instance r) {
     if (r instanceof IRegion && Editor.tShow.isSelected()) {
       return true;
-    } else if (r instanceof IObject && Editor.oShow.isSelected()) {
-      return true;
-    } else {
-      return false;
-    }
+    } else return r instanceof IObject && Editor.oShow.isSelected();
   }
 
   public static void setUndoAction(UndoAction undo) {
@@ -161,6 +159,7 @@ public class MapEditor {
   }
 
   public void loadMaps(Collection<RMap> maps, String path) {
+    log.debug("Loading maps from {}", path);
     DefaultTreeModel model = (DefaultTreeModel) mapTree.getModel();
     DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
     for (RMap map : maps) {
@@ -206,6 +205,10 @@ public class MapEditor {
 
     public void actionPerformed(ActionEvent e) {
       EditablePane mapPane = (EditablePane) tabs.getSelectedComponent();
+      if (mapPane == null) {
+        log.error("Action performed on null mapPane");
+        return;
+      }
       if ("layer".equals(e.getActionCommand())) {
         reload(mapPane);
       } else if ("undo".equals(e.getActionCommand())) {

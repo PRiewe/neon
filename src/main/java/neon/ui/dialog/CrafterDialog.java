@@ -40,13 +40,13 @@ import neon.ui.UserInterface;
 import net.engio.mbassy.bus.MBassador;
 
 public class CrafterDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<RCraft> items;
-  private JPanel panel;
-  private String coin;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JList<RCraft> items;
+  private final JPanel panel;
+  private final String coin;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
   private final GameStores gameStores;
   private final InventoryHandler inventoryHandler;
@@ -163,7 +163,7 @@ public class CrafterDialog implements KeyListener {
   }
 
   private class CraftCellRenderer implements ListCellRenderer<RCraft> {
-    private UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    private final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
     /**
      * Returns this renderer with the right properties (color, font, background color).

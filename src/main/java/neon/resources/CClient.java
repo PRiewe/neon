@@ -27,7 +27,6 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import lombok.Getter;
@@ -116,7 +115,7 @@ public class CClient extends Resource {
     // Load default locale
     Properties defaults = new Properties();
     try (FileInputStream stream = new FileInputStream("data/locale/locale.en");
-        InputStreamReader reader = new InputStreamReader(stream, Charset.forName("UTF-8"))) {
+        InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
       defaults.load(reader);
     } catch (IOException e) {
       e.printStackTrace();
@@ -152,7 +151,7 @@ public class CClient extends Resource {
     String lang = root.getChild("lang").getText();
     strings = new Properties(defaults); // initialize locale with 'en' defaults
     try (FileInputStream stream = new FileInputStream("data/locale/locale." + lang);
-        InputStreamReader reader = new InputStreamReader(stream, Charset.forName("UTF-8"))) {
+        InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
       strings.load(reader);
     } catch (IOException e) {
       e.printStackTrace();
@@ -373,7 +372,7 @@ public class CClient extends Resource {
     // Load locale file
     Properties defaults = new Properties();
     try (FileInputStream stream = new FileInputStream("data/locale/locale.en");
-        InputStreamReader reader = new InputStreamReader(stream, Charset.forName("UTF-8"))) {
+        InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
       defaults.load(reader);
     } catch (IOException e) {
       e.printStackTrace();
@@ -381,7 +380,7 @@ public class CClient extends Resource {
 
     strings = new Properties(defaults);
     try (FileInputStream stream = new FileInputStream("data/locale/locale." + language);
-        InputStreamReader reader = new InputStreamReader(stream, Charset.forName("UTF-8"))) {
+        InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
       strings.load(reader);
     } catch (IOException e) {
       e.printStackTrace();

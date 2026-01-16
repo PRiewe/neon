@@ -28,11 +28,11 @@ import neon.entities.property.Ability;
 import neon.resources.RTattoo;
 
 public class TattooEditor extends ObjectEditor {
-  private RTattoo tattoo;
-  private JComboBox<Ability> abilityBox;
-  private JSpinner abilitySpinner;
-  private JTextField nameField;
-  private JFormattedTextField costField;
+  private final RTattoo tattoo;
+  private final JComboBox<Ability> abilityBox;
+  private final JSpinner abilitySpinner;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
   private final DataStore dataStore;
 
   public TattooEditor(JFrame parent, RTattoo tattoo, DataStore dataStore) {

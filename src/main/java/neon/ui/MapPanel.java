@@ -21,7 +21,6 @@ package neon.ui;
 import java.awt.*;
 import java.util.*;
 import javax.swing.JComponent;
-
 import neon.entities.UIDStore;
 import neon.maps.Region;
 import neon.maps.Zone;
@@ -34,10 +33,10 @@ import neon.ui.graphics.ZComparator;
  */
 @SuppressWarnings("serial")
 public class MapPanel extends JComponent {
-  private Zone zone;
+  private final Zone zone;
   private float zoom;
   private boolean fill;
-  private ZComparator comparator;
+  private final ZComparator comparator;
   private final UIDStore uidStore;
 
   /** Initializes this <code>MapPanel</code>. */

@@ -37,15 +37,15 @@ import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.bus.MBassador;
 
 public class TravelDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<String> destinations;
+  private final JList<String> destinations;
   private Creature agent; // your travel agent
   private HashMap<String, Point> listData;
   private HashMap<String, Integer> costData;
-  private JScrollPane scroller;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JScrollPane scroller;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameStores gameStores;
 
   public TravelDialog(UserInterface ui, MBassador<EventObject> bus, GameStores gameStores) {

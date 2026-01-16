@@ -20,7 +20,6 @@ package neon.ai;
 
 import java.awt.Point;
 import neon.entities.Creature;
-import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.resources.RCreature;
 import neon.resources.RCreature.AIType;
@@ -84,13 +83,10 @@ public class AIFactory {
 
   private AI getAI(AIType type, Creature creature, byte aggression, byte confidence, int range) {
     return switch (type) {
-      case wander ->
-          new BasicAI(creature, aggression, confidence, resourceManager, uidStore);
+      case wander -> new BasicAI(creature, aggression, confidence, resourceManager, uidStore);
       case schedule ->
-          new ScheduleAI(
-              creature, aggression, confidence, new Point[0], resourceManager, uidStore);
-      default ->
-          new GuardAI(creature, aggression, confidence, range, resourceManager, uidStore);
+          new ScheduleAI(creature, aggression, confidence, new Point[0], resourceManager, uidStore);
+      default -> new GuardAI(creature, aggression, confidence, range, resourceManager, uidStore);
     };
   }
 }

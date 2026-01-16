@@ -20,8 +20,6 @@ package neon.maps;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
 import neon.core.GameStores;
 import neon.entities.Item;
@@ -71,7 +69,6 @@ public class ZoneFactory {
     RTree<Region> regions = new RTree<>(100, 40, cache, map + ":" + index, regionDataType);
     return new Zone(name, map, theme, index, uidStore, resourceManager, regions);
   }
-
 
   public Zone readZoneByteBuffer(ByteBuffer in) throws IOException, ClassNotFoundException {
     int index = in.getInt();
@@ -137,5 +134,4 @@ public class ZoneFactory {
       out.putLong(l);
     }
   }
-
 }

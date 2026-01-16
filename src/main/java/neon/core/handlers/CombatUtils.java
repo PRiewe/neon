@@ -127,8 +127,7 @@ public class CombatUtils implements Serializable {
     float AR = creature.species.dv;
     for (Slot s : creature.getInventoryComponent().slots()) {
       Entity item = uidStore.getEntity(creature.getInventoryComponent().get(s));
-      if (item instanceof Armor) {
-        Armor c = (Armor) item;
+      if (item instanceof Armor c) {
         int mod = 0;
         switch (((RClothing) c.resource).kind) {
           case LIGHT -> mod = 1 + creature.getSkill(Skill.LIGHT_ARMOR) / 20;

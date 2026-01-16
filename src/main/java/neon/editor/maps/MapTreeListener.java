@@ -37,9 +37,9 @@ import neon.ui.graphics.Scene;
 import org.jdom2.Element;
 
 public class MapTreeListener implements MouseListener {
-  private JTree tree;
-  private JTabbedPane tabs;
-  private MapEditor editor;
+  private final JTree tree;
+  private final JTabbedPane tabs;
+  private final MapEditor editor;
   private final DataStore dataStore;
 
   public MapTreeListener(JTree tree, JTabbedPane mapPane, MapEditor editor, DataStore dataStore) {
@@ -59,8 +59,7 @@ public class MapTreeListener implements MouseListener {
     if (e.getButton() == MouseEvent.BUTTON1) {
       if (e.getClickCount() == 2) {
         Object selection = tree.getLastSelectedPathComponent();
-        if (tree.getSelectionPath() != null && selection instanceof ZoneTreeNode) {
-          ZoneTreeNode node = (ZoneTreeNode) selection;
+        if (tree.getSelectionPath() != null && selection instanceof ZoneTreeNode node) {
           RMap map = node.getZone().map;
           int choice = JOptionPane.NO_OPTION; // default just put zone on screen
           if (node.getZone().theme != null) { // unless a theme is set
@@ -196,7 +195,7 @@ public class MapTreeListener implements MouseListener {
   }
 
   private class TabLabelListener implements ActionListener {
-    private ZoneTreeNode node;
+    private final ZoneTreeNode node;
 
     public TabLabelListener(ZoneTreeNode node) {
       this.node = node;
@@ -209,7 +208,7 @@ public class MapTreeListener implements MouseListener {
 
   @SuppressWarnings("serial")
   private class ClickAction extends AbstractAction {
-    private RMap map;
+    private final RMap map;
 
     public ClickAction(String name, RMap map) {
       super(name);
@@ -244,13 +243,13 @@ public class MapTreeListener implements MouseListener {
               region.setAttribute("text", props.getTerrain());
               region.setAttribute("l", "0");
               IRegion ri = new IRegion(region, dataStore);
-              zone = new RZone(props.getName(), map.getPath()[0], ri, map);
+              zone = new RZone(props.getName(), map.getPath()[0], ri, map,dataStore);
             } else {
               System.out.println(props.getTheme());
               RZoneTheme theme =
                   (RZoneTheme)
                       dataStore.getResourceManager().getResource(props.getTheme(), "theme");
-              zone = new RZone(props.getName(), map.getPath()[0], theme, map);
+              zone = new RZone(props.getName(), map.getPath()[0], theme, map,dataStore);
             }
             ZoneTreeNode node = new ZoneTreeNode(index, zone, dataStore);
             map.zones.put(index, zone);

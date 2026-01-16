@@ -34,7 +34,7 @@ import org.jdom2.Element;
  */
 @Deprecated(forRemoval = true)
 public class XMLBuilder {
-  private DataStore store;
+  private final DataStore store;
 
   public XMLBuilder(DataStore store) {
     this.store = store;

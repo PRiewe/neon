@@ -47,10 +47,10 @@ public class RZone extends RData {
   public RMap map;
   public RZoneTheme theme;
   private Scene scene;
-  @Getter private DataStore dataStore;
+  @Getter private final DataStore dataStore;
 
   // zone loaded as element from file
-  public RZone(Element properties, RMap map, String... path) {
+  public RZone(Element properties, RMap map, DataStore dataStore, String... path) {
     // messy trick because id is final.
     super(
         (map.isDungeon()
@@ -58,7 +58,8 @@ public class RZone extends RData {
             : properties.getChild("header").getChildText("name")),
         path);
     this.map = map;
-    name = id;
+      this.dataStore = dataStore;
+      name = id;
     theme =
         (RZoneTheme)
             dataStore
@@ -67,17 +68,19 @@ public class RZone extends RData {
   }
 
   // new zone with theme
-  public RZone(String id, String mod, RZoneTheme theme, RMap map) {
+  public RZone(String id, String mod, RZoneTheme theme, RMap map, DataStore dataStore) {
     super(id, mod);
-    name = id;
+      this.dataStore = dataStore;
+      name = id;
     this.map = map;
     this.theme = theme;
   }
 
   // new zone with renderables
-  public RZone(String id, String mod, Instance instance, RMap map) {
+  public RZone(String id, String mod, Instance instance, RMap map, DataStore dataStore) {
     super(id, mod);
-    name = id;
+      this.dataStore = dataStore;
+      name = id;
     scene = new Scene();
     scene.addElement(instance, instance.getBounds(), instance.z);
     this.map = map;

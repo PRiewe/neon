@@ -288,7 +288,7 @@ class WildernessGeneratorTest {
     String[][] terrain = new String[width][height];
     MapUtils mapUtils = MapUtils.withSeed(seed);
     Dice dice = Dice.withSeed(seed);
-    return new WildernessTerrainGenerator( mapUtils, dice);
+    return new WildernessTerrainGenerator(mapUtils, dice);
   }
 
   /**
@@ -309,11 +309,11 @@ class WildernessGeneratorTest {
    */
   private int countFilled(boolean[][] grid) {
     int count = 0;
-      for (boolean[] booleans : grid) {
-          for (boolean aBoolean : booleans) {
-              if (aBoolean) count++;
-          }
+    for (boolean[] booleans : grid) {
+      for (boolean aBoolean : booleans) {
+        if (aBoolean) count++;
       }
+    }
     return count;
   }
 }

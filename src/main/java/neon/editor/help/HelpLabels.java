@@ -26,7 +26,7 @@ import javax.swing.border.EtchedBorder;
 import neon.editor.DataStore;
 
 public class HelpLabels {
-  private static ToolTipListener listener = new ToolTipListener();
+  private static final ToolTipListener listener = new ToolTipListener();
   private final DataStore dataStore;
 
   public HelpLabels(DataStore dataStore) {

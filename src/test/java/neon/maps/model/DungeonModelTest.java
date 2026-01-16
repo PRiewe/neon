@@ -109,7 +109,8 @@ public class DungeonModelTest {
 
   @Test
   public void testLevelWithCreaturesAndItems() throws IOException {
-    String xml = """
+    String xml =
+        """
      <dungeon>
         <header uid="2">
             <name>Populated</name>
@@ -191,7 +192,7 @@ public class DungeonModelTest {
   @Test
   public void testComplexLevel() throws IOException {
     String xml =
-            """
+"""
 <dungeon>
     <header uid="9">
         <name>Complex</name>

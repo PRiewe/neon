@@ -5,11 +5,11 @@
   </header>
   <level name="lighthouse" l="0">
     <creatures />
-    <items>
+    <doors>
       <door x="4" y="2" state="locked" lock="1" id="door" uid="0">
         <dest x="3160" y="13039" map="1" />
       </door>
-    </items>
+    </doors>
     <regions>
       <region x="0" y="0" w="5" h="5" l="0" text="wall" />
       <region x="1" y="1" w="3" h="3" l="1" text="floor" />

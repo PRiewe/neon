@@ -51,14 +51,14 @@ import net.engio.mbassy.bus.MBassador;
  * @author mdriesen
  */
 public class AimState extends State implements KeyListener {
-  private Point target;
+  private final Point target;
   private Player player;
   private DefaultRenderable cursor;
   private Popup popup;
   private GamePanel panel;
-  private CClient keys;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final CClient keys;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
   private final GameStores gameStores;
   private final CombatUtils combatUtils;
@@ -253,7 +253,7 @@ public class AimState extends State implements KeyListener {
       }
       Creature creature = context.getAtlasPosition().getCurrentZone().getCreature(target);
       if (creature != null) {
-        actors = ", " + creature.toString();
+        actors = ", " + creature;
       }
       popup = ui.showPopup(zone.getRegion(target) + items + actors);
     } else {

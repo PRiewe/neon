@@ -21,7 +21,6 @@ package neon.maps;
 import java.awt.Point;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import lombok.Setter;
 import neon.core.*;
 import neon.entities.*;
 import neon.entities.components.Enchantment;

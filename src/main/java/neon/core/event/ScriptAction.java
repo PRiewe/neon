@@ -23,7 +23,7 @@ import neon.core.Engine;
 import neon.util.fsm.Action;
 
 public class ScriptAction implements Action {
-  private String script;
+  private final String script;
 
   public ScriptAction(String script) {
     this.script = script;

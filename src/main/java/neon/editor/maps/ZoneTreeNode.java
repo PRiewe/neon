@@ -26,9 +26,9 @@ import neon.editor.resources.RZone;
 
 @SuppressWarnings("serial")
 public class ZoneTreeNode extends DefaultMutableTreeNode {
-  @Getter private RZone zone;
+  @Getter private final RZone zone;
   @Setter @Getter private EditablePane pane;
-  private int level;
+  private final int level;
   private final DataStore dataStore;
 
   /**

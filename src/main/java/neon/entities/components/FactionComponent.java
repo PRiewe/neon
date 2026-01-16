@@ -28,7 +28,7 @@ import lombok.Getter;
  */
 public class FactionComponent implements Component {
   private final long uid;
-  @Getter private HashMap<String, Integer> factions = new HashMap<>();
+  @Getter private final HashMap<String, Integer> factions = new HashMap<>();
 
   public FactionComponent(long uid) {
     this.uid = uid;

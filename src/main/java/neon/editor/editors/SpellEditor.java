@@ -29,11 +29,14 @@ import neon.magic.Effect;
 import neon.resources.RSpell;
 
 public class SpellEditor extends ObjectEditor implements ActionListener {
-  private JTextField nameField;
-  private JFormattedTextField areaField, rangeField, sizeField, durationField;
-  private JComboBox<Effect> effectBox;
-  private JTextArea scriptArea;
-  private RSpell data;
+  private final JTextField nameField;
+  private final JFormattedTextField areaField;
+  private final JFormattedTextField rangeField;
+  private final JFormattedTextField sizeField;
+  private final JFormattedTextField durationField;
+  private final JComboBox<Effect> effectBox;
+  private final JTextArea scriptArea;
+  private final RSpell data;
   private final DataStore dataStore;
 
   public SpellEditor(JFrame parent, RSpell data, DataStore dataStore) {

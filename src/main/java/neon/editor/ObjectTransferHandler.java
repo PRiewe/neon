@@ -51,9 +51,8 @@ public class ObjectTransferHandler extends TransferHandler {
       String id = ts.getTransferable().getTransferData(DataFlavor.stringFlavor).toString();
       String type = "item";
 
-      if (dataStore.getResourceManager().getResource(id) instanceof RItem) {
+      if (dataStore.getResourceManager().getResource(id) instanceof RItem item) {
         System.out.println(id);
-        RItem item = (RItem) dataStore.getResourceManager().getResource(id);
         if (item instanceof RItem.Door) {
           type = "door";
         } else if (item.type == Type.container) {

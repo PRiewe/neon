@@ -33,13 +33,15 @@ import neon.resources.RTerrain;
 
 @SuppressWarnings("serial")
 public class RegionThemeEditor extends ObjectEditor implements MouseListener {
-  private JTextField floorField;
-  private JComboBox<RRegionTheme.Type> typeBox;
-  private JComboBox<RItem.Door> doorBox;
-  private JComboBox<RTerrain> wallBox;
-  private JTable creatureTable, plantTable;
-  private DefaultTableModel creatureModel, plantModel;
-  private RRegionTheme theme;
+  private final JTextField floorField;
+  private final JComboBox<RRegionTheme.Type> typeBox;
+  private final JComboBox<RItem.Door> doorBox;
+  private final JComboBox<RTerrain> wallBox;
+  private final JTable creatureTable;
+  private final JTable plantTable;
+  private final DefaultTableModel creatureModel;
+  private final DefaultTableModel plantModel;
+  private final RRegionTheme theme;
   private final DataStore dataStore;
 
   public RegionThemeEditor(JFrame parent, RRegionTheme theme, DataStore dataStore) {
@@ -143,10 +145,10 @@ public class RegionThemeEditor extends ObjectEditor implements MouseListener {
     theme.floor = floorField.getText();
     theme.type = (RRegionTheme.Type) typeBox.getSelectedItem();
     theme.creatures.clear();
-    for (Vector<?> data : (Vector<Vector>) creatureModel.getDataVector()) {
+    for (Vector<?> data : creatureModel.getDataVector()) {
       theme.creatures.put(data.get(0).toString(), (Integer) data.get(1));
     }
-    for (Vector<?> data : (Vector<Vector>) plantModel.getDataVector()) {
+    for (Vector<?> data : plantModel.getDataVector()) {
       theme.vegetation.put(data.get(0).toString(), (Integer) data.get(1));
     }
     theme.setPath(dataStore.getActive().get("id"));
@@ -243,7 +245,7 @@ public class RegionThemeEditor extends ObjectEditor implements MouseListener {
   }
 
   private static class ThemesTableModel extends DefaultTableModel {
-    private Class<?>[] classes;
+    private final Class<?>[] classes;
 
     public ThemesTableModel(String[] columns, Class<?>... classes) {
       super(columns, 0);

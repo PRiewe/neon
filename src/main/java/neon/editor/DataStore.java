@@ -23,6 +23,7 @@ import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.*;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import neon.editor.resources.RFaction;
 import neon.editor.resources.RMap;
 import neon.resources.*;
@@ -33,6 +34,7 @@ import neon.systems.files.XMLTranslator;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
+@Slf4j
 public class DataStore {
   @Getter private final HashMap<String, RScript> scripts = new HashMap<String, RScript>();
   @Getter private final Multimap<String, String> events = ArrayListMultimap.create();
@@ -96,6 +98,7 @@ public class DataStore {
         events.put(event.getAttributeValue("script"), event.getAttributeValue("tick"));
       }
     } catch (NullPointerException e) {
+      log.error("loadEvents", e);
     }
   }
 
@@ -112,6 +115,7 @@ public class DataStore {
         scripts.put(id, new RScript(id, script, mod.get("id")));
       }
     } catch (NullPointerException e) {
+      log.error("loadScripts", e);
     }
   }
 
@@ -148,16 +152,22 @@ public class DataStore {
     String[] path = new String[file.length + 1];
     try {
       for (String s : fileSystem.listFiles(file)) {
-        System.arraycopy(file, 0, path, 0, file.length);
-        // both substrings must be included for jars
-        s = s.substring(s.lastIndexOf("/") + 1);
-        s = s.substring(s.lastIndexOf(File.separator) + 1);
-        path[file.length] = s;
-        Element map = fileSystem.getFile(new XMLTranslator(), path).getRootElement();
-        resourceManager.addResource(
-            new RMap(s.replace(".xml", ""), map, this, mod.get("id")), "maps");
+        try {
+          System.arraycopy(file, 0, path, 0, file.length);
+          // both substrings must be included for jars
+          s = s.substring(s.lastIndexOf("/") + 1);
+          s = s.substring(s.lastIndexOf(File.separator) + 1);
+          path[file.length] = s;
+          Document doc =fileSystem.getFile(new XMLTranslator(), path);
+          Element map = doc.getRootElement();
+          resourceManager.addResource(
+              new RMap(s.replace(".xml", ""), map, this, mod.get("id")), "maps");
+          }catch (RuntimeException re) {
+          log.error("Failed to load map {}",path,re);
+        }
       }
     } catch (NullPointerException e) {
+      log.error("loadMaps", e);
     }
   }
 

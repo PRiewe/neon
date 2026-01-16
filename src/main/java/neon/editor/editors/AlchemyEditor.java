@@ -31,10 +31,10 @@ import neon.resources.RRecipe;
 
 @SuppressWarnings("serial")
 public class AlchemyEditor extends ObjectEditor implements MouseListener {
-  private JList<RItem> contentList;
-  private DefaultListModel<RItem> contentModel;
-  private RRecipe recipe;
-  private JFormattedTextField costField;
+  private final JList<RItem> contentList;
+  private final DefaultListModel<RItem> contentModel;
+  private final RRecipe recipe;
+  private final JFormattedTextField costField;
   private final DataStore dataStore;
 
   public AlchemyEditor(JFrame parent, RRecipe recipe, DataStore dataStore) {

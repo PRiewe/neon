@@ -22,6 +22,7 @@ import com.google.common.collect.Multimap;
 import java.awt.Rectangle;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import neon.core.event.MagicTask;
 import neon.core.event.SaveEvent;
 import neon.core.event.ScriptAction;
@@ -42,7 +43,7 @@ import net.engio.mbassy.listener.References;
 
 @Listener(references = References.Strong)
 public class GameSaver {
-  private TaskQueue queue;
+  private final TaskQueue queue;
   private final GameStores gameStores;
 
   public GameSaver(TaskQueue queue, GameStores gameStores) {
@@ -85,7 +86,7 @@ public class GameSaver {
     try {
       JacksonMapper mapper = new JacksonMapper();
       ByteArrayOutputStream out = mapper.toXml(save);
-      String xml = out.toString("UTF-8");
+      String xml = out.toString(StandardCharsets.UTF_8);
       Engine.getFileSystem()
           .saveFile(xml, new StringTranslator(), "saves", player.getName(), "save.xml");
     } catch (Exception e) {

@@ -27,9 +27,9 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 public class RentalDialog implements KeyListener {
-  private JDialog frame;
-  private JEditorPane area;
-  private JScrollPane scroller;
+  private final JDialog frame;
+  private final JEditorPane area;
+  private final JScrollPane scroller;
 
   public RentalDialog(JFrame parent) {
     frame = new JDialog(parent, true);

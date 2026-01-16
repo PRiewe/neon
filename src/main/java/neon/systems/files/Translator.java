@@ -21,7 +21,7 @@ package neon.systems.files;
 import java.io.*;
 
 public interface Translator<E> {
-  public E translate(InputStream input);
+  E translate(InputStream input);
 
-  public ByteArrayOutputStream translate(E output);
+  ByteArrayOutputStream translate(E output);
 }

@@ -39,7 +39,7 @@ import org.jdom2.input.SAXBuilder;
  */
 @JacksonXmlRootElement(localName = "root")
 public class CServer extends Resource {
-  @JsonIgnore private ArrayList<String> mods = new ArrayList<String>();
+  @JsonIgnore private final ArrayList<String> mods = new ArrayList<String>();
 
   @JacksonXmlProperty(localName = "log")
   private String log = "FINEST";

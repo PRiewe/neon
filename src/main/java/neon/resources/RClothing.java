@@ -30,7 +30,7 @@ public class RClothing extends RItem implements Serializable {
     LIGHT,
     MEDIUM,
     HEAVY,
-    NONE;
+    NONE
   }
 
   // Nested elements (deserialized via setters to sync with public fields)

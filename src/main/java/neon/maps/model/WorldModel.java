@@ -60,7 +60,6 @@ public class WorldModel {
   @JacksonXmlProperty(localName = "region")
   public List<RegionData> regions = new ArrayList<>();
 
-
   /** Map header with name and UID */
   public static class Header implements Serializable {
     @JacksonXmlProperty(isAttribute = true, localName = "uid")

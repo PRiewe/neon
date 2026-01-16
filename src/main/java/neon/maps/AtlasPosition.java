@@ -1,6 +1,5 @@
 package neon.maps;
 
-import lombok.Getter;
 import neon.core.GameStores;
 import neon.entities.Door;
 import neon.entities.Player;

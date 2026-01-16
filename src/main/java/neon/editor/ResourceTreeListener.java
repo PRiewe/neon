@@ -41,8 +41,8 @@ import neon.resources.*;
 import neon.resources.quest.RQuest;
 
 public class ResourceTreeListener implements MouseListener {
-  private JTree tree;
-  private JFrame frame;
+  private final JTree tree;
+  private final JFrame frame;
   private final DataStore dataStore;
 
   public ResourceTreeListener(JTree resourceTree, JFrame parent, DataStore dataStore) {

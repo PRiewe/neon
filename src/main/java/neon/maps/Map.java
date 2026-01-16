@@ -29,28 +29,28 @@ public interface Map {
   /**
    * @return the name of this map
    */
-  public String getName();
+  String getName();
 
   /**
    * Sets the name of this map
    *
    * @param name the name
    */
-  public void setName(String name);
+  void setName(String name);
 
   /**
    * @return the UID of this map
    */
-  public int getUID();
+  int getUID();
 
   /**
    * @param i an integer index
    * @return the zone with the given index
    */
-  public Zone getZone(int i);
+  Zone getZone(int i);
 
   /**
    * @return a Collection of all zones in this map
    */
-  public Collection<Zone> getZones();
+  Collection<Zone> getZones();
 }

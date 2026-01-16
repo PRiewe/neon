@@ -1,7 +1,6 @@
 package neon.core;
 
 import lombok.Getter;
-import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.entities.mvstore.EntityDataType;
 import neon.entities.mvstore.ModDataType;
@@ -23,7 +22,7 @@ public class DefaultGameStores implements GameStores {
   private final ZoneFactory zoneFactory;
   private final MapStore zoneMapStore;
 
-  public DefaultGameStores(ResourceManager resources, FileSystem fileSystem,UIDStore store) {
+  public DefaultGameStores(ResourceManager resources, FileSystem fileSystem, UIDStore store) {
     this.resources = resources;
     this.fileSystem = fileSystem;
 

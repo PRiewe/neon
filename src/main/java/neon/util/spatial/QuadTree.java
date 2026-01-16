@@ -32,7 +32,7 @@ import java.util.List;
 public class QuadTree<E> implements SpatialIndex<E> {
   private final Node root;
   private final Rectangle bounds;
-  private int capacity;
+  private final int capacity;
 
   public QuadTree(int capacity, Rectangle bounds) {
     this.capacity = capacity;

@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.swing.*;
 import javax.swing.border.*;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +37,13 @@ import neon.systems.files.JacksonMapper;
 
 @Slf4j
 public class OptionDialog {
-  private JCheckBox audioBox;
-  private JRadioButton numpad, qwerty, azerty, qwertz;
-  private ButtonGroup group;
-  private JDialog frame;
+  private final JCheckBox audioBox;
+  private final JRadioButton numpad;
+  private final JRadioButton qwerty;
+  private final JRadioButton azerty;
+  private final JRadioButton qwertz;
+  private final ButtonGroup group;
+  private final JDialog frame;
   private final GameContext context;
   private final GameStores gameStores;
 
@@ -227,9 +231,9 @@ public class OptionDialog {
       // Save config
       try {
         java.io.ByteArrayOutputStream out = mapper.toXml(config);
-        String xml = out.toString("UTF-8");
+        String xml = out.toString(StandardCharsets.UTF_8);
         FileOutputStream fileOut = new FileOutputStream("neon.ini.xml");
-        fileOut.write(xml.getBytes("UTF-8"));
+        fileOut.write(xml.getBytes(StandardCharsets.UTF_8));
         fileOut.close();
       } catch (IOException e) {
         log.error("Error saving config", e);

@@ -29,9 +29,9 @@ import neon.resources.RData;
 
 @SuppressWarnings("serial")
 public class ObjectNode extends DefaultMutableTreeNode {
-  private static NodeComparator nodeComparator = new NodeComparator();
+  private static final NodeComparator nodeComparator = new NodeComparator();
   @Getter private RData resource;
-  @Getter private ObjectType type;
+  @Getter private final ObjectType type;
   private String name;
   private final DataStore dataStore;
 
@@ -94,6 +94,6 @@ public class ObjectNode extends DefaultMutableTreeNode {
     SCROLL,
     LEVEL_CREATURE,
     LEVEL_ITEM,
-    FOOD;
+    FOOD
   }
 }

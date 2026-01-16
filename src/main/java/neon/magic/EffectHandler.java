@@ -22,21 +22,21 @@ public interface EffectHandler {
   /**
    * @return whether this effect can be used as a weapon enchantment
    */
-  public boolean isWeaponEnchantment();
+  boolean isWeaponEnchantment();
 
   /**
    * @return whether this effect can be used as a clothing enchantment
    */
-  public boolean isClothingEnchantment();
+  boolean isClothingEnchantment();
 
   /**
    * @return whether this effect can be cast on an item
    */
-  public boolean onItem();
+  boolean onItem();
 
-  public void addEffect(Spell spell);
+  void addEffect(Spell spell);
 
-  public void repeatEffect(Spell spell);
+  void repeatEffect(Spell spell);
 
-  public void removeEffect(Spell spell);
+  void removeEffect(Spell spell);
 }

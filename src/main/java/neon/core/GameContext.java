@@ -20,7 +20,6 @@ package neon.core;
 
 import java.util.EventObject;
 import neon.core.event.TaskQueue;
-import neon.entities.Player;
 import neon.maps.AtlasPosition;
 import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;

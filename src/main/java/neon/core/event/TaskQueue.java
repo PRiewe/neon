@@ -28,8 +28,8 @@ import net.engio.mbassy.listener.Handler;
 
 @Slf4j
 public class TaskQueue {
-  private Multimap<String, Action> tasks;
-  private Multimap<Integer, RepeatEntry> repeat;
+  private final Multimap<String, Action> tasks;
+  private final Multimap<Integer, RepeatEntry> repeat;
 
   public TaskQueue() {
     tasks = ArrayListMultimap.create();
@@ -91,8 +91,8 @@ public class TaskQueue {
   public static class RepeatEntry {
     private Action task;
     private String script;
-    private int period;
-    private int stop;
+    private final int period;
+    private final int stop;
 
     private RepeatEntry(int period, int stop, String script) {
       this.script = script;

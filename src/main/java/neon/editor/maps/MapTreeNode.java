@@ -24,7 +24,7 @@ import neon.editor.resources.RMap;
 
 @SuppressWarnings("serial")
 public class MapTreeNode extends DefaultMutableTreeNode {
-  private RMap map;
+  private final RMap map;
   private final DataStore dataStore;
 
   public MapTreeNode(RMap map, DataStore dataStore) {

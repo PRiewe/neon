@@ -39,16 +39,16 @@ import org.jdom2.Element;
 @SuppressWarnings("serial")
 public class EditablePane extends JScrollPane
     implements MouseMotionListener, MouseListener, MouseWheelListener {
-  private static SelectionFilter filter = new Filter();
+  private static final SelectionFilter filter = new Filter();
 
-  private Scene scene;
+  private final Scene scene;
   private int layer;
-  private ZoneTreeNode node;
+  private final ZoneTreeNode node;
   private Instance cut;
   private Instance copy;
   private Point position;
   private Dimension delta;
-  private JVectorPane pane;
+  private final JVectorPane pane;
   private IRegion newRegion;
   private final DataStore dataStore;
 
@@ -361,11 +361,7 @@ public class EditablePane extends JScrollPane
     public boolean isSelectable(Renderable r) {
       if (r instanceof IRegion && Editor.tEdit.isSelected()) {
         return true;
-      } else if (r instanceof IObject && Editor.oEdit.isSelected()) {
-        return true;
-      } else {
-        return false;
-      }
+      } else return r instanceof IObject && Editor.oEdit.isSelected();
     }
   }
 

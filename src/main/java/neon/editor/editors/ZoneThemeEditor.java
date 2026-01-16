@@ -35,12 +35,19 @@ import neon.resources.RZoneTheme;
 
 @SuppressWarnings("serial")
 public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
-  private JTextField floorField, wallsField, doorsField;
-  private JFormattedTextField minField, maxField;
-  private DefaultTableModel creatureModel, itemModel, featureModel;
-  private JTable creatureTable, itemTable, featureTable;
-  private RZoneTheme theme;
-  private JComboBox<String> typeBox;
+  private final JTextField floorField;
+  private final JTextField wallsField;
+  private final JTextField doorsField;
+  private final JFormattedTextField minField;
+  private final JFormattedTextField maxField;
+  private final DefaultTableModel creatureModel;
+  private final DefaultTableModel itemModel;
+  private final DefaultTableModel featureModel;
+  private final JTable creatureTable;
+  private final JTable itemTable;
+  private final JTable featureTable;
+  private final RZoneTheme theme;
+  private final JComboBox<String> typeBox;
   private final DataStore dataStore;
 
   public ZoneThemeEditor(JFrame parent, RZoneTheme theme, DataStore dataStore) {
@@ -202,12 +209,12 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
     theme.setPath(dataStore.getActive().get("id"));
 
     theme.creatures.clear();
-    for (Vector<?> data : (Vector<Vector>) creatureModel.getDataVector()) {
+    for (Vector<?> data : creatureModel.getDataVector()) {
       theme.creatures.put(data.get(0).toString(), (Integer) data.get(1));
     }
 
     theme.features.clear();
-    for (Vector<?> data : (Vector<Vector>) featureModel.getDataVector()) {
+    for (Vector<?> data : featureModel.getDataVector()) {
       RZoneTheme.Feature feature = new RZoneTheme.Feature();
       feature.value = data.get(0).toString();
       feature.t = data.get(1).toString();
@@ -217,7 +224,7 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
     }
 
     theme.items.clear();
-    for (Vector<?> data : (Vector<Vector>) itemModel.getDataVector()) {
+    for (Vector<?> data : itemModel.getDataVector()) {
       theme.items.put(data.get(0).toString(), (Integer) data.get(1));
     }
   }
@@ -346,7 +353,7 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
   }
 
   private static class ThemesTableModel extends DefaultTableModel {
-    private Class<?>[] classes;
+    private final Class<?>[] classes;
 
     public ThemesTableModel(String[] columns, Class<?>... classes) {
       super(columns, 0);

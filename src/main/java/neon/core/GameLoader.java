@@ -298,8 +298,7 @@ public class GameLoader {
             playerData.profession,
             gameStores.getStore());
     gameStores.getStore().setPlayer(player);
-    context.startGame(
-        new Game( gameStores, context.getPhysicsManager(), context.getQuestTracker()));
+    context.startGame(new Game(gameStores, context.getPhysicsManager(), context.getQuestTracker()));
     Rectangle bounds = player.getShapeComponent();
     bounds.setLocation(playerData.x, playerData.y);
     player.setSign(playerData.sign);

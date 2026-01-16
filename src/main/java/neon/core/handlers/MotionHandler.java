@@ -36,7 +36,7 @@ import neon.maps.*;
  * @author mdriesen
  */
 @Slf4j
-public class MotionHandler {
+public record MotionHandler(UIDStore uidStore) {
   public static final byte OK = 0;
   public static final byte BLOCKED = 1;
   public static final byte SWIM = 2;
@@ -44,11 +44,6 @@ public class MotionHandler {
   public static final byte DOOR = 4;
   public static final byte NULL = 5;
   public static final byte HABITAT = 6;
-  public final UIDStore uidStore;
-
-  public MotionHandler(UIDStore uidStore) {
-    this.uidStore = uidStore;
-  }
 
   /**
    * Lets a creature move (walking, climbing or swimming). The possible results are:

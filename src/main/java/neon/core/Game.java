@@ -21,7 +21,6 @@ package neon.core;
 import java.io.Closeable;
 import java.io.IOException;
 import lombok.Getter;
-import neon.entities.Player;
 import neon.maps.AtlasPosition;
 import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;
@@ -34,10 +33,7 @@ public class Game implements Closeable {
   private final AtlasPosition atlasPosition;
   @Getter private final GameStores gameStores;
 
-  public Game(
-      GameStores gameStores,
-      PhysicsManager physicsManager,
-      QuestTracker questTracker) {
+  public Game(GameStores gameStores, PhysicsManager physicsManager, QuestTracker questTracker) {
     this.gameStores = gameStores;
     this.atlasPosition = new AtlasPosition(gameStores, questTracker);
   }
@@ -47,7 +43,7 @@ public class Game implements Closeable {
    *
    * @param player the player
    */
-  public Game( GameStores gameStores, AtlasPosition atlasPosition) {
+  public Game(GameStores gameStores, AtlasPosition atlasPosition) {
     this.gameStores = gameStores;
     this.atlasPosition = atlasPosition;
   }

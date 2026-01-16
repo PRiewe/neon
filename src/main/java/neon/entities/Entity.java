@@ -18,12 +18,8 @@
 
 package neon.entities;
 
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MutableClassToInstanceMap;
 import java.io.*;
-import neon.entities.components.Component;
 import neon.entities.components.PhysicsComponent;
-import neon.entities.components.RenderComponent;
 import neon.entities.components.ScriptComponent;
 import neon.entities.components.ShapeComponent;
 
@@ -37,9 +33,8 @@ public abstract class Entity extends EntityBase implements Serializable {
   // components
   public final ShapeComponent bounds;
 
-
-  private long uid;
-  private String id;
+  private final long uid;
+  private final String id;
 
   /**
    * @param id the id of the resource this entity is an instance of
@@ -72,6 +67,4 @@ public abstract class Entity extends EntityBase implements Serializable {
   public ShapeComponent getShapeComponent() {
     return bounds;
   }
-
-
 }

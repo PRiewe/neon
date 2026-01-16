@@ -31,8 +31,8 @@ import neon.resources.RSpell;
 import neon.util.Dice;
 
 public class HuntBehaviour implements Behaviour {
-  private Creature creature;
-  private Creature prey;
+  private final Creature creature;
+  private final Creature prey;
   private final PathFinder pathFinder;
   private final GameContext gameContext;
   private final GameStores gameStores;

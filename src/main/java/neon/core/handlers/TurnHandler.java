@@ -45,9 +45,9 @@ import net.engio.mbassy.listener.References;
 @Listener(references = References.Strong) // strong, om gc te vermijden
 @Slf4j
 public class TurnHandler {
-  private GamePanel panel;
+  private final GamePanel panel;
   private Generator generator;
-  private int range;
+  private final int range;
 
   private final GameStores gameStores;
   private final InventoryHandler inventoryHandler;
@@ -156,13 +156,11 @@ public class TurnHandler {
             new TownGenerator(zone, gameStores.getStore(), gameStores.getResources())
                 .generate(r.getX(), r.getY(), r.getWidth(), r.getHeight(), theme, r.getZ());
           } else {
-            new WildernessGenerator(
-                    zone, gameStores)
-                .generate(r, theme);
+            new WildernessGenerator(zone, gameStores).generate(r, theme);
           }
         }
       }
-    } while (fixed == false);
+    } while (!fixed);
 
     return generated;
   }

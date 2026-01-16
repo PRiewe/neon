@@ -65,29 +65,77 @@
   </creatures>
   <items>
     <item x="34023" y="15159" id="iron" uid="4" />
+    <item x="34019" y="15161" id="key1" uid="3" />
+    <item x="34014" y="15185" id="maple" uid="1283882186" />
+    <item x="34018" y="15186" id="maple" uid="923655771" />
+    <item x="34010" y="15175" id="maple" uid="1413478907" />
+    <item x="34030" y="15180" id="maple" uid="378872055" />
+    <item x="34012" y="15167" id="maple" uid="1435836999" />
+    <item x="34024" y="15169" id="maple" uid="1858023649" />
+    <item x="34023" y="15195" id="maple" uid="1954167386" />
+    <item x="34005" y="15163" id="yew" uid="1146225516" />
+    <item x="34039" y="15184" id="yew" uid="494091129" />
+    <item x="34008" y="15154" id="yew" uid="23026243" />
+    <item x="34015" y="15145" id="yew" uid="1997753225" />
+    <item x="34038" y="15193" id="yew" uid="1157656951" />
+    <item x="34051" y="15187" id="yew" uid="3024637" />
+    <item x="3134" y="13020" id="yew" uid="685926404" />
+    <item x="3154" y="13019" id="yew" uid="589456100" />
+    <item x="3180" y="13037" id="yew" uid="1537510313" />
+    <item x="3132" y="13014" id="maple" uid="163481663" />
+    <item x="3178" y="13010" id="maple" uid="457873165" />
+    <item x="3183" y="13049" id="maple" uid="407478014" />
+    <item x="3175" y="13020" id="fig" uid="2108025800" />
+    <item x="14883" y="23087" id="fig" uid="1645523187" />
+    <item x="14886" y="23093" id="fig" uid="1461387675" />
+    <item x="14877" y="23088" id="fig" uid="2121029156" />
+    <item x="14875" y="23097" id="fig" uid="1406585832" />
+    <item x="14911" y="23080" id="cedar" uid="1518848344" />
+    <item x="14931" y="23087" id="cedar" uid="443234970" />
+    <item x="14906" y="23051" id="cedar" uid="634949849" />
+    <item x="19892" y="5603" id="cedar" uid="32359103" />
+    <item x="19911" y="5602" id="cedar" uid="1401778222" />
+    <item x="19893" y="5631" id="cedar" uid="1387966109" />
+    <item x="19899" y="5647" id="cedar" uid="421919258" />
+    <item x="19892" y="5655" id="cedar" uid="1130864637" />
+    <item x="19913" y="5639" id="cedar" uid="205592887" />
+    <item x="19909" y="5622" id="cedar" uid="599279897" />
+    <item x="19890" y="5672" id="cedar" uid="2096222843" />
+    <item x="19912" y="5693" id="cedar" uid="2031680188" />
+    <item x="19888" y="5698" id="cedar" uid="1570208327" />
+    <item x="14908" y="23112" id="cedar" uid="1484297382" />
+    <item x="14905" y="23122" id="cedar" uid="150136459" />
+    <item x="14908" y="23131" id="cedar" uid="1226742357" />
+    <item x="14899" y="23129" id="cedar" uid="306824177" />
+    <item x="14881" y="23155" id="teak" uid="1963030267" />
+    <item x="14877" y="23158" id="teak" uid="855362421" />
+    <item x="14881" y="23160" id="teak" uid="1100765513" />
+    <item x="14886" y="23156" id="teak" uid="500584856" />
+    <item x="14888" y="23166" id="teak" uid="473173904" />
+    <item x="14882" y="23164" id="teak" uid="1742747096" />
+    <item x="14889" y="23160" id="teak" uid="940640020" />
+    <item x="13806" y="24017" id="yew" uid="1329212402" />
+    <item x="13830" y="24007" id="teak" uid="808185773" />
+    <item x="13809" y="24009" id="fig" uid="727247998" />
+    <item x="13821" y="24003" id="fig" uid="336577367" />
+    <item x="13820" y="24037" id="fig" uid="1418920064" />
+  </items>
+  <doors>
     <door x="34020" y="15171" id="hole" uid="10" state="open">
       <dest x="10" y="10" map="3" />
     </door>
     <door x="34021" y="15171" id="hole" uid="11" state="open">
       <dest theme="barrow" />
     </door>
-    <item x="34019" y="15161" id="key1" uid="3" />
     <door x="34013" y="15150" id="door" uid="28" state="open" lock="1">
       <dest sign="harbor master" x="5" y="3" z="2" map="5" />
     </door>
-    <container x="34014" y="15151" id="chest" uid="2">
-      <item id="scimitar" uid="5" />
-    </container>
     <door x="34013" y="15157" id="door" uid="20" state="closed" lock="1">
       <dest sign="Kasku's house" x="5" y="3" z="3" map="5" />
     </door>
     <door x="34012" y="15163" id="door" uid="21" state="open" lock="1">
       <dest sign="Gwilym's house" x="5" y="3" z="0" map="5" />
     </door>
-    <container x="34010" y="15165" id="chest_loot1" uid="8" lock="10" />
-    <container x="34011" y="15165" id="chest" uid="12">
-      <item id="scimitar" uid="13" />
-    </container>
     <door x="34012" y="15183" id="door" uid="23" state="open" lock="1">
       <dest sign="Zari's pawn shop" x="5" y="3" z="4" map="5" />
     </door>
@@ -122,36 +170,8 @@
     <door x="34048" y="15189" id="door_wood" uid="990169321" state="open" />
     <door x="34020" y="15167" id="door_wood" uid="994821099" state="open" />
     <door x="34020" y="15162" id="door_wood" uid="2099390117" state="open" />
-    <item x="34014" y="15185" id="maple" uid="1283882186" />
-    <item x="34018" y="15186" id="maple" uid="923655771" />
-    <item x="34010" y="15175" id="maple" uid="1413478907" />
-    <item x="34030" y="15180" id="maple" uid="378872055" />
-    <item x="34012" y="15167" id="maple" uid="1435836999" />
-    <item x="34024" y="15169" id="maple" uid="1858023649" />
-    <item x="34023" y="15195" id="maple" uid="1954167386" />
-    <item x="34005" y="15163" id="yew" uid="1146225516" />
-    <item x="34039" y="15184" id="yew" uid="494091129" />
-    <item x="34008" y="15154" id="yew" uid="23026243" />
-    <item x="34015" y="15145" id="yew" uid="1997753225" />
-    <item x="34038" y="15193" id="yew" uid="1157656951" />
-    <item x="34051" y="15187" id="yew" uid="3024637" />
     <door x="34034" y="15187" id="door_wood" uid="755771030" state="open" />
     <door x="34006" y="15180" id="door_wood" uid="1787589587" state="open" />
-    <container x="3137" y="13025" id="bamboo" uid="140342989" />
-    <container x="3156" y="13023" id="bamboo" uid="1350001184" />
-    <container x="3151" y="13007" id="bamboo" uid="1956411142" />
-    <container x="3187" y="13049" id="bamboo" uid="853387547" />
-    <container x="3194" y="13017" id="bamboo" uid="761854033" />
-    <container x="3127" y="13026" id="reed" uid="1270780721" />
-    <container x="3114" y="13011" id="reed" uid="452097376" />
-    <container x="3176" y="13052" id="reed" uid="483967471" />
-    <container x="3168" y="13036" id="reed" uid="209276650" />
-    <item x="3134" y="13020" id="yew" uid="685926404" />
-    <item x="3154" y="13019" id="yew" uid="589456100" />
-    <item x="3180" y="13037" id="yew" uid="1537510313" />
-    <item x="3132" y="13014" id="maple" uid="163481663" />
-    <item x="3178" y="13010" id="maple" uid="457873165" />
-    <item x="3183" y="13049" id="maple" uid="407478014" />
     <door x="3136" y="13026" id="door" uid="156601151" state="open" />
     <door x="3138" y="13021" id="door" uid="1208673685" state="open" />
     <door x="3182" y="13012" id="door" uid="2116353531" state="open" />
@@ -170,7 +190,6 @@
     <door x="3184" y="13019" id="door" uid="1827133708" state="open" />
     <door x="3159" y="13012" id="door" uid="1798053358" state="open" />
     <door x="3136" y="13022" id="door_iron" uid="1903406091" state="closed" />
-    <item x="3175" y="13020" id="fig" uid="2108025800" />
     <door x="3160" y="13039" id="door" uid="0" state="locked" lock="1">
       <dest sign="lighthouse" x="4" y="2" z="0" map="8" />
     </door>
@@ -212,6 +231,32 @@
     <door x="6161" y="11555" id="door_wood" uid="166286914" state="open" />
     <door x="6156" y="11558" id="door_wood" uid="1023037386" state="open" />
     <door x="6073" y="11534" id="door_wood" uid="100968075" state="open" />
+    <door x="14959" y="23173" id="door_wood" uid="464642021" state="closed" />
+    <door x="14960" y="23173" id="door_wood" uid="1382661836" state="closed" />
+    <door x="13811" y="24024" id="door_wood" uid="1083069032" state="closed" />
+    <door x="13812" y="24024" id="door_wood" uid="944650173" state="closed" />
+    <door x="13831" y="24027" id="door_wood" uid="363838058" state="open" />
+    <door x="13808" y="24012" id="door" uid="539535919" state="open" />
+    <door x="13813" y="24009" id="door" uid="217245254" state="open" />
+    <door x="13823" y="24013" id="door" uid="1577113327" state="open" />
+  </doors>
+  <containers>
+    <container x="34014" y="15151" id="chest" uid="2">
+      <item id="scimitar" uid="5" />
+    </container>
+    <container x="34010" y="15165" id="chest_loot1" uid="8" lock="10" />
+    <container x="34011" y="15165" id="chest" uid="12">
+      <item id="scimitar" uid="13" />
+    </container>
+    <container x="3137" y="13025" id="bamboo" uid="140342989" />
+    <container x="3156" y="13023" id="bamboo" uid="1350001184" />
+    <container x="3151" y="13007" id="bamboo" uid="1956411142" />
+    <container x="3187" y="13049" id="bamboo" uid="853387547" />
+    <container x="3194" y="13017" id="bamboo" uid="761854033" />
+    <container x="3127" y="13026" id="reed" uid="1270780721" />
+    <container x="3114" y="13011" id="reed" uid="452097376" />
+    <container x="3176" y="13052" id="reed" uid="483967471" />
+    <container x="3168" y="13036" id="reed" uid="209276650" />
     <container x="6036" y="11499" id="reed" uid="1119923741" />
     <container x="6035" y="11499" id="reed" uid="1037504760" />
     <container x="6034" y="11499" id="reed" uid="2075355539" />
@@ -295,15 +340,6 @@
     <container x="14881" y="23067" id="bamboo" uid="347412700" />
     <container x="14881" y="23068" id="bamboo" uid="1738176521" />
     <container x="14881" y="23069" id="bamboo" uid="974728434" />
-    <door x="14959" y="23173" id="door_wood" uid="464642021" state="closed" />
-    <door x="14960" y="23173" id="door_wood" uid="1382661836" state="closed" />
-    <item x="14883" y="23087" id="fig" uid="1645523187" />
-    <item x="14886" y="23093" id="fig" uid="1461387675" />
-    <item x="14877" y="23088" id="fig" uid="2121029156" />
-    <item x="14875" y="23097" id="fig" uid="1406585832" />
-    <item x="14911" y="23080" id="cedar" uid="1518848344" />
-    <item x="14931" y="23087" id="cedar" uid="443234970" />
-    <item x="14906" y="23051" id="cedar" uid="634949849" />
     <container x="14962" y="23042" id="shrub" uid="743692891" />
     <container x="14962" y="23044" id="shrub" uid="549662328" />
     <container x="14962" y="23046" id="shrub" uid="908638287" />
@@ -333,23 +369,6 @@
     <container x="14874" y="23036" id="reed" uid="1510902292" />
     <container x="14875" y="23036" id="reed" uid="2066587152" />
     <container x="14876" y="23036" id="reed" uid="718405424" />
-    <item x="14908" y="23112" id="cedar" uid="1484297382" />
-    <item x="14905" y="23122" id="cedar" uid="150136459" />
-    <item x="14908" y="23131" id="cedar" uid="1226742357" />
-    <item x="14899" y="23129" id="cedar" uid="306824177" />
-    <item x="14881" y="23155" id="teak" uid="1963030267" />
-    <item x="14877" y="23158" id="teak" uid="855362421" />
-    <item x="14881" y="23160" id="teak" uid="1100765513" />
-    <item x="14886" y="23156" id="teak" uid="500584856" />
-    <item x="14888" y="23166" id="teak" uid="473173904" />
-    <item x="14882" y="23164" id="teak" uid="1742747096" />
-    <item x="14889" y="23160" id="teak" uid="940640020" />
-    <door x="13811" y="24024" id="door_wood" uid="1083069032" state="closed" />
-    <door x="13812" y="24024" id="door_wood" uid="944650173" state="closed" />
-    <door x="13831" y="24027" id="door_wood" uid="363838058" state="open" />
-    <door x="13808" y="24012" id="door" uid="539535919" state="open" />
-    <door x="13813" y="24009" id="door" uid="217245254" state="open" />
-    <door x="13823" y="24013" id="door" uid="1577113327" state="open" />
     <container x="13810" y="24037" id="shrub" uid="1631727065" />
     <container x="13822" y="24028" id="shrub" uid="953852729" />
     <container x="13806" y="24028" id="shrub" uid="1857092716" />
@@ -358,11 +377,6 @@
     <container x="13829" y="24021" id="shrub" uid="815766257" />
     <container x="13828" y="24036" id="shrub" uid="1189990355" />
     <container x="13812" y="24019" id="shrub" uid="229116977" />
-    <item x="13806" y="24017" id="yew" uid="1329212402" />
-    <item x="13830" y="24007" id="teak" uid="808185773" />
-    <item x="13809" y="24009" id="fig" uid="727247998" />
-    <item x="13821" y="24003" id="fig" uid="336577367" />
-    <item x="13820" y="24037" id="fig" uid="1418920064" />
     <container x="19893" y="5628" id="reed" uid="1261297434" />
     <container x="19892" y="5625" id="reed" uid="920206701" />
     <container x="19897" y="5635" id="reed" uid="997093283" />
@@ -405,17 +419,7 @@
     <container x="19903" y="5673" id="bamboo" uid="1031281434" />
     <container x="19907" y="5678" id="bamboo" uid="1051710599" />
     <container x="19908" y="5677" id="bamboo" uid="1518008712" />
-    <item x="19892" y="5603" id="cedar" uid="32359103" />
-    <item x="19911" y="5602" id="cedar" uid="1401778222" />
-    <item x="19893" y="5631" id="cedar" uid="1387966109" />
-    <item x="19899" y="5647" id="cedar" uid="421919258" />
-    <item x="19892" y="5655" id="cedar" uid="1130864637" />
-    <item x="19913" y="5639" id="cedar" uid="205592887" />
-    <item x="19909" y="5622" id="cedar" uid="599279897" />
-    <item x="19890" y="5672" id="cedar" uid="2096222843" />
-    <item x="19912" y="5693" id="cedar" uid="2031680188" />
-    <item x="19888" y="5698" id="cedar" uid="1570208327" />
-  </items>
+  </containers>
   <regions>
     <region x="3000" y="13000" w="200" h="200" l="0" text="sea">
       <script id="main1" />

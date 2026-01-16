@@ -24,7 +24,7 @@ import java.util.Collection;
 
 public class ScriptComponent implements Component, Serializable {
   private final long uid;
-  private ArrayList<String> scripts = new ArrayList<>();
+  private final ArrayList<String> scripts = new ArrayList<>();
 
   public ScriptComponent(long uid) {
     this.uid = uid;

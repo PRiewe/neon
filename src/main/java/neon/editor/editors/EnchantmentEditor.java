@@ -30,12 +30,14 @@ import neon.magic.Effect;
 import neon.resources.RSpell;
 
 public class EnchantmentEditor extends ObjectEditor implements ActionListener {
-  private JTextField nameField;
-  private JFormattedTextField areaField, sizeField, durationField;
-  private JComboBox<Effect> effectBox;
-  private JComboBox<String> itemBox;
+  private final JTextField nameField;
+  private final JFormattedTextField areaField;
+  private final JFormattedTextField sizeField;
+  private final JFormattedTextField durationField;
+  private final JComboBox<Effect> effectBox;
+  private final JComboBox<String> itemBox;
   private JTextArea scriptArea;
-  private RSpell.Enchantment data;
+  private final RSpell.Enchantment data;
   private final DataStore dataStore;
 
   public EnchantmentEditor(JFrame parent, RSpell.Enchantment data, DataStore dataStore) {

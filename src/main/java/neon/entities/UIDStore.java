@@ -30,7 +30,6 @@ import neon.entities.mvstore.LongDataType;
 import neon.entities.mvstore.ModDataType;
 import neon.entities.mvstore.ShortDataType;
 import neon.maps.services.EntityStore;
-import neon.systems.files.FileSystem;
 import neon.util.mapstorage.MapStore;
 import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import org.h2.mvstore.MVStore;
@@ -55,8 +54,8 @@ public class UIDStore implements EntityStore, Closeable {
   private ConcurrentMap<Short, ModDataType.Mod> mods;
   // uids of all loaded maps
   private final BiMap<Integer, String> maps = HashBiMap.create();
-  @Getter @Setter
-  private Player player;
+  @Getter @Setter private Player player;
+
   /**
    * Tells this UIDStore to use the given jdbm3 cache.
    *

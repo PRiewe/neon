@@ -408,9 +408,7 @@ class MapPerformanceTest {
   void testAtlasMapCachingPerformance() throws Exception {
     Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
-        new AtlasPosition(
-            TestEngineContext.getGameStores(),
-            TestEngineContext.getQuestTracker());
+        new AtlasPosition(TestEngineContext.getGameStores(), TestEngineContext.getQuestTracker());
     int mapCount = 100;
 
     PerformanceHarness.MeasuredResult<Integer> result =
@@ -436,11 +434,9 @@ class MapPerformanceTest {
   void testAtlasMapSwitchingPerformance() throws Exception {
     Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
-            new AtlasPosition(
-                    TestEngineContext.getGameStores(),
-                    TestEngineContext.getQuestTracker());
+        new AtlasPosition(TestEngineContext.getGameStores(), TestEngineContext.getQuestTracker());
 
-      // Create and cache 50 maps
+    // Create and cache 50 maps
     List<World> worlds = new ArrayList<>();
     for (int i = 0; i < 50; i++) {
       World world = new World("World " + i, 3000 + i, zoneFactory);
@@ -477,9 +473,7 @@ class MapPerformanceTest {
   void testAtlasZoneAccessPerformance() throws Exception {
     Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
-            new AtlasPosition(
-                    TestEngineContext.getGameStores(),
-                    TestEngineContext.getQuestTracker());
+        new AtlasPosition(TestEngineContext.getGameStores(), TestEngineContext.getQuestTracker());
 
     World world = new World("Zone Access World", 4000, zoneFactory);
     atlasPosition.setMap(world);
@@ -522,9 +516,7 @@ class MapPerformanceTest {
   void testFullMapLoadAndQueryPerformance() throws Exception {
     Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
-            new AtlasPosition(
-                    TestEngineContext.getGameStores(),
-                    TestEngineContext.getQuestTracker());
+        new AtlasPosition(TestEngineContext.getGameStores(), TestEngineContext.getQuestTracker());
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(
@@ -593,9 +585,7 @@ class MapPerformanceTest {
   void testMemoryEfficiencyWithLargeMaps() throws Exception {
     Atlas atlas = TestEngineContext.getTestAtlas();
     AtlasPosition atlasPosition =
-            new AtlasPosition(
-                    TestEngineContext.getGameStores(),
-                    TestEngineContext.getQuestTracker());
+        new AtlasPosition(TestEngineContext.getGameStores(), TestEngineContext.getQuestTracker());
 
     Runtime runtime = Runtime.getRuntime();
     runtime.gc();

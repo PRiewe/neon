@@ -32,10 +32,12 @@ import neon.resources.RSpell;
 
 @SuppressWarnings("serial")
 public class SignEditor extends ObjectEditor implements MouseListener {
-  private DefaultTableModel abilityModel, powerModel;
-  private JTable abilityTable, powerTable;
-  private RSign sign;
-  private JTextField nameField;
+  private final DefaultTableModel abilityModel;
+  private final DefaultTableModel powerModel;
+  private final JTable abilityTable;
+  private final JTable powerTable;
+  private final RSign sign;
+  private final JTextField nameField;
   private final DataStore dataStore;
 
   public SignEditor(JFrame parent, RSign sign, DataStore dataStore) {
@@ -80,12 +82,12 @@ public class SignEditor extends ObjectEditor implements MouseListener {
   protected void save() {
     sign.name = nameField.getText();
     sign.abilities.clear();
-    for (Vector<?> data : (Vector<Vector>) abilityModel.getDataVector()) {
+    for (Vector<?> data : abilityModel.getDataVector()) {
       sign.abilities.put((Ability) data.get(0), (Integer) data.get(1));
     }
     sign.powers.clear();
-    for (Vector<String> data : (Vector<Vector>) powerModel.getDataVector()) {
-      sign.powers.add(data.get(0).toString());
+    for (Vector<String> data : powerModel.getDataVector()) {
+      sign.powers.add(data.get(0));
     }
     sign.setPath(dataStore.getActive().get("id"));
   }
@@ -180,7 +182,7 @@ public class SignEditor extends ObjectEditor implements MouseListener {
   }
 
   private static class SignsTableModel extends DefaultTableModel {
-    private Class<?>[] classes;
+    private final Class<?>[] classes;
 
     public SignsTableModel(String[] columns, Class<?>... classes) {
       super(columns, 0);

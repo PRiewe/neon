@@ -122,14 +122,13 @@ public class TestEngineContext {
 
     // Create ZoneFactory for tests
     testZoneFactory = new ZoneFactory(testDb, testStore, testResources);
-    mapLoader =
-        new MapLoader(getStubFileSystem(), testStore, testResources, testZoneFactory);
+    mapLoader = new MapLoader(getStubFileSystem(), testStore, testResources, testZoneFactory);
     // Create test Atlas with dependency injection (doesn't need Engine.game)
     testAtlas = new Atlas(getStubFileSystem(), testDb, testStore, testResources, mapLoader);
-    gameStores = new DefaultGameStores(getTestResources(), getStubFileSystem(),testStore);
+    gameStores = new DefaultGameStores(getTestResources(), getStubFileSystem(), testStore);
     questTracker = new QuestTracker(gameStores);
     atlasPosition = new AtlasPosition(gameStores, questTracker);
-    testGame = new Game( gameStores, atlasPosition);
+    testGame = new Game(gameStores, atlasPosition);
     setStaticField(Engine.class, "game", testGame);
 
     // Create stub FileSystem

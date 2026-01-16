@@ -21,7 +21,6 @@ package neon.entities;
 import java.awt.Rectangle;
 import java.util.*;
 import neon.ai.*;
-import neon.core.GameStores;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.components.FactionComponent;
 import neon.entities.property.Gender;
@@ -81,13 +80,11 @@ public class CreatureFactory {
   public Creature getCreature(String id, int x, int y, long uid) {
     Creature creature;
     Resource resource = resourceManager.getResource(id);
-    if (resource instanceof RPerson) {
-      RPerson rp = (RPerson) resource;
+    if (resource instanceof RPerson rp) {
       RCreature species = (RCreature) resourceManager.getResource(rp.species);
       creature = getPerson(id, x, y, uid, species);
       creature.brain = aiFactory.getAI(creature, rp);
-    } else if (resource instanceof LCreature) {
-      LCreature lc = (LCreature) resource;
+    } else if (resource instanceof LCreature lc) {
       ArrayList<String> creatures = new ArrayList<String>(lc.creatures.keySet());
       return getCreature(creatures.get(Dice.roll(1, creatures.size(), -1)), x, y, uid);
     } else {

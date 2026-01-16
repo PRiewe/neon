@@ -93,8 +93,8 @@ public class NewObjectDialog implements ActionListener {
   }
 
   public static class Properties {
-    private String id;
-    private boolean ok;
+    private final String id;
+    private final boolean ok;
 
     public Properties(boolean cancelled, String id) {
       this.ok = !cancelled;

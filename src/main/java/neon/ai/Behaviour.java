@@ -20,5 +20,5 @@ package neon.ai;
 
 public interface Behaviour {
   // TODO: AI aanpassen met behaviours (primitieve state machine)
-  public void act();
+  void act();
 }

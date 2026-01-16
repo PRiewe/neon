@@ -25,8 +25,8 @@ public abstract class UndoAction {
   public abstract void undo();
 
   public static class Drop extends UndoAction {
-    private Instance instance;
-    private Scene model;
+    private final Instance instance;
+    private final Scene model;
 
     public Drop(Instance instance, Scene model) {
       this.instance = instance;
@@ -39,9 +39,10 @@ public abstract class UndoAction {
   }
 
   public static class Move extends UndoAction {
-    private Instance instance;
-    private Scene scene;
-    private int x, y;
+    private final Instance instance;
+    private final Scene scene;
+    private final int x;
+    private final int y;
 
     public Move(Instance instance, Scene scene, int x, int y) {
       this.instance = instance;

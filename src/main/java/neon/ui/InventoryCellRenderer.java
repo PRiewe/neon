@@ -21,7 +21,6 @@ package neon.ui;
 import java.awt.*;
 import java.util.HashMap;
 import javax.swing.*;
-
 import neon.entities.Entity;
 import neon.entities.UIDStore;
 
@@ -32,9 +31,9 @@ import neon.entities.UIDStore;
  */
 @SuppressWarnings("serial")
 public class InventoryCellRenderer extends JLabel implements ListCellRenderer<Entity> {
-  private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-  private Font font;
-  private HashMap<String, Integer> data;
+  private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+  private final Font font;
+  private final HashMap<String, Integer> data;
   private final UIDStore uidStore;
 
   /** Initializes this renderer. */

@@ -71,8 +71,7 @@ public class DungeonGenerator {
    * @param resourceProvider the resource provider service
    * @param questProvider the quest provider service
    */
-  public DungeonGenerator(
-      RZoneTheme theme, QuestProvider questProvider, GameStores gameStores) {
+  public DungeonGenerator(RZoneTheme theme, QuestProvider questProvider, GameStores gameStores) {
     this(theme, questProvider, gameStores, new MapUtils(), new Dice());
   }
 
@@ -102,7 +101,7 @@ public class DungeonGenerator {
     this.dice = dice;
     dungeonTerrainGenerator = new DungeonTerrainGenerator(mapUtils, dice);
     this.itemFactory = new ItemFactory(gameStores.getResources());
-    this.creatureFactory = new CreatureFactory(gameStores.getResources(),gameStores.getStore());
+    this.creatureFactory = new CreatureFactory(gameStores.getResources(), gameStores.getStore());
   }
 
   /**
@@ -113,8 +112,7 @@ public class DungeonGenerator {
    * @param resourceProvider the resource provider service
    * @param questProvider the quest provider service
    */
-  public DungeonGenerator(
-      Zone zone, QuestProvider questProvider, GameStores gameStores) {
+  public DungeonGenerator(Zone zone, QuestProvider questProvider, GameStores gameStores) {
     this(zone, questProvider, gameStores, new MapUtils(), new Dice());
   }
 
@@ -130,11 +128,7 @@ public class DungeonGenerator {
    * @param dice the Dice instance for random operations
    */
   public DungeonGenerator(
-      Zone zone,
-      QuestProvider questProvider,
-      GameStores gameStores,
-      MapUtils mapUtils,
-      Dice dice) {
+      Zone zone, QuestProvider questProvider, GameStores gameStores, MapUtils mapUtils, Dice dice) {
     this.zone = zone;
     this.theme = zone.getTheme();
     this.entityStore = gameStores.getStore();
@@ -146,7 +140,7 @@ public class DungeonGenerator {
     dungeonTerrainGenerator = new DungeonTerrainGenerator(mapUtils, dice);
     this.itemFactory = new ItemFactory(gameStores.getResources());
     // CreatureFactory needs GameContext too, create minimal wrapper
-    this.creatureFactory = new CreatureFactory(gameStores.getResources(),gameStores.getStore());
+    this.creatureFactory = new CreatureFactory(gameStores.getResources(), gameStores.getStore());
   }
 
   /**

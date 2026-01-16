@@ -37,7 +37,7 @@ import net.engio.mbassy.listener.References;
 @Listener(references = References.Strong) // strong, to avoid gc
 @Slf4j
 public class LocalPort extends Port {
-  private Collection<EventObject> buffer =
+  private final Collection<EventObject> buffer =
       Collections.synchronizedCollection(new ArrayDeque<EventObject>());
   private LocalPort peer;
   private final String name;

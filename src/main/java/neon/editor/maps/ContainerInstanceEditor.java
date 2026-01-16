@@ -33,15 +33,17 @@ import neon.resources.RSpell;
 import org.jdom2.Element;
 
 public class ContainerInstanceEditor implements ActionListener, MouseListener {
-  private IContainer container;
-  private JDialog frame;
-  private JList<IObject> items;
-  private DefaultListModel<IObject> model;
-  private ZoneTreeNode node;
-  private JCheckBox lockBox, trapBox;
-  private JSpinner lockSpinner, trapSpinner;
-  private JComboBox<RItem> keyBox;
-  private JComboBox<RSpell.Enchantment> spellBox;
+  private final IContainer container;
+  private final JDialog frame;
+  private final JList<IObject> items;
+  private final DefaultListModel<IObject> model;
+  private final ZoneTreeNode node;
+  private final JCheckBox lockBox;
+  private final JCheckBox trapBox;
+  private final JSpinner lockSpinner;
+  private final JSpinner trapSpinner;
+  private final JComboBox<RItem> keyBox;
+  private final JComboBox<RSpell.Enchantment> spellBox;
   private final DataStore dataStore;
 
   public ContainerInstanceEditor(

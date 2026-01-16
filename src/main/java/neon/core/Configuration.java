@@ -30,7 +30,7 @@ public class Configuration {
   public static boolean audio = false; // audio aan of uit?
   public static boolean gThread = true; // terrain generation threaded of niet?
 
-  private HashMap<String, String> properties = new HashMap<>();
+  private final HashMap<String, String> properties = new HashMap<>();
 
   /** Loads all kinds of stuff. */
   public Configuration(ResourceManager resources) {

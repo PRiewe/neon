@@ -30,13 +30,13 @@ import neon.resources.RItem;
 import neon.util.ColorFactory;
 
 public class ContainerEditor extends ObjectEditor implements MouseListener {
-  private JTextField nameField;
-  private JComboBox<String> colorBox;
-  private JFormattedTextField charField;
-  private RItem.Container data;
+  private final JTextField nameField;
+  private final JComboBox<String> colorBox;
+  private final JFormattedTextField charField;
+  private final RItem.Container data;
   private final DataStore dataStore;
-  private JList<RItem> items;
-  private DefaultListModel<RItem> model;
+  private final JList<RItem> items;
+  private final DefaultListModel<RItem> model;
 
   public ContainerEditor(JFrame parent, RItem.Container data, DataStore dataStore) {
     super(parent, "Container Editor: " + data.id);

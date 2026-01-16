@@ -36,16 +36,17 @@ import neon.ui.UserInterface;
 import net.engio.mbassy.bus.MBassador;
 
 public class NewGameDialog {
-  private JDialog frame;
-  private JComboBox<String> race;
-  private JComboBox<RSign> signBox;
-  private JComboBox<Gender> gender;
-  private JComboBox<Player.Specialisation> spec;
-  private JPanel main;
-  private JTextField name, prof;
-  private HashMap<String, String> raceList;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JDialog frame;
+  private final JComboBox<String> race;
+  private final JComboBox<RSign> signBox;
+  private final JComboBox<Gender> gender;
+  private final JComboBox<Player.Specialisation> spec;
+  private final JPanel main;
+  private final JTextField name;
+  private final JTextField prof;
+  private final HashMap<String, String> raceList;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameStores gameStores;
 
   public NewGameDialog(UserInterface ui, MBassador<EventObject> bus, GameStores gameStores) {
@@ -183,11 +184,7 @@ public class NewGameDialog {
     private boolean checkSaves(String name) {
       File save = new File("saves/" + name);
 
-      if (save.exists()) {
-        return true;
-      } else {
-        return false;
-      }
+      return save.exists();
     }
   }
 

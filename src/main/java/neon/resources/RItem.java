@@ -46,11 +46,11 @@ public class RItem extends RData implements Serializable {
     light,
     potion,
     scroll,
-    weapon;
+    weapon
   }
 
-  private static XMLOutputter outputter = new XMLOutputter();
-  private static SAXBuilder builder = new SAXBuilder();
+  private static final XMLOutputter outputter = new XMLOutputter();
+  private static final SAXBuilder builder = new SAXBuilder();
 
   @JacksonXmlProperty(isAttribute = true)
   @JsonProperty(required = false)
@@ -162,7 +162,7 @@ public class RItem extends RData implements Serializable {
       spell = item.getAttributeValue("spell");
     }
     if (item.getChild("svg") != null) {
-      svg = outputter.outputString((Element) item.getChild("svg").getChildren().get(0));
+      svg = outputter.outputString(item.getChild("svg").getChildren().get(0));
     }
   }
 

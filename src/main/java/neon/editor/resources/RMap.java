@@ -19,6 +19,7 @@
 package neon.editor.resources;
 
 import java.util.*;
+import lombok.extern.slf4j.Slf4j;
 import neon.editor.DataStore;
 import neon.editor.maps.*;
 import neon.maps.model.DungeonModel;
@@ -40,13 +41,14 @@ import org.jdom2.*;
  * 		b. random dungeon
  * 		c. outdoor
  */
+@Slf4j
 public class RMap extends RData {
   // id van map = path
   public static final boolean DUNGEON = true;
   public HashMap<Integer, RZone> zones = new HashMap<Integer, RZone>();
   public RDungeonTheme theme;
   public short uid;
-  private boolean type;
+  private final boolean type;
   private ArrayList<Integer> uids;
 
   private final DataStore dataStore;
@@ -69,11 +71,11 @@ public class RMap extends RData {
                     .getResource(properties.getChild("header").getAttributeValue("theme"), "theme");
       } else {
         for (Element zone : properties.getChildren("level")) {
-          zones.put(Integer.parseInt(zone.getAttributeValue("l")), new RZone(zone, this, path));
+          zones.put(Integer.parseInt(zone.getAttributeValue("l")), new RZone(zone, this,dataStore, path));
         }
       }
     } else {
-      zones.put(0, new RZone(properties, this, path));
+      zones.put(0, new RZone(properties, this, dataStore, path));
     }
   }
 
@@ -94,7 +96,7 @@ public class RMap extends RData {
       region.setAttribute("text", props.getTerrain());
       region.setAttribute("l", "0");
       Instance ri = new IRegion(region, dataStore);
-      RZone zone = new RZone(name, mod, ri, this);
+      RZone zone = new RZone(name, mod, ri, this,dataStore);
       zones.put(0, zone);
     }
   }
@@ -165,23 +167,26 @@ public class RMap extends RData {
       RZone zone = zones.get(0);
       Element creatures = new Element("creatures");
       Element items = new Element("items");
+      Element doors = new Element("doors");
+      Element containers = new Element("containers");
       Element regions = new Element("regions");
       for (Renderable r : zone.getScene().getElements()) {
         Instance i = (Instance) r;
         Element element = i.toElement();
         element.detach();
-        if (element.getName().equals("region")) {
-          regions.addContent(element);
-        } else if (element.getName().equals("creature")) {
-          creatures.addContent(element);
-        } else if (element.getName().equals("item")
-            || element.getName().equals("door")
-            || element.getName().equals("container")) {
-          items.addContent(element);
+        switch (element.getName()) {
+          case "region" -> regions.addContent(element);
+          case "creature" -> creatures.addContent(element);
+          case "item" -> items.addContent(element);
+          case "door" -> doors.addContent(element);
+          case "container" -> containers.addContent(element);
+          default -> log.warn("Unknown element {} with content {}", element.getName(), element);
         }
       }
       root.addContent(creatures);
       root.addContent(items);
+      root.addContent(doors);
+      root.addContent(containers);
       root.addContent(regions);
     }
 
@@ -205,20 +210,15 @@ public class RMap extends RData {
     for (Renderable r : zone.getScene().getElements()) {
       Instance instance = (Instance) r;
 
-      if (instance instanceof IRegion) {
-        model.regions.add(convertRegion((IRegion) instance));
-      } else if (instance instanceof IObject) {
-        IObject obj = (IObject) instance;
-        if (instance instanceof IDoor) {
-          model.doors.add(convertDoor((IDoor) instance));
-        } else if (instance instanceof IContainer) {
-          model.containers.add(convertContainer((IContainer) instance));
-        } else {
-          model.items.add(convertItem(obj));
+        switch (instance) {
+            case IRegion iRegion -> model.regions.add(convertRegion(iRegion));
+            case IPerson iPerson -> model.creatures.add(convertCreature(iPerson));
+            case IDoor iDoor -> model.doors.add(convertDoor(iDoor));
+            case IContainer iContainer -> model.containers.add(convertContainer(iContainer));
+            case IObject obj -> model.items.add(convertItem(obj));
+            case null, default -> {
+            }
         }
-      } else if (instance instanceof IPerson) {
-        model.creatures.add(convertCreature((IPerson) instance));
-      }
     }
 
     return model;
@@ -252,19 +252,13 @@ public class RMap extends RData {
         for (Renderable r : zone.getScene().getElements()) {
           Instance instance = (Instance) r;
 
-          if (instance instanceof IRegion) {
-            level.regions.add(convertRegion((IRegion) instance));
-          } else if (instance instanceof IObject) {
-            IObject obj = (IObject) instance;
-            if (instance instanceof IDoor) {
-              level.doors.add(convertDoor((IDoor) instance));
-            } else if (instance instanceof IContainer) {
-              level.containers.add(convertContainer((IContainer) instance));
-            } else {
-              level.items.add(convertItem(obj));
-            }
-          } else if (instance instanceof IPerson) {
-            level.creatures.add(convertCreature((IPerson) instance));
+          switch (instance) {
+            case IRegion iRegion -> level.regions.add(convertRegion(iRegion));
+            case IDoor iDoor -> level.doors.add(convertDoor(iDoor));
+            case IContainer iContainer -> level.containers.add(convertContainer(iContainer));
+            case IPerson iPerson -> level.creatures.add(convertCreature((IPerson) iPerson));
+            case IObject iObject -> level.items.add(convertItem(iObject));
+            default -> throw new IllegalStateException("Unexpected value: " + instance);
           }
         }
       }
@@ -416,7 +410,7 @@ public class RMap extends RData {
           System.out.println("fout in EditableMap.load(" + id + ")");
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        log.error("load", e);
       }
     }
   }
