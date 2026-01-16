@@ -60,7 +60,7 @@ public class MoveState extends State implements KeyListener {
     this.gameStores = gameStores;
     keys = (CClient) gameStores.getResources().getResource("client", "config");
     inventoryHandler = new InventoryHandler(gameStores.getStore());
-    motionHandler = new MotionHandler(gameStores.getStore(), player);
+    motionHandler = new MotionHandler(gameStores.getStore());
     teleportHandler =
         new TeleportHandler(
             gameStores, context, context.getAtlasPosition(), context.getScriptEngine());
@@ -68,7 +68,7 @@ public class MoveState extends State implements KeyListener {
 
   @Override
   public void enter(TransitionEvent e) {
-    player = context.getPlayer();
+    player = gameStores.getStore().getPlayer();
     panel = (GamePanel) getVariable("panel");
     panel.addKeyListener(this);
   }

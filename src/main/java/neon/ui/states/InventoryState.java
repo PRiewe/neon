@@ -87,7 +87,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     inventory.addMouseListener(this);
     JScrollPane scroller = new JScrollPane(inventory);
     listData = new HashMap<String, Integer>();
-    inventory.setCellRenderer(new neon.ui.InventoryCellRenderer(listData, context));
+    inventory.setCellRenderer(new neon.ui.InventoryCellRenderer(listData, gameStores.getStore()));
     inventory.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     scroller.setBorder(new TitledBorder("Inventory"));
     contents.add(scroller);
@@ -110,7 +110,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
 
   @Override
   public void enter(TransitionEvent t) {
-    player = context.getPlayer();
+    player = gameStores.getStore().getPlayer();
     initList();
     inventory.setSelectedIndex(0);
     inventory.repaint();
@@ -152,7 +152,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     Vector<Item> buffer = new Vector<Item>();
     listData.clear();
 
-    for (long uid : context.getPlayer().getInventoryComponent()) {
+    for (long uid : gameStores.getStore().getPlayer().getInventoryComponent()) {
       Item i = (Item) gameStores.getStore().getEntity(uid);
       if (!listData.containsKey(i.getID())) {
         listData.put(i.getID(), 1);

@@ -39,8 +39,7 @@ class AtlasIntegrationTest {
     atlasPosition =
         new AtlasPosition(
             TestEngineContext.getGameStores(),
-            new QuestTracker(TestEngineContext.getGameStores()),
-            TestEngineContext.getTestContext().getPlayer());
+            new QuestTracker(TestEngineContext.getGameStores()));
     zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 

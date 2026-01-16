@@ -110,8 +110,8 @@ public class MagicHandler {
       for (Creature creature : creatures) {
         castSpell(creature, null, spell);
       }
-      if (box.contains(gameContext.getPlayer().getShapeComponent())) {
-        castSpell(gameContext.getPlayer(), null, spell);
+      if (box.contains(gameStores.getStore().getPlayer().getShapeComponent())) {
+        castSpell(gameStores.getStore().getPlayer(), null, spell);
       }
     }
   }
@@ -179,8 +179,8 @@ public class MagicHandler {
       } else {
         Collection<Creature> creatures =
             gameContext.getAtlasPosition().getCurrentZone().getCreatures(box);
-        if (box.contains(gameContext.getPlayer().getShapeComponent())) {
-          creatures.add(gameContext.getPlayer());
+        if (box.contains(gameStores.getStore().getPlayer().getShapeComponent())) {
+          creatures.add(gameStores.getStore().getPlayer());
         }
         for (Creature creature : creatures) {
           castSpell(creature, caster, formula);
@@ -240,8 +240,8 @@ public class MagicHandler {
       } else {
         Collection<Creature> creatures =
             gameContext.getAtlasPosition().getCurrentZone().getCreatures(box);
-        if (box.contains(gameContext.getPlayer().getShapeComponent())) {
-          creatures.add(gameContext.getPlayer());
+        if (box.contains(gameStores.getStore().getPlayer().getShapeComponent())) {
+          creatures.add(gameStores.getStore().getPlayer());
         }
         for (Creature creature : creatures) {
           castSpell(creature, caster, formula);

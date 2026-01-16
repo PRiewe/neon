@@ -68,8 +68,8 @@ public class WildernessGenerator {
    * @param entityStore the entity store service
    * @param resourceProvider the resource provider service
    */
-  public WildernessGenerator(Zone zone, GameStores gameStores, Player gameContext) {
-    this(zone, gameStores, gameContext, new MapUtils(), new Dice());
+  public WildernessGenerator(Zone zone, GameStores gameStores) {
+    this(zone, gameStores, new MapUtils(), new Dice());
   }
 
   /**
@@ -82,26 +82,25 @@ public class WildernessGenerator {
    * @param dice the Dice instance for random operations
    */
   public WildernessGenerator(
-      Zone zone, GameStores gameStores, Player gameContext, MapUtils mapUtils, Dice dice) {
+      Zone zone, GameStores gameStores, MapUtils mapUtils, Dice dice) {
     this.zone = zone;
     this.entityStore = gameStores.getStore();
     this.resourceProvider = gameStores.getResources();
     this.dice = dice;
     this.wildernessTerrainGenerator = new WildernessTerrainGenerator(mapUtils, dice);
     this.itemFactory = new ItemFactory(gameStores.getResources());
-    this.creatureFactory = new CreatureFactory(gameStores, gameContext);
+    this.creatureFactory = new CreatureFactory(gameStores.getResources(),gameStores.getStore());
   }
 
   public WildernessGenerator(
-      Zone zone, ResourceManager resourceManeger, UIDStore uidStore, Player gameContext) {
-    this(zone, resourceManeger, uidStore, gameContext, new MapUtils(), new Dice());
+      Zone zone, ResourceManager resourceManeger, UIDStore uidStore) {
+    this(zone, resourceManeger, uidStore, new MapUtils(), new Dice());
   }
 
   public WildernessGenerator(
       Zone zone,
       ResourceManager resourceManeger,
       UIDStore uidStore,
-      Player gameContext,
       MapUtils mapUtils,
       Dice dice) {
     this.zone = zone;
@@ -110,7 +109,7 @@ public class WildernessGenerator {
     this.dice = dice;
     this.wildernessTerrainGenerator = new WildernessTerrainGenerator(mapUtils, dice);
     this.itemFactory = new ItemFactory(resourceManeger);
-    this.creatureFactory = new CreatureFactory(resourceManeger, uidStore, gameContext);
+    this.creatureFactory = new CreatureFactory(resourceManeger, uidStore);
   }
 
   /**
@@ -124,14 +123,14 @@ public class WildernessGenerator {
    * @param dice the Dice instance for random operations
    */
   public WildernessGenerator(
-      String[][] terrain, GameStores gameStores, Player gameContext, MapUtils mapUtils, Dice dice) {
+      String[][] terrain, GameStores gameStores, MapUtils mapUtils, Dice dice) {
     this.terrain = terrain;
     this.entityStore = gameStores.getStore();
     this.resourceProvider = gameStores.getResources();
     this.dice = dice;
     this.wildernessTerrainGenerator = new WildernessTerrainGenerator(mapUtils, dice);
     this.itemFactory = new ItemFactory(gameStores.getResources());
-    this.creatureFactory = new CreatureFactory(gameStores, gameContext);
+    this.creatureFactory = new CreatureFactory(gameStores.getResources(),gameStores.getStore());
   }
 
   /** Generates a piece of wilderness using the supplied parameters. */

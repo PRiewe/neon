@@ -23,8 +23,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import neon.ai.AIFactory;
-import neon.core.GameContext;
-import neon.core.GameStores;
 import neon.entities.*;
 import neon.entities.components.HealthComponent;
 import neon.entities.property.Slot;
@@ -39,16 +37,12 @@ public class CreatureSerializer {
   private final SpellFactory spellFactory;
   private final ResourceManager resourceManager;
 
-
-  public CreatureSerializer(ResourceManager resourceManager, UIDStore uidStore, Player player) {
+  public CreatureSerializer(ResourceManager resourceManager, UIDStore uidStore) {
     spellFactory = new SpellFactory(resourceManager);
     this.resourceManager = resourceManager;
 
     // AIFactory can be null if gameContext is null (for write-only or test scenarios)
-    aiFactory =
-             new AIFactory(
-                resourceManager, uidStore, player);
-
+    aiFactory = new AIFactory(resourceManager, uidStore);
   }
 
   public Creature deserialize(DataInput in) throws IOException {
@@ -99,7 +93,7 @@ public class CreatureSerializer {
 
   public void serialize(DataOutput out, Creature creature) throws IOException {
     out.writeUTF(creature.getID());
-    out.writeUTF(creature.species.id);
+    out.writeUTF(creature.getSpecies().id);
     Rectangle bounds = creature.getShapeComponent();
     out.writeInt(bounds.x);
     out.writeInt(bounds.y);

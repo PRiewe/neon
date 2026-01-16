@@ -49,16 +49,14 @@ public class MapLoader {
   private final ResourceManager resourceManager;
   private final FileSystem fileSystem;
   private final ZoneFactory zoneFactory;
-  @Setter private Player player;
 
   /** Creates a MapLoader with dependency injection. */
   public MapLoader(
       FileSystem fileSystem,
       UIDStore uidStore,
       ResourceManager resourceManager,
-      ZoneFactory zoneFactory,
-      Player player) {
-    this(fileSystem, uidStore, resourceManager, new MapUtils(), zoneFactory, player);
+      ZoneFactory zoneFactory) {
+    this(fileSystem, uidStore, resourceManager, new MapUtils(), zoneFactory);
   }
 
   /**
@@ -71,14 +69,12 @@ public class MapLoader {
       UIDStore uidStore,
       ResourceManager resourceManager,
       MapUtils mapUtils,
-      ZoneFactory zoneFactory,
-      Player player) {
+      ZoneFactory zoneFactory) {
     this.fileSystem = fileSystem;
     this.uidStore = uidStore;
     this.resourceManager = resourceManager;
     this.mapUtils = mapUtils;
     this.zoneFactory = zoneFactory;
-    this.player = player;
   }
 
   /**
@@ -182,7 +178,7 @@ public class MapLoader {
     World world = new World(model.header.name, uid, zoneFactory);
     Zone zone = world.getZone(0); // outdoor maps have only zone 0
     ItemFactory itemFactory = new ItemFactory(resourceManager);
-    CreatureFactory creatureFactory = new CreatureFactory(resourceManager, uidStore, player);
+    CreatureFactory creatureFactory = new CreatureFactory(resourceManager, uidStore);
     // Add regions
     for (WorldModel.RegionData regionData : model.regions) {
       Region region = buildRegionFromModel(regionData);
@@ -198,7 +194,7 @@ public class MapLoader {
     }
 
     // Add items (simple items)
-    for (WorldModel.ItemPlacement ip : model.items.items) {
+    for (WorldModel.ItemPlacement ip : model.items) {
       long itemUID = UIDStore.getObjectUID(uid, ip.uid);
       Item item = itemFactory.getItem(ip.id, ip.x, ip.y, itemUID);
       uidStore.addEntity(item);
@@ -206,7 +202,7 @@ public class MapLoader {
     }
 
     // Add doors
-    for (WorldModel.DoorPlacement dp : model.items.doors) {
+    for (WorldModel.DoorPlacement dp : model.doors) {
       long doorUID = UIDStore.getObjectUID(uid, dp.uid);
       Door door = buildDoorFromModel(dp, uid, doorUID, itemFactory);
       uidStore.addEntity(door);
@@ -214,7 +210,7 @@ public class MapLoader {
     }
 
     // Add containers
-    for (WorldModel.ContainerPlacement cp : model.items.containers) {
+    for (WorldModel.ContainerPlacement cp : model.containers) {
       long containerUID = UIDStore.getObjectUID(uid, cp.uid);
       Container container = buildContainerFromModel(cp, uid, containerUID, itemFactory);
       uidStore.addEntity(container);
@@ -237,7 +233,7 @@ public class MapLoader {
       return loadThemedDungeon(model.header.name, model.header.theme, uid);
     }
     ItemFactory itemFactory = new ItemFactory(resourceManager);
-    CreatureFactory creatureFactory = new CreatureFactory(resourceManager, uidStore, player);
+    CreatureFactory creatureFactory = new CreatureFactory(resourceManager, uidStore);
     Dungeon dungeon = new Dungeon(model.header.name, uid, zoneFactory);
 
     for (DungeonModel.Level levelData : model.levels) {
@@ -274,7 +270,7 @@ public class MapLoader {
         }
 
         // Add items
-        for (WorldModel.ItemPlacement ip : levelData.items.items) {
+        for (WorldModel.ItemPlacement ip : levelData.items) {
           long itemUID = UIDStore.getObjectUID(uid, ip.uid);
           Item item = itemFactory.getItem(ip.id, ip.x, ip.y, itemUID);
           uidStore.addEntity(item);
@@ -282,7 +278,7 @@ public class MapLoader {
         }
 
         // Add doors
-        for (WorldModel.DoorPlacement dp : levelData.items.doors) {
+        for (WorldModel.DoorPlacement dp : levelData.doors) {
           long doorUID = UIDStore.getObjectUID(uid, dp.uid);
           Door door = buildDoorFromModel(dp, uid, doorUID, itemFactory);
           uidStore.addEntity(door);
@@ -290,7 +286,7 @@ public class MapLoader {
         }
 
         // Add containers
-        for (WorldModel.ContainerPlacement cp : levelData.items.containers) {
+        for (WorldModel.ContainerPlacement cp : levelData.containers) {
           long containerUID = UIDStore.getObjectUID(uid, cp.uid);
           Container container = buildContainerFromModel(cp, uid, containerUID, itemFactory);
           uidStore.addEntity(container);

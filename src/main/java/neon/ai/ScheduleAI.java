@@ -37,22 +37,21 @@ public class ScheduleAI extends AI {
       byte confidence,
       Point[] schedule,
       ResourceManager resourceManager,
-      UIDStore uidStore,
-      Player player) {
-    super(creature, aggression, confidence, resourceManager, uidStore, player);
+      UIDStore uidStore) {
+    super(creature, aggression, confidence, resourceManager, uidStore);
     this.schedule = schedule;
   }
 
   public void act() {
-    if (isHostile() && sees(player)) {
+    if (isHostile() && sees(uidStore.getPlayer())) {
       HealthComponent health = creature.getHealthComponent();
       if (100 * health.getHealth() / health.getBaseHealth() < confidence) {
         // 80% chance to just flee, 20% chance to heal; if no heal spell, flee anyway
         if (Math.random() > 0.2 || !(cure() || heal())) {
-          flee(player);
+          flee(uidStore.getPlayer());
         }
       } else {
-        hunt(player);
+        hunt(uidStore.getPlayer());
       }
     } else {
       ShapeComponent bounds = creature.getShapeComponent();

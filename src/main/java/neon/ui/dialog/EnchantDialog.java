@@ -112,7 +112,7 @@ public class EnchantDialog implements KeyListener, ListSelectionListener {
     itemModel.clear();
     spellModel.clear();
 
-    for (Long uid : context.getPlayer().getInventoryComponent()) {
+    for (Long uid : gameStores.getStore().getPlayer().getInventoryComponent()) {
       Item item = (Item) gameStores.getStore().getEntity(uid);
       if ((item instanceof Weapon || item instanceof Clothing)
           && item.getMagicComponent() == null) {

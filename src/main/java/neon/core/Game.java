@@ -30,19 +30,16 @@ import neon.systems.timing.Timer;
 @Getter
 public class Game implements Closeable {
 
-  private final Player player;
   private final Timer timer = new Timer();
   private final AtlasPosition atlasPosition;
   @Getter private final GameStores gameStores;
 
   public Game(
-      Player player,
       GameStores gameStores,
       PhysicsManager physicsManager,
       QuestTracker questTracker) {
-    this.player = player;
     this.gameStores = gameStores;
-    this.atlasPosition = new AtlasPosition(gameStores, questTracker, player);
+    this.atlasPosition = new AtlasPosition(gameStores, questTracker);
   }
 
   /**
@@ -50,8 +47,7 @@ public class Game implements Closeable {
    *
    * @param player the player
    */
-  public Game(Player player, GameStores gameStores, AtlasPosition atlasPosition) {
-    this.player = player;
+  public Game( GameStores gameStores, AtlasPosition atlasPosition) {
     this.gameStores = gameStores;
     this.atlasPosition = atlasPosition;
   }

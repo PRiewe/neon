@@ -37,8 +37,6 @@ import org.graalvm.polyglot.Context;
  */
 public interface GameContext {
 
-  Player getPlayer();
-
   AtlasPosition getAtlasPosition();
 
   Timer getTimer();

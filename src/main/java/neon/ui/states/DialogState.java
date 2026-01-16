@@ -213,30 +213,30 @@ public class DialogState extends State implements KeyListener {
         } else {
           String value = list.getSelectedValue().toString();
           if (value.equals("travel")) {
-            new TravelDialog(ui, bus, gameStores).show(context.getPlayer(), target);
+            new TravelDialog(ui, bus, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("training")) {
-            new TrainingDialog(ui, bus, gameStores).show(context.getPlayer(), target);
+            new TrainingDialog(ui, bus, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("spells")) {
-            new SpellTradeDialog(ui, big, small).show(context.getPlayer(), target);
+            new SpellTradeDialog(ui, big, small).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("trade")) {
-            new TradeDialog(ui, big, small, context, gameStores).show(context.getPlayer(), target);
+            new TradeDialog(ui, big, small, context, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("spell maker")) {
-            new SpellMakerDialog(ui).show(context.getPlayer(), target);
+            new SpellMakerDialog(ui).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("potion maker")) {
-            new PotionDialog(ui, small, gameStores).show(context.getPlayer(), target);
+            new PotionDialog(ui, small, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("healer")) {
             heal();
           } else if (value.equals("charge")) {
-            new ChargeDialog(ui, context, gameStores).show(context.getPlayer());
+            new ChargeDialog(ui, context, gameStores).show(gameStores.getStore().getPlayer());
           } else if (value.equals("craft")) {
             new CrafterDialog(ui, small, bus, context, gameStores)
-                .show(context.getPlayer(), target);
+                .show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("enchant")) {
-            new EnchantDialog(ui, context, gameStores).show(context.getPlayer(), target);
+            new EnchantDialog(ui, context, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("repair")) {
-            new RepairDialog(ui, gameStores).show(context.getPlayer(), target);
+            new RepairDialog(ui, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("tattoos")) {
-            new TattooDialog(ui, small, gameStores).show(context.getPlayer(), target);
+            new TattooDialog(ui, small, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else {
             System.out.println("not implemented");
           }
@@ -248,7 +248,7 @@ public class DialogState extends State implements KeyListener {
   }
 
   private void heal() {
-    Player player = context.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     HealthComponent health = player.getHealthComponent();
     health.heal(health.getHealth() - health.getBaseHealth());
     MagicUtils.cure(player, SpellType.CURSE);

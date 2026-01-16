@@ -58,7 +58,6 @@ public abstract class AI implements Serializable {
   protected final MotionHandler motionHandler;
   protected final PathFinder pathFinder;
   protected final CombatUtils combatUtils;
-  protected final Player player;
 
   /**
    * Initializes a new AI.
@@ -68,17 +67,16 @@ public abstract class AI implements Serializable {
    * @param confidence
    */
   public AI(
-      Creature creature, byte aggression, byte confidence, GameStores gameStores, Player player) {
+      Creature creature, byte aggression, byte confidence, GameStores gameStores) {
     this.aggression = aggression;
     this.confidence = confidence;
     this.creature = creature;
     this.resourceManager = gameStores.getResources();
     this.uidStore = gameStores.getStore();
-    this.player = player;
 
     inventoryHandler = new InventoryHandler(uidStore);
-    motionHandler = new MotionHandler(this.uidStore, player);
-    pathFinder = new PathFinder(this.uidStore, player);
+    motionHandler = new MotionHandler(this.uidStore);
+    pathFinder = new PathFinder(this.uidStore);
     combatUtils = new CombatUtils(this.uidStore);
   }
 
@@ -87,18 +85,16 @@ public abstract class AI implements Serializable {
       byte aggression,
       byte confidence,
       ResourceManager resourceManager,
-      UIDStore uidStore,
-      Player player) {
+      UIDStore uidStore) {
     this.aggression = aggression;
     this.confidence = confidence;
     this.creature = creature;
     this.resourceManager = resourceManager;
     this.uidStore = uidStore;
-    this.player = player;
 
     inventoryHandler = new InventoryHandler(uidStore);
-    motionHandler = new MotionHandler(uidStore, player);
-    pathFinder = new PathFinder(uidStore, player);
+    motionHandler = new MotionHandler(uidStore);
+    pathFinder = new PathFinder(uidStore);
     combatUtils = new CombatUtils(uidStore);
   }
 
@@ -112,7 +108,7 @@ public abstract class AI implements Serializable {
     if (creature.hasCondition(Condition.CALM)) {
       return false;
     } else {
-      return aggression > getDisposition(player);
+      return aggression > getDisposition(uidStore.getPlayer());
     }
   }
 

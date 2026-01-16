@@ -34,9 +34,8 @@ public class TeleportHandler {
             gameStores.getFileSystem(),
             gameStores.getStore(),
             gameStores.getResources(),
-            gameStores.getZoneFactory(),
-            gameContext.getPlayer());
-    this.motionHandler = new MotionHandler(gameStores.getStore(), gameContext.getPlayer());
+            gameStores.getZoneFactory());
+    this.motionHandler = new MotionHandler(gameStores.getStore());
   }
 
   /**

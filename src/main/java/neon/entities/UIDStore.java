@@ -21,8 +21,9 @@ package neon.entities;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.io.*;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import neon.entities.mvstore.EntityDataType;
 import neon.entities.mvstore.LongDataType;
@@ -45,29 +46,32 @@ import org.h2.mvstore.MVStore;
 public class UIDStore implements EntityStore, Closeable {
   // dummy uid for objects that don't actually exist
   public static final long DUMMY = 0;
-  @Getter private final FileSystem fileSystem;
+
   // uid database
   @Getter private final MapStore uidDb;
   // uids of all objects in the game
-  private Map<Long, Entity> objects;
+  private ConcurrentMap<Long, Entity> objects;
   // uids of all loaded mods
-  private Map<Short, ModDataType.Mod> mods;
+  private ConcurrentMap<Short, ModDataType.Mod> mods;
   // uids of all loaded maps
   private final BiMap<Integer, String> maps = HashBiMap.create();
-
+  @Getter @Setter
+  private Player player;
   /**
    * Tells this UIDStore to use the given jdbm3 cache.
    *
    * @param file
    */
-  public UIDStore(FileSystem fileSystem, String file) {
-    this.fileSystem = fileSystem;
-    uidDb = new MapStoreMVStoreAdapter(MVStore.open(file));
+  public UIDStore(String file) {
+    if (file == null) {
+      uidDb = new MapStoreMVStoreAdapter(MVStore.open(null));
+    } else {
+      uidDb = new MapStoreMVStoreAdapter(MVStore.open(file));
+    }
     // Maps will be opened after DataTypes are set via setDataTypes()
   }
 
-  public UIDStore(FileSystem fileSystem, MapStore mapStore) {
-    this.fileSystem = fileSystem;
+  public UIDStore(MapStore mapStore) {
     uidDb = mapStore;
     // Maps will be opened after DataTypes are set via setDataTypes()
   }

@@ -79,7 +79,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     this.context = context;
     this.gameStores = gameStores;
     this.inventoryHandler = new InventoryHandler(gameStores.getStore());
-    this.motionHandler = new MotionHandler(gameStores.getStore(), player);
+    this.motionHandler = new MotionHandler(gameStores.getStore());
     this.teleportHandler =
         new TeleportHandler(
             gameStores, context, context.getAtlasPosition(), context.getScriptEngine());
@@ -93,7 +93,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     iList.addListSelectionListener(this);
     iScroll = new JScrollPane(iList);
     iData = new HashMap<String, Integer>();
-    iList.setCellRenderer(new InventoryCellRenderer(iData, context));
+    iList.setCellRenderer(new InventoryCellRenderer(iData, gameStores.getStore()));
     iList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     iScroll.setBorder(new TitledBorder(new LineBorder(line.brighter(), 2), "Inventory"));
     center.add(iScroll);
@@ -109,7 +109,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     cList.addListSelectionListener(this);
     cScroll = new JScrollPane(cList);
     cData = new HashMap<String, Integer>();
-    cList.setCellRenderer(new InventoryCellRenderer(cData, context));
+    cList.setCellRenderer(new InventoryCellRenderer(cData, gameStores.getStore()));
     cList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     center.add(cScroll);
     panel.add(center, BorderLayout.CENTER);
@@ -127,7 +127,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   public void enter(TransitionEvent t) {
     container = t.getParameter("holder");
     cScroll.setBorder(new TitledBorder(new LineBorder(line), container.toString()));
-    player = context.getPlayer();
+    player = gameStores.getStore().getPlayer();
     ui.showPanel(panel);
     update();
     iList.requestFocus();

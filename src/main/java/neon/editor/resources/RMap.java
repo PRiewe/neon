@@ -210,11 +210,11 @@ public class RMap extends RData {
       } else if (instance instanceof IObject) {
         IObject obj = (IObject) instance;
         if (instance instanceof IDoor) {
-          model.items.doors.add(convertDoor((IDoor) instance));
+          model.doors.add(convertDoor((IDoor) instance));
         } else if (instance instanceof IContainer) {
-          model.items.containers.add(convertContainer((IContainer) instance));
+          model.containers.add(convertContainer((IContainer) instance));
         } else {
-          model.items.items.add(convertItem(obj));
+          model.items.add(convertItem(obj));
         }
       } else if (instance instanceof IPerson) {
         model.creatures.add(convertCreature((IPerson) instance));
@@ -257,11 +257,11 @@ public class RMap extends RData {
           } else if (instance instanceof IObject) {
             IObject obj = (IObject) instance;
             if (instance instanceof IDoor) {
-              level.items.doors.add(convertDoor((IDoor) instance));
+              level.doors.add(convertDoor((IDoor) instance));
             } else if (instance instanceof IContainer) {
-              level.items.containers.add(convertContainer((IContainer) instance));
+              level.containers.add(convertContainer((IContainer) instance));
             } else {
-              level.items.items.add(convertItem(obj));
+              level.items.add(convertItem(obj));
             }
           } else if (instance instanceof IPerson) {
             level.creatures.add(convertCreature((IPerson) instance));

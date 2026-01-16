@@ -72,41 +72,6 @@ public class ZoneFactory {
     return new Zone(name, map, theme, index, uidStore, resourceManager, regions);
   }
 
-  public Zone readZoneFromExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    int index = in.readInt();
-    int map = in.readInt();
-    String name = in.readUTF();
-    String t = in.readUTF();
-    Zone theZone;
-    if (!t.isEmpty()) {
-      RZoneTheme theme = (RZoneTheme) resourceManager.getResource(t, "theme");
-      theZone = createZoneWithTheme(name, map, index, theme);
-    } else {
-      theZone = createZone(name, map, index);
-    }
-
-    int iSize = in.readInt();
-    for (int i = 0; i < iSize; i++) {
-      long uid = in.readLong();
-      Item item = (Item) uidStore.getEntity(uid);
-      theZone.addItem(item);
-    }
-    int tSize = in.readInt();
-    for (int i = 0; i < tSize; i++) {
-      long uid = in.readLong();
-      Item item = (Item) uidStore.getEntity(uid);
-      theZone.addItem(item);
-    }
-
-    int cSize = in.readInt();
-    for (int i = 0; i < cSize; i++) {
-      long uid = in.readLong();
-      Rectangle bounds = uidStore.getEntity(uid).getShapeComponent();
-      theZone.addCreature(uid, bounds);
-    }
-
-    return theZone;
-  }
 
   public Zone readZoneByteBuffer(ByteBuffer in) throws IOException, ClassNotFoundException {
     int index = in.getInt();
@@ -173,30 +138,4 @@ public class ZoneFactory {
     }
   }
 
-  public void writeZoneToExternal(ObjectOutput out, Zone zone) throws IOException {
-    out.writeInt(zone.getIndex());
-    out.writeInt(zone.getMap());
-    out.writeUTF(zone.getName());
-    if (zone.getTheme() != null) {
-      out.writeUTF(zone.getTheme().id);
-    } else {
-      out.writeUTF("");
-    }
-
-    // items
-    out.writeInt(zone.getItems().size());
-    for (long l : zone.getItems()) {
-      out.writeLong(l);
-    }
-    out.writeInt(zone.getTopSize());
-    for (long l : zone.getTopElements()) {
-      out.writeLong(l);
-    }
-
-    // creatures
-    out.writeInt(zone.getCreatures().size());
-    for (long l : zone.getCreatures()) {
-      out.writeLong(l);
-    }
-  }
 }

@@ -91,7 +91,7 @@ public class Client implements Runnable {
     // doors
     DoorState doors = new DoorState(game, bus, ui, context, gameStores);
     // locks
-    LockState locks = new LockState(game, bus, ui, context);
+    LockState locks = new LockState(game, bus, ui, gameStores.getStore());
     // bumping
     BumpState bump = new BumpState(game, bus, ui, context, gameStores);
     // move
@@ -106,7 +106,7 @@ public class Client implements Runnable {
     // containers
     ContainerState container = new ContainerState(fsm, bus, ui, context, gameStores);
     // journal state
-    JournalState journal = new JournalState(fsm, bus, ui, context, gameStores);
+    JournalState journal = new JournalState(fsm, bus, ui, gameStores);
 
     // set start states
     fsm.addStartStates(main, move);

@@ -32,12 +32,11 @@ import neon.entities.components.ShapeComponent;
  *
  * @author mdriesen
  */
-public abstract class Entity implements Serializable {
+public abstract class Entity extends EntityBase implements Serializable {
 
   // components
   public final ShapeComponent bounds;
 
-  protected ClassToInstanceMap<Component> components = MutableClassToInstanceMap.create();
 
   private long uid;
   private String id;
@@ -47,9 +46,9 @@ public abstract class Entity implements Serializable {
    * @param uid
    */
   public Entity(String id, long uid) {
+    super();
     this.id = id;
     this.uid = uid;
-
     // components
     bounds = new ShapeComponent(this, 0, 0, 1, 1);
     components.putInstance(PhysicsComponent.class, new PhysicsComponent(uid, bounds));
@@ -74,19 +73,5 @@ public abstract class Entity implements Serializable {
     return bounds;
   }
 
-  public RenderComponent getRenderComponent() {
-    return components.getInstance(RenderComponent.class);
-  }
 
-  public void setRenderComponent(RenderComponent renderer) {
-    components.putInstance(RenderComponent.class, renderer);
-  }
-
-  public PhysicsComponent getPhysicsComponent() {
-    return components.getInstance(PhysicsComponent.class);
-  }
-
-  public ScriptComponent getScriptComponent() {
-    return components.getInstance(ScriptComponent.class);
-  }
 }

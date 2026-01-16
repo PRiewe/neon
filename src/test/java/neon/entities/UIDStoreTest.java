@@ -6,10 +6,12 @@ import java.io.IOException;
 import neon.core.GameStores;
 import neon.entities.mvstore.EntityDataType;
 import neon.entities.mvstore.ModDataType;
+import neon.entities.property.Gender;
 import neon.entities.serialization.EntityFactory;
 import neon.maps.Atlas;
 import neon.maps.ZoneFactory;
 import neon.resources.RClothing;
+import neon.resources.RCreature;
 import neon.resources.RItem;
 import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
@@ -63,9 +65,18 @@ class UIDStoreTest {
   }
 
   private UIDStore createInitializedUIDStore(String filename) {
-    UIDStore store = new UIDStore(fileSystem, filename);
+    UIDStore store = new UIDStore( fileSystem.getFullPath(filename));
     GameStores gameStores = new TestGameStores(fileSystem, store);
-    EntityFactory entityFactory = new EntityFactory(gameStores, null);
+    Player stubPlayer =
+            new Player(
+                    new RCreature("test"),
+                    "TestPlayer",
+                    Gender.MALE,
+                    Player.Specialisation.combat,
+                    "Warrior",
+                    store);
+    EntityFactory entityFactory =
+        new EntityFactory(gameStores.getResources(), gameStores.getStore());
     EntityDataType entityDataType = new EntityDataType(entityFactory);
     ModDataType modDataType = new ModDataType();
     store.setDataTypes(entityDataType, modDataType);

@@ -39,7 +39,6 @@ public class DoorState extends State implements KeyListener {
   private Popup popup;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
   private final GameStores gameStores;
 
   public DoorState(
@@ -51,7 +50,6 @@ public class DoorState extends State implements KeyListener {
     super(state);
     this.bus = bus;
     this.ui = ui;
-    this.context = context;
     this.gameStores = gameStores;
   }
 
@@ -61,7 +59,7 @@ public class DoorState extends State implements KeyListener {
     panel.addKeyListener(this);
     door = (Door) e.getParameter("door");
 
-    Rectangle pBounds = context.getPlayer().getShapeComponent();
+    Rectangle pBounds = gameStores.getStore().getPlayer().getShapeComponent();
     Rectangle dBounds = door.getShapeComponent();
 
     if (pBounds.getLocation().distance(dBounds.getLocation()) < 2) {
@@ -89,7 +87,7 @@ public class DoorState extends State implements KeyListener {
   public void keyTyped(KeyEvent ke) {}
 
   public void keyPressed(KeyEvent ke) {
-    Player player = context.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     switch (ke.getKeyCode()) {
       case KeyEvent.VK_1:
       case KeyEvent.VK_NUMPAD1:

@@ -38,11 +38,9 @@ public class PathFinder {
   private static Point to;
   private static Creature mover;
   private final UIDStore uidStore;
-  private final Player player;
 
-  public PathFinder(UIDStore uidStore, Player player) {
+  public PathFinder(UIDStore uidStore) {
     this.uidStore = uidStore;
-    this.player = player;
   }
 
   public Point[] findPath(Creature creature, Point origin, Point destination) {
@@ -71,7 +69,7 @@ public class PathFinder {
           links.put(to, next);
           next = null;
           break;
-        } else if (player.getCurrentZone().getRegion(neighbour).getMovMod()
+        } else if (uidStore.getPlayer().getCurrentZone().getRegion(neighbour).getMovMod()
             == Region.Modifier.BLOCK) {
           continue; // if terrain is blocked, skip to next point
         }
@@ -133,7 +131,7 @@ public class PathFinder {
 
   private int terrainPenalty(Point neighbour) {
     // better modifiers?
-    return switch (player.getCurrentZone().getRegion(neighbour).getMovMod()) {
+    return switch (uidStore.getPlayer().getCurrentZone().getRegion(neighbour).getMovMod()) {
       case SWIM -> (100 - mover.getSkill(Skill.SWIMMING)) / 5;
       case CLIMB -> (100 - mover.getSkill(Skill.CLIMBING)) / 5;
       default -> 0;
@@ -141,7 +139,7 @@ public class PathFinder {
   }
 
   private int doorPenalty(Point neighbour) {
-    for (long uid : player.getCurrentZone().getItems(neighbour)) {
+    for (long uid : uidStore.getPlayer().getCurrentZone().getItems(neighbour)) {
       if (uidStore.getEntity(uid) instanceof Door) {
         Door door = (Door) uidStore.getEntity(uid);
         if (door.lock.isLocked()) {

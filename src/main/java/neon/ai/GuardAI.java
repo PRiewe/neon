@@ -36,9 +36,8 @@ public class GuardAI extends AI {
       byte confidence,
       int range,
       ResourceManager resourceManager,
-      UIDStore uidStore,
-      Player player) {
-    super(creature, aggression, confidence, resourceManager, uidStore, player);
+      UIDStore uidStore) {
+    super(creature, aggression, confidence, resourceManager, uidStore);
     this.range = range;
     ShapeComponent bounds = creature.getShapeComponent();
     home = new Point(bounds.x, bounds.y);
@@ -47,16 +46,16 @@ public class GuardAI extends AI {
   public void act() {
     // TODO: not only pay attention to player, but also to other creatures in sight
     ShapeComponent cBounds = creature.getShapeComponent();
-    ShapeComponent pBounds = player.getShapeComponent();
+    ShapeComponent pBounds = uidStore.getPlayer().getShapeComponent();
     if (isHostile() && cBounds.getLocation().distance(pBounds.getLocation()) < range) {
       HealthComponent health = creature.getHealthComponent();
       if (100 * health.getHealth() / health.getBaseHealth() < confidence / 100) {
         // 80% chance to just flee, 20% chance to heal; if no heal spell, flee anyway
         if (Math.random() > 0.2 || !(cure() || heal())) {
-          flee(player);
+          flee(uidStore.getPlayer());
         }
       } else {
-        hunt(range, home, player);
+        hunt(range, home, uidStore.getPlayer());
       }
     } else {
       wander(range, home);

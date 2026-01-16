@@ -44,7 +44,6 @@ import net.phys2d.raw.CollisionListener;
 
 @Slf4j
 public class GameState extends State implements KeyListener, CollisionListener {
-  private Player player;
   private GamePanel panel;
   private CClient keys;
   private MBassador<EventObject> bus;
@@ -63,7 +62,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
     this.ui = ui;
     this.context = context;
     keys = (CClient) gameStores.getResources().getResource("client", "config");
-    panel = new GamePanel(context, new CombatUtils(gameStores.getStore()));
+    panel = new GamePanel(gameStores.getStore(), new CombatUtils(gameStores.getStore()),context);
     this.gameStores = gameStores;
     setVariable("panel", panel);
 
@@ -79,7 +78,6 @@ public class GameState extends State implements KeyListener, CollisionListener {
   public void enter(TransitionEvent e) {
     ui.showPanel(panel);
     if (e.toString().equals("start")) {
-      player = context.getPlayer();
       context.getPhysicsEngine().addListener(this);
       // in case game starts, the events of the current clock tick must be executed now
       bus.publishAsync(new TurnEvent(context.getTimer().getTime(), true));
@@ -113,38 +111,29 @@ public class GameState extends State implements KeyListener, CollisionListener {
 
   public void keyPressed(KeyEvent key) {
     int code = key.getKeyCode();
-    switch (code) {
-      case KeyEvent.VK_CONTROL:
-        bus.publishAsync(new TransitionEvent("inventory"));
-        break;
-      case KeyEvent.VK_F5:
-        save(false);
-        break;
-      case KeyEvent.VK_ESCAPE:
-        save(true);
-        break;
-      case KeyEvent.VK_F1:
-        InputStream input = GameState.class.getResourceAsStream("/neon/core/help.html");
-        String help = new Scanner(input, "UTF-8").useDelimiter("\\A").next();
-        ui.showHelp(help);
-        break;
-      case KeyEvent.VK_F2:
-        panel.toggleHUD();
-        break;
-      case KeyEvent.VK_F3:
-        ui.showConsole(context.getScriptEngine());
-        break;
-      default:
-        if (code == keys.map) {
-          new MapDialog(ui.getWindow(), context.getAtlasPosition().getCurrentZone(), context)
-              .show();
-        } else if (code == keys.sneak) {
-          player.setSneaking(!player.isSneaking());
-          panel.repaint();
-        } else if (code == keys.journal) {
-          bus.publishAsync(new TransitionEvent("journal"));
-        }
-    }
+      switch (code) {
+          case KeyEvent.VK_CONTROL -> bus.publishAsync(new TransitionEvent("inventory"));
+          case KeyEvent.VK_F5 -> save(false);
+          case KeyEvent.VK_ESCAPE -> save(true);
+          case KeyEvent.VK_F1 -> {
+              InputStream input = GameState.class.getResourceAsStream("/neon/core/help.html");
+              String help = new Scanner(input, "UTF-8").useDelimiter("\\A").next();
+              ui.showHelp(help);
+          }
+          case KeyEvent.VK_F2 -> panel.toggleHUD();
+          case KeyEvent.VK_F3 -> ui.showConsole(context.getScriptEngine());
+          default -> {
+              if (code == keys.map) {
+                  new MapDialog(ui.getWindow(), context.getAtlasPosition().getCurrentZone(), gameStores.getStore())
+                          .show();
+              } else if (code == keys.sneak) {
+                  gameStores.getStore().getPlayer().setSneaking(!gameStores.getStore().getPlayer().isSneaking());
+                  panel.repaint();
+              } else if (code == keys.journal) {
+                  bus.publishAsync(new TransitionEvent("journal"));
+              }
+          }
+      }
   }
 
   private void save(boolean quit) {
@@ -194,25 +183,21 @@ public class GameState extends State implements KeyListener, CollisionListener {
   public void handleCombat(CombatEvent ce) {
     log.trace("handleCombat {}", ce);
     if (ce.isFinished()) {
-      if (ce.getDefender() == player) {
+      if (ce.getDefender() == gameStores.getStore().getPlayer()) {
         panel.print("You were attacked!");
       } else {
-        switch (ce.getResult()) {
-          case CombatEvent.DODGE:
-            panel.print("The " + ce.getDefender() + " dodges the attack.");
-            break;
-          case CombatEvent.BLOCK:
-            panel.print("The " + ce.getDefender() + " blocks the attack.");
-            break;
-          case CombatEvent.ATTACK:
-            HealthComponent health = ce.getDefender().getHealthComponent();
-            panel.print("You strike the " + ce.getDefender() + " (" + health.getHealth() + ").");
-            break;
-          case CombatEvent.DIE:
-            panel.print("You killed the " + ce.getDefender() + ".");
-            bus.publishAsync(new DeathEvent(ce.getDefender(), context.getTimer().getTime()));
-            break;
-        }
+          switch (ce.getResult()) {
+              case CombatEvent.DODGE -> panel.print("The " + ce.getDefender() + " dodges the attack.");
+              case CombatEvent.BLOCK -> panel.print("The " + ce.getDefender() + " blocks the attack.");
+              case CombatEvent.ATTACK -> {
+                  HealthComponent health = ce.getDefender().getHealthComponent();
+                  panel.print("You strike the " + ce.getDefender() + " (" + health.getHealth() + ").");
+              }
+              case CombatEvent.DIE -> {
+                  panel.print("You killed the " + ce.getDefender() + ".");
+                  bus.publishAsync(new DeathEvent(ce.getDefender(), context.getTimer().getTime()));
+              }
+          }
       }
     }
   }

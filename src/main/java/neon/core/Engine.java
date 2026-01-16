@@ -29,6 +29,7 @@ import neon.core.handlers.DeathHandler;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MagicHandler;
 import neon.entities.Player;
+import neon.entities.UIDStore;
 import neon.maps.AtlasPosition;
 import neon.maps.services.EnginePhysicsManager;
 import neon.maps.services.PhysicsManager;
@@ -101,8 +102,8 @@ public class Engine implements Runnable {
 
     files = new FileSystem();
     resources = new ResourceManager();
-
-    gameStores = new DefaultGameStores(resources, files, null);
+    UIDStore uidStore = new UIDStore(files.getFullPath("uidstore"));
+    gameStores = new DefaultGameStores(resources, files,uidStore);
     physics = new PhysicsSystem();
     physicsManager = new EnginePhysicsManager(physics);
     queue = new TaskQueue();
@@ -179,8 +180,8 @@ public class Engine implements Runnable {
    */
   @Deprecated
   public static Player getPlayer() {
-    if (game != null) {
-      return game.getPlayer();
+    if (gameStores != null) {
+      return gameStores.getStore().getPlayer();
     } else return null;
   }
 
@@ -271,7 +272,7 @@ public class Engine implements Runnable {
     bus.subscribe(new MagicHandler(queue, gameStores, context));
 
     // register player
-    Player player = game.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     engine.getBindings("js").putMember("journal", player.getJournal());
     engine.getBindings("js").putMember("player", player);
     engine.getBindings("js").putMember("PC", player);

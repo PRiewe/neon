@@ -48,7 +48,6 @@ public class JournalState extends State implements FocusListener {
   private JLabel instructions;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
 
   // character sheet panel
   private JPanel stats, stuff, skills;
@@ -64,13 +63,11 @@ public class JournalState extends State implements FocusListener {
       State parent,
       MBassador<EventObject> bus,
       UserInterface ui,
-      GameContext context,
       GameStores gameStores) {
     super(parent);
 
     this.bus = bus;
     this.ui = ui;
-    this.context = context;
     this.gameStores = gameStores;
     main = new JPanel(new BorderLayout());
     inventoryHandler = new InventoryHandler(gameStores.getStore());
@@ -174,8 +171,8 @@ public class JournalState extends State implements FocusListener {
 
   private void initJournal() {
     quests.removeAll();
-    HashMap<String, Integer> questList = context.getPlayer().getJournal().getQuests();
-    HashMap<String, String> questDescriptions = context.getPlayer().getJournal().getSubjects();
+    HashMap<String, Integer> questList = gameStores.getStore().getPlayer().getJournal().getQuests();
+    HashMap<String, String> questDescriptions = gameStores.getStore().getPlayer().getJournal().getSubjects();
     for (Map.Entry<String, Integer> entry : questList.entrySet()) {
       quests.add(
           new JLabel(
@@ -191,13 +188,13 @@ public class JournalState extends State implements FocusListener {
 
   private void initSpells() {
     ArrayList<RSpell> formulae = new ArrayList<RSpell>();
-    formulae.addAll(context.getPlayer().getMagicComponent().getSpells());
-    formulae.addAll(context.getPlayer().getMagicComponent().getPowers());
+    formulae.addAll(gameStores.getStore().getPlayer().getMagicComponent().getSpells());
+    formulae.addAll(gameStores.getStore().getPlayer().getMagicComponent().getPowers());
     sList.setListData(formulae.toArray(new RSpell[0]));
   }
 
   private void initStats() {
-    Player player = context.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     HealthComponent health = player.getHealthComponent();
 
     stuff.removeAll();
@@ -319,7 +316,7 @@ public class JournalState extends State implements FocusListener {
           }
           break;
         case "equip":
-          context.getPlayer().getMagicComponent().equipSpell((RSpell) sList.getSelectedValue());
+          gameStores.getStore().getPlayer().getMagicComponent().equipSpell((RSpell) sList.getSelectedValue());
           initSpells();
           break;
         case "quests":
@@ -369,7 +366,7 @@ public class JournalState extends State implements FocusListener {
         boolean isSelected,
         boolean cellHasFocus) {
       setText(spell.name != null ? spell.name : spell.id);
-      if (context.getPlayer().getMagicComponent().getSpell() == spell) {
+      if (gameStores.getStore().getPlayer().getMagicComponent().getSpell() == spell) {
         setFont(new Font(getFont().getName(), Font.BOLD, getFont().getSize()));
       } else {
         setFont(font);

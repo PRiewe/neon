@@ -193,7 +193,7 @@ class DungeonGeneratorTest {
     // since we pass the type directly as a parameter
     RZoneTheme theme = new RZoneTheme("test-theme");
     // Use the RZoneTheme constructor which doesn't require a Zone
-    return new DungeonGenerator(theme, null, null, null, mapUtils, dice);
+    return new DungeonGenerator(theme, null, null, mapUtils, dice);
   }
 
   /**
@@ -719,13 +719,11 @@ class DungeonGeneratorTest {
       entityStore.addEntity(entryDoor);
       previousZone.addItem(entryDoor);
       GameStores gameStores = TestEngineContext.getGameStores();
-      Player player = TestEngineContext.getTestContext().getPlayer();
       // Create the dungeon generator
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
               new NoQuestProvider(),
-              player,
               gameStores,
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
@@ -780,13 +778,11 @@ class DungeonGeneratorTest {
       previousZone.addItem(entryDoor);
 
       GameStores gameStores = TestEngineContext.getGameStores();
-      Player player = TestEngineContext.getTestContext().getPlayer();
       // Create the dungeon generator
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
               new NoQuestProvider(),
-              player,
               gameStores,
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
@@ -848,13 +844,11 @@ class DungeonGeneratorTest {
       zone0.addItem(entryDoor);
 
       GameStores gameStores = TestEngineContext.getGameStores();
-      Player player = TestEngineContext.getTestContext().getPlayer();
       // Create the dungeon generator
       DungeonGenerator generator =
           new DungeonGenerator(
               zone0,
               new NoQuestProvider(),
-              player,
               gameStores,
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
@@ -925,13 +919,11 @@ class DungeonGeneratorTest {
           };
 
       GameStores gameStores = TestEngineContext.getGameStores();
-      Player player = TestEngineContext.getTestContext().getPlayer();
       // Create the dungeon generator
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
               new NoQuestProvider(),
-              player,
               gameStores,
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
@@ -1008,13 +1000,11 @@ class DungeonGeneratorTest {
             }
           };
       GameStores gameStores = TestEngineContext.getGameStores();
-      Player player = TestEngineContext.getTestContext().getPlayer();
       // Create the dungeon generator
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
               new NoQuestProvider(),
-              player,
               gameStores,
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
@@ -1060,13 +1050,11 @@ class DungeonGeneratorTest {
         entityStore.addEntity(entryDoor);
         previousZone.addItem(entryDoor);
         GameStores gameStores = TestEngineContext.getGameStores();
-        Player player = TestEngineContext.getTestContext().getPlayer();
         // Create the dungeon generator
         DungeonGenerator generator =
             new DungeonGenerator(
                 targetZone,
                 new NoQuestProvider(),
-                player,
                 gameStores,
                 MapUtils.withSeed(42L),
                 Dice.withSeed(42L));

@@ -29,15 +29,12 @@ import neon.resources.ResourceManager;
 
 public class AIFactory {
 
-  private final Player player;
-
   private final ResourceManager resourceManager;
   private final UIDStore uidStore;
 
-  public AIFactory(ResourceManager resourceManager, UIDStore uidStore, Player player) {
+  public AIFactory(ResourceManager resourceManager, UIDStore uidStore) {
     this.resourceManager = resourceManager;
     this.uidStore = uidStore;
-    this.player = player;
   }
 
   /**
@@ -88,12 +85,12 @@ public class AIFactory {
   private AI getAI(AIType type, Creature creature, byte aggression, byte confidence, int range) {
     return switch (type) {
       case wander ->
-          new BasicAI(creature, aggression, confidence, resourceManager, uidStore, player);
+          new BasicAI(creature, aggression, confidence, resourceManager, uidStore);
       case schedule ->
           new ScheduleAI(
-              creature, aggression, confidence, new Point[0], resourceManager, uidStore, player);
+              creature, aggression, confidence, new Point[0], resourceManager, uidStore);
       default ->
-          new GuardAI(creature, aggression, confidence, range, resourceManager, uidStore, player);
+          new GuardAI(creature, aggression, confidence, range, resourceManager, uidStore);
     };
   }
 }

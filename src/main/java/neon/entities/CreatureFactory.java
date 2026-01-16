@@ -38,21 +38,12 @@ public class CreatureFactory {
   private final ResourceManager resourceManager;
   private final UIDStore uidStore;
 
-  public CreatureFactory(GameStores gameStores, Player player) {
-    inventoryHandler = new InventoryHandler(gameStores.getStore());
-    spellFactory = new SpellFactory(gameStores.getResources());
-    this.resourceManager = gameStores.getResources();
-    this.uidStore = gameStores.getStore();
-    this.aiFactory = new AIFactory(gameStores.getResources(), gameStores.getStore(), player);
-    this.itemFactory = new ItemFactory(gameStores.getResources());
-  }
-
-  public CreatureFactory(ResourceManager resourceManager, UIDStore uidStore, Player player) {
+  public CreatureFactory(ResourceManager resourceManager, UIDStore uidStore) {
     inventoryHandler = new InventoryHandler(uidStore);
     spellFactory = new SpellFactory(resourceManager);
     this.resourceManager = resourceManager;
     this.uidStore = uidStore;
-    this.aiFactory = new AIFactory(resourceManager, uidStore, player);
+    this.aiFactory = new AIFactory(resourceManager, uidStore);
     this.itemFactory = new ItemFactory(resourceManager);
   }
 

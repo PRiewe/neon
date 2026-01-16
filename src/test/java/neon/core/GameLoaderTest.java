@@ -71,7 +71,7 @@ public class GameLoaderTest {
         "dwarf", "Bilbo", Gender.MALE, Player.Specialisation.combat, "adventurer", alraun);
 
     // Verify player was created
-    assertNotNull(context.getPlayer());
-    assertEquals("Bilbo", context.getPlayer().getName());
+    assertNotNull(TestEngineContext.getGameStores().getStore().getPlayer());
+    assertEquals("Bilbo", TestEngineContext.getGameStores().getStore().getPlayer().getName());
   }
 }

@@ -64,12 +64,12 @@ public class Player extends Hominid {
       Gender gender,
       Specialisation spec,
       String profession,
-      UIDStore gameStores) {
+      UIDStore uidStore) {
     super(species.id, 0, species);
-    this.uidStore = gameStores;
+    this.uidStore = uidStore;
     components.putInstance(RenderComponent.class, new PlayerRenderComponent(this));
     this.name = name;
-    this.gender = gender;
+    this.setGender(gender);
     this.spec = spec;
     this.profession = profession;
     baseLevel = getLevel();

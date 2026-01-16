@@ -34,8 +34,10 @@ public class EntitySerializer {
   private final GameContext gameContext;
 
   EntitySerializer(GameStores gameStores, GameContext gameContext) {
-    itemSerializer = new ItemSerializer(gameStores);
-    creatureSerializer = new CreatureSerializer(gameStores, gameContext);
+    itemSerializer = new ItemSerializer(gameStores.getResources());
+    creatureSerializer =
+        new CreatureSerializer(
+            gameStores.getResources(), gameStores.getStore());
     this.gameContext = gameContext;
   }
 

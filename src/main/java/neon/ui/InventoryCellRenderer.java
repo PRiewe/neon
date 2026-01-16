@@ -21,8 +21,9 @@ package neon.ui;
 import java.awt.*;
 import java.util.HashMap;
 import javax.swing.*;
-import neon.core.GameContext;
+
 import neon.entities.Entity;
+import neon.entities.UIDStore;
 
 /**
  * Decides how to render the contents of a cell in the player's inventory.
@@ -34,13 +35,13 @@ public class InventoryCellRenderer extends JLabel implements ListCellRenderer<En
   private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();
   private Font font;
   private HashMap<String, Integer> data;
-  private final GameContext context;
+  private final UIDStore uidStore;
 
   /** Initializes this renderer. */
-  public InventoryCellRenderer(HashMap<String, Integer> data, GameContext context) {
+  public InventoryCellRenderer(HashMap<String, Integer> data, UIDStore uidStore) {
     font = getFont();
     this.data = data;
-    this.context = context;
+    this.uidStore = uidStore;
   }
 
   /**
@@ -65,7 +66,7 @@ public class InventoryCellRenderer extends JLabel implements ListCellRenderer<En
       text = text + " (" + data.get(text) + ")";
     }
     setText(text);
-    if (context.getPlayer().getInventoryComponent().hasEquiped(value.getUID())) {
+    if (uidStore.getPlayer().getInventoryComponent().hasEquiped(value.getUID())) {
       setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
     } else {
       setFont(font);

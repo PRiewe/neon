@@ -109,23 +109,26 @@ public class DungeonModelTest {
 
   @Test
   public void testLevelWithCreaturesAndItems() throws IOException {
-    String xml =
-        "<dungeon>"
-            + "<header uid=\"2\"><name>Populated</name></header>"
-            + "<level name=\"hall\" l=\"0\">"
-            + "<creatures>"
-            + "<creature x=\"5\" y=\"5\" id=\"skeleton\" uid=\"10\" />"
-            + "<creature x=\"8\" y=\"8\" id=\"zombie\" uid=\"11\" />"
-            + "</creatures>"
-            + "<items>"
-            + "<item x=\"3\" y=\"3\" id=\"sword\" uid=\"1\" />"
-            + "<door x=\"10\" y=\"10\" id=\"door\" uid=\"2\" state=\"locked\" lock=\"10\">"
-            + "<dest x=\"5\" y=\"5\" map=\"1\" />"
-            + "</door>"
-            + "</items>"
-            + "<regions />"
-            + "</level>"
-            + "</dungeon>";
+    String xml = """
+     <dungeon>
+        <header uid="2">
+            <name>Populated</name>
+        </header>
+        <level name="hall" l="0">
+            <creatures>
+                <creature x="5" y="5" id="skeleton" uid="10"/>
+                <creature x="8" y="8" id="zombie" uid="11"/>
+            </creatures>
+            <items>
+                <item x="3" y="3" id="sword" uid="1"/>
+            </items>
+            <doors>
+                <door x="10" y="10" id="door" uid="2" state="locked" lock="10">
+                    <dest x="5" y="5" map="1"/>
+                </door></doors>
+            <regions/>
+        </level>
+    </dungeon>""";
     JacksonMapper mapper = new JacksonMapper();
     InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
 
@@ -134,9 +137,9 @@ public class DungeonModelTest {
     DungeonModel.Level level = dungeon.levels.get(0);
     assertEquals(2, level.creatures.size());
     assertEquals("skeleton", level.creatures.get(0).id);
-    assertEquals(1, level.items.items.size());
-    assertEquals(1, level.items.doors.size());
-    assertEquals("door", level.items.doors.get(0).id);
+    assertEquals(1, level.items.size());
+    assertEquals(1, level.doors.size());
+    assertEquals("door", level.doors.get(0).id);
   }
 
   @Test
@@ -179,36 +182,44 @@ public class DungeonModelTest {
 
     DungeonModel.Level level = dungeon.levels.get(0);
     assertEquals(0, level.creatures.size());
-    assertEquals(0, level.items.items.size());
-    assertEquals(0, level.items.doors.size());
-    assertEquals(0, level.items.containers.size());
+    assertEquals(0, level.items.size());
+    assertEquals(0, level.doors.size());
+    assertEquals(0, level.containers.size());
     assertEquals(0, level.regions.size());
   }
 
   @Test
   public void testComplexLevel() throws IOException {
     String xml =
-        "<dungeon>"
-            + "<header uid=\"9\"><name>Complex</name></header>"
-            + "<level name=\"treasury\" l=\"2\">"
-            + "<creatures>"
-            + "<creature x=\"10\" y=\"10\" id=\"dragon\" uid=\"100\" />"
-            + "</creatures>"
-            + "<items>"
-            + "<item x=\"5\" y=\"5\" id=\"gold_pile\" uid=\"50\" />"
-            + "<container x=\"15\" y=\"15\" id=\"treasure_chest\" uid=\"51\" lock=\"20\">"
-            + "<item id=\"diamond\" uid=\"52\" />"
-            + "<item id=\"crown\" uid=\"53\" />"
-            + "</container>"
-            + "<door x=\"0\" y=\"10\" id=\"vault_door\" uid=\"54\" state=\"locked\" lock=\"25\">"
-            + "<dest x=\"20\" y=\"20\" z=\"1\" map=\"9\" />"
-            + "</door>"
-            + "</items>"
-            + "<regions>"
-            + "<region x=\"0\" y=\"0\" w=\"30\" h=\"30\" l=\"0\" text=\"marble\" random=\"vault\" />"
-            + "</regions>"
-            + "</level>"
-            + "</dungeon>";
+            """
+<dungeon>
+    <header uid="9">
+        <name>Complex</name>
+    </header>
+    <level name="treasury" l="2">
+        <creatures>
+            <creature x="10" y="10" id="dragon" uid="100"/>
+        </creatures>
+        <items>
+            <item x="5" y="5" id="gold_pile" uid="50"/>
+        </items>
+        <containers>
+            <container x="15" y="15" id="treasure_chest" uid="51" lock="20">
+                <item id="diamond" uid="52"/>
+                <item id="crown" uid="53"/>
+            </container>
+        </containers>
+        <doors>
+            <door x="0" y="10" id="vault_door" uid="54" state="locked" lock="25">
+                <dest x="20" y="20" z="1" map="9"/>
+            </door>
+        </doors>
+        <regions>
+            <region x="0" y="0" w="30" h="30" l="0" text="marble" random="vault"/>
+        </regions>
+    </level>
+</dungeon>
+""";
     JacksonMapper mapper = new JacksonMapper();
     InputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
 
@@ -216,9 +227,9 @@ public class DungeonModelTest {
 
     DungeonModel.Level level = dungeon.levels.get(0);
     assertEquals(1, level.creatures.size());
-    assertEquals(1, level.items.items.size());
-    assertEquals(1, level.items.containers.size());
-    assertEquals(1, level.items.doors.size());
+    assertEquals(1, level.items.size());
+    assertEquals(1, level.items.size());
+    assertEquals(1, level.items.size());
     assertEquals(1, level.regions.size());
   }
 }

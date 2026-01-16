@@ -52,7 +52,6 @@ public class DungeonGenerator {
   private final QuestProvider questProvider;
   private final ItemFactory itemFactory;
   private final CreatureFactory creatureFactory;
-  private final Player player;
   private final GameStores gameStores;
   // random sources
   private final MapUtils mapUtils;
@@ -73,8 +72,8 @@ public class DungeonGenerator {
    * @param questProvider the quest provider service
    */
   public DungeonGenerator(
-      RZoneTheme theme, QuestProvider questProvider, Player player, GameStores gameStores) {
-    this(theme, questProvider, player, gameStores, new MapUtils(), new Dice());
+      RZoneTheme theme, QuestProvider questProvider, GameStores gameStores) {
+    this(theme, questProvider, gameStores, new MapUtils(), new Dice());
   }
 
   /**
@@ -90,12 +89,10 @@ public class DungeonGenerator {
   public DungeonGenerator(
       RZoneTheme theme,
       QuestProvider questProvider,
-      Player player,
       GameStores gameStores,
       MapUtils mapUtils,
       Dice dice) {
     this.theme = theme;
-    this.player = player;
     this.gameStores = gameStores;
     this.zone = null;
     this.entityStore = gameStores.getStore();
@@ -105,7 +102,7 @@ public class DungeonGenerator {
     this.dice = dice;
     dungeonTerrainGenerator = new DungeonTerrainGenerator(mapUtils, dice);
     this.itemFactory = new ItemFactory(gameStores.getResources());
-    this.creatureFactory = new CreatureFactory(gameStores, player);
+    this.creatureFactory = new CreatureFactory(gameStores.getResources(),gameStores.getStore());
   }
 
   /**
@@ -117,8 +114,8 @@ public class DungeonGenerator {
    * @param questProvider the quest provider service
    */
   public DungeonGenerator(
-      Zone zone, QuestProvider questProvider, Player player, GameStores gameStores) {
-    this(zone, questProvider, player, gameStores, new MapUtils(), new Dice());
+      Zone zone, QuestProvider questProvider, GameStores gameStores) {
+    this(zone, questProvider, gameStores, new MapUtils(), new Dice());
   }
 
   /**
@@ -135,7 +132,6 @@ public class DungeonGenerator {
   public DungeonGenerator(
       Zone zone,
       QuestProvider questProvider,
-      Player player,
       GameStores gameStores,
       MapUtils mapUtils,
       Dice dice) {
@@ -144,14 +140,13 @@ public class DungeonGenerator {
     this.entityStore = gameStores.getStore();
     this.resourceProvider = gameStores.getResources();
     this.questProvider = questProvider;
-    this.player = player;
     this.gameStores = gameStores;
     this.mapUtils = mapUtils;
     this.dice = dice;
     dungeonTerrainGenerator = new DungeonTerrainGenerator(mapUtils, dice);
     this.itemFactory = new ItemFactory(gameStores.getResources());
     // CreatureFactory needs GameContext too, create minimal wrapper
-    this.creatureFactory = new CreatureFactory(gameStores, player);
+    this.creatureFactory = new CreatureFactory(gameStores.getResources(),gameStores.getStore());
   }
 
   /**

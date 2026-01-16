@@ -31,8 +31,7 @@ class AtlasTest {
     atlasPosition =
         new AtlasPosition(
             TestEngineContext.getGameStores(),
-            TestEngineContext.getQuestTracker(),
-            TestEngineContext.getTestContext().getPlayer());
+            TestEngineContext.getQuestTracker());
     zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
@@ -181,8 +180,7 @@ class AtlasTest {
     AtlasPosition atlasPosition =
         new AtlasPosition(
             TestEngineContext.getGameStores(),
-            TestEngineContext.getQuestTracker(),
-            TestEngineContext.getTestContext().getPlayer());
+            TestEngineContext.getQuestTracker());
 
     World world = new World("Persistent World", 900, zoneFactory);
 

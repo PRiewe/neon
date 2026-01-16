@@ -56,11 +56,6 @@ public class DefaultGameContext implements GameContext {
   @Setter private Game game;
 
   @Override
-  public Player getPlayer() {
-    return game != null ? game.getPlayer() : null;
-  }
-
-  @Override
   public AtlasPosition getAtlasPosition() {
     return game != null ? game.getAtlasPosition() : null;
   }

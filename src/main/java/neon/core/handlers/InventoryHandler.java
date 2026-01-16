@@ -141,7 +141,7 @@ public class InventoryHandler {
         default:
           break;
       }
-      if (c.getMagicComponent().getSpell() != null) {
+      if (c.getMagicComponent() != null && c.getMagicComponent().getSpell() != null) {
         MagicUtils.equip(creature, (Clothing) item);
       }
     } else if (item instanceof Weapon) {

@@ -45,11 +45,9 @@ public class MotionHandler {
   public static final byte NULL = 5;
   public static final byte HABITAT = 6;
   public final UIDStore uidStore;
-  private final Player player;
 
-  public MotionHandler(UIDStore uidStore, Player player) {
+  public MotionHandler(UIDStore uidStore) {
     this.uidStore = uidStore;
-    this.player = player;
   }
 
   /**
@@ -70,13 +68,13 @@ public class MotionHandler {
    * @return the result of the movement
    */
   public byte move(Creature actor, Point p) {
-    Region region = player.getCurrentZone().getRegion(p);
+    Region region = uidStore.getPlayer().getCurrentZone().getRegion(p);
     if (p == null || region == null) {
       return NULL;
     }
 
     // check if there is no closed door present
-    Collection<Long> items = player.getCurrentZone().getItems(p);
+    Collection<Long> items = uidStore.getPlayer().getCurrentZone().getItems(p);
     for (long uid : items) {
       Entity i = uidStore.getEntity(uid);
       if (i instanceof Door) {

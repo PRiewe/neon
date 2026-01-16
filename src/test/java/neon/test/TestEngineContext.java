@@ -13,7 +13,10 @@ import neon.core.event.TaskQueue;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.entities.components.PhysicsComponent;
+import neon.entities.mvstore.EntityDataType;
+import neon.entities.mvstore.ModDataType;
 import neon.entities.property.Gender;
+import neon.entities.serialization.EntityFactory;
 import neon.maps.*;
 import neon.maps.services.*;
 import neon.narrative.QuestTracker;
@@ -90,7 +93,7 @@ public class TestEngineContext {
     setStaticField(Engine.class, "resources", testResources);
 
     // Create test UIDStore
-    testStore = new UIDStore(getStubFileSystem(), testDb);
+    testStore = new UIDStore(testDb);
     // Create test Game using new DI constructor
     Player stubPlayer =
         new Player(
@@ -100,6 +103,15 @@ public class TestEngineContext {
             Player.Specialisation.combat,
             "Warrior",
             testStore);
+    testStore.setPlayer(stubPlayer);
+    // Phase 2: Create EntityFactory with dependencies (GameContext is null at this stage)
+    EntityFactory entityFactory = new EntityFactory(testResources, testStore);
+    // Phase 3: Create DataTypes
+    EntityDataType entityDataType = new EntityDataType(entityFactory);
+    ModDataType modDataType = new ModDataType();
+
+    // Phase 4: Initialize UIDStore's maps with DataTypes
+    testStore.setDataTypes(entityDataType, modDataType);
 
     // Create test EntityStore
 
@@ -111,13 +123,13 @@ public class TestEngineContext {
     // Create ZoneFactory for tests
     testZoneFactory = new ZoneFactory(testDb, testStore, testResources);
     mapLoader =
-        new MapLoader(getStubFileSystem(), testStore, testResources, testZoneFactory, stubPlayer);
+        new MapLoader(getStubFileSystem(), testStore, testResources, testZoneFactory);
     // Create test Atlas with dependency injection (doesn't need Engine.game)
     testAtlas = new Atlas(getStubFileSystem(), testDb, testStore, testResources, mapLoader);
-    gameStores = new DefaultGameStores(getTestResources(), getStubFileSystem(), stubPlayer);
+    gameStores = new DefaultGameStores(getTestResources(), getStubFileSystem(),testStore);
     questTracker = new QuestTracker(gameStores);
-    atlasPosition = new AtlasPosition(gameStores, questTracker, stubPlayer);
-    testGame = new Game(stubPlayer, gameStores, atlasPosition);
+    atlasPosition = new AtlasPosition(gameStores, questTracker);
+    testGame = new Game( gameStores, atlasPosition);
     setStaticField(Engine.class, "game", testGame);
 
     // Create stub FileSystem

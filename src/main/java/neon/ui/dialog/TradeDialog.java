@@ -182,7 +182,7 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
 
   private void initGoods() {
     Vector<Item> sellData = new Vector<Item>();
-    for (long uid : context.getPlayer().getInventoryComponent()) {
+    for (long uid : gameStores.getStore().getPlayer().getInventoryComponent()) {
       sellData.add((Item) gameStores.getStore().getEntity(uid));
     }
     sellList.setListData(sellData);

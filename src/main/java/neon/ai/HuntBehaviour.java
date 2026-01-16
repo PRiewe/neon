@@ -43,7 +43,7 @@ public class HuntBehaviour implements Behaviour {
     this.prey = prey;
     this.gameContext = gameContext;
     this.gameStores = gameStores;
-    this.pathFinder = new PathFinder(gameStores.getStore(), gameContext.getPlayer());
+    this.pathFinder = new PathFinder(gameStores.getStore());
   }
 
   public void act() {

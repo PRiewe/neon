@@ -13,14 +13,12 @@ public class AtlasPosition {
   // private int currentMap = 0;
   private final Atlas atlas;
   private final QuestTracker questProvider;
-  @Getter private final Player player;
   private final GameStores gameStores;
   public final ZoneFactory zoneFactory;
 
-  public AtlasPosition(GameStores gameStores, QuestTracker questProvider, Player player) {
+  public AtlasPosition(GameStores gameStores, QuestTracker questProvider) {
     this.atlas = gameStores.getAtlas();
     this.questProvider = questProvider;
-    this.player = player;
     this.gameStores = gameStores;
     zoneFactory = new ZoneFactory(gameStores);
   }
@@ -29,21 +27,21 @@ public class AtlasPosition {
    * @return the current map
    */
   public Map getCurrentMap() {
-    return player.getCurrentMap();
+    return gameStores.getStore().getPlayer().getCurrentMap();
   }
 
   /**
    * @return the current zone
    */
   public Zone getCurrentZone() {
-    return player.getCurrentZone();
+    return gameStores.getStore().getPlayer().getCurrentZone();
   }
 
   /**
    * @return the current zone
    */
   public int getCurrentZoneIndex() {
-    return player.getCurrentZone().getIndex();
+    return gameStores.getStore().getPlayer().getCurrentZone().getIndex();
   }
 
   /**
@@ -73,7 +71,7 @@ public class AtlasPosition {
     }
 
     if (getCurrentMap() instanceof Dungeon && getCurrentZone().isRandom()) {
-      new DungeonGenerator(getCurrentZone(), (QuestProvider) questProvider, player, gameStores)
+      new DungeonGenerator(getCurrentZone(), (QuestProvider) questProvider, gameStores)
           .generate(door, previousZone, atlas);
     }
   }
@@ -85,7 +83,7 @@ public class AtlasPosition {
    */
   public void setMap(Map map) {
     atlas.putMapIfNeeded(map);
-    player.setCurrentMap(map);
+    gameStores.getStore().getPlayer().setCurrentMap(map);
   }
 
   /**
@@ -95,7 +93,7 @@ public class AtlasPosition {
    */
   public void setMap(World map) {
     atlas.putMapIfNeeded(map);
-    player.setCurrentMap(map);
-    player.setCurrentZone(map.getZone());
+    gameStores.getStore().getPlayer().setCurrentMap(map);
+    gameStores.getStore().getPlayer().setCurrentZone(map.getZone());
   }
 }

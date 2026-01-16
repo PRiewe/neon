@@ -82,8 +82,7 @@ public class GameLoader {
             gameStores.getFileSystem(),
             gameStores.getStore(),
             gameStores.getResources(),
-            gameStores.getZoneFactory(),
-            context.getPlayer());
+            gameStores.getZoneFactory());
     zoneFactory =
         new ZoneFactory(
             gameStores.getAtlas().getCache(), gameStores.getStore(), gameStores.getResources());
@@ -140,8 +139,9 @@ public class GameLoader {
       ItemFactory itemFactory = new ItemFactory(gameStores.getResources());
       Player player = new Player(species, name, gender, spec, profession, gameStores.getStore());
       player.species.text = "@";
+      gameStores.getStore().setPlayer(player);
       context.startGame(
-          new Game(player, gameStores, context.getPhysicsManager(), context.getQuestTracker()));
+          new Game(gameStores, context.getPhysicsManager(), context.getQuestTracker()));
       setSign(player, sign);
       for (Skill skill : Skill.values()) {
         SkillHandler.checkFeat(skill, player);
@@ -232,11 +232,11 @@ public class GameLoader {
     loadEvents(saveModel.events);
 
     // quests
-    Player player = context.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     if (player != null) {
       for (SaveGameModel.QuestEntry quest : saveModel.journal.quests) {
-        context.getPlayer().getJournal().addQuest(quest.id, quest.subject);
-        context.getPlayer().getJournal().updateQuest(quest.id, quest.stage);
+        gameStores.getStore().getPlayer().getJournal().addQuest(quest.id, quest.subject);
+        gameStores.getStore().getPlayer().getJournal().updateQuest(quest.id, quest.stage);
       }
     } else {
       System.out.println("Skipping journal update");
@@ -297,8 +297,9 @@ public class GameLoader {
             Player.Specialisation.valueOf(playerData.specialisation),
             playerData.profession,
             gameStores.getStore());
+    gameStores.getStore().setPlayer(player);
     context.startGame(
-        new Game(player, gameStores, context.getPhysicsManager(), context.getQuestTracker()));
+        new Game( gameStores, context.getPhysicsManager(), context.getQuestTracker()));
     Rectangle bounds = player.getShapeComponent();
     bounds.setLocation(playerData.x, playerData.y);
     player.setSign(playerData.sign);

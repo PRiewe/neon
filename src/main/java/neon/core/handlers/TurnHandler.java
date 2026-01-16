@@ -82,8 +82,8 @@ public class TurnHandler {
     }
 
     // monsters controleren
-    Player player = panel.getContext().getPlayer();
-    for (long uid : panel.getContext().getAtlasPosition().getCurrentZone().getCreatures()) {
+    Player player = panel.getUidStore().getPlayer();
+    for (long uid : panel.getGameContext().getAtlasPosition().getCurrentZone().getCreatures()) {
       Creature creature = (Creature) gameStores.getStore().getEntity(uid);
       if (!creature.hasCondition(Condition.DEAD)) {
         HealthComponent health = creature.getHealthComponent();
@@ -95,7 +95,7 @@ public class TurnHandler {
           int spd = getSpeed(creature);
           Region region =
               panel
-                  .getContext()
+                  .getGameContext()
                   .getAtlasPosition()
                   .getCurrentZone()
                   .getRegion(cBounds.getLocation());
@@ -120,8 +120,8 @@ public class TurnHandler {
     player.getMagicComponent().addMana(player.getStatsComponent().getWis() / 100f);
 
     // en systems updaten
-    panel.getContext().getPhysicsEngine().update();
-    panel.getContext().post(new UpdateEvent(this));
+    panel.getGameContext().getPhysicsEngine().update();
+    panel.getGameContext().post(new UpdateEvent(this));
   }
 
   private class Generator extends Thread {
@@ -129,7 +129,7 @@ public class TurnHandler {
     public void run() {
       // enkel repainten nadat er iets gegenereerd is
       if (checkRegions()) {
-        panel.getContext().post(new UpdateEvent(this));
+        panel.getGameContext().post(new UpdateEvent(this));
       }
     }
   }
@@ -139,7 +139,7 @@ public class TurnHandler {
    */
   private boolean checkRegions() { // die boolean is eigenlijk maar louche
     Rectangle window = panel.getVisibleRectangle();
-    Zone zone = panel.getContext().getAtlasPosition().getCurrentZone();
+    Zone zone = panel.getGameContext().getAtlasPosition().getCurrentZone();
     boolean fixed = true;
     boolean generated = false; // om aan te geven dat er iets gegenereerd werd
 
@@ -157,7 +157,7 @@ public class TurnHandler {
                 .generate(r.getX(), r.getY(), r.getWidth(), r.getHeight(), theme, r.getZ());
           } else {
             new WildernessGenerator(
-                    zone, gameStores.getResources(), gameStores.getStore(), gameContext.getPlayer())
+                    zone, gameStores)
                 .generate(r, theme);
           }
         }

@@ -162,7 +162,7 @@ public class Animus implements Component, Serializable {
    */
   public int getMana() {
     return (int)
-        (creature.getStatsComponent().getInt() * creature.species.mana + baseManaMod + manaMod);
+        (creature.getStatsComponent().getInt() * creature.getSpecies().mana + baseManaMod + manaMod);
   }
 
   /**

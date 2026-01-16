@@ -37,16 +37,10 @@ public class Creature extends Entity {
   // components
   public final FactionComponent social;
   public final Stats stats;
-  public final RCreature species;
   public AI brain;
 
-  /**
-   * -- GETTER --
-   *
-   * @return this creature's gender
-   */
-  // miscellaneous
-  @Getter protected Gender gender;
+  @Getter @Setter public RCreature species;
+  @Getter @Setter private Gender gender;
 
   /**
    * -- GETTER --

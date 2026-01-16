@@ -55,7 +55,7 @@ public class BumpState extends State implements KeyListener {
       GameStores gameStores) {
     super(parent);
     this.gameStores = gameStores;
-    this.motionHandler = new MotionHandler(gameStores.getStore(), context.getPlayer());
+    this.motionHandler = new MotionHandler(gameStores.getStore());
     this.bus = bus;
     this.ui = ui;
     this.context = context;
@@ -90,8 +90,8 @@ public class BumpState extends State implements KeyListener {
     switch (ke.getKeyCode()) {
       case KeyEvent.VK_1:
       case KeyEvent.VK_NUMPAD1:
-        bus.publishAsync(new CombatEvent(context.getPlayer(), creature));
-        creature.brain.makeHostile(context.getPlayer());
+        bus.publishAsync(new CombatEvent(gameStores.getStore().getPlayer(), creature));
+        creature.brain.makeHostile(gameStores.getStore().getPlayer());
         bus.publishAsync(new TransitionEvent("return"));
         break;
       case KeyEvent.VK_2:
@@ -113,7 +113,7 @@ public class BumpState extends State implements KeyListener {
       case KeyEvent.VK_5:
       case KeyEvent.VK_NUMPAD5:
         if (isMount(creature)) {
-          Player player = context.getPlayer();
+          Player player = gameStores.getStore().getPlayer();
           player.mount(creature);
           Rectangle pBounds = player.getShapeComponent();
           Rectangle cBounds = creature.getShapeComponent();
@@ -131,7 +131,7 @@ public class BumpState extends State implements KeyListener {
   }
 
   private void swap() {
-    Player player = context.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     Rectangle pBounds = player.getShapeComponent();
     Rectangle cBounds = creature.getShapeComponent();
 

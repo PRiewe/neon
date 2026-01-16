@@ -29,6 +29,7 @@ import neon.resources.RZoneTheme;
 import neon.resources.ResourceManager;
 import neon.ui.graphics.*;
 import neon.util.spatial.*;
+import org.jetbrains.annotations.NotNull;
 
 public class Zone /* implements Externalizable */ {
   private static final ZComparator comparator = new ZComparator();
@@ -266,7 +267,7 @@ public class Zone /* implements Externalizable */ {
     return regions.getElements();
   }
 
-  public void addItem(Item item) {
+  public void addItem(@NotNull Item item) {
     Rectangle bounds = item.getShapeComponent();
     if (item.resource.top) {
       top.insert(item.getUID(), bounds);

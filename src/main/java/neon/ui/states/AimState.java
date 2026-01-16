@@ -84,7 +84,7 @@ public class AimState extends State implements KeyListener {
   @Override
   public void enter(TransitionEvent e) {
     panel = (GamePanel) getVariable("panel");
-    player = context.getPlayer();
+    player = gameStores.getStore().getPlayer();
     Rectangle bounds = player.getShapeComponent();
     target.setLocation(bounds.getLocation());
     panel.print(

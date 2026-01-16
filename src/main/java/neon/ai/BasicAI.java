@@ -30,22 +30,21 @@ public class BasicAI extends AI {
       byte aggression,
       byte confidence,
       ResourceManager resourceManager,
-      UIDStore uidStore,
-      Player player) {
-    super(creature, aggression, confidence, resourceManager, uidStore, player);
+      UIDStore uidStore) {
+    super(creature, aggression, confidence, resourceManager, uidStore);
   }
 
   public void act() {
     // TODO: not only pay attention to player, but also to other creatures in sight
-    if (isHostile() && sees(player)) {
+    if (isHostile() && sees(uidStore.getPlayer())) {
       HealthComponent health = creature.getHealthComponent();
       if (100 * health.getHealth() / health.getBaseHealth() < confidence) {
         // 80% chance to just flee, 20% chance to heal; if no heal spell, flee anyway
         if (Math.random() > 0.2 || !(cure() || heal())) {
-          flee(player);
+          flee(uidStore.getPlayer());
         }
       } else {
-        hunt(player);
+        hunt(uidStore.getPlayer());
       }
     } else {
       wander();
