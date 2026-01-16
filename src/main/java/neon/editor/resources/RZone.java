@@ -58,8 +58,8 @@ public class RZone extends RData {
             : properties.getChild("header").getChildText("name")),
         path);
     this.map = map;
-      this.dataStore = dataStore;
-      name = id;
+    this.dataStore = dataStore;
+    name = id;
     theme =
         (RZoneTheme)
             dataStore
@@ -70,8 +70,8 @@ public class RZone extends RData {
   // new zone with theme
   public RZone(String id, String mod, RZoneTheme theme, RMap map, DataStore dataStore) {
     super(id, mod);
-      this.dataStore = dataStore;
-      name = id;
+    this.dataStore = dataStore;
+    name = id;
     this.map = map;
     this.theme = theme;
   }
@@ -79,8 +79,8 @@ public class RZone extends RData {
   // new zone with renderables
   public RZone(String id, String mod, Instance instance, RMap map, DataStore dataStore) {
     super(id, mod);
-      this.dataStore = dataStore;
-      name = id;
+    this.dataStore = dataStore;
+    name = id;
     scene = new Scene();
     scene.addElement(instance, instance.getBounds(), instance.z);
     this.map = map;

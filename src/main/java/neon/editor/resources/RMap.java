@@ -71,7 +71,9 @@ public class RMap extends RData {
                     .getResource(properties.getChild("header").getAttributeValue("theme"), "theme");
       } else {
         for (Element zone : properties.getChildren("level")) {
-          zones.put(Integer.parseInt(zone.getAttributeValue("l")), new RZone(zone, this,dataStore, path));
+          zones.put(
+              Integer.parseInt(zone.getAttributeValue("l")),
+              new RZone(zone, this, dataStore, path));
         }
       }
     } else {
@@ -96,7 +98,7 @@ public class RMap extends RData {
       region.setAttribute("text", props.getTerrain());
       region.setAttribute("l", "0");
       Instance ri = new IRegion(region, dataStore);
-      RZone zone = new RZone(name, mod, ri, this,dataStore);
+      RZone zone = new RZone(name, mod, ri, this, dataStore);
       zones.put(0, zone);
     }
   }
@@ -210,15 +212,14 @@ public class RMap extends RData {
     for (Renderable r : zone.getScene().getElements()) {
       Instance instance = (Instance) r;
 
-        switch (instance) {
-            case IRegion iRegion -> model.regions.add(convertRegion(iRegion));
-            case IPerson iPerson -> model.creatures.add(convertCreature(iPerson));
-            case IDoor iDoor -> model.doors.add(convertDoor(iDoor));
-            case IContainer iContainer -> model.containers.add(convertContainer(iContainer));
-            case IObject obj -> model.items.add(convertItem(obj));
-            case null, default -> {
-            }
-        }
+      switch (instance) {
+        case IRegion iRegion -> model.regions.add(convertRegion(iRegion));
+        case IPerson iPerson -> model.creatures.add(convertCreature(iPerson));
+        case IDoor iDoor -> model.doors.add(convertDoor(iDoor));
+        case IContainer iContainer -> model.containers.add(convertContainer(iContainer));
+        case IObject obj -> model.items.add(convertItem(obj));
+        case null, default -> {}
+      }
     }
 
     return model;

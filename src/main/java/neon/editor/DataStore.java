@@ -158,12 +158,12 @@ public class DataStore {
           s = s.substring(s.lastIndexOf("/") + 1);
           s = s.substring(s.lastIndexOf(File.separator) + 1);
           path[file.length] = s;
-          Document doc =fileSystem.getFile(new XMLTranslator(), path);
+          Document doc = fileSystem.getFile(new XMLTranslator(), path);
           Element map = doc.getRootElement();
           resourceManager.addResource(
               new RMap(s.replace(".xml", ""), map, this, mod.get("id")), "maps");
-          }catch (RuntimeException re) {
-          log.error("Failed to load map {}",path,re);
+        } catch (RuntimeException re) {
+          log.error("Failed to load map {}", path, re);
         }
       }
     } catch (NullPointerException e) {

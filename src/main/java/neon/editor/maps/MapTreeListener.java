@@ -243,13 +243,13 @@ public class MapTreeListener implements MouseListener {
               region.setAttribute("text", props.getTerrain());
               region.setAttribute("l", "0");
               IRegion ri = new IRegion(region, dataStore);
-              zone = new RZone(props.getName(), map.getPath()[0], ri, map,dataStore);
+              zone = new RZone(props.getName(), map.getPath()[0], ri, map, dataStore);
             } else {
               System.out.println(props.getTheme());
               RZoneTheme theme =
                   (RZoneTheme)
                       dataStore.getResourceManager().getResource(props.getTheme(), "theme");
-              zone = new RZone(props.getName(), map.getPath()[0], theme, map,dataStore);
+              zone = new RZone(props.getName(), map.getPath()[0], theme, map, dataStore);
             }
             ZoneTreeNode node = new ZoneTreeNode(index, zone, dataStore);
             map.zones.put(index, zone);

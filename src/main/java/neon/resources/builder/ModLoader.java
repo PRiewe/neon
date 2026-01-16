@@ -32,8 +32,6 @@ import neon.resources.quest.RQuest;
 import neon.systems.files.FileSystem;
 import neon.systems.files.JacksonMapper;
 import neon.systems.files.StringTranslator;
-import neon.systems.files.XMLTranslator;
-import org.jdom2.*;
 
 @Slf4j
 public class ModLoader {
@@ -56,23 +54,23 @@ public class ModLoader {
   }
 
   public RMod loadMod(CGame game, CClient client) {
-    // load main.xml
-    Element mod = files.getFile(new XMLTranslator(), path, "main.xml").getRootElement();
+    // load main.xml using Jackson
+    RMod.MainXml mainXml = files.getFile(jacksonMapper, RMod.MainXml.class, path, "main.xml");
 
-    // load cc.xml
-    Element cc = null;
+    // load cc.xml using Jackson
+    RMod.CCXml ccXml = null;
     if (files.exists(path, "cc.xml")) {
-      cc = files.getFile(new XMLTranslator(), path, "cc.xml").getRootElement();
+      ccXml = files.getFile(jacksonMapper, RMod.CCXml.class, path, "cc.xml");
     }
 
-    // Use JDOM constructor for now - Jackson migration deferred to Phase 7
-    RMod rmod = new RMod(mod, cc);
+    // Use Jackson constructor
+    RMod rmod = new RMod(mainXml, ccXml, path);
     rmod.addMaps(initMaps(path, "maps"));
 
-    initMain(client, mod);
-    if (mod.getName().equals("extension")) {
+    initMain(client, mainXml);
+    if (rmod.isExtension()) {
       ResourceManager resources = resourceManager;
-      if (!resources.hasResource(mod.getChild("master").getText(), "mods")) {
+      if (!resources.hasResource(mainXml.master, "mods")) {
         log.error("Extension master not found: {}.", path);
       }
     }
@@ -129,16 +127,16 @@ public class ModLoader {
     return rmod;
   }
 
-  private void initMain(CClient client, Element info) {
-    if (info.getChild("title") != null) {
-      client.setTitle(info.getChild("title").getText());
+  private void initMain(CClient client, RMod.MainXml info) {
+    if (info.title != null) {
+      client.setTitle(info.title);
     }
-    if (info.getChild("currency") != null) {
-      if (info.getChild("currency").getAttributeValue("big") != null) {
-        client.setBig(info.getChild("currency").getAttributeValue("big"));
+    if (info.currency != null) {
+      if (info.currency.big != null) {
+        client.setBig(info.currency.big);
       }
-      if (info.getChild("currency").getAttributeValue("small") != null) {
-        client.setSmall(info.getChild("currency").getAttributeValue("small"));
+      if (info.currency.small != null) {
+        client.setSmall(info.currency.small);
       }
     }
   }
@@ -386,31 +384,32 @@ public class ModLoader {
    * @param file
    */
   private void initCC(CGame game, String... file) {
-    Element cc = files.getFile(new XMLTranslator(), file).getRootElement();
-    int x = Integer.parseInt(cc.getChild("map").getAttributeValue("x"));
-    int y = Integer.parseInt(cc.getChild("map").getAttributeValue("y"));
-    if (cc.getChild("map").getAttributeValue("z") != null) {
-      game.setStartZone(Integer.parseInt(cc.getChild("map").getAttributeValue("z")));
+    RMod.CCXml cc = files.getFile(jacksonMapper, RMod.CCXml.class, file);
+    int x = Integer.parseInt(cc.map.x);
+    int y = Integer.parseInt(cc.map.y);
+    if (cc.map.z != null) {
+      game.setStartZone(Integer.parseInt(cc.map.z));
     }
     game.getStartPosition().setLocation(x, y);
-    String[] path = {file[0], "maps", cc.getChild("map").getAttributeValue("path") + ".xml"};
+    String[] path = {file[0], "maps", cc.map.path + ".xml"};
     game.setStartMap(path);
-    for (Element e : cc.getChildren("race")) {
-      game.getPlayableRaces().add(e.getText());
+    for (String race : cc.races) {
+      game.getPlayableRaces().add(race);
     }
-    for (Element e : cc.getChildren("item")) {
-      game.getStartingItems().add(e.getText());
+    for (String item : cc.items) {
+      game.getStartingItems().add(item);
     }
-    for (Element e : cc.getChildren("spell")) {
-      game.getStartingSpells().add(e.getText());
+    for (String spell : cc.spells) {
+      game.getStartingSpells().add(spell);
     }
   }
 
   private void initTasks(String... file) {
-    Document doc = files.getFile(new XMLTranslator(), file);
-    for (Element e : doc.getRootElement().getChildren()) {
-      String[] ticks = e.getAttributeValue("tick").split(":");
-      RScript rs = (RScript) resourceManager.getResource(e.getAttributeValue("script"), "script");
+    neon.resources.model.EventConfigModel eventsConfig =
+        files.getFile(jacksonMapper, neon.resources.model.EventConfigModel.class, file);
+    for (neon.resources.model.EventConfigModel.ScheduledEvent event : eventsConfig.events) {
+      String[] ticks = event.tick.split(":");
+      RScript rs = (RScript) resourceManager.getResource(event.script, "script");
       // TODO shoudlnt' be necessary -- bug in testing frameworks
       if (ticks.length == 1) { // one tick: simply add at that time
         queue.add(rs.script, Integer.parseInt(ticks[0]), 0, 0);

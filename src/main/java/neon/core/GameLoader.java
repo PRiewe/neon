@@ -54,11 +54,9 @@ import neon.resources.RSign;
 import neon.resources.RSpell.SpellType;
 import neon.systems.files.FileUtils;
 import neon.systems.files.JacksonMapper;
-import neon.systems.files.XMLTranslator;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
-import org.jdom2.Element;
 
 @Listener(references = References.Strong)
 @Slf4j
@@ -382,15 +380,18 @@ public class GameLoader {
 
   private void initMaps() {
     // put mods and maps in uidstore
+    JacksonMapper jacksonMapper = new JacksonMapper();
     for (RMod mod : gameStores.getResources().getResources(RMod.class)) {
       if (!gameStores.getStore().isModUIDLoaded(mod.id)) {
         gameStores.getStore().addMod(mod.id);
       }
       for (String[] path : mod.getMaps())
         try { // maps are in twowaymap, and are therefore not stored in cache
-          Element map =
-              gameStores.getFileSystem().getFile(new XMLTranslator(), path).getRootElement();
-          short mapUID = Short.parseShort(map.getChild("header").getAttributeValue("uid"));
+          neon.maps.model.MapHeaderModel mapHeader =
+              gameStores
+                  .getFileSystem()
+                  .getFile(jacksonMapper, neon.maps.model.MapHeaderModel.class, path);
+          short mapUID = mapHeader.header.uid;
           int uid = UIDStore.getMapUID(gameStores.getStore().getModUID(path[0]), mapUID);
           mapLoader.load(path, mapUID);
           gameStores.getStore().addMap(uid, path);
