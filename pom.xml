@@ -144,7 +144,12 @@
             <artifactId>tinylaf</artifactId>
             <version>1.4.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <version>2.11.0</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.priewe</groupId>
             <artifactId>jtexgen</artifactId>

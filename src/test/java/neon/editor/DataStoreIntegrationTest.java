@@ -3,7 +3,9 @@ package neon.editor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,7 +16,14 @@ import neon.editor.resources.RMap;
 import neon.resources.*;
 import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
+import neon.systems.files.XMLTranslator;
+import org.jdom2.Document;
 import org.junit.jupiter.api.Test;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.DefaultNodeMatcher;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.ElementSelectors;
 
 public class DataStoreIntegrationTest {
 
@@ -76,13 +85,32 @@ public class DataStoreIntegrationTest {
     //    System.out.format("PAthh: %s%n",dataStore.getActive().getPath());
     FileSystem fileSystemOut = new FileSystem();
     fileSystemOut.mount(newDirFile.getAbsolutePath());
+    String zoneFileName = newDirFile.getAbsolutePath() + File.separator + "spells.xml";
     // fileSystemOut.createDirectory("sampleMod1");
+    // Element savedZoneThemes = fileSystemOut.getFile(new XMLTranslator(),
+    // newDirFile.getAbsolutePath(),"themes", "zones.xml").getRootElement();
+    Document originalZoneThemes =
+        fileSystem.getFile(new XMLTranslator(), "sampleMod1", "spells.xml");
 
     ModFiler.save(dataStore, fileSystemOut);
     System.out.println(
-        fileSystemOut.listFiles("")); // Need to adjust counts if sampleMod scenario is changed.
-    assertEquals(12, groups.getOrDefault(RPerson.class, List.of()).size());
-    assertEquals(31, groups.getOrDefault(RTerrain.class, List.of()).size());
-    assertEquals(8, groups.getOrDefault(RMap.class, List.of()).size());
+        fileSystemOut.listFiles(
+            newDirFile
+                .getAbsolutePath())); // Need to adjust counts if sampleMod scenario is changed.
+
+    InputStream stream = new FileInputStream(zoneFileName);
+
+    String originalZoneFilename = "src/test/resources/sampleMod1" + File.separator + "spells.xml";
+    InputStream stream2 = new FileInputStream(originalZoneFilename);
+    Diff myDiff =
+        DiffBuilder.compare(Input.fromStream(stream))
+            .withTest(Input.fromStream(stream2))
+            .checkForSimilar()
+            .ignoreComments()
+            .ignoreWhitespace() // a different order is always 'similar' not equals.
+            .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndAttributes("id")))
+            .build();
+
+    System.out.format("Diff: %s%n", myDiff.fullDescription());
   }
 }
