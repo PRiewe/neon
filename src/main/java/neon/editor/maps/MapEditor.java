@@ -163,6 +163,7 @@ public class MapEditor {
     MutableTreeNode root = (MutableTreeNode) model.getRoot();
     for (RMap map : maps) {
       store.getMapUIDs().put(map.id, map.uid);
+      store.getActiveMaps().add(map);
       MapTreeNode node = new MapTreeNode(map);
       if (map.isDungeon()) {
         for (Map.Entry<Integer, RZone> zone : map.zones.entrySet()) {
