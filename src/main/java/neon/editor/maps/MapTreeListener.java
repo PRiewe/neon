@@ -21,6 +21,7 @@ package neon.editor.maps;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.tree.*;
+import neon.editor.DataStore;
 import neon.editor.Editor;
 import neon.editor.resources.IObject;
 import neon.editor.resources.IRegion;
@@ -40,11 +41,13 @@ public class MapTreeListener implements MouseListener {
   private JTree tree;
   private JTabbedPane tabs;
   private MapEditor editor;
+  private final DataStore dataStore;
 
-  public MapTreeListener(JTree tree, JTabbedPane mapPane, MapEditor editor) {
+  public MapTreeListener(JTree tree, JTabbedPane mapPane, MapEditor editor, DataStore dataStore) {
     this.tree = tree;
     tabs = mapPane;
     this.editor = editor;
+    this.dataStore = dataStore;
   }
 
   public void mouseExited(MouseEvent e) {}
@@ -78,7 +81,7 @@ public class MapTreeListener implements MouseListener {
             node.getZone().theme = null;
             if (node.getPane() == null) {
               node.setPane(new EditablePane(node, tabs.getWidth(), tabs.getHeight()));
-              editor.getActiveMaps().add(node.getZone().map);
+              dataStore.getActiveMaps().add(node.getZone().map);
             }
             if (tabs.indexOfComponent(node.getPane()) == -1) {
               tabs.addTab(map.toString(), node.getPane());
@@ -202,61 +205,66 @@ public class MapTreeListener implements MouseListener {
 
     public void actionPerformed(ActionEvent e) {
       DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-      if (e.getActionCommand().equals("Add zone")) {
-        String question =
-            "A dungeon theme was set for this map. Adding a zone will remove this theme. "
-                + "Do you wish to continue?";
-        if (map.theme == null
-            || JOptionPane.showConfirmDialog(
-                    Editor.getFrame(), question, "Theme warning", JOptionPane.YES_NO_OPTION)
-                == JOptionPane.OK_OPTION) {
-          map.theme = null;
-          LevelDialog.Properties props = new LevelDialog().showInputDialog(Editor.getFrame());
-          if (!props.cancelled()) {
-            int index = 0;
-            while (map.zones.containsKey(index)) {
-              index++;
+      switch (e.getActionCommand()) {
+        case "Add zone" -> {
+          String question =
+              "A dungeon theme was set for this map. Adding a zone will remove this theme. "
+                  + "Do you wish to continue?";
+          if (map.theme == null
+              || JOptionPane.showConfirmDialog(
+                      Editor.getFrame(), question, "Theme warning", JOptionPane.YES_NO_OPTION)
+                  == JOptionPane.OK_OPTION) {
+            map.theme = null;
+            LevelDialog.Properties props = new LevelDialog().showInputDialog(Editor.getFrame());
+            if (!props.cancelled()) {
+              int index = 0;
+              while (map.zones.containsKey(index)) {
+                index++;
+              }
+              RZone zone;
+              if (props.getTheme().equals("none")) {
+                Element region = new Element("region");
+                region.setAttribute("x", "0");
+                region.setAttribute("y", "0");
+                region.setAttribute("w", Integer.toString(props.getWidth()));
+                region.setAttribute("h", Integer.toString(props.getHeight()));
+                region.setAttribute("text", props.getTerrain());
+                region.setAttribute("l", "0");
+                IRegion ri = new IRegion(region);
+                zone = new RZone(props.getName(), map.getPath()[0], ri, map);
+              } else {
+                System.out.println(props.getTheme());
+                RZoneTheme theme =
+                    (RZoneTheme) Editor.resources.getResource(props.getTheme(), "theme");
+                zone = new RZone(props.getName(), map.getPath()[0], theme, map);
+              }
+              ZoneTreeNode node = new ZoneTreeNode(index, zone);
+              map.zones.put(index, zone);
+              MapTreeNode top = (MapTreeNode) tree.getLastSelectedPathComponent();
+              model.insertNodeInto(node, top, index);
             }
-            RZone zone;
-            if (props.getTheme().equals("none")) {
-              Element region = new Element("region");
-              region.setAttribute("x", "0");
-              region.setAttribute("y", "0");
-              region.setAttribute("w", Integer.toString(props.getWidth()));
-              region.setAttribute("h", Integer.toString(props.getHeight()));
-              region.setAttribute("text", props.getTerrain());
-              region.setAttribute("l", "0");
-              IRegion ri = new IRegion(region);
-              zone = new RZone(props.getName(), map.getPath()[0], ri, map);
-            } else {
-              System.out.println(props.getTheme());
-              RZoneTheme theme =
-                  (RZoneTheme) Editor.resources.getResource(props.getTheme(), "theme");
-              zone = new RZone(props.getName(), map.getPath()[0], theme, map);
-            }
-            ZoneTreeNode node = new ZoneTreeNode(index, zone);
-            map.zones.put(index, zone);
-            MapTreeNode top = (MapTreeNode) tree.getLastSelectedPathComponent();
-            model.insertNodeInto(node, top, index);
           }
         }
-      } else if (e.getActionCommand().equals("Delete zone")) {
-        ZoneTreeNode node = (ZoneTreeNode) tree.getLastSelectedPathComponent();
-        model.removeNodeFromParent(node);
-        RMap map = node.getZone().map;
-        map.removeZone(node.getZoneLevel());
-      } else if (e.getActionCommand().equals("Edit zone")) {
-        ZoneTreeNode node = (ZoneTreeNode) tree.getLastSelectedPathComponent();
-        new ZoneEditor(node, Editor.getFrame()).show();
-      } else if (e.getActionCommand().equals("Add map")) {
-        editor.makeMap(new MapDialog().showInputDialog(Editor.getFrame()));
-      } else if (e.getActionCommand().equals("Delete map")) {
-        MapTreeNode map = (MapTreeNode) tree.getLastSelectedPathComponent();
-        model.removeNodeFromParent(map);
-        editor.deleteMap(map.getMap().id);
-      } else if (e.getActionCommand().equals("Edit map")) {
-        MapTreeNode map = (MapTreeNode) tree.getLastSelectedPathComponent();
-        new MapInfoEditor(Editor.getFrame(), map, tree).show();
+        case "Delete zone" -> {
+          ZoneTreeNode node = (ZoneTreeNode) tree.getLastSelectedPathComponent();
+          model.removeNodeFromParent(node);
+          RMap map = node.getZone().map;
+          map.removeZone(node.getZoneLevel());
+        }
+        case "Edit zone" -> {
+          ZoneTreeNode node = (ZoneTreeNode) tree.getLastSelectedPathComponent();
+          new ZoneEditor(node, Editor.getFrame()).show();
+        }
+        case "Add map" -> MapEditor.makeMap(new MapDialog().showInputDialog(Editor.getFrame()), tree,dataStore);
+        case "Delete map" -> {
+          MapTreeNode map = (MapTreeNode) tree.getLastSelectedPathComponent();
+          model.removeNodeFromParent(map);
+          MapEditor.deleteMap(map.getMap().id,dataStore);
+        }
+        case "Edit map" -> {
+          MapTreeNode map = (MapTreeNode) tree.getLastSelectedPathComponent();
+          new MapInfoEditor(Editor.getFrame(), map, tree).show();
+        }
       }
     }
   }

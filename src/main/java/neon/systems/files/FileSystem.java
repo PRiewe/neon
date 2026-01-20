@@ -20,6 +20,10 @@ package neon.systems.files;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 import java.util.jar.*;
 import lombok.extern.slf4j.Slf4j;
@@ -101,6 +105,12 @@ public class FileSystem {
     }
   }
 
+  public void createDirectory(String name) throws IOException {
+
+    mount(temp.getAbsolutePath());
+    Path newDir = Path.of(temp.toPath().normalize().toString(),name);
+    Files.createDirectories(newDir);
+  }
   /**
    * Removes a mod from the file system.
    *
@@ -179,11 +189,12 @@ public class FileSystem {
    * @param path the path of the file
    */
   public <T> void saveFile(T output, Translator<T> translator, String... path) {
+    String fullPath = null;
     try {
       if (paths.containsKey(path[0])) {
         path[0] = paths.get(path[0]);
       }
-      String fullPath = toString(path);
+      fullPath = toString(path);
       File file = new File(fullPath);
       //			System.out.println("savefile: " + fullPath);
       if (!file.getParentFile().exists()) {
@@ -194,7 +205,9 @@ public class FileSystem {
       translator.translate(output).writeTo(out);
       out.close();
     } catch (IOException e) {
-      System.out.println("IOException in FileSystem.saveFile()");
+
+      System.out.format("IOException in FileSystem.saveFile() %s: %s%n",fullPath,e);
+      //e.printStackTrace();
     }
   }
 

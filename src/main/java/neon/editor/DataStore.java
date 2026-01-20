@@ -22,7 +22,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.*;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import neon.editor.resources.RFaction;
@@ -39,29 +38,28 @@ import org.jdom2.Element;
 
 @Slf4j
 public class DataStore {
-  @Getter
-  private HashMap<String, RScript> scripts = new HashMap<String, RScript>();
-  @Getter
-  private Multimap<String, String> events = ArrayListMultimap.create();
+  @Getter private HashMap<String, RScript> scripts = new HashMap<String, RScript>();
+  @Getter private Multimap<String, String> events = ArrayListMultimap.create();
   private final HashMap<String, RMod> mods = new HashMap<String, RMod>();
-  @Getter
-  private final ResourceManager resourceManager;
-  @Getter
-  private RMod active;
-  @Getter
-  private AbstractUIDStore uidStore;
+  @Getter private final ResourceManager resourceManager;
+  @Getter private RMod active;
+  @Getter private AbstractUIDStore uidStore;
   private final FileSystem files;
-    public DataStore(ResourceManager resourceManager, FileSystem files) {
-        this.resourceManager = resourceManager;
-        this.files = files;
-        this.uidStore = new MemoryUIDStore();
-    }
+  @Getter private final HashSet<RMap> activeMaps = new HashSet<RMap>();
+  @Getter private final HashMap<String, Short> mapUIDs = new HashMap<String, Short>();
+  ;
 
-    public RMod getMod(String id) {
+  public DataStore(ResourceManager resourceManager, FileSystem files) {
+    this.resourceManager = resourceManager;
+    this.files = files;
+    this.uidStore = new MemoryUIDStore();
+  }
+
+  public RMod getMod(String id) {
     return mods.get(id);
   }
 
-    public void loadData(String root, boolean active, boolean extension) {
+  public void loadData(String root, boolean active, boolean extension) {
     RMod mod = new RMod(loadInfo(root, "main.xml"), loadCC(root, "cc.xml"), root);
     if (active) {
       this.active = mod;
@@ -95,7 +93,7 @@ public class DataStore {
         events.put(event.getAttributeValue("script"), event.getAttributeValue("tick"));
       }
     } catch (NullPointerException e) {
-      log.error("loadEvents error. RMod: {}, path: {}",mod,file,e);
+      log.error("loadEvents error. RMod: {}, path: {}", mod, file, e);
     }
   }
 
@@ -112,7 +110,7 @@ public class DataStore {
         scripts.put(id, new RScript(id, script, mod.get("id")));
       }
     } catch (NullPointerException e) {
-      log.error("loadScripts error. RMod: {}, path: {}",mod,file,e);
+      log.error("loadScripts error. RMod: {}, path: {}", mod, file, e);
     }
   }
 
@@ -158,7 +156,7 @@ public class DataStore {
         resourceManager.addResource(new RMap(s.replace(".xml", ""), map, mod.get("id")), "maps");
       }
     } catch (NullPointerException e) {
-      log.error("loadMaps error. RMod: {}, path: {}",mod,file,e);
+      log.error("loadMaps error. RMod: {}, path: {}", mod, file, e);
     }
   }
 
@@ -176,7 +174,7 @@ public class DataStore {
         resourceManager.addResource(new RQuest(id, root, mod.get("id")), "quest");
       }
     } catch (NullPointerException e) {
-      log.error("loadQuests error. RMod: {}, path: {}",mod,path,e);
+      log.error("loadQuests error. RMod: {}, path: {}", mod, path, e);
     }
   }
 
@@ -184,18 +182,19 @@ public class DataStore {
     try {
       Document doc = files.getFile(new XMLTranslator(), path);
       for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-              case "sign" -> resourceManager.addResource(new RSign(e, mod.get("id")), "magic");
-              case "tattoo" -> resourceManager.addResource(new RTattoo(e, mod.get("id")), "magic");
-              case "recipe" -> resourceManager.addResource(new RRecipe(e, mod.get("id")), "magic");
-              case "list" -> resourceManager.addResource(new LSpell(e, mod.get("id")), "magic");
-              case "power" -> resourceManager.addResource(new RSpell.Power(e, mod.get("id")), "magic");
-              case "enchant" -> resourceManager.addResource(new RSpell.Enchantment(e, mod.get("id")), "magic");
-              default -> resourceManager.addResource(new RSpell(e, mod.get("id")), "magic");
-          }
+        switch (e.getName()) {
+          case "sign" -> resourceManager.addResource(new RSign(e, mod.get("id")), "magic");
+          case "tattoo" -> resourceManager.addResource(new RTattoo(e, mod.get("id")), "magic");
+          case "recipe" -> resourceManager.addResource(new RRecipe(e, mod.get("id")), "magic");
+          case "list" -> resourceManager.addResource(new LSpell(e, mod.get("id")), "magic");
+          case "power" -> resourceManager.addResource(new RSpell.Power(e, mod.get("id")), "magic");
+          case "enchant" -> resourceManager.addResource(
+              new RSpell.Enchantment(e, mod.get("id")), "magic");
+          default -> resourceManager.addResource(new RSpell(e, mod.get("id")), "magic");
+        }
       }
     } catch (NullPointerException e) {
-      log.error("loadMagic error. RMod: {}, path: {}",mod,path,e);
+      log.error("loadMagic error. RMod: {}, path: {}", mod, path, e);
     }
   }
 
@@ -203,16 +202,15 @@ public class DataStore {
     try {
       Document doc = files.getFile(new XMLTranslator(), path);
       for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-              case "list" -> resourceManager.addResource(new LCreature(e, mod.get("id")));
-              case "npc" -> resourceManager.addResource(new RPerson(e, mod.get("id")));
-              case "group" -> {
-              }
-              default -> resourceManager.addResource(new RCreature(e, mod.get("id")));
-          }
+        switch (e.getName()) {
+          case "list" -> resourceManager.addResource(new LCreature(e, mod.get("id")));
+          case "npc" -> resourceManager.addResource(new RPerson(e, mod.get("id")));
+          case "group" -> {}
+          default -> resourceManager.addResource(new RCreature(e, mod.get("id")));
+        }
       }
     } catch (NullPointerException e) {
-      log.error("loadCreatures error. RMod: {}, path: {}",mod,path,e);
+      log.error("loadCreatures error. RMod: {}, path: {}", mod, path, e);
     }
   }
 
@@ -223,7 +221,7 @@ public class DataStore {
         resourceManager.addResource(new RFaction(e, mod.get("id")), "faction");
       }
     } catch (NullPointerException e) {
-      log.error("loadFactions error. RMod: {}, path: {}",mod,path,e);
+      log.error("loadFactions error. RMod: {}, path: {}", mod, path, e);
     }
   }
 
@@ -234,7 +232,7 @@ public class DataStore {
         resourceManager.addResource(new RTerrain(e, mod.get("id")), "terrain");
       }
     } catch (NullPointerException e) {
-      log.error("loadTerrain error. RMod: {}, path: {}",mod,path,e);
+      log.error("loadTerrain error. RMod: {}, path: {}", mod, path, e);
     }
   }
 
@@ -242,20 +240,20 @@ public class DataStore {
     try {
       Document doc = files.getFile(new XMLTranslator(), path);
       for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-              case "list" -> resourceManager.addResource(new LItem(e, mod.get("id")));
-              case "book", "scroll" -> resourceManager.addResource(new RItem.Text(e, mod.get("id")));
-              case "armor", "clothing" -> resourceManager.addResource(new RClothing(e, mod.get("id")));
-              case "weapon" -> resourceManager.addResource(new RWeapon(e, mod.get("id")));
-              case "craft" -> resourceManager.addResource(new RCraft(e, mod.get("id")));
-              case "door" -> resourceManager.addResource(new RItem.Door(e, mod.get("id")));
-              case "potion" -> resourceManager.addResource(new RItem.Potion(e, mod.get("id")));
-              case "container" -> resourceManager.addResource(new RItem.Container(e, mod.get("id")));
-              default -> resourceManager.addResource(new RItem(e, mod.get("id")));
-          }
+        switch (e.getName()) {
+          case "list" -> resourceManager.addResource(new LItem(e, mod.get("id")));
+          case "book", "scroll" -> resourceManager.addResource(new RItem.Text(e, mod.get("id")));
+          case "armor", "clothing" -> resourceManager.addResource(new RClothing(e, mod.get("id")));
+          case "weapon" -> resourceManager.addResource(new RWeapon(e, mod.get("id")));
+          case "craft" -> resourceManager.addResource(new RCraft(e, mod.get("id")));
+          case "door" -> resourceManager.addResource(new RItem.Door(e, mod.get("id")));
+          case "potion" -> resourceManager.addResource(new RItem.Potion(e, mod.get("id")));
+          case "container" -> resourceManager.addResource(new RItem.Container(e, mod.get("id")));
+          default -> resourceManager.addResource(new RItem(e, mod.get("id")));
+        }
       }
     } catch (NullPointerException e) {
-      log.error("loadItems error. RMod: {}, path: {}",mod,path,e);
+      log.error("loadItems error. RMod: {}, path: {}", mod, path, e);
     }
   }
 
@@ -263,14 +261,15 @@ public class DataStore {
     try {
       Document doc = files.getFile(new XMLTranslator(), path);
       for (Element e : doc.getRootElement().getChildren()) {
-          switch (e.getName()) {
-              case "dungeon" -> resourceManager.addResource(new RDungeonTheme(e, mod.get("id")), "theme");
-              case "region" -> resourceManager.addResource(new RRegionTheme(e, mod.get("id")), "theme");
-              case "zone" -> resourceManager.addResource(new RZoneTheme(e, mod.get("id")), "theme");
-          }
+        switch (e.getName()) {
+          case "dungeon" -> resourceManager.addResource(
+              new RDungeonTheme(e, mod.get("id")), "theme");
+          case "region" -> resourceManager.addResource(new RRegionTheme(e, mod.get("id")), "theme");
+          case "zone" -> resourceManager.addResource(new RZoneTheme(e, mod.get("id")), "theme");
+        }
       }
     } catch (NullPointerException e) {
-      log.error("loadThemes error. RMod: {}, path: {}",mod,path,e);
+      log.error("loadThemes error. RMod: {}, path: {}", mod, path, e);
     }
   }
 }

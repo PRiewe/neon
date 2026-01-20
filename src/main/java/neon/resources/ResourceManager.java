@@ -41,9 +41,10 @@ public class ResourceManager {
     return list;
   }
 
-  public Map<String,Resource> getAllResources() {
+  public Map<String, Resource> getAllResources() {
     return Collections.unmodifiableMap(resources);
   }
+
   public void clear() {
     for (Resource resource : resources.values()) {
       resource.unload();
