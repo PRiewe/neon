@@ -78,7 +78,7 @@ public class RMod extends Resource {
       Element currency = new Element("currency");
       currency.setAttribute("big", info.get("big"));
       currency.setAttribute("small", info.get("small"));
-      main.addContent("currency");
+      main.addContent(currency);
     }
     return main;
   }

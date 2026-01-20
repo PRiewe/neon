@@ -59,6 +59,7 @@ public class RZone extends RData {
     name = id;
     theme =
         (RZoneTheme) Editor.resources.getResource(properties.getAttributeValue("theme"), "theme");
+    scene = new Scene();
   }
 
   // new zone with theme
@@ -67,6 +68,7 @@ public class RZone extends RData {
     name = id;
     this.map = map;
     this.theme = theme;
+    scene = new Scene();
   }
 
   // new zone with renderables

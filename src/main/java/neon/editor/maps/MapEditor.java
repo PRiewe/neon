@@ -25,7 +25,6 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
-
 import lombok.Getter;
 import lombok.Setter;
 import neon.editor.DataStore;
@@ -155,11 +154,13 @@ public class MapEditor {
 
   public void loadMaps(Collection<RMap> maps, String path, JTree mapTree1, DataStore store) {
     DefaultTreeModel model = (DefaultTreeModel) mapTree1.getModel();
-    MutableTreeNode root = MapEditor.loadMapsHeadless(maps,model,store);
+    MutableTreeNode root = MapEditor.loadMapsHeadless(maps, model, store);
     mapTree1.expandPath(new TreePath(root));
     mapTree1.setVisible(true);
   }
-  public static MutableTreeNode loadMapsHeadless(Collection<RMap> maps, DefaultTreeModel model, DataStore store) {
+
+  public static MutableTreeNode loadMapsHeadless(
+      Collection<RMap> maps, DefaultTreeModel model, DataStore store) {
     MutableTreeNode root = (MutableTreeNode) model.getRoot();
     for (RMap map : maps) {
       store.getMapUIDs().put(map.id, map.uid);
@@ -175,7 +176,6 @@ public class MapEditor {
       model.insertNodeInto(node, root, root.getChildCount());
     }
     return root;
-
   }
 
   public void setTerrain(String type) {

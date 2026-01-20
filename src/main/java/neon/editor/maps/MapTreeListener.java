@@ -255,11 +255,12 @@ public class MapTreeListener implements MouseListener {
           ZoneTreeNode node = (ZoneTreeNode) tree.getLastSelectedPathComponent();
           new ZoneEditor(node, Editor.getFrame()).show();
         }
-        case "Add map" -> MapEditor.makeMap(new MapDialog().showInputDialog(Editor.getFrame()), tree,dataStore);
+        case "Add map" -> MapEditor.makeMap(
+            new MapDialog().showInputDialog(Editor.getFrame()), tree, dataStore);
         case "Delete map" -> {
           MapTreeNode map = (MapTreeNode) tree.getLastSelectedPathComponent();
           model.removeNodeFromParent(map);
-          MapEditor.deleteMap(map.getMap().id,dataStore);
+          MapEditor.deleteMap(map.getMap().id, dataStore);
         }
         case "Edit map" -> {
           MapTreeNode map = (MapTreeNode) tree.getLastSelectedPathComponent();

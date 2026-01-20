@@ -491,20 +491,20 @@ public class Editor implements Runnable, ActionListener {
       if (ri instanceof LItem) {
         levelItemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LEVEL_ITEM));
       } else {
-          switch (ri.type) {
-              case armor -> armorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ARMOR));
-              case book -> bookNode.add(new ObjectNode(ri, ObjectNode.ObjectType.BOOK));
-              case clothing -> clothingNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CLOTHING));
-              case coin -> coinNode.add(new ObjectNode(ri, ObjectNode.ObjectType.MONEY));
-              case container -> containerNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CONTAINER));
-              case door -> doorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.DOOR));
-              case food -> foodNode.add(new ObjectNode(ri, ObjectNode.ObjectType.FOOD));
-              case light -> lightNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LIGHT));
-              case potion -> potionNode.add(new ObjectNode(ri, ObjectNode.ObjectType.POTION));
-              case scroll -> scrollNode.add(new ObjectNode(ri, ObjectNode.ObjectType.SCROLL));
-              case weapon -> weaponNode.add(new ObjectNode(ri, ObjectNode.ObjectType.WEAPON));
-              default -> itemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ITEM));
-          }
+        switch (ri.type) {
+          case armor -> armorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ARMOR));
+          case book -> bookNode.add(new ObjectNode(ri, ObjectNode.ObjectType.BOOK));
+          case clothing -> clothingNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CLOTHING));
+          case coin -> coinNode.add(new ObjectNode(ri, ObjectNode.ObjectType.MONEY));
+          case container -> containerNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CONTAINER));
+          case door -> doorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.DOOR));
+          case food -> foodNode.add(new ObjectNode(ri, ObjectNode.ObjectType.FOOD));
+          case light -> lightNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LIGHT));
+          case potion -> potionNode.add(new ObjectNode(ri, ObjectNode.ObjectType.POTION));
+          case scroll -> scrollNode.add(new ObjectNode(ri, ObjectNode.ObjectType.SCROLL));
+          case weapon -> weaponNode.add(new ObjectNode(ri, ObjectNode.ObjectType.WEAPON));
+          default -> itemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ITEM));
+        }
       }
     }
     top.add(itemNode);
@@ -528,59 +528,59 @@ public class Editor implements Runnable, ActionListener {
   }
 
   public void actionPerformed(ActionEvent e) {
-      switch (e.getActionCommand()) {
-          case "save" -> ModFiler.save(store,files);
-          case "load" -> filer.loadMod();
-          case "quit" -> System.exit(0);
-          case "newMain" -> createMain();
-          case "newExt" -> createExtension();
-          case "script" -> {
-              if (scriptEditor == null) {
-                  scriptEditor = new ScriptEditor(frame);
-              }
-              scriptEditor.show();
-          }
-          case "cc" -> {
-              if (ccEditor == null) {
-                  ccEditor = new CCEditor(frame);
-              }
-              ccEditor.show();
-          }
-          case "game" -> {
-              if (infoEditor == null) {
-                  infoEditor = new InfoEditor(frame);
-              }
-              infoEditor.show();
-          }
-          case "events" -> {
-              if (eventEditor == null) {
-                  eventEditor = new EventEditor(frame);
-              }
-              eventEditor.show();
-          }
-          case "pack" -> {
-              if (JOptionPane.showConfirmDialog(
-                      frame,
-                      "Do you wish to save the current data and pack it?",
-                      "Pack mod",
-                      JOptionPane.YES_NO_OPTION)
-                      == 0) {
-                  pack();
-              }
-          }
-          case "unpack" -> unpack();
-          case "svg" -> {
-              if ((EditablePane) mapTabbedPane.getSelectedComponent() != null) {
-                  ZoneTreeNode node = ((EditablePane) mapTabbedPane.getSelectedComponent()).getNode();
-                  SVGExporter.exportToSVG(node, files, store);
-              }
-          }
-          case "calculate" -> new ChallengeCalculator().show();
-          case "scripting" -> showHelp("scripting.html", "Scripting guide");
-          case "intro" -> showHelp("intro.html", "Getting started");
-          case "mapping" -> showHelp("maps.html", "Map editing");
-          case "resources" -> showHelp("resources.html", "Resource editing");
+    switch (e.getActionCommand()) {
+      case "save" -> ModFiler.save(store, files);
+      case "load" -> filer.loadMod();
+      case "quit" -> System.exit(0);
+      case "newMain" -> createMain();
+      case "newExt" -> createExtension();
+      case "script" -> {
+        if (scriptEditor == null) {
+          scriptEditor = new ScriptEditor(frame);
+        }
+        scriptEditor.show();
       }
+      case "cc" -> {
+        if (ccEditor == null) {
+          ccEditor = new CCEditor(frame);
+        }
+        ccEditor.show();
+      }
+      case "game" -> {
+        if (infoEditor == null) {
+          infoEditor = new InfoEditor(frame);
+        }
+        infoEditor.show();
+      }
+      case "events" -> {
+        if (eventEditor == null) {
+          eventEditor = new EventEditor(frame);
+        }
+        eventEditor.show();
+      }
+      case "pack" -> {
+        if (JOptionPane.showConfirmDialog(
+                frame,
+                "Do you wish to save the current data and pack it?",
+                "Pack mod",
+                JOptionPane.YES_NO_OPTION)
+            == 0) {
+          pack();
+        }
+      }
+      case "unpack" -> unpack();
+      case "svg" -> {
+        if ((EditablePane) mapTabbedPane.getSelectedComponent() != null) {
+          ZoneTreeNode node = ((EditablePane) mapTabbedPane.getSelectedComponent()).getNode();
+          SVGExporter.exportToSVG(node, files, store);
+        }
+      }
+      case "calculate" -> new ChallengeCalculator().show();
+      case "scripting" -> showHelp("scripting.html", "Scripting guide");
+      case "intro" -> showHelp("intro.html", "Getting started");
+      case "mapping" -> showHelp("maps.html", "Map editing");
+      case "resources" -> showHelp("resources.html", "Resource editing");
+    }
   }
 
   private void showHelp(String file, String title) {
@@ -592,7 +592,7 @@ public class Editor implements Runnable, ActionListener {
   }
 
   private void pack() {
-    ModFiler.save(store,files);
+    ModFiler.save(store, files);
     try {
       JarFile jar = FileUtils.pack(store.getActive().getPath()[0], store.getActive().get("id"));
       System.out.println("attributes: " + jar.getManifest().getMainAttributes());

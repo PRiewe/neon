@@ -92,7 +92,7 @@ public class RSpell extends RData {
   }
 
   public Element toElement() {
-    Element spell = new Element(type.toString());
+    Element spell = new Element(type.toString().toLowerCase());
     spell.setAttribute("id", id);
     spell.setAttribute("effect", effect.name());
 

@@ -21,9 +21,6 @@ package neon.systems.files;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 import java.util.jar.*;
 import lombok.extern.slf4j.Slf4j;
@@ -108,9 +105,10 @@ public class FileSystem {
   public void createDirectory(String name) throws IOException {
 
     mount(temp.getAbsolutePath());
-    Path newDir = Path.of(temp.toPath().normalize().toString(),name);
+    Path newDir = Path.of(temp.toPath().normalize().toString(), name);
     Files.createDirectories(newDir);
   }
+
   /**
    * Removes a mod from the file system.
    *
@@ -206,8 +204,8 @@ public class FileSystem {
       out.close();
     } catch (IOException e) {
 
-      System.out.format("IOException in FileSystem.saveFile() %s: %s%n",fullPath,e);
-      //e.printStackTrace();
+      System.out.format("IOException in FileSystem.saveFile() %s: %s%n", fullPath, e);
+      // e.printStackTrace();
     }
   }
 
