@@ -27,6 +27,7 @@ import javax.swing.event.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import lombok.Getter;
 import neon.editor.Editor;
 import neon.editor.resources.IObject;
 import neon.editor.resources.IRegion;
@@ -41,8 +42,7 @@ public class MapEditor {
   private static UndoAction undoAction;
   private static HashMap<String, Short> mapUIDs;
   private JScrollPane mapScrollPane;
-  private JTree mapTree;
-  private JButton undo;
+  @Getter private final JTree mapTree;
   private HashSet<RMap> activeMaps;
   private JTabbedPane tabs;
   private JCheckBox levelBox;
@@ -96,7 +96,7 @@ public class MapEditor {
     ButtonGroup mode = new ButtonGroup();
     mode.add(selectButton);
     mode.add(drawButton);
-    undo = new JButton(new ImageIcon(Editor.class.getResource("undo.png")));
+    JButton undo = new JButton(new ImageIcon(Editor.class.getResource("undo.png")));
     undo.setToolTipText("Undo last action");
     undo.addActionListener(toolBarListener);
     undo.setActionCommand("undo");
@@ -157,8 +157,8 @@ public class MapEditor {
     }
   }
 
-  public void loadMaps(Collection<RMap> maps, String path) {
-    DefaultTreeModel model = (DefaultTreeModel) mapTree.getModel();
+  public void loadMaps(Collection<RMap> maps, String path, JTree mapTree1) {
+    DefaultTreeModel model = (DefaultTreeModel) mapTree1.getModel();
     DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
     for (RMap map : maps) {
       mapUIDs.put(map.id, map.uid);
@@ -172,8 +172,8 @@ public class MapEditor {
       }
       model.insertNodeInto(node, root, root.getChildCount());
     }
-    mapTree.expandPath(new TreePath(root));
-    mapTree.setVisible(true);
+    mapTree1.expandPath(new TreePath(root));
+    mapTree1.setVisible(true);
   }
 
   public static HashMap<String, Short> getMaps() {

@@ -107,10 +107,11 @@ public class ModFiler {
           }
         }
 
-        frame.setTitle("Neon Editor: " + path);
         store.loadData(path, active, isExtension(path));
-        editor.mapEditor.loadMaps(Editor.resources.getResources(RMap.class), path);
+        editor.mapEditor.loadMaps(
+            Editor.resources.getResources(RMap.class), path, editor.mapEditor.getMapTree());
         editor.enableEditing(file.isDirectory());
+        frame.setTitle("Neon Editor: " + path);
         frame.pack();
       }
     } catch (IOException e1) {

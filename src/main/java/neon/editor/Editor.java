@@ -83,7 +83,7 @@ public class Editor implements Runnable, ActionListener {
 
     // stuff
     files = new FileSystem();
-    store = new DataStore();
+    store = new DataStore(resources, files);
 
     // menu bar
     menuBar = new JMenuBar();
@@ -279,7 +279,7 @@ public class Editor implements Runnable, ActionListener {
 
       // load ensures that all resources etc. are initialized
       store.loadData(path, true, false);
-      mapEditor.loadMaps(resources.getResources(RMap.class), path);
+      mapEditor.loadMaps(resources.getResources(RMap.class), path, mapEditor.getMapTree());
     } catch (IOException e) {
       JOptionPane.showMessageDialog(frame, "Invalid mod directory: " + file + ".");
     }
