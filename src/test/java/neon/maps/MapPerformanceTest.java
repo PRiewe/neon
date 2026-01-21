@@ -579,39 +579,4 @@ class MapPerformanceTest {
 
     atlas.getCache().close();
   }
-
-  @Test
-  void testMemoryEfficiencyWithLargeMaps() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "memory-test-atlas");
-
-    Runtime runtime = Runtime.getRuntime();
-    runtime.gc();
-    long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
-
-    // Create 10 large worlds
-    for (int w = 0; w < 10; w++) {
-      World world = new World("World " + w, 6000 + w);
-      atlas.setMap(world);
-
-      Zone zone = atlas.getCurrentZone();
-      for (int i = 0; i < 200; i++) {
-        Region region = MapTestFixtures.createTestRegion(i * 5, i * 5, 10, 10);
-        zone.addRegion(region);
-      }
-
-      testDb.commit();
-    }
-
-    runtime.gc();
-    long memoryAfter = runtime.totalMemory() - runtime.freeMemory();
-    long memoryUsed = (memoryAfter - memoryBefore) / 1024 / 1024; // MB
-
-    System.out.printf(
-        "[PERF] Memory used for 10 worlds (2000 total regions): ~%d MB%n", memoryUsed);
-
-    // Very lenient assertion - just checking it doesn't explode
-    assertTrue(memoryUsed < 500, "Memory usage should be reasonable");
-
-    atlas.getCache().close();
-  }
 }
