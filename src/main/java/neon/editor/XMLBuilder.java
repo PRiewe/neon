@@ -46,8 +46,10 @@ public class XMLBuilder {
   }
 
   public Document getListDoc(Collection<? extends RData> elements, String name, RMod mod) {
+    ArrayList<RData> buffer = new ArrayList<RData>(elements);
+    Collections.sort(buffer, new IDComparator());
     Element root = new Element(name);
-    for (RData resource : elements) {
+    for (RData resource : buffer) {
       if (resource.getPath()[0].equals(mod.get("id"))) {
         root.addContent(resource.toElement());
       }
@@ -70,7 +72,7 @@ public class XMLBuilder {
   @SuppressWarnings("serial")
   private static class IDComparator implements Comparator<RData>, Serializable {
     public int compare(RData arg0, RData arg1) {
-      return arg0.id.compareTo(arg1.id);
+      return arg0.getClass().getSimpleName().compareTo(arg1.getClass().getSimpleName());
     }
   }
 }

@@ -77,7 +77,7 @@ public class RItem extends RData implements Serializable {
 
   public Element toElement() {
     Element item = new Element(type.toString());
-    item.setAttribute("id", id);
+    item = super.appendToElement(item);
     if (svg != null) {
       try {
         Element graphics = new Element("svg");
@@ -169,6 +169,13 @@ public class RItem extends RData implements Serializable {
       for (Element item : container.getChildren("item")) {
         contents.add(item.getText());
       }
+    }
+
+    public Element toElement() {
+      Element container = super.toElement();
+      for (var item : contents) {}
+
+      return container;
     }
   }
 

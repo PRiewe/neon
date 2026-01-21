@@ -138,24 +138,21 @@ public class RCreature extends RData {
   @Override
   public Element toElement() {
     Element creature = new Element(type.toString());
-
-    creature.setAttribute("id", id);
+    creature = super.appendToElement(creature);
     creature.setAttribute("size", size.toString());
     creature.setAttribute("char", text);
-    creature.setAttribute("color", color);
     creature.setAttribute("hit", hit);
     creature.setAttribute("speed", Integer.toString(speed));
 
     if (mana > 0) {
       creature.setAttribute("mana", Integer.toString(mana));
     }
-    if (name != null && !name.isEmpty()) {
-      creature.setAttribute("name", name);
-    }
     if (habitat != Habitat.LAND) {
       creature.setAttribute("habitat", habitat.name());
     }
-
+    if (color != null) {
+      creature.setAttribute("color", color);
+    }
     Element stats = new Element("stats");
     stats.setAttribute("str", Integer.toString((int) str));
     stats.setAttribute("con", Integer.toString((int) con));

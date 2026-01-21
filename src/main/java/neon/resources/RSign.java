@@ -20,7 +20,6 @@ package neon.resources;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import neon.entities.property.Ability;
 import org.jdom2.Element;
@@ -35,16 +34,14 @@ public class RSign extends RData {
 
   public RSign(RSign sign) {
     super(sign.id, sign.path);
-    for (String power : sign.powers) {
-      powers.add(power);
-    }
-    for (Map.Entry<Ability, Integer> entry : sign.abilities.entrySet()) {
-      abilities.put(entry.getKey(), entry.getValue());
-    }
+    name = sign.name;
+    powers.addAll(sign.powers);
+    abilities.putAll(sign.abilities);
   }
 
   public RSign(Element sign, String... path) {
     super(sign, path);
+    name = sign.getAttributeValue("name");
     for (Element power : sign.getChildren("power")) {
       powers.add(power.getAttributeValue("id"));
     }
@@ -57,14 +54,14 @@ public class RSign extends RData {
 
   public Element toElement() {
     Element sign = new Element("sign");
-    sign.setAttribute("id", id);
+    sign = super.appendToElement(sign);
     for (String power : powers) {
       sign.addContent(new Element("power").setAttribute("id", power));
     }
     for (Entry<Ability, Integer> entry : abilities.entrySet()) {
       if (entry.getValue() > 0) {
         Element ability = new Element("ability");
-        ability.setAttribute("id", entry.getKey().toString());
+        ability.setAttribute("id", entry.getKey().toString().toLowerCase());
         ability.setAttribute("size", Integer.toString(entry.getValue()));
         sign.addContent(ability);
       }

@@ -45,7 +45,7 @@ public class RTattoo extends RData {
 
   public Element toElement() {
     Element tattoo = new Element("tattoo");
-    tattoo.setAttribute("id", id);
+    tattoo = super.appendToElement(tattoo);
     tattoo.setAttribute("ability", ability.toString().toLowerCase());
     tattoo.setAttribute("size", Integer.toString(magnitude));
     tattoo.setAttribute("cost", Integer.toString(cost));

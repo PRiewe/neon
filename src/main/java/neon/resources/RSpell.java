@@ -118,10 +118,12 @@ public class RSpell extends RData {
   // scrolls/books have a regular spell
   public static class Enchantment extends RSpell {
     public String item; // valid: clothing/armor, weapon, container/door, food/potion
+    public String name;
 
     public Enchantment(Element enchantment, String... path) {
       super(enchantment, path);
       item = enchantment.getAttributeValue("item");
+      name = enchantment.getAttributeValue("name");
     }
 
     public Enchantment(String id, String... path) {
@@ -131,16 +133,21 @@ public class RSpell extends RData {
     public Element toElement() {
       Element enchantment = super.toElement();
       enchantment.setAttribute("item", item);
+      if (name != null) {
+        enchantment.setAttribute("name", name);
+      }
       return enchantment;
     }
   }
 
   public static class Power extends RSpell {
     public int interval;
+    public String name;
 
     public Power(Element power, String... path) {
       super(power, path);
       interval = Integer.parseInt(power.getAttributeValue("int"));
+      name = power.getAttributeValue("name");
     }
 
     public Power(String id, String... path) {
@@ -151,6 +158,9 @@ public class RSpell extends RData {
     public Element toElement() {
       Element power = super.toElement();
       power.setAttribute("int", Integer.toString(interval));
+      if (name != null) {
+        power.setAttribute("name", name);
+      }
       return power;
     }
   }

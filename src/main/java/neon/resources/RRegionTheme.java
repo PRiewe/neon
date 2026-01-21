@@ -89,13 +89,15 @@ public class RRegionTheme extends RData {
       veg.setAttribute("a", Integer.toString(plant.getValue()));
       theme.addContent(veg);
     }
-
-    String random = type.toString() + ";";
+    for (Element feature : features) {
+      theme.addContent(feature);
+    }
+    String random = type.toString();
     switch (type) {
       case town:
       case town_big:
       case town_small:
-        random += (wall + ";" + door.toString());
+        random += (";" + wall + ";" + door.toString());
         break;
       default:
         break;

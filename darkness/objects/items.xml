@@ -105,8 +105,8 @@
     <stats slot="shirt" />
   </clothing>
   <list id="shirt">
-    <creature id="wool shirt" l="1" />
-    <creature id="silk shirt" l="10" />
+    <item id="wool shirt" l="1" />
+    <item id="silk shirt" l="10" />
   </list>
   <container id="chest" color="brown" char="■" />
   <container id="altar" color="gray" char="Ħ" />

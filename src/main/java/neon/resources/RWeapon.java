@@ -71,7 +71,7 @@ public class RWeapon extends RItem implements Serializable {
   public Element toElement() {
     Element weapon = super.toElement();
     weapon.setAttribute("dmg", damage);
-    weapon.setAttribute("type", weaponType.name());
+    weapon.setAttribute("type", weaponType.name().toLowerCase());
     if (mana > 0) {
       weapon.setAttribute("mana", Integer.toString(mana));
     }

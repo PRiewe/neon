@@ -4,33 +4,33 @@
   <coin id="gold" cost="100" name="gold coin" color="gold" char="€" />
   <coin id="silver" cost="10" name="silver coin" color="silver" char="€" />
   <coin id="copper" cost="1" name="copper coin" color="yellow" char="€" />
-  <food id="wheat" cost="1" name="bushel of wheat" weight=".5" color="wheat" char="⌠" spell="heal" />
-  <item id="flour" cost="2" name="sack of flour" weight=".5" color="brown" char="%" />
-  <item id="iron" cost="10" name="clump of iron" weight=".5" color="lightSteelBlue" char="*" />
-  <item id="tobacco" cost="50" name="bushel of tobacco" weight=".5" color="olive" char="⌠" />
-  <item id="clump_copper" cost="50" name="clump of copper" weight=".5" color="yellow" char="*" />
-  <item id="cinnamon" cost="100" name="sack of cinnamon" weight=".5" color="brown" char="%" />
-  <item id="ginger" cost="200" name="sack of ginger" weight=".5" color="brown" char="%" />
-  <item id="pepper" cost="200" name="sack of pepper" weight=".5" color="brown" char="%" />
-  <aid id="linen" cost="400" name="sheat of linen" weight=".5" color="linen" char="|" />
-  <item id="salt" cost="500" name="sack of salt" weight=".5" color="brown" char="%" />
-  <item id="clump_silver" cost="500" name="clump of silver" weight=".5" color="silver" char="*" />
-  <item id="silk" cost="1000" name="sheat of silk" weight=".5" color="azure" char="|" />
-  <item id="saffron" cost="1500" name="sack of saffron" weight=".5" color="brown" char="%" />
-  <item id="cloves" cost="1500" name="sack of cloves" weight=".5" color="brown" char="%" />
-  <item id="clump_gold" cost="5000" name="clump of gold" weight=".5" color="gold" char="*" />
-  <item id="clump_platinum" cost="50000" name="clump of platinum" weight=".5" color="slateGray" char="*" />
-  <item id="diamond" cost="50000" weight=".1" color="whiteSmoke" char="*" />
-  <item id="emerald" cost="30000" weight=".1" color="chartreuse" char="*" />
-  <item id="sapphire" cost="40000" weight=".1" color="royalBlue" char="*" />
-  <item id="ruby" cost="20000" weight=".1" color="red" char="*" />
-  <item id="amethyst" cost="10000" weight=".1" color="mediumPurple" char="*" />
-  <weapon id="dagger" cost="200" dmg="1d4" weight=".5" color="gray" char=")" type="blade_one" />
-  <weapon id="shocking dagger" cost="200" dmg="1d4" weight=".5" color="gray" char=")" type="blade_one" mana="100" spell="w_shock" />
+  <food id="wheat" cost="1" name="bushel of wheat" weight="0.5" color="wheat" char="⌠" spell="heal" />
+  <aid id="linen" cost="400" name="sheat of linen" weight="0.5" color="linen" char="|" />
+  <item id="flour" cost="2" name="sack of flour" weight="0.5" color="brown" char="%" />
+  <item id="iron" cost="10" name="clump of iron" weight="0.5" color="lightSteelBlue" char="*" />
+  <item id="tobacco" cost="50" name="bushel of tobacco" weight="0.5" color="olive" char="⌠" />
+  <item id="clump_copper" cost="50" name="clump of copper" weight="0.5" color="yellow" char="*" />
+  <item id="cinnamon" cost="100" name="sack of cinnamon" weight="0.5" color="brown" char="%" />
+  <item id="ginger" cost="200" name="sack of ginger" weight="0.5" color="brown" char="%" />
+  <item id="pepper" cost="200" name="sack of pepper" weight="0.5" color="brown" char="%" />
+  <item id="salt" cost="500" name="sack of salt" weight="0.5" color="brown" char="%" />
+  <item id="clump_silver" cost="500" name="clump of silver" weight="0.5" color="silver" char="*" />
+  <item id="silk" cost="1000" name="sheat of silk" weight="0.5" color="azure" char="|" />
+  <item id="saffron" cost="1500" name="sack of saffron" weight="0.5" color="brown" char="%" />
+  <item id="cloves" cost="1500" name="sack of cloves" weight="0.5" color="brown" char="%" />
+  <item id="clump_gold" cost="5000" name="clump of gold" weight="0.5" color="gold" char="*" />
+  <item id="clump_platinum" cost="50000" name="clump of platinum" weight="0.5" color="slateGray" char="*" />
+  <item id="diamond" cost="50000" weight="0.1" color="whiteSmoke" char="*" />
+  <item id="emerald" cost="30000" weight="0.1" color="chartreuse" char="*" />
+  <item id="sapphire" cost="40000" weight="0.1" color="royalBlue" char="*" />
+  <item id="ruby" cost="20000" weight="0.1" color="red" char="*" />
+  <item id="amethyst" cost="10000" weight="0.1" color="mediumPurple" char="*" />
+  <weapon id="dagger" cost="200" dmg="1d4" weight="0.5" color="gray" char=")" type="blade_one" />
+  <weapon id="shocking dagger" cost="200" dmg="1d4" weight="0.5" color="gray" char=")" type="blade_one" mana="100" spell="w_shock" />
   <weapon id="longspear" cost="500" dmg="1d8" name="long spear" weight="4.5" color="gray" char=")" type="spear" />
   <weapon id="crossbow" cost="3500" dmg="1d6" weight="1.5" color="gray" char=")" type="crossbow" />
-  <weapon id="bolt_crossbow" cost="10" dmg="0" name="crossbow bolt" weight=".05" color="gray" char=")" type="bolt" />
-  <weapon id="dart" cost="50" dmg="1d8" weight=".25" color="gray" char=")" type="thrown" />
+  <weapon id="bolt_crossbow" cost="10" dmg="0" name="crossbow bolt" weight="0.05" color="gray" char=")" type="bolt" />
+  <weapon id="dart" cost="50" dmg="1d8" weight="0.25" color="gray" char=")" type="thrown" />
   <weapon id="scimitar" cost="1500" dmg="1d6" weight="2" color="gray" char=")" type="blade_one" />
   <armor id="leather cuirass" cost="10000" weight="12.5" color="steelBlue" char="[">
     <stats class="light" slot="cuirass" ar="5" />
@@ -105,8 +105,8 @@
     <stats slot="shirt" />
   </clothing>
   <list id="shirt">
-    <creature id="wool shirt" l="1" />
-    <creature id="silk shirt" l="10" />
+    <item id="wool shirt" l="1" />
+    <item id="silk shirt" l="10" />
   </list>
   <container id="chest" color="brown" char="■" />
   <container id="altar" color="gray" char="Ħ" />
@@ -138,15 +138,15 @@
   <container id="bamboo" color="yellowGreen" char="ж" />
   <container id="reed" color="yellowGreen" char="Ϡ" />
   <container id="tomb" color="gray" char="†" />
-  <light id="torch" cost="100" weight=".2" color="brown" char="⌠" />
-  <light id="candle" cost="100" weight=".2" color="white" char="⌠" />
-  <potion id="potion of healing" cost="100" weight=".2" color="paleTurquoise" char="!" spell="heal" />
-  <scroll id="scroll of healing" cost="100" weight=".2" color="paleTurquoise" char="§" spell="heal">Heal me!</scroll>
+  <light id="torch" cost="100" weight="0.2" color="brown" char="⌠" />
+  <light id="candle" cost="100" weight="0.2" color="white" char="⌠" />
+  <potion id="potion of healing" cost="100" weight="0.2" color="paleTurquoise" char="!" spell="heal" />
+  <scroll id="scroll of healing" cost="100" weight="0.2" color="paleTurquoise" char="§" spell="heal">Heal me!</scroll>
   <book id="shopping list" cost="100" weight="2" color="paleTurquoise" char="§">shopping_list</book>
   <book id="three billy goats gruff" cost="100" weight="2" color="paleTurquoise" char="§">three_billy_goats_gruff</book>
   <book id="why the bear is stumpy-tailed" cost="100" weight="2" color="paleTurquoise" char="§">why_the_bear_is_stumpy_tailed</book>
   <book id="the fox as herdsman" cost="100" weight="2" color="paleTurquoise" char="§">the_fox_as_herdsman</book>
-  <item id="key1" weight=".1" color="white" char="'" />
+  <item id="key1" weight="0.1" color="white" char="'" />
   <item id="wall" color="gray" char="#" />
   <door id="door" color="gray" char="/"><states closed="+" /></door>
   <door id="door_wood" color="saddleBrown" char="/"><states closed="+" /></door>
