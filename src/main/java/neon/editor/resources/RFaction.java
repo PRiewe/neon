@@ -22,6 +22,7 @@ import neon.resources.RData;
 import org.jdom2.Element;
 
 public class RFaction extends RData {
+
   public RFaction(Element e, String... path) {
     super(e.getAttributeValue("id"), path);
   }

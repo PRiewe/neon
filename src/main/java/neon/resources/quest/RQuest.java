@@ -20,6 +20,7 @@ package neon.resources.quest;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import neon.resources.RData;
 import org.jdom2.Element;
 
@@ -36,8 +37,9 @@ public class RQuest extends RData {
   // initial quest is added as soon as game starts
   public boolean initial = false;
 
-  private ArrayList<String> conditions = new ArrayList<String>();
-  private ArrayList<Conversation> conversations = new ArrayList<Conversation>();
+  private final ArrayList<String> conditions = new ArrayList<String>();
+  private final ArrayList<Conversation> conversations = new ArrayList<Conversation>();
+  private final List<Topic> topics = new ArrayList<>();
 
   public RQuest(String id, Element properties, String... path) {
     super(id, path);
@@ -79,6 +81,10 @@ public class RQuest extends RData {
       }
       conversations.add(conversation);
     }
+    for (Element top : dialog.getChildren("topic")) {
+      Topic topic = new Topic(id, top.getAttributeValue("id"), top);
+      topics.add(topic);
+    }
   }
 
   private void initTopic(Conversation conversation, Topic parent, Element te) {
@@ -111,6 +117,9 @@ public class RQuest extends RData {
       quest.setAttribute("init", "1");
     }
 
+    if (repeat) {
+      quest.setAttribute("f", Integer.toString(frequency));
+    }
     if (!conditions.isEmpty()) {
       Element pre = new Element("pre");
       for (String condition : conditions) {
@@ -124,9 +133,24 @@ public class RQuest extends RData {
     }
 
     Element dialog = new Element("dialog");
-    //		for(Topic topic : topics) {
-    //			dialog.addContent(topic.toElement());
-    //		}
+    for (var convo : conversations) {
+      System.out.println(convo);
+      Topic rootTopic = convo.getRootTopic();
+      Element conversation = new Element("conversation");
+      conversation.setAttribute("id", convo.id);
+      Element root = rootTopic.toElement();
+      root.setName("root");
+      conversation.addContent(root);
+      var subTopics = convo.getTopics(rootTopic);
+      // TODO add support for multiple lauers
+      for (var subTopic : subTopics) {
+        root.addContent(subTopic.toElement());
+      }
+      dialog.addContent(conversation);
+    }
+    for (Topic topic : topics) {
+      dialog.addContent(topic.toElement());
+    }
     quest.addContent(dialog);
 
     return quest;

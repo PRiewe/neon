@@ -173,7 +173,11 @@ public class RItem extends RData implements Serializable {
 
     public Element toElement() {
       Element container = super.toElement();
-      for (var item : contents) {}
+      for (var item : contents) {
+        Element itemElm = new Element("item");
+        itemElm.setText(item);
+        container.addContent(itemElm);
+      }
 
       return container;
     }

@@ -19,11 +19,8 @@
 package neon.editor.resources;
 
 import java.util.ArrayList;
-import neon.editor.Editor;
-import neon.resources.RData;
-import neon.resources.RRegionTheme;
-import neon.resources.RScript;
-import neon.resources.RTerrain;
+import neon.editor.DataStore;
+import neon.resources.*;
 import org.jdom2.Element;
 
 public class IRegion extends Instance {
@@ -35,15 +32,20 @@ public class IRegion extends Instance {
     super(terrain, x, y, z, w, h);
   }
 
-  public IRegion(Element properties) {
+  public IRegion(DataStore dataStore, Element properties) {
     super(properties);
     resource =
-        (RData) Editor.resources.getResource(properties.getAttributeValue("text"), "terrain");
+        (RData)
+            dataStore
+                .getResourceManager()
+                .getResource(properties.getAttributeValue("text"), "terrain");
     theme =
         (RRegionTheme)
-            Editor.resources.getResource(properties.getAttributeValue("random"), "theme");
+            dataStore
+                .getResourceManager()
+                .getResource(properties.getAttributeValue("random"), "theme");
     for (Element script : properties.getChildren("script")) {
-      scripts.add(Editor.getStore().getScripts().get(script.getAttributeValue("id")));
+      scripts.add(dataStore.getScripts().get(script.getAttributeValue("id")));
     }
     label = properties.getAttributeValue("label");
   }
@@ -55,7 +57,9 @@ public class IRegion extends Instance {
     region.setAttribute("w", Integer.toString(width));
     region.setAttribute("h", Integer.toString(height));
     region.setAttribute("l", Integer.toString(z));
-    region.setAttribute("text", resource.id);
+    if (resource != null) {
+      region.setAttribute("text", resource.id);
+    }
     if (theme != null) {
       region.setAttribute("random", theme.id);
     }

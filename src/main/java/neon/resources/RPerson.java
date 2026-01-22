@@ -110,7 +110,9 @@ public class RPerson extends RData {
     Element npc = new Element("npc");
     npc.setAttribute("race", species);
     npc.setAttribute("id", id);
-
+    if (name != null) {
+      npc.setAttribute("name", name);
+    }
     for (Element service : services) {
       service.detach(); // otherwise error on 2nd save
       npc.addContent(service);
@@ -121,7 +123,10 @@ public class RPerson extends RData {
       for (String f : factions.keySet()) {
         Element faction = new Element("faction");
         faction.setAttribute("id", f);
-        faction.setAttribute("rank", Integer.toString(factions.get(f)));
+        var rank = factions.get("f");
+        if (rank != null && rank != 0) {
+          faction.setAttribute("rank", Integer.toString(rank));
+        }
         factionList.addContent(faction);
       }
       npc.addContent(factionList);
@@ -136,7 +141,16 @@ public class RPerson extends RData {
       }
       npc.addContent(itemList);
     }
-
+    if (!skills.isEmpty()) {
+      Element skillList = new Element("skills");
+      for (var skillEntry : skills.entrySet()) {
+        Element skill = new Element("skill");
+        skill.setAttribute("id", skillEntry.getKey().name());
+        skill.setAttribute("rank", skillEntry.getValue().toString());
+        skillList.addContent(skill);
+      }
+      npc.addContent(skillList);
+    }
     if (!spells.isEmpty()) {
       Element spellList = new Element("spells");
       for (String rs : spells) {
@@ -146,7 +160,11 @@ public class RPerson extends RData {
       }
       npc.addContent(spellList);
     }
-
+    for (String script : scripts) {
+      Element scriptElm = new Element("script");
+      scriptElm.setText(script);
+      npc.addContent(scriptElm);
+    }
     if (aiAggr > -1 || aiConf > -1 || aiRange > -1 || aiType != null) {
       Element ai = new Element("ai");
       if (aiType != null) {

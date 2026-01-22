@@ -26,6 +26,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import neon.editor.resources.RFaction;
 import neon.editor.resources.RMap;
+import neon.editor.resources.RZoneFactory;
 import neon.entities.AbstractUIDStore;
 import neon.entities.MemoryUIDStore;
 import neon.resources.*;
@@ -38,21 +39,22 @@ import org.jdom2.Element;
 
 @Slf4j
 public class DataStore {
-  @Getter private HashMap<String, RScript> scripts = new HashMap<String, RScript>();
-  @Getter private Multimap<String, String> events = ArrayListMultimap.create();
+  @Getter private final HashMap<String, RScript> scripts = new HashMap<String, RScript>();
+  @Getter private final Multimap<String, String> events = ArrayListMultimap.create();
   private final HashMap<String, RMod> mods = new HashMap<String, RMod>();
   @Getter private final ResourceManager resourceManager;
   @Getter private RMod active;
-  @Getter private AbstractUIDStore uidStore;
-  private final FileSystem files;
+  @Getter private final AbstractUIDStore uidStore;
+  @Getter private final FileSystem files;
   @Getter private final HashSet<RMap> activeMaps = new HashSet<RMap>();
   @Getter private final HashMap<String, Short> mapUIDs = new HashMap<String, Short>();
-  ;
+  @Getter private final RZoneFactory rZoneFactory;
 
   public DataStore(ResourceManager resourceManager, FileSystem files) {
     this.resourceManager = resourceManager;
     this.files = files;
     this.uidStore = new MemoryUIDStore();
+    this.rZoneFactory = new RZoneFactory(this);
   }
 
   public RMod getMod(String id) {
@@ -153,7 +155,8 @@ public class DataStore {
         s = s.substring(s.lastIndexOf(File.separator) + 1);
         path[file.length] = s;
         Element map = files.getFile(new XMLTranslator(), path).getRootElement();
-        resourceManager.addResource(new RMap(s.replace(".xml", ""), map, mod.get("id")), "maps");
+        resourceManager.addResource(
+            new RMap(this, s.replace(".xml", ""), map, mod.get("id")), "maps");
       }
     } catch (NullPointerException e) {
       log.error("loadMaps error. RMod: {}, path: {}", mod, file, e);

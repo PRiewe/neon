@@ -87,7 +87,7 @@ public class RMod extends Resource {
    * @return the root element of the cc.xml file for this mod.
    */
   public Element getCCElement() {
-    Element cc = new Element("cc");
+    Element cc = new Element("root");
     for (String item : ccItems) {
       cc.addContent(new Element("item").setText(item));
     }

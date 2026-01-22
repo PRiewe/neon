@@ -25,6 +25,7 @@ import java.text.NumberFormat;
 import java.util.Enumeration;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import neon.editor.DataStore;
 import neon.editor.Editor;
 import neon.editor.resources.IRegion;
 import neon.editor.resources.Instance;
@@ -47,9 +48,11 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
   private DefaultListModel<RScript> scriptListModel;
   private RZone zone;
   private JSpinner zSpinner;
+  private DataStore dataStore;
 
-  public RegionInstanceEditor(IRegion r, JFrame parent, ZoneTreeNode zone) {
+  public RegionInstanceEditor(DataStore dataStore, IRegion r, JFrame parent, ZoneTreeNode zone) {
     this.zone = zone.getZone();
+    this.dataStore = dataStore;
     region = r;
     frame = new JDialog(parent, "Region instance editor: " + region.resource.id);
     JPanel content = new JPanel(new BorderLayout());
@@ -326,7 +329,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
               e.setAttribute("y", Integer.toString(y + region.y));
               e.setAttribute("id", id);
               e.setAttribute("uid", Integer.toString(zone.map.createUID(e)));
-              Instance instance = RZone.getInstance(e, zone);
+              Instance instance = dataStore.getRZoneFactory().getInstance(e, zone);
               zone.getScene().addElement(instance, instance.getBounds(), instance.z);
             } else if (entry.startsWith("c:")) {
             } else if (!entry.isEmpty()) {
@@ -337,7 +340,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
               element.setAttribute("w", "1");
               element.setAttribute("h", "1");
               element.setAttribute("l", Integer.toString(region.z + 1));
-              Instance instance = new IRegion(element);
+              Instance instance = new IRegion(dataStore, element);
               zone.getScene()
                   .addElement(
                       instance, new Rectangle(x + region.x, y + region.y, 1, 1), region.z + 1);

@@ -20,7 +20,6 @@
     </regions>
   </level>
   <level name="temple of Furun" l="1">
-    <creatures />
     <items>
       <door x="3" y="6" id="door" uid="4" state="closed">
         <dest x="34021" y="15177" z="0" map="1" />
@@ -41,7 +40,6 @@
     </regions>
   </level>
   <level name="harbor master" l="2">
-    <creatures />
     <items>
       <door x="5" y="3" id="door" uid="8" state="closed">
         <dest x="34013" y="15150" z="0" map="1" />
@@ -54,7 +52,6 @@
     </regions>
   </level>
   <level name="Kasku's house" l="3">
-    <creatures />
     <items>
       <door x="5" y="3" id="door" uid="9" state="locked" lock="1">
         <dest x="34013" y="15157" z="0" map="1" />

@@ -21,10 +21,10 @@ package neon.editor.resources;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
-import neon.editor.Editor;
 import neon.editor.maps.MapEditor;
 import neon.resources.RCreature;
 import neon.resources.RPerson;
+import neon.resources.ResourceManager;
 import neon.util.ColorFactory;
 import neon.util.TextureFactory;
 import org.jdom2.Element;
@@ -32,10 +32,10 @@ import org.jdom2.Element;
 public class IPerson extends IObject {
   private RCreature species;
 
-  public IPerson(Element properties) {
-    super(properties);
-    resource = (RPerson) Editor.resources.getResource(properties.getAttributeValue("id"));
-    species = (RCreature) Editor.resources.getResource(((RPerson) resource).species);
+  public IPerson(ResourceManager rm, Element properties) {
+    super(rm, properties);
+    resource = (RPerson) rm.getResource(properties.getAttributeValue("id"));
+    species = (RCreature) rm.getResource(((RPerson) resource).species);
   }
 
   public IPerson(RPerson resource, int x, int y, int z, Element e) {

@@ -4,7 +4,6 @@
     <name>ice house</name>
   </header>
   <level name="entry" l="0">
-    <creatures />
     <items>
       <door x="3" y="0" state="locked" lock="1" id="door" uid="0">
         <dest x="34014" y="15189" map="1" />
@@ -21,7 +20,6 @@
     </regions>
   </level>
   <level name="cellar" l="1">
-    <creatures />
     <items>
       <door x="12" y="10" state="closed" id="door" uid="5">
         <dest x="4" y="5" z="0" sign="entry" />

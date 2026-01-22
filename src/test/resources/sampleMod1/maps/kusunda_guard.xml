@@ -4,7 +4,6 @@
     <name>guard tower</name>
   </header>
   <level name="entry" l="0">
-    <creatures />
     <items>
       <door x="5" y="3" state="locked" lock="1" id="door" uid="0">
         <dest x="34015" y="15171" map="1" />
@@ -20,7 +19,6 @@
     </regions>
   </level>
   <level name="upstairs" l="1">
-    <creatures />
     <items>
       <door x="1" y="6" state="closed" id="door" uid="5">
         <dest x="1" y="6" z="0" sign="entry" />

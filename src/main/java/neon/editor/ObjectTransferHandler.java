@@ -34,10 +34,12 @@ import org.jdom2.Element;
 public class ObjectTransferHandler extends TransferHandler {
   private RZone zone;
   private EditablePane pane;
+  private DataStore dataStore;
 
-  public ObjectTransferHandler(RZone zone, EditablePane pane) {
+  public ObjectTransferHandler(DataStore dataStore, RZone zone, EditablePane pane) {
     this.zone = zone;
     this.pane = pane;
+    this.dataStore = dataStore;
   }
 
   public boolean canImport(TransferHandler.TransferSupport ts) {
@@ -73,7 +75,7 @@ public class ObjectTransferHandler extends TransferHandler {
       e.setAttribute("id", id);
       e.setAttribute("uid", Integer.toString(zone.map.createUID(e)));
 
-      Instance instance = RZone.getInstance(e, zone);
+      Instance instance = dataStore.getRZoneFactory().getInstance(e, zone);
       zone.getScene().addElement(instance, instance.getBounds(), instance.z);
 
       UndoAction undo = new UndoAction.Drop(instance, zone.getScene());

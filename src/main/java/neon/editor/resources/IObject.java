@@ -20,10 +20,10 @@ package neon.editor.resources;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
-import neon.editor.Editor;
 import neon.editor.maps.MapEditor;
 import neon.resources.RData;
 import neon.resources.RItem;
+import neon.resources.ResourceManager;
 import neon.ui.graphics.shapes.JVShape;
 import neon.ui.graphics.svg.SVGLoader;
 import org.jdom2.Element;
@@ -36,13 +36,13 @@ public class IObject extends Instance {
     this.uid = uid;
   }
 
-  public IObject(Element properties) {
+  public IObject(ResourceManager rm, Element properties) {
     super(properties);
     width = 1;
     height = 1;
     uid = Integer.parseInt(properties.getAttributeValue("uid"));
     String id = properties.getAttributeValue("id");
-    resource = (RData) Editor.resources.getResource(id);
+    resource = (RData) rm.getResource(id);
     if (properties.getName().equals("creature")) {
       z = Byte.MAX_VALUE - 1;
     } else { // kan "item", "door" of "container" zijn
@@ -75,7 +75,10 @@ public class IObject extends Instance {
     Element object = new Element(type);
     object.setAttribute("x", Integer.toString(x));
     object.setAttribute("y", Integer.toString(y));
-    object.setAttribute("id", resource.id);
+    if (resource != null) {
+      object.setAttribute("id", resource.id);
+    }
+
     object.setAttribute("uid", Integer.toString(uid));
     return object;
   }

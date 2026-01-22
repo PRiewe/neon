@@ -21,6 +21,7 @@ package neon.editor.maps;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import neon.editor.DataStore;
 import neon.editor.Editor;
 import neon.editor.ObjectTransferHandler;
 import neon.editor.resources.IContainer;
@@ -49,12 +50,14 @@ public class EditablePane extends JScrollPane
   private Dimension delta;
   private JVectorPane pane;
   private IRegion newRegion;
+  private DataStore dataStore;
 
   /** Initializes this <code>EditablePane</code>. */
-  public EditablePane(ZoneTreeNode node, float width, float height) {
+  public EditablePane(DataStore dataStore, ZoneTreeNode node, float width, float height) {
     if (node.getZone().getScene() == null) {
       node.getZone().map.load();
     }
+    this.dataStore = dataStore;
     layer = -1;
     this.node = node;
     setBackground(Color.black);
@@ -70,7 +73,7 @@ public class EditablePane extends JScrollPane
     pane.addMouseListener(this);
     pane.addMouseMotionListener(this);
     pane.addMouseWheelListener(this);
-    pane.setTransferHandler(new ObjectTransferHandler(node.getZone(), this));
+    pane.setTransferHandler(new ObjectTransferHandler(dataStore, node.getZone(), this));
     pane.setSelectionFilter(filter);
 
     InputMap map = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -174,7 +177,7 @@ public class EditablePane extends JScrollPane
         region.setAttribute("w", "1");
         region.setAttribute("h", "1");
         region.setAttribute("l", Integer.toString(layer));
-        newRegion = new IRegion(region);
+        newRegion = new IRegion(dataStore, region);
         scene.addElement(newRegion, newRegion.getBounds(), newRegion.z);
       }
     } else {
@@ -303,7 +306,7 @@ public class EditablePane extends JScrollPane
         } else if (selected instanceof IContainer) {
           new ContainerInstanceEditor((IContainer) selected, Editor.getFrame(), node).show();
         } else if (selected instanceof IRegion) {
-          new RegionInstanceEditor((IRegion) selected, Editor.getFrame(), node).show();
+          new RegionInstanceEditor(dataStore, (IRegion) selected, Editor.getFrame(), node).show();
         }
       }
       repaint();

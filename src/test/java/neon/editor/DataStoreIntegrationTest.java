@@ -1,11 +1,15 @@
 package neon.editor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.tree.DefaultTreeModel;
 import neon.editor.maps.MapEditor;
 import neon.editor.maps.StubTreeNode;
@@ -16,10 +20,14 @@ import neon.systems.files.FileSystem;
 import neon.systems.files.XMLTranslator;
 import org.jdom2.Document;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DataStoreIntegrationTest {
   String[] fileList = {
     "cc.xml",
@@ -79,8 +87,7 @@ public class DataStoreIntegrationTest {
     assertEquals(8, groups.getOrDefault(RMap.class, List.of()).size());
   }
 
-  @Test
-  void loadAndSaveSampleMod() throws IOException {
+  Stream<CompareXmlScenario> loadAndSaveSampleMod() throws IOException {
     FileSystem fileSystem = new FileSystem();
     fileSystem.mount("src/test/resources/");
     ResourceManager resourceManager = new ResourceManager();
@@ -91,13 +98,17 @@ public class DataStoreIntegrationTest {
     DefaultTreeModel treeModel = new DefaultTreeModel(root);
     MapEditor.loadMapsHeadless(
         dataStore.getResourceManager().getResources(RMap.class), treeModel, dataStore);
+    Collection<RMap> maps = resourceManager.getResources(RMap.class);
+    for (var mappee : maps) {
+      mappee.load();
+    }
     var map = resourceManager.getAllResources();
     System.out.format("ResourceManager items: %s%n", resourceManager.getAllResources().size());
     var groups =
         map.entrySet().stream().collect(Collectors.groupingBy(x -> x.getValue().getClass()));
-    for (var e : groups.entrySet()) {
-      System.out.format("%s | %s %n", e.getKey(), e.getValue().size());
-    }
+    //    for (var e : groups.entrySet()) {
+    //      System.out.format("%s | %s %n", e.getKey(), e.getValue().size());
+    //    }
 
     var tmp = Files.createTempDirectory("neon_");
     StringBuilder newDir = new StringBuilder();
@@ -120,15 +131,27 @@ public class DataStoreIntegrationTest {
         fileSystem.getFile(new XMLTranslator(), "sampleMod1", "spells.xml");
 
     ModFiler.save(dataStore, fileSystemOut);
-
+    List<CompareXmlScenario> compareXmlScenarios = new ArrayList<>();
     for (String file : fileList) {
-      compareXmlFiles("src/test/resources/sampleMod1", newDirFile.getAbsolutePath(), file);
+      compareXmlScenarios.add(
+          new CompareXmlScenario(
+              "src/test/resources/sampleMod1", newDirFile.getAbsolutePath(), file));
+    }
+    return compareXmlScenarios.stream();
+  }
+
+  record CompareXmlScenario(String sourceFolder, String targetFolder, String fileName) {
+    @Override
+    public String toString() {
+      return fileName;
     }
   }
 
-  private void compareXmlFiles(String sourceFolder, String targetFolder, String fileName) {
-    String targetFileName = targetFolder + File.separator + fileName;
-    String sourceFileName = sourceFolder + File.separator + fileName;
+  @ParameterizedTest(name = "compareXmlFiles: {0}")
+  @MethodSource("loadAndSaveSampleMod")
+  void compareXmlFiles(CompareXmlScenario scen) {
+    String targetFileName = scen.targetFolder() + File.separator + scen.fileName();
+    String sourceFileName = scen.sourceFolder() + File.separator + scen.fileName();
     InputStream targetStream = null;
     try {
       targetStream = new FileInputStream(targetFileName);
@@ -143,9 +166,22 @@ public class DataStoreIntegrationTest {
             ElementSelectors.selectorForElementNamed("feature", ElementSelectors.byNameAndText),
             ElementSelectors.selectorForElementNamed("creature", ElementSelectors.byNameAndText),
             ElementSelectors.selectorForElementNamed(
+                "region", ElementSelectors.byNameAndAttributes("x", "y")),
+            ElementSelectors.selectorForElementNamed(
                 "event", ElementSelectors.byNameAndAttributes("script")),
             ElementSelectors.byNameAndAttributes("id"));
-    if (fileName.startsWith("objects")) {
+    if (scen.fileName().startsWith("themes")) {
+      nodeMatcher =
+          new DefaultNodeMatcher(
+              ElementSelectors.selectorForElementNamed("plant", ElementSelectors.byNameAndText),
+              ElementSelectors.selectorForElementNamed("item", ElementSelectors.byNameAndText),
+              ElementSelectors.selectorForElementNamed("feature", ElementSelectors.byNameAndText),
+              ElementSelectors.selectorForElementNamed("creature", ElementSelectors.byNameAndText),
+              ElementSelectors.selectorForElementNamed(
+                  "event", ElementSelectors.byNameAndAttributes("script")),
+              ElementSelectors.byNameAndAttributes("id"));
+    }
+    if (scen.fileName().startsWith("objects")) {
       nodeMatcher = new DefaultNodeMatcher(ElementSelectors.byNameAndAttributes("id"));
     }
     InputStream sourceStream = null;
@@ -159,25 +195,41 @@ public class DataStoreIntegrationTest {
         new DifferenceEvaluator() {
           @Override
           public ComparisonResult evaluate(Comparison comparison, ComparisonResult outcome) {
-            if (comparison.getControlDetails().getValue() != null
-                && comparison.getTestDetails().getValue() != null) {
-              if (comparison
-                  .getControlDetails()
-                  .getValue()
-                  .toString()
-                  .equalsIgnoreCase(comparison.getTestDetails().getValue().toString())) {
-                return ComparisonResult.SIMILAR;
-              } else {
-                try {
-                  double control =
-                      Double.parseDouble(comparison.getControlDetails().getValue().toString());
-                  double test =
-                      Double.parseDouble(comparison.getTestDetails().getValue().toString());
-                  if (Math.abs(control - test) < 0.0001) {
-                    return ComparisonResult.SIMILAR;
+            // If the test document has an extra attribute not present in the control document
+            if (outcome == ComparisonResult.DIFFERENT) {
+              if (comparison.getType() == ComparisonType.ATTR_NAME_LOOKUP) {
+                if (comparison.getControlDetails().getValue() == null) {
+                  return ComparisonResult.SIMILAR;
+                } else {
+                  return outcome;
+                }
+              } else if (comparison.getType() == ComparisonType.ELEMENT_NUM_ATTRIBUTES) {
+                if (comparison.getControlDetails().getXPath().contains("dest")) {
+                  return ComparisonResult.SIMILAR;
+                }
+              }
+              // Downgrade the difference to SIMILAR (or EQUAL if you prefer)
+
+              else if (comparison.getControlDetails().getValue() != null
+                  && comparison.getTestDetails().getValue() != null) {
+                if (comparison
+                    .getControlDetails()
+                    .getValue()
+                    .toString()
+                    .equalsIgnoreCase(comparison.getTestDetails().getValue().toString())) {
+                  return ComparisonResult.SIMILAR;
+                } else {
+                  try {
+                    double control =
+                        Double.parseDouble(comparison.getControlDetails().getValue().toString());
+                    double test =
+                        Double.parseDouble(comparison.getTestDetails().getValue().toString());
+                    if (Math.abs(control - test) < 0.0001) {
+                      return ComparisonResult.SIMILAR;
+                    }
+                  } catch (NumberFormatException e) {
+                    // do nothing
                   }
-                } catch (NumberFormatException e) {
-                  // do nothing
                 }
               }
             }
@@ -195,12 +247,7 @@ public class DataStoreIntegrationTest {
                 DifferenceEvaluators.chain(DifferenceEvaluators.Default, differ))
             .build();
 
-    if (fileName.equals("objects/items.xml")) {
-      System.out.format("%s has diffs: %s%n", targetFileName, myDiff.fullDescription());
-    } else if (myDiff.hasDifferences()) {
-      System.out.format("%s has diffs: %s%n", targetFileName, myDiff.toString());
-    } else {
-      System.out.format("%s matches%n", fileName);
-    }
+    assertFalse(
+        myDiff.hasDifferences(), String.format("%s has diffs: %s%n", targetFileName, myDiff));
   }
 }

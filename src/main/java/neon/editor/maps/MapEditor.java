@@ -137,7 +137,7 @@ public class MapEditor {
     if (!props.cancelled()) {
       // editableMap maken
       short uid = createNewUID(store);
-      RMap map = new RMap(uid, store.getActive().get("id"), props);
+      RMap map = new RMap(store, uid, store.getActive().get("id"), props);
       store.getActiveMaps().add(map);
       // en node maken
       DefaultTreeModel model = (DefaultTreeModel) mapTreeParam.getModel();

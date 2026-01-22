@@ -80,7 +80,7 @@ public class MapTreeListener implements MouseListener {
           if (choice != JOptionPane.CANCEL_OPTION) { // and put on screen
             node.getZone().theme = null;
             if (node.getPane() == null) {
-              node.setPane(new EditablePane(node, tabs.getWidth(), tabs.getHeight()));
+              node.setPane(new EditablePane(dataStore, node, tabs.getWidth(), tabs.getHeight()));
               dataStore.getActiveMaps().add(node.getZone().map);
             }
             if (tabs.indexOfComponent(node.getPane()) == -1) {
@@ -230,7 +230,7 @@ public class MapTreeListener implements MouseListener {
                 region.setAttribute("h", Integer.toString(props.getHeight()));
                 region.setAttribute("text", props.getTerrain());
                 region.setAttribute("l", "0");
-                IRegion ri = new IRegion(region);
+                IRegion ri = new IRegion(dataStore, region);
                 zone = new RZone(props.getName(), map.getPath()[0], ri, map);
               } else {
                 System.out.println(props.getTheme());
