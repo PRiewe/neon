@@ -18,6 +18,9 @@
 
 package neon.fx.ui;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.Collection;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -26,8 +29,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import lombok.Getter;
+import neon.core.GameContext;
 import neon.entities.Player;
+import neon.fx.ui.graphics.FXPlayerRenderComponent;
+import neon.fx.ui.graphics.FXRenderable;
+import neon.fx.ui.graphics.FXRenderableConverter;
 import neon.fx.ui.graphics.FXVectorPane;
+import neon.ui.graphics.Renderable;
 
 /**
  * JavaFX equivalent of GamePanel. Combines the rendering canvas with HUD overlay showing stats and
@@ -36,14 +44,13 @@ import neon.fx.ui.graphics.FXVectorPane;
  * @author mdriesen
  */
 public class FXGamePanel extends BorderPane {
-    /**
-     * -- GETTER --
-     *  Get the vector pane for rendering.
-     *
-     * @return the FXVectorPane
-     */
-    @Getter
-    private final FXVectorPane vectorPane;
+  /**
+   * -- GETTER -- Get the vector pane for rendering.
+   *
+   * @return the FXVectorPane
+   */
+  @Getter private final FXVectorPane vectorPane;
+
   private final Label statsLabel;
   private final TextArea messageArea;
   private final VBox statsPanel;
@@ -88,7 +95,7 @@ public class FXGamePanel extends BorderPane {
     setCenter(overlay);
   }
 
-    /**
+  /**
    * Update the stats display.
    *
    * @param player the player entity
@@ -151,5 +158,61 @@ public class FXGamePanel extends BorderPane {
    */
   public void setMessagesVisible(boolean visible) {
     messageArea.setVisible(visible);
+  }
+
+  /**
+   * Repaint the game world by querying the current zone for all entities and updating the vector
+   * pane. This is the critical method that connects the JavaFX rendering system to the game's
+   * Atlas/Zone system.
+   *
+   * @param context the game context
+   */
+  public void repaint(GameContext context) {
+    if (context == null || context.getAtlas() == null) {
+      return;
+    }
+
+    // Get visible rectangle based on zoom and camera
+    Rectangle visible = getVisibleRectangle();
+
+    // Query Zone for all renderables in visible area (returns Swing Renderables)
+    Collection<Renderable> swingRenderables =
+        context.getAtlas().getCurrentZone().getRenderables(visible);
+
+    // Convert to FXRenderable collection
+    Collection<FXRenderable> fxRenderables = FXRenderableConverter.convertAll(swingRenderables);
+
+    // Add player (highest z-order)
+    Player player = context.getPlayer();
+    if (player != null) {
+      fxRenderables.add(new FXPlayerRenderComponent(player));
+
+      // Update camera to follow player position
+      Point playerPos = player.getShapeComponent().getLocation();
+      vectorPane.centerOn(playerPos.x, playerPos.y);
+    }
+
+    // Pass to vector pane for rendering
+    vectorPane.setRenderables(fxRenderables);
+  }
+
+  /**
+   * Calculate the visible rectangle in world coordinates based on the current camera position and
+   * zoom level. This matches the logic from JVectorPane.getVisibleRectangle().
+   *
+   * @return the visible rectangle
+   */
+  private Rectangle getVisibleRectangle() {
+    float zoom = vectorPane.getZoom();
+    double cameraX = vectorPane.getCameraX();
+    double cameraY = vectorPane.getCameraY();
+    double width = vectorPane.getWidth();
+    double height = vectorPane.getHeight();
+
+    return new Rectangle(
+        (int) (cameraX / zoom),
+        (int) (cameraY / zoom),
+        (int) (width / zoom + 1),
+        (int) (height / zoom + 1));
   }
 }

@@ -178,4 +178,22 @@ public class FXVectorPane extends Pane {
   public boolean isRendering() {
     return isRendering;
   }
+
+  /**
+   * Get the camera X position.
+   *
+   * @return the camera X coordinate
+   */
+  public double getCameraX() {
+    return cameraX;
+  }
+
+  /**
+   * Get the camera Y position.
+   *
+   * @return the camera Y coordinate
+   */
+  public double getCameraY() {
+    return cameraY;
+  }
 }

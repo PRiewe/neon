@@ -76,6 +76,8 @@ public class FXGameState extends State {
     if ("start".equals(e.toString())) {
       player = context.getPlayer();
       if (player != null) {
+        // Initial repaint to show the game world
+        gamePanel.repaint(context);
         gamePanel.updateStats(player);
         gamePanel.addMessage("Game started. Welcome to Neon!");
         log.info("Player initialized: {}", player.getName());
@@ -182,9 +184,11 @@ public class FXGameState extends State {
       Platform.runLater(
           () -> {
             if (player != null) {
+              // Repaint the game world (queries zone, converts renderables, updates camera)
+              gamePanel.repaint(context);
+              // Update stats HUD
               gamePanel.updateStats(player);
             }
-            gamePanel.getVectorPane().render();
           });
     }
   }
