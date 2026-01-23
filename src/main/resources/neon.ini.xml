@@ -8,4 +8,5 @@
   <ai>10</ai>
   <lang>en</lang>
   <keys>qwerty</keys>
+  <ui mode="swing"/>
 </root>

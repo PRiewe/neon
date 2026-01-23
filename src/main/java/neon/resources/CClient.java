@@ -64,6 +64,7 @@ public class CClient extends Resource {
   private String bigCoin = "\u20AC"; // Euro symbol
   private String smallCoin = "c";
   private String title = "";
+  private String uiMode = "swing"; // UI mode: "swing" or "javafx"
 
   public CClient(String... path) {
     super("client", path);
@@ -76,6 +77,12 @@ public class CClient extends Resource {
       e.printStackTrace();
     }
     Element root = doc.getRootElement();
+
+    // UI mode
+    Element uiElement = root.getChild("ui");
+    if (uiElement != null && uiElement.getAttribute("mode") != null) {
+      uiMode = uiElement.getAttributeValue("mode");
+    }
 
     // keyboard
     setKeys(root.getChild("keys"));
@@ -139,6 +146,14 @@ public class CClient extends Resource {
     this.title = title;
   }
 
+  public String getUiMode() {
+    return uiMode;
+  }
+
+  public void setUiMode(String uiMode) {
+    this.uiMode = uiMode;
+  }
+
   public int getSettings() {
     return keys;
   }
@@ -146,17 +161,11 @@ public class CClient extends Resource {
   public void setKeys(Element settings) {
     if (settings != null) {
       // movement keys
-      switch (settings.getText()) {
-        case "azerty":
-          setKeys(AZERTY);
-          break;
-        case "qwerty":
-          setKeys(QWERTY);
-          break;
-        case "qwertz":
-          setKeys(QWERTZ);
-          break;
-      }
+        switch (settings.getText()) {
+            case "azerty" -> setKeys(AZERTY);
+            case "qwerty" -> setKeys(QWERTY);
+            case "qwertz" -> setKeys(QWERTZ);
+        }
 
       // other keys
       if (settings.getAttribute("map") != null) {

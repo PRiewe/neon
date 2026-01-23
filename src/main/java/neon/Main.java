@@ -19,8 +19,11 @@
 package neon;
 
 import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
 import neon.core.GameContext;
+import neon.fx.ui.FXClientLauncher;
+import neon.resources.CClient;
 import neon.systems.io.LocalPort;
 import neon.ui.Client;
 
@@ -29,6 +32,7 @@ import neon.ui.Client;
  *
  * @author mdriesen
  */
+@Slf4j
 public class Main {
   private static final String version = "0.4.2"; // current version
 
@@ -45,15 +49,29 @@ public class Main {
     cPort.connect(sPort);
     sPort.connect(cPort);
 
-    // create engine and ui
+    // create engine
     Engine engine = new Engine(sPort);
     GameContext context = engine.getContext();
-    Client client = new Client(cPort, version, context);
 
-    // custom look and feels are sometimes stricter than normal ones, apparently
-    // the main problem is that parts of the ui are created outside the swing thread.
-    // Therefore, everything must be on the event-dispatch thread.
-    javax.swing.SwingUtilities.invokeLater(client);
+    // Load configuration to determine UI mode
+    CClient config = (CClient) context.getResources().getResource("client", "config");
+    String uiMode = config.getUiMode();
+    log.info("Starting Neon with UI mode: {}", uiMode);
+
+    // Launch appropriate UI
+    if ("javafx".equalsIgnoreCase(uiMode)) {
+      log.info("Launching JavaFX UI");
+      FXClientLauncher.initialize(cPort, context, version);
+      FXClientLauncher.launchFX();
+    } else {
+      log.info("Launching Swing UI");
+      Client client = new Client(cPort, version, context);
+      // custom look and feels are sometimes stricter than normal ones, apparently
+      // the main problem is that parts of the ui are created outside the swing thread.
+      // Therefore, everything must be on the event-dispatch thread.
+      javax.swing.SwingUtilities.invokeLater(client);
+    }
+
     engine.run();
   }
 }

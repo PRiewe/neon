@@ -103,37 +103,28 @@ public class GameState extends State implements KeyListener, CollisionListener {
 
   public void keyPressed(KeyEvent key) {
     int code = key.getKeyCode();
-    switch (code) {
-      case KeyEvent.VK_CONTROL:
-        bus.publishAsync(new TransitionEvent("inventory"));
-        break;
-      case KeyEvent.VK_F5:
-        save(false);
-        break;
-      case KeyEvent.VK_ESCAPE:
-        save(true);
-        break;
-      case KeyEvent.VK_F1:
-        InputStream input = GameState.class.getResourceAsStream("/neon/core/help.html");
-        String help = new Scanner(input, StandardCharsets.UTF_8).useDelimiter("\\A").next();
-        ui.showHelp(help);
-        break;
-      case KeyEvent.VK_F2:
-        panel.toggleHUD();
-        break;
-      case KeyEvent.VK_F3:
-        ui.showConsole(context.getScriptEngine());
-        break;
-      default:
-        if (code == keys.map) {
-          new MapDialog(ui.getWindow(), context.getAtlas().getCurrentZone(), context).show();
-        } else if (code == keys.sneak) {
-          player.setSneaking(!player.isSneaking());
-          panel.repaint();
-        } else if (code == keys.journal) {
-          bus.publishAsync(new TransitionEvent("journal"));
-        }
-    }
+      switch (code) {
+          case KeyEvent.VK_CONTROL -> bus.publishAsync(new TransitionEvent("inventory"));
+          case KeyEvent.VK_F5 -> save(false);
+          case KeyEvent.VK_ESCAPE -> save(true);
+          case KeyEvent.VK_F1 -> {
+              InputStream input = GameState.class.getResourceAsStream("/neon/core/help.html");
+              String help = new Scanner(input, StandardCharsets.UTF_8).useDelimiter("\\A").next();
+              ui.showHelp(help);
+          }
+          case KeyEvent.VK_F2 -> panel.toggleHUD();
+          case KeyEvent.VK_F3 -> ui.showConsole(context.getScriptEngine());
+          default -> {
+              if (code == keys.map) {
+                  new MapDialog(ui.getWindow(), context.getAtlas().getCurrentZone(), context).show();
+              } else if (code == keys.sneak) {
+                  player.setSneaking(!player.isSneaking());
+                  panel.repaint();
+              } else if (code == keys.journal) {
+                  bus.publishAsync(new TransitionEvent("journal"));
+              }
+          }
+      }
   }
 
   private void save(boolean quit) {
