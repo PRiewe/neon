@@ -26,8 +26,10 @@ import neon.editor.help.HelpLabels;
 import neon.resources.RMod;
 
 public class InfoEditor implements ActionListener {
-  private JDialog frame;
-  private JTextField titleField, bigField, smallField;
+  private final JDialog frame;
+  private final JTextField titleField;
+  private final JTextField bigField;
+  private final JTextField smallField;
 
   public InfoEditor(JFrame parent) {
     frame = new JDialog(parent, "Game Info Editor");

@@ -135,7 +135,7 @@ public class Stats implements Component {
    * @return this creature's speed
    */
   public int getSpd() {
-    return (int) species.speed + spdMod;
+    return species.speed + spdMod;
   }
 
   @Override

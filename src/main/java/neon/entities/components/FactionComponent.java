@@ -27,7 +27,7 @@ import java.util.HashMap;
  */
 public class FactionComponent implements Component {
   private final long uid;
-  private HashMap<String, Integer> factions = new HashMap<>();
+  private final HashMap<String, Integer> factions = new HashMap<>();
 
   public FactionComponent(long uid) {
     this.uid = uid;

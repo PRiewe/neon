@@ -477,7 +477,7 @@ public class WildernessGenerator {
             addTerrain(i + 1, 1, 1, h, terrain[0][i + 1]);
           }
 
-          double c = mapUtils.getRandomSource().nextDouble();
+          double c = mapUtils.randomSource().nextDouble();
           if (c > 0.7 && h < height / 10) {
             h++;
           } else if (c < 0.3 && h > 0) {
@@ -496,7 +496,7 @@ public class WildernessGenerator {
             addTerrain(i + 1, height - h + 1, 1, h, terrain[height + 1][i + 1]);
           }
 
-          double c = mapUtils.getRandomSource().nextDouble();
+          double c = mapUtils.randomSource().nextDouble();
           if (c > 0.7 && h < height / 10) {
             h++;
           } else if (c < 0.3 && h > 0) {
@@ -515,7 +515,7 @@ public class WildernessGenerator {
             addTerrain(1, i + 1, w, 1, terrain[i + 1][0]);
           }
 
-          double c = mapUtils.getRandomSource().nextDouble();
+          double c = mapUtils.randomSource().nextDouble();
           if (c > 0.7 && w < width / 10) {
             w++;
           } else if (c < 0.3 && w > 0) {
@@ -534,7 +534,7 @@ public class WildernessGenerator {
             addTerrain(width - w + 1, i + 1, w, 1, terrain[i + 1][width + 1]);
           }
 
-          double c = mapUtils.getRandomSource().nextDouble();
+          double c = mapUtils.randomSource().nextDouble();
           if (c > 0.7 && w < width / 10) {
             w++;
           } else if (c < 0.3 && w > 0) {

@@ -56,6 +56,6 @@ public class ConsoleOutputStream extends Writer {
     for (int i = off; i < off + len; i++) {
       temp.append(cbuf[i]);
     }
-    console.setText(temp.toString() + "\n");
+    console.setText(temp + "\n");
   }
 }

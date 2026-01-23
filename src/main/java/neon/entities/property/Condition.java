@@ -28,5 +28,5 @@ public enum Condition {
   CURSED,
   POISONED,
   SILENCED,
-  BURDENED;
+  BURDENED
 }

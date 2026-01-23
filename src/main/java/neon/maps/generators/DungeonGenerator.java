@@ -551,7 +551,7 @@ public class DungeonGenerator {
   }
 
   private String[][] makeTerrain(int[][] tiles, String[] floors) {
-    String terrain[][] = new String[tiles.length][tiles[0].length];
+    String[][] terrain = new String[tiles.length][tiles[0].length];
 
     for (int x = 0; x < tiles.length; x++) {
       for (int y = 0; y < tiles[0].length; y++) {

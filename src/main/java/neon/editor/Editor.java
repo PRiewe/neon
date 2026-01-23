@@ -23,6 +23,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.jar.JarFile;
 import javax.swing.*;
@@ -48,13 +49,25 @@ public class Editor implements Runnable, ActionListener {
   private static StatusBar status;
 
   protected MapEditor mapEditor;
-  private JTabbedPane mapTabbedPane;
-  private JMenuBar menuBar;
-  private JMenuItem pack, unpack, newMain, newExt, load, save, export, calculate;
-  private JMenu make, edit, tools;
-  private JPanel terrainPanel, objectPanel, resourcePanel;
-  private JTree objectTree, resourceTree;
-  private ModFiler filer;
+  private final JTabbedPane mapTabbedPane;
+  private final JMenuBar menuBar;
+  private final JMenuItem pack;
+  private final JMenuItem unpack;
+  private final JMenuItem newMain;
+  private final JMenuItem newExt;
+  private final JMenuItem load;
+  private final JMenuItem save;
+  private final JMenuItem export;
+  private final JMenuItem calculate;
+  private final JMenu make;
+  private final JMenu edit;
+  private final JMenu tools;
+  private final JPanel terrainPanel;
+  private final JPanel objectPanel;
+  private final JPanel resourcePanel;
+  private final JTree objectTree;
+  private final JTree resourceTree;
+  private final ModFiler filer;
   private JList<RTerrain> terrainList;
   private DefaultListModel<RTerrain> terrainListModel;
   private InfoEditor infoEditor;
@@ -570,7 +583,7 @@ public class Editor implements Runnable, ActionListener {
       }
       case "unpack" -> unpack();
       case "svg" -> {
-        if ((EditablePane) mapTabbedPane.getSelectedComponent() != null) {
+        if (mapTabbedPane.getSelectedComponent() != null) {
           ZoneTreeNode node = ((EditablePane) mapTabbedPane.getSelectedComponent()).getNode();
           SVGExporter.exportToSVG(node, files, store);
         }
@@ -585,7 +598,7 @@ public class Editor implements Runnable, ActionListener {
 
   private void showHelp(String file, String title) {
     InputStream input = HelpLabels.class.getResourceAsStream(file);
-    Scanner scanner = new Scanner(input, "UTF-8");
+    Scanner scanner = new Scanner(input, StandardCharsets.UTF_8);
     String text = scanner.useDelimiter("\\A").next();
     scanner.close();
     new HelpWindow(frame).show(title, text);

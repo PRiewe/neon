@@ -111,11 +111,8 @@ public class DataStoreIntegrationTest {
     //    }
 
     var tmp = Files.createTempDirectory("neon_");
-    StringBuilder newDir = new StringBuilder();
-    newDir.append(tmp.toFile().getAbsolutePath());
-    newDir.append(File.separator);
-    newDir.append("sampleMod1");
-    var newDirFile = new File(newDir.toString());
+    String newDir = tmp.toFile().getAbsolutePath() + File.separator + "sampleMod1";
+    var newDirFile = new File(newDir);
     newDirFile.mkdir();
 
     System.out.format("TempDir %s%n", tmp);

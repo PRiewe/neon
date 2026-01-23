@@ -20,6 +20,7 @@ package neon.ui.states;
 
 import java.awt.event.*;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.EventObject;
 import java.util.Scanner;
 import lombok.extern.slf4j.Slf4j;
@@ -43,10 +44,10 @@ import net.phys2d.raw.CollisionListener;
 @Slf4j
 public class GameState extends State implements KeyListener, CollisionListener {
   private Player player;
-  private GamePanel panel;
-  private CClient keys;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final GamePanel panel;
+  private final CClient keys;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
 
   public GameState(
@@ -114,7 +115,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
         break;
       case KeyEvent.VK_F1:
         InputStream input = GameState.class.getResourceAsStream("/neon/core/help.html");
-        String help = new Scanner(input, "UTF-8").useDelimiter("\\A").next();
+        String help = new Scanner(input, StandardCharsets.UTF_8).useDelimiter("\\A").next();
         ui.showHelp(help);
         break;
       case KeyEvent.VK_F2:

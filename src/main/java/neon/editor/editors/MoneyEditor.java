@@ -29,10 +29,11 @@ import neon.resources.RItem;
 import neon.util.ColorFactory;
 
 public class MoneyEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JFormattedTextField costField, charField;
-  private JComboBox<String> colorBox;
-  private RItem data;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final RItem data;
 
   public MoneyEditor(JFrame parent, RItem data) {
     super(parent, "Money Editor: " + data.id);

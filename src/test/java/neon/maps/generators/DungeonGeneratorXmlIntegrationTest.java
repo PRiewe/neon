@@ -354,6 +354,7 @@ class DungeonGeneratorXmlIntegrationTest {
       for (int y = 0; y < terrain[0].length && !hasCreature; y++) {
         if (terrain[x][y] != null && terrain[x][y].contains(";c:")) {
           hasCreature = true;
+          break;
         }
       }
     }
@@ -366,6 +367,7 @@ class DungeonGeneratorXmlIntegrationTest {
       for (int y = 0; y < terrain[0].length && !hasItem; y++) {
         if (terrain[x][y] != null && terrain[x][y].contains(";i:")) {
           hasItem = true;
+          break;
         }
       }
     }

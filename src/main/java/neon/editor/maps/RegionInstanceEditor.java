@@ -38,17 +38,20 @@ import neon.resources.RTerrain;
 import org.jdom2.Element;
 
 public class RegionInstanceEditor implements ActionListener, MouseListener {
-  private IRegion region;
-  private JDialog frame;
-  private JTextField labelField;
-  private JFormattedTextField xField, yField, wField, hField;
-  private JComboBox<RRegionTheme> themeBox;
-  private JComboBox<RTerrain> terrainBox;
-  private JList<RScript> scriptList;
-  private DefaultListModel<RScript> scriptListModel;
-  private RZone zone;
-  private JSpinner zSpinner;
-  private DataStore dataStore;
+  private final IRegion region;
+  private final JDialog frame;
+  private final JTextField labelField;
+  private final JFormattedTextField xField;
+  private final JFormattedTextField yField;
+  private final JFormattedTextField wField;
+  private final JFormattedTextField hField;
+  private final JComboBox<RRegionTheme> themeBox;
+  private final JComboBox<RTerrain> terrainBox;
+  private final JList<RScript> scriptList;
+  private final DefaultListModel<RScript> scriptListModel;
+  private final RZone zone;
+  private final JSpinner zSpinner;
+  private final DataStore dataStore;
 
   public RegionInstanceEditor(DataStore dataStore, IRegion r, JFrame parent, ZoneTreeNode zone) {
     this.zone = zone.getZone();
@@ -320,7 +323,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
     for (int x = 0; x < region.width; x++) {
       for (int y = 0; y < region.height; y++) {
         if (tiles[y + 1][x + 1] != null) {
-          String data[] = tiles[y + 1][x + 1].split(";");
+          String[] data = tiles[y + 1][x + 1].split(";");
           for (String entry : data) {
             if (entry.startsWith("i:")) {
               String id = entry.replace("i:", "");

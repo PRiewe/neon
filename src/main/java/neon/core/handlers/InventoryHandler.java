@@ -109,8 +109,7 @@ public class InventoryHandler {
 
   public static void equip(Item item, Creature creature) {
     Inventory inventory = creature.getInventoryComponent();
-    if (item instanceof Clothing) {
-      Clothing c = (Clothing) item;
+    if (item instanceof Clothing c) {
       switch (c.getSlot()) {
         case RING:
           if (inventory.get(Slot.RING_LEFT) == 0) {
@@ -139,7 +138,7 @@ public class InventoryHandler {
           break;
       }
       if (c.getMagicComponent().getSpell() != null) {
-        MagicUtils.equip(creature, (Clothing) item);
+        MagicUtils.equip(creature, c);
       }
     } else if (item instanceof Weapon) {
       Weapon weapon = (Weapon) Engine.getStore().getEntity((inventory.get(Slot.WEAPON)));
@@ -186,8 +185,7 @@ public class InventoryHandler {
   public static void unequip(long uid, Creature creature) {
     Inventory inventory = creature.getInventoryComponent();
     Item item = (Item) Engine.getStore().getEntity(uid);
-    if (item instanceof Clothing) {
-      Clothing c = (Clothing) item;
+    if (item instanceof Clothing c) {
       if (c.getSlot().equals(Slot.RING)) {
         if (inventory.get(Slot.RING_LEFT) == c.getUID()) {
           inventory.remove(Slot.RING_LEFT);
@@ -198,7 +196,7 @@ public class InventoryHandler {
         inventory.remove(c.getSlot());
       }
       if (c.getMagicComponent().getSpell() != null) {
-        MagicUtils.unequip(creature, (Clothing) item);
+        MagicUtils.unequip(creature, c);
       }
     } else if (item instanceof Weapon) {
       if (((Weapon) item).getWeaponType() == WeaponType.THROWN

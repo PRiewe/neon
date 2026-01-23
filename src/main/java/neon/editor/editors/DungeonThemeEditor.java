@@ -27,9 +27,11 @@ import neon.editor.help.HelpLabels;
 import neon.resources.RDungeonTheme;
 
 public class DungeonThemeEditor extends ObjectEditor {
-  private JTextField zoneField;
-  private JFormattedTextField minField, maxField, branchField;
-  private RDungeonTheme theme;
+  private final JTextField zoneField;
+  private final JFormattedTextField minField;
+  private final JFormattedTextField maxField;
+  private final JFormattedTextField branchField;
+  private final RDungeonTheme theme;
 
   public DungeonThemeEditor(JFrame parent, RDungeonTheme theme) {
     super(parent, "Dungeon theme: " + theme.id);

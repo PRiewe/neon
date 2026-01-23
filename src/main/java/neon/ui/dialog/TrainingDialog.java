@@ -36,13 +36,13 @@ import net.engio.mbassy.bus.MBassador;
 import org.jdom2.Element;
 
 public class TrainingDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<Skill> skills;
+  private final JList<Skill> skills;
   private Creature trainer; // your trainer
-  private JScrollPane scroller;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JScrollPane scroller;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
 
   public TrainingDialog(UserInterface ui, MBassador<EventObject> bus, GameContext context) {

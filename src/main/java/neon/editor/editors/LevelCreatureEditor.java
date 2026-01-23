@@ -30,9 +30,9 @@ import neon.resources.LCreature;
 import neon.resources.RCreature;
 
 public class LevelCreatureEditor extends ObjectEditor implements MouseListener {
-  private LCreature data;
-  private JTable table;
-  private DefaultTableModel model;
+  private final LCreature data;
+  private final JTable table;
+  private final DefaultTableModel model;
 
   @SuppressWarnings("serial")
   public LevelCreatureEditor(JFrame parent, LCreature data) {

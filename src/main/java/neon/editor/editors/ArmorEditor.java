@@ -30,12 +30,16 @@ import neon.resources.RSpell;
 import neon.util.ColorFactory;
 
 public class ArmorEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JFormattedTextField costField, weightField, charField, ratingField;
-  private JComboBox<String> colorBox, spellBox;
-  private JComboBox<Slot> slotBox;
-  private JComboBox<RClothing.ArmorType> classBox;
-  private RClothing data;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final JFormattedTextField ratingField;
+  private final JComboBox<String> colorBox;
+  private final JComboBox<String> spellBox;
+  private final JComboBox<Slot> slotBox;
+  private final JComboBox<RClothing.ArmorType> classBox;
+  private final RClothing data;
 
   public ArmorEditor(JFrame parent, RClothing data) {
     super(parent, "Armor Editor: " + data.id);

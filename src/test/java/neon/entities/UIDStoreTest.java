@@ -11,7 +11,7 @@ class UIDStoreTest {
 
   @Test
   void addEntity() throws IOException {
-    UIDStore store = new UIDStore("testfile3.dat");
+    UIDStore store = new UIDStore("testfile5.dat");
     var id = store.createNewMapUID();
     var entityId = store.createNewEntityUID();
     Entity entity = new Armor(entityId, new RClothing("one", RItem.Type.armor, "dummy"));
@@ -25,7 +25,7 @@ class UIDStoreTest {
 
   @Test
   void removeEntity() throws IOException {
-    UIDStore store = new UIDStore("testfile3.dat");
+    UIDStore store = new UIDStore("testfile5.dat");
     var id = store.createNewMapUID();
     var entityId = store.createNewEntityUID();
     Entity entity = new Armor(entityId, new RClothing("one", RItem.Type.armor, "dummy"));

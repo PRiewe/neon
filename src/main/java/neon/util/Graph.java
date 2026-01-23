@@ -25,7 +25,7 @@ import java.util.HashMap;
 
 public class Graph<T> implements Serializable {
   private static final long serialVersionUID = -6431348687813884897L;
-  private HashMap<Integer, Node<T>> nodes = new HashMap<Integer, Node<T>>();
+  private final HashMap<Integer, Node<T>> nodes = new HashMap<Integer, Node<T>>();
 
   /**
    * Adds a node to the graph. Any existing node with the given index is overwritten. Connections to
@@ -87,8 +87,8 @@ public class Graph<T> implements Serializable {
 
   private static class Node<T> implements Serializable {
     private static final long serialVersionUID = 2326885959259937816L;
-    private T content;
-    private ArrayList<Integer> connections = new ArrayList<Integer>();
+    private final T content;
+    private final ArrayList<Integer> connections = new ArrayList<Integer>();
 
     private Node(T content) {
       this.content = content;

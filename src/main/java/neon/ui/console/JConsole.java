@@ -39,12 +39,12 @@ import org.graalvm.polyglot.Context;
 @SuppressWarnings("serial")
 public class JConsole extends JTextArea implements KeyListener {
   private final ConsoleInputStream in;
-  private CommandHistory history;
+  private final CommandHistory history;
   private int editStart;
   private boolean running;
-  private Context engine;
-  private ConsoleFilter filter;
-  private JDialog frame;
+  private final Context engine;
+  private final ConsoleFilter filter;
+  private final JDialog frame;
 
   /** Initializes a console with the given <code>ScriptEngine</code> and the given parent window. */
   public JConsole(Context engine, JFrame parent) {
@@ -102,7 +102,7 @@ public class JConsole extends JTextArea implements KeyListener {
   }
 
   private static class ConsoleFilter extends DocumentFilter {
-    private JConsole console;
+    private final JConsole console;
     public boolean useFilters;
 
     public ConsoleFilter(JConsole console) {
@@ -272,7 +272,7 @@ public class JConsole extends JTextArea implements KeyListener {
   }
 
   private class JavaScriptRunner implements Runnable {
-    private String commands;
+    private final String commands;
 
     public JavaScriptRunner(String commands) {
       this.commands = commands;
@@ -283,15 +283,11 @@ public class JConsole extends JTextArea implements KeyListener {
       running = true;
       try {
         var result = engine.eval("js", commands);
-        StringBuilder text = new StringBuilder(getText());
-        text.append(result);
-        setText(text.toString());
+        setText(getText() + result);
       } catch (Exception e) {
 
       }
-      StringBuilder text = new StringBuilder(getText());
-      text.append(">>> ");
-      setText(text.toString());
+      setText(getText() + ">>> ");
       running = false;
     }
   }

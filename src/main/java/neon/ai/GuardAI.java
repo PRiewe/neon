@@ -25,8 +25,8 @@ import neon.entities.components.HealthComponent;
 import neon.entities.components.ShapeComponent;
 
 public class GuardAI extends AI {
-  private int range;
-  private Point home;
+  private final int range;
+  private final Point home;
 
   public GuardAI(Creature creature, byte aggression, byte confidence, int range) {
     super(creature, aggression, confidence);

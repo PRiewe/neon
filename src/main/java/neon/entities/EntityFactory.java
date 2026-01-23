@@ -35,7 +35,7 @@ import neon.ui.graphics.svg.SVGLoader;
 import neon.util.Dice;
 
 public class EntityFactory {
-  private static AIFactory aiFactory = new AIFactory();
+  private static final AIFactory aiFactory = new AIFactory();
 
   public static Item getItem(String id, long uid) {
     Item item = getItem(id, -1, -1, uid);
@@ -45,8 +45,7 @@ public class EntityFactory {
   public static Item getItem(String id, int x, int y, long uid) {
     // item aanmaken
     RItem resource;
-    if (Engine.getResources().getResource(id) instanceof LItem) {
-      LItem li = (LItem) Engine.getResources().getResource(id);
+    if (Engine.getResources().getResource(id) instanceof LItem li) {
       ArrayList<String> items = new ArrayList<String>(li.items.keySet());
       resource =
           (RItem) Engine.getResources().getResource(items.get(Dice.roll(1, items.size(), -1)));
@@ -87,7 +86,7 @@ public class EntityFactory {
     // item aanmaken
     switch (resource.type) {
       case container:
-        return new Container(uid, (RItem.Container) resource);
+        return new Container(uid, resource);
       case food:
         return new Item.Food(uid, resource);
       case aid:
@@ -149,13 +148,11 @@ public class EntityFactory {
   public static Creature getCreature(String id, int x, int y, long uid) {
     Creature creature;
     Resource resource = Engine.getResources().getResource(id);
-    if (resource instanceof RPerson) {
-      RPerson rp = (RPerson) resource;
+    if (resource instanceof RPerson rp) {
       RCreature species = (RCreature) Engine.getResources().getResource(rp.species);
       creature = getPerson(id, x, y, uid, species);
       creature.brain = aiFactory.getAI(creature, rp);
-    } else if (resource instanceof LCreature) {
-      LCreature lc = (LCreature) resource;
+    } else if (resource instanceof LCreature lc) {
       ArrayList<String> creatures = new ArrayList<String>(lc.creatures.keySet());
       return getCreature(creatures.get(Dice.roll(1, creatures.size(), -1)), x, y, uid);
     } else {

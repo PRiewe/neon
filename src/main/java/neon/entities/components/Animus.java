@@ -36,9 +36,9 @@ public class Animus implements Component, Serializable {
   private float baseManaMod = 0;
   private float manaMod = 0;
   private RSpell spell; // equipped spell
-  private Set<RSpell> spells = new HashSet<RSpell>();
-  private HashMap<RSpell.Power, Integer> powers = new HashMap<RSpell.Power, Integer>();
-  private Creature creature; // Take Creature, because intelligence can change
+  private final Set<RSpell> spells = new HashSet<RSpell>();
+  private final HashMap<RSpell.Power, Integer> powers = new HashMap<RSpell.Power, Integer>();
+  private final Creature creature; // Take Creature, because intelligence can change
 
   /**
    * @param creature

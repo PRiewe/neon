@@ -68,7 +68,7 @@ public class RZoneTheme extends RData {
     theme.setAttribute("id", id);
     theme.setAttribute("min", Integer.toString(min));
     theme.setAttribute("max", Integer.toString(max));
-    theme.setAttribute("type", type.toString() + ";" + floor + ";" + walls + ";" + doors);
+    theme.setAttribute("type", type + ";" + floor + ";" + walls + ";" + doors);
 
     for (Map.Entry<String, Integer> entry : creatures.entrySet()) {
       Element creature = new Element("creature");

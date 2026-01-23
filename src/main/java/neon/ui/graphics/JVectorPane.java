@@ -41,15 +41,15 @@ import neon.ui.graphics.event.VectorSelectionListener;
 public class JVectorPane extends JComponent implements MouseListener {
   public static final int DEFAULT_ZOOM = 14; // default zoom level
 
-  private HashSet<Renderable> selection; // fast look-up
+  private final HashSet<Renderable> selection; // fast look-up
   private boolean editable = false;
-  private ZComparator comparator;
+  private final ZComparator comparator;
   private float zoom = DEFAULT_ZOOM;
   private BufferedImageOp filter;
   private int cx, cy; // camera
-  private ArrayList<Renderable> renderables;
+  private final ArrayList<Renderable> renderables;
   private SelectionFilter selectionFilter;
-  private RenderingHints hints;
+  private final RenderingHints hints;
   private BufferedImage image;
 
   public JVectorPane() {

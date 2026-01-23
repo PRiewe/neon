@@ -292,7 +292,7 @@ class DungeonGeneratorTest {
     int width = terrain.length;
     int height = terrain[0].length;
     assertAll(
-        () -> assertTrue(terrain != null, "Terrain should not be null"),
+        () -> assertNotNull(terrain, "Terrain should not be null"),
         () -> assertTrue(width >= scenario.minSize(), "Width should be >= min"),
         () -> assertTrue(width <= scenario.maxSize(), "Width should be <= max"),
         () -> assertTrue(height >= scenario.minSize(), "Height should be >= min"),

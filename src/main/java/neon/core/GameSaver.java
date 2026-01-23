@@ -41,7 +41,7 @@ import org.jdom2.Element;
 
 @Listener(references = References.Strong)
 public class GameSaver {
-  private TaskQueue queue;
+  private final TaskQueue queue;
 
   public GameSaver(TaskQueue queue) {
     this.queue = queue;
@@ -90,9 +90,8 @@ public class GameSaver {
       for (Action action : tasks.get(key)) {
         Element event = new Element("task");
         event.setAttribute("desc", key);
-        if (action instanceof ScriptAction) {
-          ScriptAction task = (ScriptAction) action;
-          event.setAttribute("script", task.getScript());
+        if (action instanceof ScriptAction task) {
+          event.setAttribute("script", task.script());
         }
         events.addContent(event);
       }

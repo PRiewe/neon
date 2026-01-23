@@ -22,16 +22,7 @@ import java.util.EventObject;
 import neon.core.Engine;
 import neon.util.fsm.Action;
 
-public class ScriptAction implements Action {
-  private String script;
-
-  public ScriptAction(String script) {
-    this.script = script;
-  }
-
-  public String getScript() {
-    return script;
-  }
+public record ScriptAction(String script) implements Action {
 
   public void run(EventObject e) {
     Engine.execute(script);

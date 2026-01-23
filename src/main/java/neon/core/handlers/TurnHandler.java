@@ -47,9 +47,9 @@ import net.engio.mbassy.listener.References;
 @Listener(references = References.Strong) // strong, om gc te vermijden
 @Slf4j
 public class TurnHandler {
-  private GamePanel panel;
+  private final GamePanel panel;
   private Generator generator;
-  private int range;
+  private final int range;
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
 
@@ -155,7 +155,7 @@ public class TurnHandler {
           }
         }
       }
-    } while (fixed == false);
+    } while (!fixed);
 
     return generated;
   }

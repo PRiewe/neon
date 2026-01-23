@@ -137,8 +137,7 @@ public class PathFinder {
 
   private static int doorPenalty(Point neighbour) {
     for (long uid : Engine.getAtlas().getCurrentZone().getItems(neighbour)) {
-      if (Engine.getStore().getEntity(uid) instanceof Door) {
-        Door door = (Door) Engine.getStore().getEntity(uid);
+      if (Engine.getStore().getEntity(uid) instanceof Door door) {
         if (door.lock.isLocked()) {
           RItem key = door.lock.getKey();
           if (key != null && hasItem(mover, key)) {

@@ -54,14 +54,7 @@ public class FileUtils {
     }
   }
 
-  private static class Visitor implements FileVisitor<Path> {
-    private final Path source;
-    private final Path target;
-
-    private Visitor(Path source, Path target) {
-      this.source = source;
-      this.target = target;
-    }
+  private record Visitor(Path source, Path target) implements FileVisitor<Path> {
 
     private void copyFile(Path source, Path target) {
       try {
@@ -107,7 +100,7 @@ public class FileUtils {
     File mod = new File(path);
     File jar = new File(name + ".jar");
 
-    byte buffer[] = new byte[1024];
+    byte[] buffer = new byte[1024];
     // open jar file
     FileOutputStream stream = new FileOutputStream(jar);
     JarOutputStream out = new JarOutputStream(stream);

@@ -240,7 +240,7 @@ public class RoomGenerator {
 
   /** Represents a room consisting of one or more rectangular regions. */
   protected static class Room {
-    private Rectangle[] regions;
+    private final Rectangle[] regions;
 
     public Room(Rectangle... regions) {
       this.regions = regions;

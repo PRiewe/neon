@@ -33,10 +33,10 @@ import neon.ui.graphics.ZComparator;
  */
 @SuppressWarnings("serial")
 public class MapPanel extends JComponent {
-  private Zone zone;
+  private final Zone zone;
   private float zoom;
   private boolean fill;
-  private ZComparator comparator;
+  private final ZComparator comparator;
   private final GameContext context;
 
   /** Initializes this <code>MapPanel</code>. */

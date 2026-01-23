@@ -97,7 +97,7 @@ public class RRegionTheme extends RData {
       case town:
       case town_big:
       case town_small:
-        random += (";" + wall + ";" + door.toString());
+        random += (";" + wall + ";" + door);
         break;
       default:
         break;
@@ -114,6 +114,6 @@ public class RRegionTheme extends RData {
     TERRACE,
     RIDGES,
     CHAOTIC,
-    BEACH;
+    BEACH
   }
 }

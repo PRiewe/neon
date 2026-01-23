@@ -26,7 +26,7 @@ import neon.entities.components.ShapeComponent;
 
 // TODO: schedule in editor
 public class ScheduleAI extends AI {
-  private Point[] schedule;
+  private final Point[] schedule;
   private int current = 0;
 
   public ScheduleAI(Creature creature, byte aggression, byte confidence, Point[] schedule) {

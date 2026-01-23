@@ -21,28 +21,22 @@ package neon.resources.quest;
 /**
  * A quest stage.
  *
+ * @param questID The resource ID of the quest this stage belongs to.
  * @author mdriesen
  */
-public class Stage {
-  /** The resource ID of the quest this stage belongs to. */
-  public final String questID;
-
-  private int index;
-
+public record Stage(String questID, int index) {
   /**
    * Initializes a quest stage.
    *
    * @param questID the resouce ID of the quest this stage belongs to
    */
-  public Stage(String questID, int index) {
-    this.questID = questID;
-    this.index = index;
-  }
+  public Stage {}
 
   /**
    * @return the stage index
    */
-  public int getIndex() {
+  @Override
+  public int index() {
     return index;
   }
 }

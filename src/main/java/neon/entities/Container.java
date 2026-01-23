@@ -26,7 +26,7 @@ import neon.resources.RItem;
 public class Container extends Item {
   public final Lock lock;
   public final Trap trap;
-  private ArrayList<Long> items = new ArrayList<Long>();
+  private final ArrayList<Long> items = new ArrayList<Long>();
 
   public Container(long uid, RItem resource) {
     super(uid, resource);

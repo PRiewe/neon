@@ -29,9 +29,9 @@ import neon.entities.property.Trait;
 
 public class Characteristics implements Component, Serializable {
   private final long uid;
-  private Set<Feat> feats = EnumSet.noneOf(Feat.class);
-  private Set<Trait> traits = EnumSet.noneOf(Trait.class);
-  private EnumMap<Ability, Integer> abilities = new EnumMap<>(Ability.class);
+  private final Set<Feat> feats = EnumSet.noneOf(Feat.class);
+  private final Set<Trait> traits = EnumSet.noneOf(Trait.class);
+  private final EnumMap<Ability, Integer> abilities = new EnumMap<>(Ability.class);
 
   public Characteristics(long uid) {
     this.uid = uid;

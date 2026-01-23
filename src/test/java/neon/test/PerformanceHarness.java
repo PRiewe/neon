@@ -55,40 +55,7 @@ public class PerformanceHarness {
   }
 
   /** Statistical summary of multiple measurements. */
-  public static class Stats {
-    private final long min;
-    private final long max;
-    private final long avg;
-    private final long median;
-    private final int count;
-
-    public Stats(long min, long max, long avg, long median, int count) {
-      this.min = min;
-      this.max = max;
-      this.avg = avg;
-      this.median = median;
-      this.count = count;
-    }
-
-    public long getMin() {
-      return min;
-    }
-
-    public long getMax() {
-      return max;
-    }
-
-    public long getAvg() {
-      return avg;
-    }
-
-    public long getMedian() {
-      return median;
-    }
-
-    public int getCount() {
-      return count;
-    }
+  public record Stats(long min, long max, long avg, long median, int count) {
 
     @Override
     public String toString() {

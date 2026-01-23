@@ -38,10 +38,13 @@ import org.jdom2.output.XMLOutputter;
 
 @Slf4j
 public class OptionDialog {
-  private JCheckBox audioBox;
-  private JRadioButton numpad, qwerty, azerty, qwertz;
-  private ButtonGroup group;
-  private JDialog frame;
+  private final JCheckBox audioBox;
+  private final JRadioButton numpad;
+  private final JRadioButton qwerty;
+  private final JRadioButton azerty;
+  private final JRadioButton qwertz;
+  private final ButtonGroup group;
+  private final JDialog frame;
   private final GameContext context;
 
   public OptionDialog(JFrame parent, GameContext context) {

@@ -26,8 +26,8 @@ import neon.editor.help.HelpLabels;
 import neon.editor.resources.RFaction;
 
 public class FactionEditor extends ObjectEditor {
-  private RFaction faction;
-  private JTextField nameField;
+  private final RFaction faction;
+  private final JTextField nameField;
 
   public FactionEditor(JFrame parent, RFaction data) {
     super(parent, "Faction Editor: " + data.id);

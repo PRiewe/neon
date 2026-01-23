@@ -30,10 +30,10 @@ public class LoadEvent extends EventObject {
   public enum Mode {
     LOAD,
     NEW,
-    DONE;
+    DONE
   }
 
-  private Mode mode;
+  private final Mode mode;
   private String save;
 
   // new mode variabelen
