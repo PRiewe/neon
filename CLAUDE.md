@@ -8,7 +8,10 @@ Neon is a roguelike game engine written in Java 21, consisting of:
 - **neon**: The main game engine and editor
 - **darkness**: A sample game built with the engine
 
-The project is currently being migrated from Java 1.7 to Java 21, with recent changes including upgrading from Nashorn to GraalVM for JavaScript scripting support.
+The project has been migrated from Java 1.7 to Java 21, with key changes including:
+- Upgrading from Nashorn to GraalVM for JavaScript scripting
+- Migrating from MapDB/JDBM to H2 MVStore for persistent storage
+- Adopting Google Java Format for code formatting
 
 ## Build and Development Commands
 
@@ -27,9 +30,34 @@ This creates `target/neon-<version>-jar-with-dependencies.jar` which can be run 
 java -jar target/neon-<version>-jar-with-dependencies.jar
 ```
 
+### Running the Application
+After packaging, the JAR can be run directly. The application will start with a main menu where you can:
+- Start a new game using the "darkness" sample game
+- Load a saved game
+- Open the editor to create/modify game content
+
+The main entry point is `neon.Main`, which initializes the Engine and Client with bidirectional LocalPort communication.
+
 ### Running Tests
 ```bash
+# Run all tests
 mvn test
+
+# Run a specific test class
+mvn test -Dtest=ClassName
+
+# Run a specific test method
+mvn test -Dtest=ClassName#methodName
+```
+
+### Code Formatting
+The project uses Google Java Format via the `fmt-maven-plugin`:
+```bash
+# Format all source files (runs automatically during build)
+mvn fmt:format
+
+# Check formatting without making changes
+mvn fmt:check
 ```
 
 ## Architecture
@@ -192,8 +220,16 @@ The engine uses **GraalVM Polyglot** for JavaScript scripting:
 - Located in `darkness/scripts/` directory
 
 ## Java 21 Migration Notes
-The project is migrating from Java 1.7 to Java 21:
-- **Branch**: `feature/java21` (main development branch for migration)
+The project has been migrated from Java 1.7 to Java 21:
 - **Scripting engine**: Migrated from Nashorn (removed in Java 15+) to GraalVM Polyglot
 - **Compiler**: Now uses Java 21 source/target with `maven.compiler.source/target` set to 21
+- **Storage**: Migrated from MapDB/JDBM to H2 MVStore for persistent collections
+- **Formatting**: Google Java Format automatically applied during build
 - Some legacy code may still exist from the Java 1.7 era and should be modernized as needed
+
+## Testing
+The project uses JUnit 5 (Jupiter) for testing:
+- Test files are located in `src/test/java/`
+- Uses Mockito for mocking (version 5.11.0)
+- XMLUnit for XML comparison testing
+- Integration tests exist for critical systems like serialization (`DataStoreIntegrationTest`)
