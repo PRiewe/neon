@@ -19,6 +19,7 @@
 package neon.entities;
 
 import java.util.*;
+import lombok.extern.slf4j.Slf4j;
 import neon.ai.AI;
 import neon.entities.components.*;
 import neon.entities.property.*;
@@ -31,6 +32,7 @@ import neon.resources.RCreature;
  *
  * @author mdriesen
  */
+@Slf4j
 public class Creature extends Entity {
   // components
   public final FactionComponent social;
@@ -74,8 +76,8 @@ public class Creature extends Entity {
     name = species.getName();
 
     // initialize collections
-    spells = new ArrayList<Spell>();
-    skills = new EnumMap<Skill, Float>(species.skills);
+    spells = new ArrayList<>();
+    skills = new EnumMap<>(species.skills);
     conditions = EnumSet.noneOf(Condition.class);
   }
 
@@ -174,20 +176,11 @@ public class Creature extends Entity {
   public void addActiveSpell(Spell spell) {
     spells.add(spell);
     switch (spell.getEffect()) {
-      case LEVITATE:
-        conditions.add(Condition.LEVITATE);
-        break;
-      case PARALYZE:
-        conditions.add(Condition.PARALYZED);
-        break;
-      case BLIND:
-        conditions.add(Condition.BLIND);
-        break;
-      case CALM:
-        conditions.add(Condition.CALM);
-        break;
-      default:
-        break;
+      case LEVITATE -> conditions.add(Condition.LEVITATE);
+      case PARALYZE -> conditions.add(Condition.PARALYZED);
+      case BLIND -> conditions.add(Condition.BLIND);
+      case CALM -> conditions.add(Condition.CALM);
+      default -> {}
     }
   }
 
@@ -273,10 +266,15 @@ public class Creature extends Entity {
    * @return the skill check
    */
   public int getSkill(Skill skill) {
-    if (skill == null) {
-      return Integer.MAX_VALUE;
-    } else {
-      return skills.get(skill).intValue();
+    try {
+      if (skill == null) {
+        return Integer.MAX_VALUE;
+      } else {
+        return skills.getOrDefault(skill, (float) 0).intValue();
+      }
+    } catch (RuntimeException re) {
+      log.error("Error for skill {}", skill, re);
+      return 0;
     }
   }
 

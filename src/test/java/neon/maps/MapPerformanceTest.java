@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import neon.entities.Creature;
 import neon.entities.Item;
-import neon.narrative.QuestTracker;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
@@ -25,11 +24,13 @@ import org.junit.jupiter.api.Test;
 class MapPerformanceTest {
 
   private MapStore testDb;
+  private MapTestFixtures mapTestFixtures;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
   }
 
   @AfterEach
@@ -49,7 +50,7 @@ class MapPerformanceTest {
             () -> {
               List<Region> regions = new ArrayList<>();
               for (int i = 0; i < regionCount; i++) {
-                Region region = MapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
+                Region region = mapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
                 regions.add(region);
               }
               return regions;
@@ -66,7 +67,7 @@ class MapPerformanceTest {
 
   @Test
   void testRegionScriptOperationsPerformance() throws Exception {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 100, 100);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 100, 100);
 
     PerformanceHarness.MeasuredResult<Integer> addResult =
         PerformanceHarness.measure(
@@ -101,7 +102,7 @@ class MapPerformanceTest {
 
   @Test
   void testRegionPropertyAccessPerformance() throws Exception {
-    Region region = MapTestFixtures.createTestRegion("perf-region", 100, 200, 50, 75, 3);
+    Region region = mapTestFixtures.createTestRegion("perf-region", 100, 200, 50, 75, 3);
     region.setLabel("Performance Test Region");
     region.addScript("test.js", false);
 
@@ -149,13 +150,13 @@ class MapPerformanceTest {
               for (int i = 0; i < regionCount; i++) {
                 int x = (i % 25) * 20;
                 int y = (i / 25) * 20;
-                Region region = MapTestFixtures.createTestRegion("r" + i, x, y, 20, 20, i % 3);
+                Region region = mapTestFixtures.createTestRegion("r" + i, x, y, 20, 20, i % 3);
                 zone.addRegion(region);
 
                 // Add creatures to zone
                 for (int c = 0; c < creaturesPerRegion; c++) {
                   Creature creature =
-                      MapTestFixtures.createTestCreature(
+                      mapTestFixtures.createTestCreature(
                           "creature-" + i + "-" + c, uidCounter++, x + c * 5, y + c * 5);
                   zone.addCreature(creature);
                 }
@@ -163,7 +164,7 @@ class MapPerformanceTest {
                 // Add items to zone
                 for (int it = 0; it < itemsPerRegion; it++) {
                   Item item =
-                      MapTestFixtures.createTestItem(
+                      mapTestFixtures.createTestItem(
                           "item-" + i + "-" + it, uidCounter++, x + it * 3, y + it * 3);
                   zone.addItem(item);
                 }
@@ -197,15 +198,15 @@ class MapPerformanceTest {
     for (int i = 0; i < 500; i++) {
       int x = (i % 50) * 10;
       int y = (i / 50) * 10;
-      Region region = MapTestFixtures.createTestRegion("r" + i, x, y, 10, 10, 0);
+      Region region = mapTestFixtures.createTestRegion("r" + i, x, y, 10, 10, 0);
       zone.addRegion(region);
 
       // Add 1 creature and 2 items per region
-      Creature creature = MapTestFixtures.createTestCreature("c" + i, uidCounter++, x + 2, y + 2);
+      Creature creature = mapTestFixtures.createTestCreature("c" + i, uidCounter++, x + 2, y + 2);
       zone.addCreature(creature);
 
-      Item item1 = MapTestFixtures.createTestItem("i" + i + "-1", uidCounter++, x + 3, y + 3);
-      Item item2 = MapTestFixtures.createTestItem("i" + i + "-2", uidCounter++, x + 4, y + 4);
+      Item item1 = mapTestFixtures.createTestItem("i" + i + "-1", uidCounter++, x + 3, y + 3);
+      Item item2 = mapTestFixtures.createTestItem("i" + i + "-2", uidCounter++, x + 4, y + 4);
       zone.addItem(item1);
       zone.addItem(item2);
     }
@@ -248,23 +249,23 @@ class MapPerformanceTest {
             () -> {
               long uidCounter = 30000;
               for (int i = 0; i < 300; i++) {
-                Region region = MapTestFixtures.createTestRegion("r" + i, i * 5, i * 5, 10, 10, 0);
+                Region region = mapTestFixtures.createTestRegion("r" + i, i * 5, i * 5, 10, 10, 0);
                 zone.addRegion(region);
 
                 // Add 2 creatures and 2 items per region
                 Creature c1 =
-                    MapTestFixtures.createTestCreature("c" + i + "-1", uidCounter++, i * 5, i * 5);
+                    mapTestFixtures.createTestCreature("c" + i + "-1", uidCounter++, i * 5, i * 5);
                 Creature c2 =
-                    MapTestFixtures.createTestCreature(
+                    mapTestFixtures.createTestCreature(
                         "c" + i + "-2", uidCounter++, i * 5 + 2, i * 5 + 2);
                 zone.addCreature(c1);
                 zone.addCreature(c2);
 
                 Item it1 =
-                    MapTestFixtures.createTestItem(
+                    mapTestFixtures.createTestItem(
                         "it" + i + "-1", uidCounter++, i * 5 + 1, i * 5 + 1);
                 Item it2 =
-                    MapTestFixtures.createTestItem(
+                    mapTestFixtures.createTestItem(
                         "it" + i + "-2", uidCounter++, i * 5 + 3, i * 5 + 3);
                 zone.addItem(it1);
                 zone.addItem(it2);
@@ -291,13 +292,13 @@ class MapPerformanceTest {
     long uidCounter = 40000;
     for (int y = 0; y < 100; y++) {
       for (int x = 0; x < 100; x++) {
-        Region region = MapTestFixtures.createTestRegion("r-" + x + "-" + y, x * 5, y * 5, 5, 5, 0);
+        Region region = mapTestFixtures.createTestRegion("r-" + x + "-" + y, x * 5, y * 5, 5, 5, 0);
         zone.addRegion(region);
 
         // Add 1 creature per region (every 10th region to keep memory reasonable)
         if ((x + y) % 10 == 0) {
           Creature creature =
-              MapTestFixtures.createTestCreature(
+              mapTestFixtures.createTestCreature(
                   "c-" + x + "-" + y, uidCounter++, x * 5 + 1, y * 5 + 1);
           zone.addCreature(creature);
         }
@@ -305,7 +306,7 @@ class MapPerformanceTest {
         // Add 1 item per region (every 5th region)
         if ((x + y) % 5 == 0) {
           Item item =
-              MapTestFixtures.createTestItem(
+              mapTestFixtures.createTestItem(
                   "i-" + x + "-" + y, uidCounter++, x * 5 + 2, y * 5 + 2);
           zone.addItem(item);
         }
@@ -353,18 +354,18 @@ class MapPerformanceTest {
               for (int z = 0; z < layerCount; z++) {
                 for (int i = 0; i < regionsPerLayer; i++) {
                   Region region =
-                      MapTestFixtures.createTestRegion(
+                      mapTestFixtures.createTestRegion(
                           "r-z" + z + "-" + i, i * 10, z * 10, 10, 10, z);
                   zone.addRegion(region);
 
                   // Add 1 creature and 1 item per region
                   Creature creature =
-                      MapTestFixtures.createTestCreature(
+                      mapTestFixtures.createTestCreature(
                           "c-z" + z + "-" + i, uidCounter++, i * 10 + 2, z * 10 + 2);
                   zone.addCreature(creature);
 
                   Item item =
-                      MapTestFixtures.createTestItem(
+                      mapTestFixtures.createTestItem(
                           "i-z" + z + "-" + i, uidCounter++, i * 10 + 3, z * 10 + 3);
                   zone.addItem(item);
                 }
@@ -471,7 +472,7 @@ class MapPerformanceTest {
 
     Zone zone = atlas.getCurrentZone();
     for (int i = 0; i < 100; i++) {
-      Region region = MapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
+      Region region = mapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
       zone.addRegion(region);
     }
 
@@ -521,25 +522,25 @@ class MapPerformanceTest {
               for (int i = 0; i < 500; i++) {
                 int x = (i % 25) * 20;
                 int y = (i / 25) * 20;
-                Region region = MapTestFixtures.createTestRegion("r" + i, x, y, 20, 20, i % 3);
+                Region region = mapTestFixtures.createTestRegion("r" + i, x, y, 20, 20, i % 3);
                 region.setLabel("Region " + i);
                 region.addScript("script" + i + ".js", false);
                 zone.addRegion(region);
 
                 // Add 2 creatures and 3 items per region
                 Creature c1 =
-                    MapTestFixtures.createTestCreature("c" + i + "-1", uidCounter++, x + 2, y + 2);
+                    mapTestFixtures.createTestCreature("c" + i + "-1", uidCounter++, x + 2, y + 2);
                 Creature c2 =
-                    MapTestFixtures.createTestCreature("c" + i + "-2", uidCounter++, x + 4, y + 4);
+                    mapTestFixtures.createTestCreature("c" + i + "-2", uidCounter++, x + 4, y + 4);
                 zone.addCreature(c1);
                 zone.addCreature(c2);
 
                 Item it1 =
-                    MapTestFixtures.createTestItem("it" + i + "-1", uidCounter++, x + 1, y + 1);
+                    mapTestFixtures.createTestItem("it" + i + "-1", uidCounter++, x + 1, y + 1);
                 Item it2 =
-                    MapTestFixtures.createTestItem("it" + i + "-2", uidCounter++, x + 3, y + 3);
+                    mapTestFixtures.createTestItem("it" + i + "-2", uidCounter++, x + 3, y + 3);
                 Item it3 =
-                    MapTestFixtures.createTestItem("it" + i + "-3", uidCounter++, x + 5, y + 5);
+                    mapTestFixtures.createTestItem("it" + i + "-3", uidCounter++, x + 5, y + 5);
                 zone.addItem(it1);
                 zone.addItem(it2);
                 zone.addItem(it3);

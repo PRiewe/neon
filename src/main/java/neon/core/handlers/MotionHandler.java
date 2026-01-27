@@ -21,6 +21,7 @@ package neon.core.handlers;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.UIEngineContext;
 import neon.entities.Creature;
 import neon.entities.Door;

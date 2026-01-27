@@ -31,10 +31,12 @@ public class Game implements Closeable {
   private final Timer timer = new Timer();
   private final GameStore gameStore;
   private final UIEngineContext uiEngineContext;
+  private final Atlas atlas;
 
-  public Game(GameStore gameStore, UIEngineContext uiEngineContext) {
+  public Game(GameStore gameStore, UIEngineContext uiEngineContext, Atlas atlas) {
     this.gameStore = gameStore;
     this.uiEngineContext = uiEngineContext;
+    this.atlas = atlas;
   }
 
   public Player getPlayer() {
@@ -46,7 +48,7 @@ public class Game implements Closeable {
   }
 
   public Atlas getAtlas() {
-    return uiEngineContext.getAtlas();
+    return atlas;
   }
 
   @Override

@@ -172,6 +172,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
         }
       }
     } catch (Exception e) {
+      log.error("collisionOccured", e);
     }
   }
 

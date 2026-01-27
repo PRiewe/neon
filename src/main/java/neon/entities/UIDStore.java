@@ -35,6 +35,7 @@ import org.h2.mvstore.MVStore;
  *
  * @author mdriesen
  */
+@Slf4j
 public class UIDStore extends AbstractUIDStore implements Closeable, EntityStore {
 
   // uid database

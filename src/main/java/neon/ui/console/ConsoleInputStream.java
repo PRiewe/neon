@@ -20,6 +20,7 @@ package neon.ui.console;
 
 import java.io.IOException;
 import java.io.Reader;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Data written into this is data from the console
@@ -54,7 +55,7 @@ public class ConsoleInputStream extends Reader {
   }
 
   @Override
-  public int read(char[] buf, int off, int len) throws IOException {
+  public int read(char @NonNull [] buf, int off, int len) throws IOException {
     int count = 0;
     boolean doneReading = false;
     for (int i = off; i < off + len && !doneReading; i++) {

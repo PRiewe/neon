@@ -27,6 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.*;
+import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 
 /**
@@ -37,6 +38,7 @@ import org.graalvm.polyglot.Context;
  * @author mdriesen
  */
 @SuppressWarnings("serial")
+@Slf4j
 public class JConsole extends JTextArea implements KeyListener {
   private final ConsoleInputStream in;
   private final CommandHistory history;
@@ -285,7 +287,7 @@ public class JConsole extends JTextArea implements KeyListener {
         var result = engine.eval("js", commands);
         setText(getText() + result);
       } catch (Exception e) {
-
+        log.error("run", e);
       }
       setText(getText() + ">>> ");
       running = false;

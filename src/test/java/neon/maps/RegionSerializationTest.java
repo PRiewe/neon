@@ -21,11 +21,13 @@ import org.junit.jupiter.api.Test;
 class RegionSerializationTest {
 
   private MapStore testDb;
+  MapTestFixtures mapTestFixtures;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
   }
 
   @AfterEach
@@ -37,7 +39,7 @@ class RegionSerializationTest {
   @Test
   void testBasicRegionRoundTrip() throws Exception {
     // Create a basic region
-    Region original = MapTestFixtures.createTestRegion(10, 20, 30, 40);
+    Region original = mapTestFixtures.createTestRegion(10, 20, 30, 40);
 
     // Serialize and deserialize
     Region deserialized = serializeAndDeserialize(original);
@@ -49,7 +51,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionWithLabel() throws Exception {
-    Region original = MapTestFixtures.createTestRegion("region-1", 5, 10, 15, 20, 0);
+    Region original = mapTestFixtures.createTestRegion("region-1", 5, 10, 15, 20, 0);
     original.setLabel("Test Label");
 
     Region deserialized = serializeAndDeserialize(original);
@@ -59,7 +61,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionWithNullLabel() throws Exception {
-    Region original = MapTestFixtures.createTestRegion(0, 0, 10, 10);
+    Region original = mapTestFixtures.createTestRegion(0, 0, 10, 10);
     // Label is null by default
 
     Region deserialized = serializeAndDeserialize(original);
@@ -69,7 +71,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionWithScripts() throws Exception {
-    Region original = MapTestFixtures.createTestRegion(0, 0, 50, 50);
+    Region original = mapTestFixtures.createTestRegion(0, 0, 50, 50);
     original.addScript("script1.js", false);
     original.addScript("script2.js", false);
     original.addScript("script3.js", false);
@@ -84,7 +86,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionWithEmptyScripts() throws Exception {
-    Region original = MapTestFixtures.createTestRegion(0, 0, 25, 25);
+    Region original = mapTestFixtures.createTestRegion(0, 0, 25, 25);
     // No scripts added
 
     Region deserialized = serializeAndDeserialize(original);
@@ -96,7 +98,7 @@ class RegionSerializationTest {
   @Test
   void testRegionDifferentZOrders() throws Exception {
     for (int z = 0; z < 5; z++) {
-      Region original = MapTestFixtures.createTestRegion("region-z" + z, 0, 0, 10, 10, z);
+      Region original = mapTestFixtures.createTestRegion("region-z" + z, 0, 0, 10, 10, z);
 
       Region deserialized = serializeAndDeserialize(original);
 
@@ -107,7 +109,7 @@ class RegionSerializationTest {
   @Test
   void testRegionBoundaryValues() throws Exception {
     // Test with large coordinates and dimensions
-    Region original = MapTestFixtures.createTestRegion(1000, 2000, 500, 750);
+    Region original = mapTestFixtures.createTestRegion(1000, 2000, 500, 750);
 
     Region deserialized = serializeAndDeserialize(original);
 
@@ -121,7 +123,7 @@ class RegionSerializationTest {
   @Test
   void testRegionWithZeroSize() throws Exception {
     // Edge case: 0-sized region
-    Region original = MapTestFixtures.createTestRegion(10, 10, 0, 0);
+    Region original = mapTestFixtures.createTestRegion(10, 10, 0, 0);
 
     Region deserialized = serializeAndDeserialize(original);
 
@@ -132,8 +134,8 @@ class RegionSerializationTest {
   @Test
   void testMultipleRegionsIndependence() throws Exception {
     // Ensure multiple serializations don't interfere
-    Region region1 = MapTestFixtures.createTestRegion("r1", 0, 0, 10, 10, 0);
-    Region region2 = MapTestFixtures.createTestRegion("r2", 20, 20, 30, 30, 1);
+    Region region1 = mapTestFixtures.createTestRegion("r1", 0, 0, 10, 10, 0);
+    Region region2 = mapTestFixtures.createTestRegion("r2", 20, 20, 30, 30, 1);
     region1.setLabel("Region One");
     region2.setLabel("Region Two");
 
@@ -148,7 +150,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionSerializationPerformance() throws Exception {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 100, 100);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 100, 100);
     region.setLabel("Performance Test Region");
     region.addScript("test1.js", false);
     region.addScript("test2.js", false);
@@ -176,7 +178,7 @@ class RegionSerializationTest {
 
     long startTime = System.nanoTime();
     for (int i = 0; i < regionCount; i++) {
-      Region region = MapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
+      Region region = mapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
       serializeAndDeserialize(region);
     }
     long endTime = System.nanoTime();

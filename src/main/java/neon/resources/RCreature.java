@@ -66,15 +66,15 @@ public class RCreature extends RData {
 
   public RCreature(String id, String... path) {
     super(id, path);
-    subtypes = new ArrayList<Subtype>();
-    skills = new EnumMap<Skill, Float>(Skill.class);
+    subtypes = new ArrayList<>();
+    skills = new EnumMap<>(Skill.class);
     hit = "1d1";
     av = "1d1";
   }
 
   public RCreature(Element properties, String... path) {
     super(properties, path);
-    subtypes = new ArrayList<Subtype>();
+    subtypes = new ArrayList<>();
     skills = initSkills(properties.getChild("skills"));
 
     color = properties.getAttributeValue("color");

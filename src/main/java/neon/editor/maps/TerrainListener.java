@@ -22,10 +22,12 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import lombok.extern.slf4j.Slf4j;
 import neon.editor.*;
 import neon.editor.editors.TerrainEditor;
 import neon.resources.RTerrain;
 
+@Slf4j
 public class TerrainListener implements ListSelectionListener, MouseListener {
   private final MapEditor editor;
   private final JList<RTerrain> list;
@@ -98,6 +100,7 @@ public class TerrainListener implements ListSelectionListener, MouseListener {
             model.removeElement(list.getSelectedValue());
           }
         } catch (ArrayIndexOutOfBoundsException a) {
+          log.error("actionPerformed", a);
         }
       }
     }

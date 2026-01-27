@@ -91,6 +91,7 @@ public class ModFiler {
               ini = new SAXBuilder().build(in);
               in.close();
             } catch (JDOMException e) {
+              log.error("load", e);
             }
 
             // check if there is a mod with the correct id

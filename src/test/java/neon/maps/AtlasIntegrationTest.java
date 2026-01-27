@@ -20,6 +20,7 @@ class AtlasIntegrationTest {
 
   private MapStore testDb;
   private Atlas atlas;
+  private MapTestFixtures mapTestFixtures;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -37,6 +38,7 @@ class AtlasIntegrationTest {
             zoneActivator,
             new MapLoader(TestEngineContext.getTestUiEngineContext()),
             TestEngineContext.getTestUiEngineContext());
+    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
   }
 
   @AfterEach
@@ -58,7 +60,7 @@ class AtlasIntegrationTest {
 
     // Add regions to the zone
     for (int i = 0; i < 10; i++) {
-      Region region = MapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
+      Region region = mapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
       zone.addRegion(region);
     }
 
@@ -77,11 +79,11 @@ class AtlasIntegrationTest {
 
     atlas.setMap(world1);
     Zone zone1 = atlas.getCurrentZone();
-    zone1.addRegion(MapTestFixtures.createTestRegion("zone1-region", 0, 0, 10, 10, 0));
+    zone1.addRegion(mapTestFixtures.createTestRegion("zone1-region", 0, 0, 10, 10, 0));
 
     atlas.setMap(world2);
     Zone zone2 = atlas.getCurrentZone();
-    zone2.addRegion(MapTestFixtures.createTestRegion("zone2-region", 20, 20, 10, 10, 0));
+    zone2.addRegion(mapTestFixtures.createTestRegion("zone2-region", 20, 20, 10, 10, 0));
 
     testDb.commit();
 
@@ -106,7 +108,7 @@ class AtlasIntegrationTest {
 
     // Add multiple regions
     for (int i = 0; i < 20; i++) {
-      Region region = MapTestFixtures.createTestRegion("region-" + i, i * 15, i * 15, 10, 10, 0);
+      Region region = mapTestFixtures.createTestRegion("region-" + i, i * 15, i * 15, 10, 10, 0);
       region.setLabel("Region " + i);
       zone.addRegion(region);
     }
@@ -139,7 +141,7 @@ class AtlasIntegrationTest {
     for (int y = 0; y < 5; y++) {
       for (int x = 0; x < 5; x++) {
         Region region =
-            MapTestFixtures.createTestRegion("r-" + x + "-" + y, x * 10, y * 10, 10, 10, 0);
+            mapTestFixtures.createTestRegion("r-" + x + "-" + y, x * 10, y * 10, 10, 10, 0);
         zone.addRegion(region);
       }
     }
@@ -169,14 +171,14 @@ class AtlasIntegrationTest {
     atlas.setMap(world1);
     Zone zone1 = atlas.getCurrentZone();
     for (int i = 0; i < 5; i++) {
-      zone1.addRegion(MapTestFixtures.createTestRegion(i * 10, 0, 10, 10));
+      zone1.addRegion(mapTestFixtures.createTestRegion(i * 10, 0, 10, 10));
     }
 
     // Populate world2
     atlas.setMap(world2);
     Zone zone2 = atlas.getCurrentZone();
     for (int i = 0; i < 10; i++) {
-      zone2.addRegion(MapTestFixtures.createTestRegion(0, i * 10, 10, 10));
+      zone2.addRegion(mapTestFixtures.createTestRegion(0, i * 10, 10, 10));
     }
 
     testDb.commit();
@@ -196,7 +198,7 @@ class AtlasIntegrationTest {
     atlas.setMap(world);
 
     Zone zone = atlas.getCurrentZone();
-    Region region = MapTestFixtures.createTestRegion("scripted-region", 0, 0, 50, 50, 0);
+    Region region = mapTestFixtures.createTestRegion("scripted-region", 0, 0, 50, 50, 0);
     region.addScript("init.js", false);
     region.addScript("update.js", false);
     region.setLabel("Scripted Area");
@@ -226,7 +228,7 @@ class AtlasIntegrationTest {
     for (int y = 0; y < 10; y++) {
       for (int x = 0; x < 10; x++) {
         Region region =
-            MapTestFixtures.createTestRegion("large-" + x + "-" + y, x * 20, y * 20, 20, 20, 0);
+            mapTestFixtures.createTestRegion("large-" + x + "-" + y, x * 20, y * 20, 20, 20, 0);
         zone.addRegion(region);
       }
     }
@@ -252,7 +254,7 @@ class AtlasIntegrationTest {
     assertTrue(zone.getRegions().isEmpty());
 
     // Adding and removing a region
-    Region region = MapTestFixtures.createTestRegion(0, 0, 10, 10);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 10, 10);
     zone.addRegion(region);
     assertEquals(1, zone.getRegions().size());
   }
@@ -265,7 +267,7 @@ class AtlasIntegrationTest {
     atlas.setMap(world);
 
     Zone zone = atlas.getCurrentZone();
-    zone.addRegion(MapTestFixtures.createTestRegion(0, 0, 10, 10));
+    zone.addRegion(mapTestFixtures.createTestRegion(0, 0, 10, 10));
 
     testDb.commit();
 

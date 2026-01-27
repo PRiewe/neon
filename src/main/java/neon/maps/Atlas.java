@@ -26,8 +26,6 @@ import neon.core.GameStore;
 import neon.core.UIEngineContext;
 import neon.entities.Door;
 import neon.maps.generators.DungeonGenerator;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EntityStore;
 import neon.maps.services.MapAtlas;
 import neon.maps.services.QuestProvider;
 import neon.systems.files.FileSystem;
@@ -44,14 +42,14 @@ import org.h2.mvstore.MVStore;
 public class Atlas implements Closeable, MapAtlas {
   private final MapStore db;
   private final ConcurrentMap<Integer, Map> maps;
-  private final EntityStore entityStore;
-  private final FileSystem fileSystem;
   private final MapLoader mapLoader;
-    private int currentZone = 0;
-    private int currentMap = 0;
-    private final QuestProvider questProvider;
-    private final ZoneActivator zoneActivator;
-    private final GameStore gameStore;
+  private final UIEngineContext uiEngineContext;
+  private int currentZone = 0;
+  private int currentMap = 0;
+  private final QuestProvider questProvider;
+  private final ZoneActivator zoneActivator;
+  private final GameStore gameStore;
+
   /**
    * Initializes this {@code Atlas} with dependency injection.
    *
@@ -61,7 +59,7 @@ public class Atlas implements Closeable, MapAtlas {
    */
   public Atlas(
       GameStore gameStore,
-      MVStore atlasStore,
+      MapStore atlasStore,
       QuestProvider questProvider,
       ZoneActivator zoneActivator,
       MapLoader mapLoader,
@@ -73,7 +71,6 @@ public class Atlas implements Closeable, MapAtlas {
     // files.delete(path);
     // String fileName = files.getFullPath(path);
     // log.warn("Creating new MVStore at {}", fileName);
-    this.mapLoader = new MapLoader(this.entityStore, this.resourceProvider);
     // db = MVStore.open(fileName);
     maps = atlasStore.openMap("maps");
     this.mapLoader = mapLoader;
@@ -129,10 +126,10 @@ public class Atlas implements Closeable, MapAtlas {
   @Override
   public Map getMap(int uid) {
     if (!maps.containsKey(uid)) {
-      if (entityStore.getMapPath(uid) == null) {
+      if (gameStore.getUidStore().getMapPath(uid) == null) {
         throw new RuntimeException(String.format("No existing mappath for uid %d", uid));
       }
-      Map map = mapLoader.load(entityStore.getMapPath(uid), uid);
+
       Map map = mapLoader.loadMap(gameStore.getUidStore().getMapPath(uid), uid);
       System.out.println("Loaded map " + map.toString());
       maps.put(uid, map);
@@ -140,13 +137,8 @@ public class Atlas implements Closeable, MapAtlas {
     return maps.get(uid);
   }
 
-  @Override
-  public Map getMap(int uid, String... path) {
-    Map map = mapLoader.load(path, uid);
-    return map;
-  }
+  public void putMapIfNeeded(Map map) {}
 
-  public void putMapIfNeeded(Map map) {
   /**
    * Sets the current zone.
    *

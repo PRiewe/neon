@@ -3,7 +3,6 @@ package neon.maps;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-import neon.narrative.QuestTracker;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;

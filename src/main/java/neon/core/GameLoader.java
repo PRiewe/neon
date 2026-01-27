@@ -43,9 +43,7 @@ import neon.entities.property.Skill;
 import neon.magic.Effect;
 import neon.magic.Spell;
 import neon.magic.SpellFactory;
-import neon.maps.Map;
-import neon.maps.MapLoader;
-import neon.maps.services.GameContextResourceProvider;
+import neon.maps.*;
 import neon.resources.CGame;
 import neon.resources.RCreature;
 import neon.resources.RMod;
@@ -62,29 +60,31 @@ import org.jdom2.input.SAXBuilder;
 @Listener(references = References.Strong)
 @Slf4j
 public class GameLoader {
-  private Engine engine;
+  private final Engine engine;
   private final TaskQueue queue;
   private final Configuration config;
   private final GameStore gameStore;
   private final GameServices gameServices;
   private final UIEngineContext uiEngineContext;
   private final EntityFactory entityFactory;
+  private final MapLoader mapLoader;
 
   public GameLoader(
       Configuration config,
       GameStore gameStore,
       GameServices gameServices,
+      TaskQueue taskQueue,
+      Engine engine,
       UIEngineContext uiEngineContext) {
     this.gameStore = gameStore;
     this.gameServices = gameServices;
     this.uiEngineContext = uiEngineContext;
     this.entityFactory = new EntityFactory(uiEngineContext);
-    this.engine = engine;
     this.config = config;
-    queue = engine.getQueue();
-    queue = context.getQueue();
-    resourceProvider = new GameContextResourceProvider(context);
-    mapLoader = new MapLoader(context.getStore(), resourceProvider, context.getFileSystem());
+    this.engine = engine;
+    queue = taskQueue;
+
+    mapLoader = new MapLoader(uiEngineContext);
   }
 
   @Handler
@@ -101,8 +101,7 @@ public class GameLoader {
         try {
           initGame(le.race, le.name, le.gender, le.specialisation, le.profession, le.sign);
         } catch (RuntimeException re) {
-          System.out.println(re);
-          re.fillInStackTrace().printStackTrace();
+          log.error("Fatal", re);
         }
         // indicate that loading is complete
         Engine.post(new LoadEvent(this));
@@ -137,7 +136,15 @@ public class GameLoader {
           new RCreature(((RCreature) gameStore.getResourceManager().getResource(race)).toElement());
       Player player = new Player(species, name, gender, spec, profession);
       player.species.text = "@";
-      engine.startGame(new Game(gameStore, uiEngineContext));
+      Atlas atlas =
+          new Atlas(
+              gameStore,
+              gameStore.getStore().getCache(),
+              uiEngineContext.getQuestTracker(),
+              new ZoneActivator(uiEngineContext.getPhysicsEngine(), uiEngineContext),
+              new MapLoader(new MapUtils(), uiEngineContext),
+              uiEngineContext);
+      engine.startGame(new Game(gameStore, uiEngineContext, atlas));
       setSign(player, sign);
       for (Skill skill : Skill.values()) {
         SkillHandler.checkFeat(skill, player);
@@ -297,8 +304,15 @@ public class GameLoader {
             Gender.valueOf(playerData.getAttributeValue("gender").toUpperCase()),
             Player.Specialisation.valueOf(playerData.getAttributeValue("spec")),
             playerData.getAttributeValue("prof"));
-
-    engine.startGame(new Game(gameStore, uiEngineContext));
+    Atlas atlas =
+        new Atlas(
+            gameStore,
+            gameStore.getStore().getCache(),
+            uiEngineContext.getQuestTracker(),
+            new ZoneActivator(uiEngineContext.getPhysicsEngine(), uiEngineContext),
+            new MapLoader(new MapUtils(), uiEngineContext),
+            uiEngineContext);
+    engine.startGame(new Game(gameStore, uiEngineContext, atlas));
     Rectangle bounds = player.getShapeComponent();
     bounds.setLocation(
         Integer.parseInt(playerData.getAttributeValue("x")),

@@ -25,7 +25,9 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EventEditor implements ListSelectionListener, ActionListener, MouseListener {
   private final JDialog frame;
   private Multimap<String, String> events;
@@ -170,6 +172,7 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
             model.remove(index);
           }
         } catch (ArrayIndexOutOfBoundsException a) {
+          log.error("actionPerformed", a);
         }
       } else if (e.getActionCommand().equals("Add timestamp")) {
         String s =
@@ -188,6 +191,7 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
             stampModel.remove(index);
           }
         } catch (ArrayIndexOutOfBoundsException a) {
+          log.error("actionPerformed", a);
         }
       }
     }

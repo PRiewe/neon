@@ -31,6 +31,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.UIEngineContext;
 import neon.entities.Creature;
 import neon.entities.Player;
@@ -61,6 +62,7 @@ import org.jdom2.Element;
  * Class that shows a list of topics to talk about. The displayed list depends
  * on the preconditions defined in quests.
  */
+@Slf4j
 public class DialogState extends State implements KeyListener {
   private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
@@ -315,6 +317,7 @@ public class DialogState extends State implements KeyListener {
         }
       }
     } catch (Exception e) {
+      log.error("hasService", e);
     }
     return false;
   }

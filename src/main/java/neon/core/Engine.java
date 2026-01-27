@@ -21,6 +21,7 @@ package neon.core;
 import java.io.IOException;
 import java.util.EventObject;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.event.*;
 import neon.core.handlers.CombatHandler;
@@ -57,7 +58,7 @@ public class Engine implements Runnable {
   @Getter private static GameServices gameServices;
   // GameContext provides instance-based access to all services
   // TODO: migrate all static accessors to use context, then remove static state
-  private static DefaultUIEngineContext gameEngineState;
+  @Getter @Setter private static DefaultUIEngineContext gameEngineState;
 
   // initialized by engine
   private static ScriptEngine scriptEngine;
@@ -111,7 +112,7 @@ public class Engine implements Runnable {
     gameStore = new GameStore(files, resources);
     // we use an IniBuilder to add all resources to the manager
     new IniBuilder("neon.ini.xml", files, queue).build(resources);
-
+    quests = new QuestTracker(gameStore, gameServices);
     // set up remaining engine components
     config = new Configuration(resources);
     gameEngineState = new DefaultUIEngineContext(new QuestTracker(gameStore, gameServices));
@@ -129,7 +130,7 @@ public class Engine implements Runnable {
     bus.subscribe(new InventoryHandler());
     bus.subscribe(adapter);
     bus.subscribe(quests);
-    bus.subscribe(new GameLoader(config, gameStore, gameServices, gameEngineState));
+    bus.subscribe(new GameLoader(config, gameStore, gameServices, queue, this, gameEngineState));
     bus.subscribe(new GameSaver(queue));
   }
 
@@ -168,6 +169,13 @@ public class Engine implements Runnable {
   public static Player getPlayer() {
     if (gameStore != null) {
       return gameStore.getPlayer();
+    } else return null;
+  }
+
+  @Deprecated
+  public static Atlas getAtlas() {
+    if (gameEngineState != null) {
+      return gameEngineState.getAtlas();
     } else return null;
   }
 
@@ -232,15 +240,6 @@ public class Engine implements Runnable {
   @Deprecated
   public static ResourceManager getResources() {
     return gameStore.getResourceManager();
-  }
-
-  /**
-   * @return the atlas
-   * @deprecated Use {@link UIEngineContext#getAtlas()} instead
-   */
-  @Deprecated
-  public static Atlas getAtlas() {
-    return game.getAtlas();
   }
 
   /**

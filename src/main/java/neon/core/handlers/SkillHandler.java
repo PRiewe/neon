@@ -238,19 +238,19 @@ public class SkillHandler {
   public static void checkFeat(Skill skill, Player player) {
     Characteristics characteristics = player.getCharacteristicsComponent();
     switch (skill) {
-      case ALCHEMY:
+      case ALCHEMY -> {
         if (player.getSkill(skill) >= 20 && !characteristics.hasFeat(Feat.BREW_POTION)) {
           characteristics.addFeat(Feat.BREW_POTION);
         }
-        break;
-      case ARCHERY:
+      }
+      case ARCHERY -> {
         if (player.getSkill(skill) >= 40
             && player.getSkill(Skill.RIDING) >= 40
             && !characteristics.hasFeat(Feat.MOUNTED_ARCHERY)) {
           characteristics.addFeat(Feat.MOUNTED_ARCHERY);
         }
-        break;
-      case ARMORER:
+      }
+      case ARMORER -> {
         if (player.getSkill(skill) >= 20 && !characteristics.hasFeat(Feat.FORGE_RING)) {
           characteristics.addFeat(Feat.FORGE_RING);
         }
@@ -259,20 +259,18 @@ public class SkillHandler {
             && !characteristics.hasFeat(Feat.CRAFT_MAGIC_ARMS_AND_ARMOR)) {
           characteristics.addFeat(Feat.CRAFT_MAGIC_ARMS_AND_ARMOR);
         }
-        break;
-      case AXE:
-      case BLUNT:
-      case BLADE:
+      }
+      case AXE, BLUNT, BLADE -> {
         if (player.getSkill(skill) >= 40 && !characteristics.hasFeat(Feat.TWO_WEAPON_FIGHTING)) {
           characteristics.addFeat(Feat.TWO_WEAPON_FIGHTING);
         }
-        break;
-      case DODGING:
+      }
+      case DODGING -> {
         if (player.getSkill(skill) >= 60 && !characteristics.hasFeat(Feat.SNATCH_ARROWS)) {
           characteristics.addFeat(Feat.SNATCH_ARROWS);
         }
-        break;
-      case ENCHANT:
+      }
+      case ENCHANT -> {
         if (player.getSkill(skill) >= 40 && !characteristics.hasFeat(Feat.SCRIBE_SCROLL)) {
           characteristics.addFeat(Feat.SCRIBE_SCROLL);
         }
@@ -284,8 +282,8 @@ public class SkillHandler {
             && !characteristics.hasFeat(Feat.CRAFT_MAGIC_ARMS_AND_ARMOR)) {
           characteristics.addFeat(Feat.CRAFT_MAGIC_ARMS_AND_ARMOR);
         }
-        break;
-      case RIDING:
+      }
+      case RIDING -> {
         if (player.getSkill(skill) >= 20 && !characteristics.hasFeat(Feat.MOUNTED_COMBAT)) {
           characteristics.addFeat(Feat.MOUNTED_COMBAT);
         }
@@ -294,9 +292,8 @@ public class SkillHandler {
             && !characteristics.hasFeat(Feat.MOUNTED_ARCHERY)) {
           characteristics.addFeat(Feat.MOUNTED_ARCHERY);
         }
-        break;
-      default:
-        break;
+      }
+      default -> {}
     }
   }
 }

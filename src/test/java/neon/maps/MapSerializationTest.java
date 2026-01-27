@@ -21,11 +21,13 @@ import org.junit.jupiter.api.Test;
 class MapSerializationTest {
 
   private MapStore testDb;
+  private MapTestFixtures mapTestFixtures;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
   }
 
   @AfterEach
@@ -54,7 +56,7 @@ class MapSerializationTest {
     // Add regions to the world's zone
     Zone zone = original.getZone(0);
     for (int i = 0; i < 10; i++) {
-      Region region = MapTestFixtures.createTestRegion(i * 20, i * 20, 20, 20);
+      Region region = mapTestFixtures.createTestRegion(i * 20, i * 20, 20, 20);
       zone.addRegion(region);
     }
 
@@ -84,9 +86,9 @@ class MapSerializationTest {
     Zone zone = original.getZone(0);
 
     // Add various regions
-    zone.addRegion(MapTestFixtures.createTestRegion("r1", 0, 0, 50, 50, 0));
-    zone.addRegion(MapTestFixtures.createTestRegion("r2", 60, 60, 30, 30, 1));
-    zone.addRegion(MapTestFixtures.createTestRegion("r3", 100, 100, 25, 25, 2));
+    zone.addRegion(mapTestFixtures.createTestRegion("r1", 0, 0, 50, 50, 0));
+    zone.addRegion(mapTestFixtures.createTestRegion("r2", 60, 60, 30, 30, 1));
+    zone.addRegion(mapTestFixtures.createTestRegion("r3", 100, 100, 25, 25, 2));
 
     testDb.commit();
 
@@ -115,7 +117,7 @@ class MapSerializationTest {
 
     // Add a region to the zone
     Zone zone = original.getZone(0);
-    zone.addRegion(MapTestFixtures.createTestRegion(0, 0, 50, 50));
+    zone.addRegion(mapTestFixtures.createTestRegion(0, 0, 50, 50));
 
     testDb.commit();
 
@@ -134,7 +136,7 @@ class MapSerializationTest {
     for (int i = 0; i < 5; i++) {
       original.addZone(i, "Level " + (i + 1));
       Zone zone = original.getZone(i);
-      zone.addRegion(MapTestFixtures.createTestRegion(0, 0, 40, 40));
+      zone.addRegion(mapTestFixtures.createTestRegion(0, 0, 40, 40));
     }
 
     testDb.commit();
@@ -158,7 +160,7 @@ class MapSerializationTest {
     for (int i = 0; i < 3; i++) {
       original.addZone(i, "Zone " + i);
       Zone zone = original.getZone(i);
-      zone.addRegion(MapTestFixtures.createTestRegion(0, 0, 30, 30));
+      zone.addRegion(mapTestFixtures.createTestRegion(0, 0, 30, 30));
     }
 
     // Connect: 0 -> 1 -> 2
@@ -210,19 +212,19 @@ class MapSerializationTest {
     original.addZone(0, "Small");
     Zone small = original.getZone(0);
     for (int i = 0; i < 3; i++) {
-      small.addRegion(MapTestFixtures.createTestRegion(i * 10, 0, 10, 10));
+      small.addRegion(mapTestFixtures.createTestRegion(i * 10, 0, 10, 10));
     }
 
     original.addZone(1, "Medium");
     Zone medium = original.getZone(1);
     for (int i = 0; i < 10; i++) {
-      medium.addRegion(MapTestFixtures.createTestRegion(i * 10, 0, 10, 10));
+      medium.addRegion(mapTestFixtures.createTestRegion(i * 10, 0, 10, 10));
     }
 
     original.addZone(2, "Large");
     Zone large = original.getZone(2);
     for (int i = 0; i < 25; i++) {
-      large.addRegion(MapTestFixtures.createTestRegion((i % 5) * 10, (i / 5) * 10, 10, 10));
+      large.addRegion(mapTestFixtures.createTestRegion((i % 5) * 10, (i / 5) * 10, 10, 10));
     }
 
     testDb.commit();
@@ -257,7 +259,7 @@ class MapSerializationTest {
 
     // Add 100 regions
     for (int i = 0; i < 100; i++) {
-      zone.addRegion(MapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10));
+      zone.addRegion(mapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10));
     }
 
     testDb.commit();
@@ -284,7 +286,7 @@ class MapSerializationTest {
       dungeon.addZone(z, "Zone " + z);
       Zone zone = dungeon.getZone(z);
       for (int r = 0; r < 20; r++) {
-        zone.addRegion(MapTestFixtures.createTestRegion(r * 10, r * 10, 10, 10));
+        zone.addRegion(mapTestFixtures.createTestRegion(r * 10, r * 10, 10, 10));
       }
       // Connect zones in a chain
       if (z > 0) {

@@ -33,6 +33,7 @@ public class TestEngineContext {
 
   /** -- GETTER -- Gets the test Atlas instance. */
   @Getter private static Atlas testAtlas;
+
   private static StubResourceManager testResources;
   private static Game testGame;
   private static UIDStore testStore;
@@ -43,7 +44,6 @@ public class TestEngineContext {
   @Getter private static DefaultUIEngineContext testUiEngineContext;
   @Getter private static QuestTracker testQuestTracker;
   @Getter private static StubFileSystem stubFileSystem;
-  @Getter private static neon.core.DefaultGameContext testContext;
   @Getter private static MapLoader mapLoader;
   @Getter private static QuestTracker questTracker;
 
@@ -106,10 +106,12 @@ public class TestEngineContext {
     testAtlas =
         new Atlas(
             gameStore, db, testQuestTracker, testZoneActivator, testMapLoader, testUiEngineContext);
-    // Create test Game using new DI constructor
-    testGame = new Game(gameStore, testUiEngineContext);
-    setStaticField(Engine.class, "game", testGame);
 
+    // Create test Game using new DI constructor
+    testGame = new Game(gameStore, testUiEngineContext, testAtlas);
+    testUiEngineContext.setGame(testGame);
+    setStaticField(Engine.class, "game", testGame);
+    setStaticField(Engine.class, "gameEngineState", testUiEngineContext);
     // Create stub FileSystem
     setStaticField(Engine.class, "files", new StubFileSystem());
 
@@ -133,11 +135,13 @@ public class TestEngineContext {
       if (testDb != null) {
         testDb.close();
       }
+      gameStore.close();
+      testEntityStore.close();
       setStaticField(Engine.class, "resources", null);
       setStaticField(Engine.class, "game", null);
       setStaticField(Engine.class, "files", null);
       setStaticField(Engine.class, "physics", null);
-
+      setStaticField(Engine.class, "gameEngineState", null);
       testResources = null;
       testGame = null;
       testStore = null;
