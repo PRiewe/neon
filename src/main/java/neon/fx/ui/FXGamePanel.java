@@ -172,6 +172,9 @@ public class FXGamePanel extends BorderPane {
       return;
     }
 
+    // Set context for lighting (needs to be done before rendering)
+    vectorPane.setContext(context);
+
     // Get visible rectangle based on zoom and camera
     Rectangle visible = getVisibleRectangle();
 

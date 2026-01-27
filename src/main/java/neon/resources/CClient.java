@@ -161,11 +161,11 @@ public class CClient extends Resource {
   public void setKeys(Element settings) {
     if (settings != null) {
       // movement keys
-        switch (settings.getText()) {
-            case "azerty" -> setKeys(AZERTY);
-            case "qwerty" -> setKeys(QWERTY);
-            case "qwertz" -> setKeys(QWERTZ);
-        }
+      switch (settings.getText()) {
+        case "azerty" -> setKeys(AZERTY);
+        case "qwerty" -> setKeys(QWERTY);
+        case "qwertz" -> setKeys(QWERTZ);
+      }
 
       // other keys
       if (settings.getAttribute("map") != null) {

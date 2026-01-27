@@ -28,6 +28,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
+import neon.core.GameContext;
 
 /**
  * JavaFX equivalent of JVectorPane. Provides a Canvas-based rendering system with zoom and camera
@@ -45,6 +46,8 @@ public class FXVectorPane extends Pane {
   private double cameraY = 0;
   private AnimationTimer renderLoop;
   private boolean isRendering = false;
+  private boolean lightingEnabled = true;
+  private GameContext context;
 
   public FXVectorPane(double width, double height) {
     canvas = new Canvas(width, height);
@@ -142,6 +145,15 @@ public class FXVectorPane extends Pane {
 
     // Restore transform
     gc.restore();
+
+    // Apply lighting effects (after all entities are rendered)
+    if (lightingEnabled && context != null) {
+      try {
+        FXLightFilter.applyLighting(gc, context, cameraX, cameraY, zoom);
+      } catch (Exception e) {
+        log.error("Error applying lighting", e);
+      }
+    }
   }
 
   /** Start the continuous rendering loop. */
@@ -195,5 +207,32 @@ public class FXVectorPane extends Pane {
    */
   public double getCameraY() {
     return cameraY;
+  }
+
+  /**
+   * Set the game context for lighting calculations.
+   *
+   * @param context the game context
+   */
+  public void setContext(GameContext context) {
+    this.context = context;
+  }
+
+  /**
+   * Enable or disable lighting effects.
+   *
+   * @param enabled true to enable lighting, false to disable
+   */
+  public void setLightingEnabled(boolean enabled) {
+    this.lightingEnabled = enabled;
+  }
+
+  /**
+   * Check if lighting is enabled.
+   *
+   * @return true if lighting is enabled
+   */
+  public boolean isLightingEnabled() {
+    return lightingEnabled;
   }
 }
