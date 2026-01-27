@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Point;
 import java.io.File;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.stream.Stream;
 import neon.entities.Door;
 import neon.entities.Entity;
@@ -42,6 +39,19 @@ import org.junit.jupiter.params.provider.MethodSource;
  * different dungeon types.
  */
 class DungeonGeneratorTest {
+  MVStore testDb;
+
+  @BeforeEach
+  void setUp() throws Exception {
+    testDb = MapDbTestHelper.createInMemoryDB();
+    TestEngineContext.initialize(testDb);
+  }
+
+  @AfterEach
+  void tearDown() {
+    TestEngineContext.reset();
+    MapDbTestHelper.cleanup(testDb);
+  }
 
   // ==================== Configuration ====================
 
@@ -191,14 +201,14 @@ class DungeonGeneratorTest {
    * internal generators (which are initialized from MapUtils and Dice), we can pass null for the
    * other dependencies.
    */
-  private DungeonGenerator createGenerator(long seed) {
+  private DungeonTileGenerator createGenerator(long seed) {
     MapUtils mapUtils = MapUtils.withSeed(seed);
     Dice dice = Dice.withSeed(seed);
     // Create a minimal theme - the type field is not used by generateBaseTiles
     // since we pass the type directly as a parameter
     RZoneTheme theme = new RZoneTheme("test-theme");
     // Use the RZoneTheme constructor which doesn't require a Zone
-    return new DungeonGenerator(theme, null, null, null, mapUtils, dice);
+    return new DungeonTileGenerator(theme, mapUtils, dice);
   }
 
   /**
@@ -208,7 +218,7 @@ class DungeonGeneratorTest {
    * @param scenario the test scenario with theme configuration
    * @return a configured DungeonGenerator
    */
-  private DungeonGenerator createGeneratorForTiles(long seed, GenerateTilesScenario scenario) {
+  private DungeonTileGenerator createGeneratorForTiles(long seed, GenerateTilesScenario scenario) {
     MapUtils mapUtils = MapUtils.withSeed(seed);
     Dice dice = Dice.withSeed(seed);
 
@@ -223,7 +233,7 @@ class DungeonGeneratorTest {
 
     // Leave creatures, items, and features empty for basic tests
 
-    return new DungeonGenerator(theme, null, null, null, mapUtils, dice);
+    return new DungeonTileGenerator(theme, mapUtils, dice);
   }
 
   // ==================== Dungeon Type Tests ====================
@@ -232,7 +242,7 @@ class DungeonGeneratorTest {
   @MethodSource("dungeonTypeScenarios")
   void generateBaseTiles_generatesValidTiles(DungeonTypeScenario scenario) {
     // Given
-    DungeonGenerator generator = createGenerator(scenario.seed());
+    DungeonTileGenerator generator = createGenerator(scenario.seed());
 
     // When
     int[][] tiles =
@@ -257,8 +267,8 @@ class DungeonGeneratorTest {
   @MethodSource("dungeonTypeScenarios")
   void generateBaseTiles_isDeterministic(DungeonTypeScenario scenario) {
     // Given: two generators with the same seed
-    DungeonGenerator generator1 = createGenerator(scenario.seed());
-    DungeonGenerator generator2 = createGenerator(scenario.seed());
+    DungeonTileGenerator generator1 = createGenerator(scenario.seed());
+    DungeonTileGenerator generator2 = createGenerator(scenario.seed());
 
     // When
     int[][] tiles1 =
@@ -276,10 +286,10 @@ class DungeonGeneratorTest {
   @MethodSource("generateTilesScenarios")
   void generateTiles_generatesValidTerrain(GenerateTilesScenario scenario) {
     // Given
-    DungeonGenerator generator = createGeneratorForTiles(scenario.seed(), scenario);
+    DungeonTileGenerator generator = createGeneratorForTiles(scenario.seed(), scenario);
 
     // When
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: visualize (controlled by PRINT_DUNGEONS flag)
     if (PRINT_DUNGEONS) {
@@ -304,12 +314,12 @@ class DungeonGeneratorTest {
   @MethodSource("generateTilesScenarios")
   void generateTiles_isDeterministic(GenerateTilesScenario scenario) {
     // Given: two generators with the same seed
-    DungeonGenerator generator1 = createGeneratorForTiles(scenario.seed(), scenario);
-    DungeonGenerator generator2 = createGeneratorForTiles(scenario.seed(), scenario);
+    DungeonTileGenerator generator1 = createGeneratorForTiles(scenario.seed(), scenario);
+    DungeonTileGenerator generator2 = createGeneratorForTiles(scenario.seed(), scenario);
 
     // When
-    String[][] terrain1 = generator1.generateTiles();
-    String[][] terrain2 = generator2.generateTiles();
+    String[][] terrain1 = generator1.generateTiles().terrain();
+    String[][] terrain2 = generator2.generateTiles().terrain();
 
     // Then
     assertTerrainMatch(terrain1, terrain2);
@@ -322,10 +332,10 @@ class DungeonGeneratorTest {
     GenerateTilesScenario scenario =
         new GenerateTilesScenario(
             seed, "cave", 25, 30, "marble,granite,slate", "multi-floor", "patch");
-    DungeonGenerator generator = createGeneratorForTiles(seed, scenario);
+    DungeonTileGenerator generator = createGeneratorForTiles(seed, scenario);
 
     // When
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: all floor tiles should use one of the floor types
     List<String> allowedFloors = List.of("marble", "granite", "slate");
@@ -358,10 +368,10 @@ class DungeonGeneratorTest {
     theme.doors = "door";
     theme.creatures.put("test_goblin", 3); // 1d3 goblins
 
-    DungeonGenerator generator = new DungeonGenerator(theme, null, null, null, mapUtils, dice);
+    DungeonTileGenerator generator = new DungeonTileGenerator(theme, mapUtils, dice);
 
     // When
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: should have creature annotations on some tiles
     boolean hasCreature = false;
@@ -396,10 +406,10 @@ class DungeonGeneratorTest {
     theme.doors = "door";
     theme.items.put("test_gold", 5); // 1d5 gold
 
-    DungeonGenerator generator = new DungeonGenerator(theme, null, null, null, mapUtils, dice);
+    DungeonTileGenerator generator = new DungeonTileGenerator(theme, mapUtils, dice);
 
     // When
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: should have item annotations on some tiles
     boolean hasItem = false;
@@ -422,7 +432,7 @@ class DungeonGeneratorTest {
   @MethodSource("largeDungeonScenarios")
   void generateBaseTiles_handlesLargeDungeons(LargeDungeonScenario scenario) {
     // Given
-    DungeonGenerator generator = createGenerator(scenario.seed());
+    DungeonTileGenerator generator = createGenerator(scenario.seed());
 
     // When
     long startTime = System.currentTimeMillis();
@@ -461,8 +471,8 @@ class DungeonGeneratorTest {
   @MethodSource("largeDungeonScenarios")
   void generateBaseTiles_largeDungeonsAreDeterministic(LargeDungeonScenario scenario) {
     // Given: two generators with the same seed
-    DungeonGenerator generator1 = createGenerator(scenario.seed());
-    DungeonGenerator generator2 = createGenerator(scenario.seed());
+    DungeonTileGenerator generator1 = createGenerator(scenario.seed());
+    DungeonTileGenerator generator2 = createGenerator(scenario.seed());
 
     // When
     int[][] tiles1 =
@@ -480,7 +490,7 @@ class DungeonGeneratorTest {
     long seed = 42L;
     int width = 250;
     int height = 250;
-    DungeonGenerator generator = createGenerator(seed);
+    DungeonTileGenerator generator = createGenerator(seed);
 
     // When
     long startTime = System.currentTimeMillis();
@@ -509,7 +519,7 @@ class DungeonGeneratorTest {
     long seed = 42L;
     int width = 180;
     int height = 150;
-    DungeonGenerator generator = createGenerator(seed);
+    DungeonTileGenerator generator = createGenerator(seed);
 
     // When
     long startTime = System.currentTimeMillis();
@@ -826,84 +836,8 @@ class DungeonGeneratorTest {
       new File("testfile3.dat").delete();
     }
 
-    /** Adapter to expose EntityStore from TestEngineContext. */
-    private class TestEntityStoreAdapter implements EntityStore {
-      @Override
-      public Entity getEntity(long uid) {
-        return neon.core.Engine.getStore().getEntity(uid);
-      }
-
-      @Override
-      public void addEntity(Entity entity) {
-        neon.core.Engine.getStore().addEntity(entity);
-      }
-
-      @Override
-      public long createNewEntityUID() {
-        return neon.core.Engine.getStore().createNewEntityUID();
-      }
-
-      @Override
-      public int createNewMapUID() {
-        return neon.core.Engine.getStore().createNewMapUID();
-      }
-
-      @Override
-      public String[] getMapPath(int uid) {
-        return neon.core.Engine.getStore().getMapPath(uid);
-      }
-    }
-
-    /** Stub ResourceProvider for testing. */
-    private class TestResourceProvider implements ResourceProvider {
-      @Override
-      public Resource getResource(String id) {
-        if (id == null) {
-          return null;
-        }
-        // Door resources
-        if (id.contains("door") || id.startsWith("test_door")) {
-          return new RItem.Door(id, RItem.Type.door);
-        }
-        // Terrain resources (floor, wall, etc.)
-        if (id.contains("floor")
-            || id.contains("wall")
-            || id.contains("terrain")
-            || id.equals("stone_floor")
-            || id.equals("stone_wall")) {
-          return new neon.resources.RTerrain(id);
-        }
-        // Test items
-        if (id.startsWith("test_") && id.contains("item")) {
-          return new RItem(id, RItem.Type.item);
-        }
-        // Test creatures
-        if (id.startsWith("test_") && id.contains("creature")) {
-          return new RCreature(id);
-        }
-        // Default: assume terrain for unknown resources
-        return new neon.resources.RTerrain(id);
-      }
-
-      @Override
-      public Resource getResource(String id, String type) {
-        if ("terrain".equals(type)) {
-          return new neon.resources.RTerrain(id);
-        }
-        return getResource(id);
-      }
-    }
-
-    /** Stub QuestProvider that returns no quest objects. */
-    private class NoQuestProvider implements QuestProvider {
-      @Override
-      public String getNextRequestedObject() {
-        return null;
-      }
-    }
-
     /** Stub QuestProvider that returns a specific item once. */
-    private class SingleItemQuestProvider implements QuestProvider {
+    private static class SingleItemQuestProvider implements QuestProvider {
       private final String itemId;
       private boolean consumed = false;
 
@@ -921,7 +855,7 @@ class DungeonGeneratorTest {
       }
     }
 
-    //    @Test
+    @Test
     void generate_createsZoneWithRegions() throws Exception {
       // Given: a dungeon with two zones, and a door from zone 0 to zone 1
       int mapUID = entityStore.createNewMapUID();
@@ -952,9 +886,8 @@ class DungeonGeneratorTest {
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
-              entityStore,
-              new TestResourceProvider(),
-              new NoQuestProvider(),
+              TestEngineContext.getTestQuestTracker(),
+              TestEngineContext.getTestUiEngineContext(),
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
 
@@ -1011,9 +944,8 @@ class DungeonGeneratorTest {
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
-              entityStore,
-              new TestResourceProvider(),
-              new NoQuestProvider(),
+              TestEngineContext.getTestQuestTracker(),
+              TestEngineContext.getTestUiEngineContext(),
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
 
@@ -1077,9 +1009,8 @@ class DungeonGeneratorTest {
       DungeonGenerator generator =
           new DungeonGenerator(
               zone1,
-              entityStore,
-              new TestResourceProvider(),
-              new NoQuestProvider(),
+              TestEngineContext.getTestQuestTracker(),
+              TestEngineContext.getTestUiEngineContext(),
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
 
@@ -1146,14 +1077,18 @@ class DungeonGeneratorTest {
               }
               return getResource(id);
             }
+
+            @Override
+            public <T extends Resource> Vector<T> getResources(Class<T> rRecipeClass) {
+              return null;
+            }
           };
 
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
-              entityStore,
-              questResourceProvider,
-              questProvider,
+              TestEngineContext.getTestQuestTracker(),
+              TestEngineContext.getTestUiEngineContext(),
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
 
@@ -1227,14 +1162,18 @@ class DungeonGeneratorTest {
               }
               return getResource(id);
             }
+
+            @Override
+            public <T extends Resource> Vector<T> getResources(Class<T> rRecipeClass) {
+              return null;
+            }
           };
 
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
-              entityStore,
-              resourceProvider,
-              questProvider,
+              TestEngineContext.getTestQuestTracker(),
+              TestEngineContext.getTestUiEngineContext(),
               MapUtils.withSeed(42L),
               Dice.withSeed(42L));
 
@@ -1282,11 +1221,10 @@ class DungeonGeneratorTest {
         DungeonGenerator generator =
             new DungeonGenerator(
                 targetZone,
-                entityStore,
-                new TestResourceProvider(),
-                new NoQuestProvider(),
-                MapUtils.withSeed(seed),
-                Dice.withSeed(seed));
+                TestEngineContext.getTestQuestTracker(),
+                TestEngineContext.getTestUiEngineContext(),
+                MapUtils.withSeed(42L),
+                Dice.withSeed(42L));
 
         generator.generate(entryDoor, previousZone, testAtlas);
 
@@ -1353,10 +1291,10 @@ class DungeonGeneratorTest {
     theme.doors = "test_door";
 
     // Create generator with null zone (uses theme constructor)
-    DungeonGenerator generator = new DungeonGenerator(theme, null, null, null, mapUtils, dice);
+    DungeonTileGenerator generator = new DungeonTileGenerator(theme, mapUtils, dice);
 
     // When: generate tiles (this is what generate() calls internally)
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: verify valid terrain was generated
     assertNotNull(terrain, "Terrain should not be null");
@@ -1367,9 +1305,9 @@ class DungeonGeneratorTest {
 
     // Count floor tiles
     int floorCount = 0;
-    for (int x = 0; x < terrain.length; x++) {
+    for (String[] strings : terrain) {
       for (int y = 0; y < terrain[0].length; y++) {
-        if (terrain[x][y] != null) {
+        if (strings[y] != null) {
           floorCount++;
         }
       }
@@ -1389,14 +1327,14 @@ class DungeonGeneratorTest {
     theme.walls = "stone_wall";
     theme.doors = "test_door";
 
-    DungeonGenerator generator1 =
-        new DungeonGenerator(theme, null, null, null, MapUtils.withSeed(seed), Dice.withSeed(seed));
-    DungeonGenerator generator2 =
-        new DungeonGenerator(theme, null, null, null, MapUtils.withSeed(seed), Dice.withSeed(seed));
+    DungeonTileGenerator generator1 =
+        new DungeonTileGenerator(theme, MapUtils.withSeed(seed), Dice.withSeed(seed));
+    DungeonTileGenerator generator2 =
+        new DungeonTileGenerator(theme, MapUtils.withSeed(seed), Dice.withSeed(seed));
 
     // When
-    String[][] terrain1 = generator1.generateTiles();
-    String[][] terrain2 = generator2.generateTiles();
+    String[][] terrain1 = generator1.generateTiles().terrain();
+    String[][] terrain2 = generator2.generateTiles().terrain();
 
     // Then
     assertEquals(terrain1.length, terrain2.length, "Width should match");
@@ -1421,14 +1359,14 @@ class DungeonGeneratorTest {
     theme.walls = "stone_wall";
     theme.doors = "test_door";
 
-    DungeonGenerator generator1 =
-        new DungeonGenerator(theme, null, null, null, MapUtils.withSeed(42L), Dice.withSeed(42L));
-    DungeonGenerator generator2 =
-        new DungeonGenerator(theme, null, null, null, MapUtils.withSeed(999L), Dice.withSeed(999L));
+    DungeonTileGenerator generator1 =
+        new DungeonTileGenerator(theme, MapUtils.withSeed(42L), Dice.withSeed(42L));
+    DungeonTileGenerator generator2 =
+        new DungeonTileGenerator(theme, MapUtils.withSeed(999L), Dice.withSeed(999L));
 
     // When
-    String[][] terrain1 = generator1.generateTiles();
-    String[][] terrain2 = generator2.generateTiles();
+    String[][] terrain1 = generator1.generateTiles().terrain();
+    String[][] terrain2 = generator2.generateTiles().terrain();
 
     // Then: at least some tiles should differ
     boolean hasDifference = false;
@@ -1461,11 +1399,11 @@ class DungeonGeneratorTest {
     theme.doors = "test_door";
     theme.creatures.put("test_goblin", 5); // 1d5 goblins
 
-    DungeonGenerator generator =
-        new DungeonGenerator(theme, null, null, null, MapUtils.withSeed(seed), Dice.withSeed(seed));
+    DungeonTileGenerator generator =
+        new DungeonTileGenerator(theme, MapUtils.withSeed(seed), Dice.withSeed(seed));
 
     // When
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: should have creature annotations on some tiles
     boolean hasCreature = false;
@@ -1496,11 +1434,11 @@ class DungeonGeneratorTest {
     theme.doors = "test_door";
     theme.items.put("test_treasure", 5); // 1d5 items
 
-    DungeonGenerator generator =
-        new DungeonGenerator(theme, null, null, null, MapUtils.withSeed(seed), Dice.withSeed(seed));
+    DungeonTileGenerator generator =
+        new DungeonTileGenerator(theme, MapUtils.withSeed(seed), Dice.withSeed(seed));
 
     // When
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: should have item annotations on some tiles
     boolean hasItem = false;
@@ -1532,12 +1470,11 @@ class DungeonGeneratorTest {
 
     // Test with multiple seeds to ensure bounds are respected
     for (long seed = 1; seed <= 10; seed++) {
-      DungeonGenerator generator =
-          new DungeonGenerator(
-              theme, null, null, null, MapUtils.withSeed(seed), Dice.withSeed(seed));
+      DungeonTileGenerator generator =
+          new DungeonTileGenerator(theme, MapUtils.withSeed(seed), Dice.withSeed(seed));
 
       // When
-      String[][] terrain = generator.generateTiles();
+      String[][] terrain = generator.generateTiles().terrain();
 
       // Then
       assertTrue(
@@ -1566,11 +1503,11 @@ class DungeonGeneratorTest {
     theme.walls = "stone_wall";
     theme.doors = "test_door";
 
-    DungeonGenerator generator =
-        new DungeonGenerator(theme, null, null, null, MapUtils.withSeed(42L), Dice.withSeed(42L));
+    DungeonTileGenerator generator =
+        new DungeonTileGenerator(theme, MapUtils.withSeed(42L), Dice.withSeed(42L));
 
     // When
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: all floor tiles should use one of the floor types
     List<String> allowedFloors = List.of("marble", "granite", "slate");

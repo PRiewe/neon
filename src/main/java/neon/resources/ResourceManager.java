@@ -19,9 +19,10 @@
 package neon.resources;
 
 import java.util.*;
+import neon.maps.services.ResourceProvider;
 
-public class ResourceManager {
-  private final HashMap<String, Resource> resources = new HashMap<String, Resource>();
+public class ResourceManager implements ResourceProvider {
+  private final HashMap<String, Resource> resources = new HashMap<>();
 
   public Resource getResource(String id) {
     return resources.get(id);
@@ -32,7 +33,7 @@ public class ResourceManager {
   }
 
   public <T extends Resource> Vector<T> getResources(Class<T> cl) {
-    Vector<T> list = new Vector<T>();
+    Vector<T> list = new Vector<>();
     for (Resource r : resources.values()) {
       if (cl.isInstance(r)) {
         list.add((T) r);

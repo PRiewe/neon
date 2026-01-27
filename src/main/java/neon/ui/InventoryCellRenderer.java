@@ -21,7 +21,7 @@ package neon.ui;
 import java.awt.*;
 import java.util.HashMap;
 import javax.swing.*;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.entities.Entity;
 
 /**
@@ -34,10 +34,10 @@ public class InventoryCellRenderer extends JLabel implements ListCellRenderer<En
   private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();
   private Font font;
   private HashMap<String, Integer> data;
-  private final GameContext context;
+  private final UIEngineContext context;
 
   /** Initializes this renderer. */
-  public InventoryCellRenderer(HashMap<String, Integer> data, GameContext context) {
+  public InventoryCellRenderer(HashMap<String, Integer> data, UIEngineContext context) {
     font = getFont();
     this.data = data;
     this.context = context;

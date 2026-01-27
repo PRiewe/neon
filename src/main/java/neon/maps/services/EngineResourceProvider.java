@@ -18,6 +18,7 @@
 
 package neon.maps.services;
 
+import java.util.Vector;
 import neon.core.Engine;
 import neon.resources.Resource;
 
@@ -36,5 +37,10 @@ public class EngineResourceProvider implements ResourceProvider {
   @Override
   public Resource getResource(String id, String type) {
     return Engine.getResources().getResource(id, type);
+  }
+
+  @Override
+  public <T extends Resource> Vector<T> getResources(Class<T> rRecipeClass) {
+    return Engine.getResources().getResources(rRecipeClass);
   }
 }

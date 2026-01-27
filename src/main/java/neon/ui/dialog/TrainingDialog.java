@@ -25,7 +25,7 @@ import java.awt.event.KeyListener;
 import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.entities.Creature;
 import neon.entities.Player;
 import neon.entities.property.Skill;
@@ -43,9 +43,9 @@ public class TrainingDialog implements KeyListener {
   private JScrollPane scroller;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
-  public TrainingDialog(UserInterface ui, MBassador<EventObject> bus, GameContext context) {
+  public TrainingDialog(UserInterface ui, MBassador<EventObject> bus, UIEngineContext context) {
     this.bus = bus;
     this.ui = ui;
     this.context = context;

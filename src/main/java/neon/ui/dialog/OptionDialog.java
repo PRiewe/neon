@@ -28,7 +28,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.resources.CClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -42,9 +42,9 @@ public class OptionDialog {
   private JRadioButton numpad, qwerty, azerty, qwertz;
   private ButtonGroup group;
   private JDialog frame;
-  private final GameContext context;
+  private final UIEngineContext context;
 
-  public OptionDialog(JFrame parent, GameContext context) {
+  public OptionDialog(JFrame parent, UIEngineContext context) {
     this.context = context;
     frame = new JDialog(parent, false);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));

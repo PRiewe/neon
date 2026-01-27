@@ -23,15 +23,15 @@ import lombok.Setter;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
+import neon.maps.services.ResourceProvider;
 import neon.narrative.QuestTracker;
-import neon.resources.ResourceManager;
+import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
 import net.engio.mbassy.bus.MBassador;
-import org.graalvm.polyglot.Context;
 
 /**
- * Default implementation of {@link GameContext} that holds references to all game services and
+ * Default implementation of {@link UIEngineContext} that holds references to all game services and
  * state. This class is instantiated by the Engine and provides instance-based access to services
  * that were previously accessed via static methods.
  *
@@ -40,21 +40,24 @@ import org.graalvm.polyglot.Context;
  *
  * @author mdriesen
  */
-public class DefaultGameContext implements GameContext {
+public class DefaultUIEngineContext implements UIEngineContext {
 
   // Engine-level systems (set during engine initialization)
-  @Setter private ResourceManager resources;
-  @Setter private QuestTracker questTracker;
-  @Setter private PhysicsSystem physicsEngine;
-  @Setter private Context scriptEngine;
+  @Setter private GameStore gameStore;
+  @Setter private GameServices gameServices;
+  private final QuestTracker questTracker;
   @Setter private MBassador<EventObject> bus;
 
   // Game-level state (set when a game starts)
   @Setter private Game game;
 
+  public DefaultUIEngineContext(QuestTracker questTracker) {
+    this.questTracker = questTracker;
+  }
+
   @Override
   public Player getPlayer() {
-    return game != null ? game.getPlayer() : null;
+    return gameStore != null ? gameStore.getPlayer() : null;
   }
 
   @Override
@@ -63,18 +66,8 @@ public class DefaultGameContext implements GameContext {
   }
 
   @Override
-  public UIDStore getStore() {
-    return game != null ? game.getStore() : null;
-  }
-
-  @Override
   public Timer getTimer() {
     return game != null ? game.getTimer() : null;
-  }
-
-  @Override
-  public ResourceManager getResources() {
-    return resources;
   }
 
   @Override
@@ -83,23 +76,28 @@ public class DefaultGameContext implements GameContext {
   }
 
   @Override
-  public PhysicsSystem getPhysicsEngine() {
-    return physicsEngine;
+  public ResourceProvider getResources() {
+    return gameStore.getResources();
   }
 
   @Override
-  public Context getScriptEngine() {
-    return scriptEngine;
+  public UIDStore getStore() {
+    return gameStore.getUidStore();
+  }
+
+  @Override
+  public FileSystem getFileSystem() {
+    return gameStore.getFileSystem();
+  }
+
+  @Override
+  public ScriptEngine getScriptEngine() {
+    return gameServices.scriptEngine();
   }
 
   @Override
   public Object execute(String script) {
-    try {
-      return scriptEngine.eval("js", script);
-    } catch (Exception e) {
-      System.err.println(e);
-      return null;
-    }
+    return gameServices.scriptEngine().execute(script);
   }
 
   @Override
@@ -107,8 +105,18 @@ public class DefaultGameContext implements GameContext {
     System.exit(0);
   }
 
+  /**
+   * Posts an event to the event bus asynchronously.
+   *
+   * @param event the event to post
+   */
   @Override
   public void post(EventObject event) {
-    bus.publishAsync(event);
+    bus.post(event);
+  }
+
+  @Override
+  public PhysicsSystem getPhysicsEngine() {
+    return null;
   }
 }

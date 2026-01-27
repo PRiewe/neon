@@ -25,7 +25,7 @@ import java.awt.event.KeyListener;
 import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.entities.Item;
 import neon.entities.Player;
 import neon.entities.components.Enchantment;
@@ -37,9 +37,9 @@ public class ChargeDialog implements KeyListener {
   private JDialog frame;
   private JScrollPane scroller;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
-  public ChargeDialog(UserInterface ui, GameContext context) {
+  public ChargeDialog(UserInterface ui, UIEngineContext context) {
     this.ui = ui;
     this.context = context;
     JFrame parent = ui.getWindow();

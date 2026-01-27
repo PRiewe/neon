@@ -27,9 +27,10 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MotionHandler;
+import neon.core.handlers.TeleportHandler;
 import neon.entities.Container;
 import neon.entities.Creature;
 import neon.entities.Door;
@@ -50,7 +51,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   private Object container;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
   // components of the JPanel
   private JPanel panel;
@@ -58,17 +59,19 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   private JList<Entity> cList;
   private JScrollPane cScroll, iScroll;
   private DescriptionPanel description;
-
+  private final MotionHandler motionHandler;
+  private final TeleportHandler teleportHandler;
   // lists
   private HashMap<String, Integer> cData, iData;
 
   public ContainerState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;
     this.context = context;
-
+    this.motionHandler = new MotionHandler(context);
+    this.teleportHandler = new TeleportHandler(context);
     panel = new JPanel(new BorderLayout());
     JPanel center = new JPanel(new java.awt.GridLayout(0, 3));
     panel.addKeyListener(this);
@@ -170,7 +173,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
               bus.publishAsync(new TransitionEvent("return"));
               bus.publishAsync(new TransitionEvent("container", "holder", item));
             } else if (item instanceof Door) {
-              MotionHandler.teleport(player, (Door) item);
+              teleportHandler.teleport(player, (Door) item);
               bus.publishAsync(new TransitionEvent("return"));
             } else if (item instanceof Creature) {
               bus.publishAsync(new TransitionEvent("return"));

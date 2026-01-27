@@ -28,8 +28,7 @@ import neon.editor.resources.IRegion;
 import neon.editor.resources.Instance;
 import neon.editor.resources.RMap;
 import neon.editor.resources.RZone;
-import neon.editor.services.EditorResourceProvider;
-import neon.maps.generators.DungeonGenerator;
+import neon.maps.generators.DungeonTileGenerator;
 import neon.resources.RCreature;
 import neon.resources.RItem;
 import neon.resources.RTerrain;
@@ -127,9 +126,9 @@ public class MapTreeListener implements MouseListener {
 
   private void generateZone(RZone zone) {
     RZoneTheme theme = zone.theme;
+    DungeonTileGenerator generator = new DungeonTileGenerator(theme);
+    String[][] terrain = generator.generateTiles().terrain();
 
-    String[][] terrain =
-        new DungeonGenerator(theme, null, new EditorResourceProvider(), null).generateTiles();
     int width = terrain.length;
     int height = terrain[0].length;
     zone.map.load(); // map in orde brengen

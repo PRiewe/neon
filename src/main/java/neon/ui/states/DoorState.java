@@ -22,7 +22,7 @@ import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.EventObject;
 import javax.swing.Popup;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.Player;
@@ -38,9 +38,10 @@ public class DoorState extends State implements KeyListener {
   private Popup popup;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
-  public DoorState(State state, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+  public DoorState(
+      State state, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
     super(state);
     this.bus = bus;
     this.ui = ui;

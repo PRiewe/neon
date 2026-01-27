@@ -21,16 +21,14 @@ package neon.maps;
 import java.io.Closeable;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.Engine;
+import neon.core.GameStore;
+import neon.core.UIEngineContext;
 import neon.entities.Door;
 import neon.maps.generators.DungeonGenerator;
-import neon.maps.services.EngineEntityStore;
 import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
 import neon.maps.services.EntityStore;
 import neon.maps.services.MapAtlas;
 import neon.maps.services.QuestProvider;
-import neon.maps.services.ResourceProvider;
 import neon.systems.files.FileSystem;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -46,52 +44,48 @@ public class Atlas implements Closeable, MapAtlas {
   private final MVMap<Integer, Map> maps;
   private int currentZone = 0;
   private int currentMap = 0;
-  private final FileSystem files;
-  private final EntityStore entityStore;
-  private final ResourceProvider resourceProvider;
   private final QuestProvider questProvider;
   private final ZoneActivator zoneActivator;
+  private final GameStore gameStore;
+  private final MapLoader mapLoader;
+  private final UIEngineContext uiEngineContext;
 
   /**
    * Initializes this {@code Atlas} with the given {@code FileSystem} and cache path. The cache is
    * lazy initialised.
    *
-   * @param files a {@code FileSystem}
+   * @param gameStore a {@code FileSystem}
    * @param path the path to the file used for caching
-   * @deprecated Use {@link #Atlas(FileSystem, String, EntityStore, ZoneActivator)} to avoid
+   * @deprecated Use {@link #Atlas(GameStore, String, EntityStore, ZoneActivator)} to avoid
    *     dependency on Engine singleton
    */
   @Deprecated
-  public Atlas(FileSystem files, String path) {
+  public Atlas(
+      GameStore gameStore, String path, MapLoader mapLoader, UIEngineContext uiEngineContext) {
     this(
-        files,
-        getMVStore(files, path),
-        new EngineEntityStore(),
-        new EngineResourceProvider(),
+        gameStore,
+        getMVStore(gameStore.getFileSystem(), path),
         new EngineQuestProvider(),
-        createDefaultZoneActivator());
+        createDefaultZoneActivator(gameStore),
+        mapLoader,
+        uiEngineContext);
   }
 
   /**
    * Initializes this {@code Atlas} with dependency injection.
    *
-   * @param files the file system
    * @param atlasStore the MVStore for caching
-   * @param entityStore the entity store service
-   * @param resourceProvider the resource provider service
    * @param questProvider the quest provider service
    * @param zoneActivator the zone activator for physics management
    */
   public Atlas(
-      FileSystem files,
+      GameStore gameStore,
       MVStore atlasStore,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
       QuestProvider questProvider,
-      ZoneActivator zoneActivator) {
-    this.files = files;
-    this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
+      ZoneActivator zoneActivator,
+      MapLoader mapLoader,
+      UIEngineContext uiEngineContext) {
+    this.gameStore = gameStore;
     this.questProvider = questProvider;
     this.zoneActivator = zoneActivator;
     this.db = atlasStore;
@@ -101,6 +95,8 @@ public class Atlas implements Closeable, MapAtlas {
 
     // db = MVStore.open(fileName);
     maps = atlasStore.openMap("maps");
+    this.mapLoader = mapLoader;
+    this.uiEngineContext = uiEngineContext;
   }
 
   private static MVStore getMVStore(FileSystem files, String path) {
@@ -116,8 +112,8 @@ public class Atlas implements Closeable, MapAtlas {
    *
    * @return a zone activator
    */
-  static ZoneActivator createDefaultZoneActivator() {
-    return new ZoneActivator(new neon.maps.services.EnginePhysicsManager(), Engine::getPlayer);
+  static ZoneActivator createDefaultZoneActivator(GameStore gameStore) {
+    return new ZoneActivator(new neon.maps.services.EnginePhysicsManager(), gameStore);
   }
 
   public MVStore getCache() {
@@ -152,7 +148,7 @@ public class Atlas implements Closeable, MapAtlas {
   @Override
   public Map getMap(int uid) {
     if (!maps.containsKey(uid)) {
-      Map map = MapLoader.loadMap(entityStore.getMapPath(uid), uid, files);
+      Map map = mapLoader.loadMap(gameStore.getUidStore().getMapPath(uid), uid);
       System.out.println("Loaded map " + map.toString());
       maps.put(uid, map);
     }
@@ -183,7 +179,7 @@ public class Atlas implements Closeable, MapAtlas {
     }
 
     if (getCurrentMap() instanceof Dungeon && getCurrentZone().isRandom()) {
-      new DungeonGenerator(getCurrentZone(), entityStore, resourceProvider, questProvider)
+      new DungeonGenerator(getCurrentZone(), questProvider, uiEngineContext)
           .generate(door, previousZone, this);
     }
   }

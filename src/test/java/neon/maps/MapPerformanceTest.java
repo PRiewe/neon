@@ -1,6 +1,5 @@
 package neon.maps;
 
-import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
@@ -9,9 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import neon.entities.Creature;
 import neon.entities.Item;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
@@ -407,14 +403,7 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasMapCachingPerformance() throws Exception {
-    Atlas atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            testDb,
-            new EngineEntityStore(),
-            new EngineResourceProvider(),
-            new EngineQuestProvider(),
-            createDefaultZoneActivator());
+    Atlas atlas = TestEngineContext.getTestAtlas();
     int mapCount = 100;
 
     PerformanceHarness.MeasuredResult<Integer> result =
@@ -438,7 +427,7 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasMapSwitchingPerformance() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "switch-perf-atlas");
+    Atlas atlas = TestEngineContext.getTestAtlas();
 
     // Create and cache 50 maps
     List<World> worlds = new ArrayList<>();
@@ -474,7 +463,7 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasZoneAccessPerformance() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "zone-access-atlas");
+    Atlas atlas = TestEngineContext.getTestAtlas();
 
     World world = new World("Zone Access World", 4000);
     atlas.setMap(world);
@@ -515,7 +504,7 @@ class MapPerformanceTest {
 
   @Test
   void testFullMapLoadAndQueryPerformance() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "full-perf-atlas");
+    Atlas atlas = TestEngineContext.getTestAtlas();
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(

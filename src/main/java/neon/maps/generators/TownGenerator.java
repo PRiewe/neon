@@ -20,6 +20,7 @@ package neon.maps.generators;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import neon.core.UIEngineContext;
 import neon.entities.Door;
 import neon.entities.EntityFactory;
 import neon.maps.Region;
@@ -38,18 +39,20 @@ public class TownGenerator {
   private final Zone zone;
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
+  private final UIEngineContext uiEngineContext;
+  private final EntityFactory entityFactory;
 
   /**
    * Creates a town generator with dependency injection.
    *
    * @param zone the zone to generate
-   * @param entityStore the entity store service
-   * @param resourceProvider the resource provider service
    */
-  public TownGenerator(Zone zone, EntityStore entityStore, ResourceProvider resourceProvider) {
+  public TownGenerator(Zone zone, UIEngineContext uiEngineContext) {
     this.zone = zone;
-    this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
+    this.entityStore = uiEngineContext.getStore();
+    this.resourceProvider = uiEngineContext.getResources();
+    this.uiEngineContext = uiEngineContext;
+    this.entityFactory = new EntityFactory(uiEngineContext);
   }
 
   /**
@@ -117,7 +120,7 @@ public class TownGenerator {
         };
 
     long uid = entityStore.createNewEntityUID();
-    Door door = (Door) EntityFactory.getItem(theme.door, x, y, uid);
+    Door door = (Door) entityFactory.getItem(theme.door, x, y, uid);
     entityStore.addEntity(door);
     door.lock.close();
     zone.addItem(door);

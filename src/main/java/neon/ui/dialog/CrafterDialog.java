@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.core.event.StoreEvent;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
@@ -46,12 +46,14 @@ public class CrafterDialog implements KeyListener {
   private String coin;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
+  private final EntityFactory entityFactory;
 
   public CrafterDialog(
-      UserInterface ui, String coin, MBassador<EventObject> bus, GameContext context) {
+      UserInterface ui, String coin, MBassador<EventObject> bus, UIEngineContext context) {
     this.ui = ui;
     this.context = context;
+    this.entityFactory = new EntityFactory(context);
     JFrame parent = ui.getWindow();
     this.coin = coin;
     this.bus = bus;
@@ -124,7 +126,7 @@ public class CrafterDialog implements KeyListener {
             for (long uid : removed) { // remove used items
               bus.publishAsync(new StoreEvent(this, uid));
             }
-            Item item = EntityFactory.getItem(craft.name, context.getStore().createNewEntityUID());
+            Item item = entityFactory.getItem(craft.name, context.getStore().createNewEntityUID());
             bus.publishAsync(new StoreEvent(this, item));
             player.getInventoryComponent().addItem(item.getUID());
             player.getInventoryComponent().addMoney(-craft.cost);

@@ -28,7 +28,7 @@ import java.net.URISyntaxException;
 import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.resources.CClient;
 import neon.ui.UserInterface;
 import neon.ui.dialog.LoadGameDialog;
@@ -42,14 +42,14 @@ public class MainMenuState extends State {
   private JPanel main;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
   public MainMenuState(
       State parent,
       MBassador<EventObject> bus,
       UserInterface ui,
       String version,
-      GameContext context) {
+      UIEngineContext context) {
     super(parent, "main menu");
     this.bus = bus;
     this.ui = ui;

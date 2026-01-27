@@ -18,26 +18,27 @@
 
 package neon.ai;
 
-import neon.core.Engine;
+import neon.core.UIEngineContext;
 import neon.entities.Creature;
 import neon.entities.components.HealthComponent;
 
 public class BasicAI extends AI {
-  public BasicAI(Creature creature, byte aggression, byte confidence) {
-    super(creature, aggression, confidence);
+  public BasicAI(
+      Creature creature, byte aggression, byte confidence, UIEngineContext uiEngineContext) {
+    super(creature, aggression, confidence, uiEngineContext);
   }
 
   public void act() {
     // TODO: not only pay attention to player, but also to other creatures in sight
-    if (isHostile() && sees(Engine.getPlayer())) {
+    if (isHostile() && sees(uiEngineContext.getPlayer())) {
       HealthComponent health = creature.getHealthComponent();
       if (100 * health.getHealth() / health.getBaseHealth() < confidence) {
         // 80% chance to just flee, 20% chance to heal; if no heal spell, flee anyway
         if (Math.random() > 0.2 || !(cure() || heal())) {
-          flee(Engine.getPlayer());
+          flee(uiEngineContext.getPlayer());
         }
       } else {
-        hunt(Engine.getPlayer());
+        hunt(uiEngineContext.getPlayer());
       }
     } else {
       wander();

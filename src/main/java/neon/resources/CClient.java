@@ -22,7 +22,7 @@ import java.awt.event.KeyEvent;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -83,7 +83,7 @@ public class CClient extends Resource {
     // language
     Properties defaults = new Properties(); // load locale.en as default
     try (FileInputStream stream = new FileInputStream("data/locale/locale.en");
-        InputStreamReader reader = new InputStreamReader(stream, Charset.forName("UTF-8"))) {
+        InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
       defaults.load(reader);
     } catch (IOException e) {
       e.printStackTrace();
@@ -92,7 +92,7 @@ public class CClient extends Resource {
     String lang = root.getChild("lang").getText();
     strings = new Properties(defaults); // initialize locale with 'en' defaults
     try (FileInputStream stream = new FileInputStream("data/locale/locale." + lang);
-        InputStreamReader reader = new InputStreamReader(stream, Charset.forName("UTF-8"))) {
+        InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
       strings.load(reader);
     } catch (IOException e) {
       e.printStackTrace();

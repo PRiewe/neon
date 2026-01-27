@@ -19,7 +19,9 @@
 package neon.core.handlers;
 
 import lombok.extern.slf4j.Slf4j;
-import neon.core.Engine;
+import neon.core.GameServices;
+import neon.core.GameStore;
+import neon.core.ScriptEngine;
 import neon.core.event.DeathEvent;
 import neon.entities.Creature;
 import neon.entities.components.ScriptComponent;
@@ -27,7 +29,6 @@ import neon.resources.RScript;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
-import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
 /**
@@ -36,7 +37,13 @@ import org.graalvm.polyglot.Value;
 @Listener(references = References.Strong) // strong, om gc te vermijden
 @Slf4j
 public class DeathHandler {
-  public DeathHandler() {}
+  private final GameStore gameStore;
+  private final GameServices gameServices;
+
+  public DeathHandler(GameStore gameStore, GameServices gameServices) {
+    this.gameStore = gameStore;
+    this.gameServices = gameServices;
+  }
 
   @Handler
   public void handle(DeathEvent de) {
@@ -50,11 +57,11 @@ public class DeathHandler {
     ScriptComponent sc = creature.getScriptComponent();
 
     for (String s : sc.getScripts()) {
-      RScript rs = (RScript) Engine.getResources().getResource(s, "script");
-      Context se = Engine.getScriptEngine();
+      RScript rs = (RScript) gameStore.getResourceManager().getResource(s, "script");
+      ScriptEngine se = gameServices.scriptEngine();
 
-      se.eval("js", rs.script);
-      Value processFunction = se.getBindings("js").getMember("onDeath");
+      se.execute(rs.script);
+      Value processFunction = se.getBindings().getMember("onDeath");
       processFunction.execute("0");
     }
   }

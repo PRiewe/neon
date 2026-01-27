@@ -19,14 +19,10 @@
 package neon.core;
 
 import java.util.EventObject;
-import neon.entities.Player;
-import neon.entities.UIDStore;
 import neon.maps.Atlas;
 import neon.narrative.QuestTracker;
-import neon.resources.ResourceManager;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
-import org.graalvm.polyglot.Context;
 
 /**
  * Interface providing access to game services and state. This interface abstracts away the static
@@ -35,76 +31,18 @@ import org.graalvm.polyglot.Context;
  *
  * @author mdriesen
  */
-public interface GameContext {
+public interface UIEngineContext extends UIStorage {
 
-  // ========== Game State Accessors ==========
-
-  /**
-   * Returns the player entity.
-   *
-   * @return the player, or null if no game is active
-   */
-  Player getPlayer();
-
-  /**
-   * Returns the atlas (map/world manager).
-   *
-   * @return the atlas
-   */
   Atlas getAtlas();
 
-  /**
-   * Returns the entity store.
-   *
-   * @return the UID store containing all game entities
-   */
-  UIDStore getStore();
-
-  /**
-   * Returns the game timer.
-   *
-   * @return the timer
-   */
   Timer getTimer();
 
-  // ========== System Accessors ==========
-
-  /**
-   * Returns the resource manager.
-   *
-   * @return the resource manager
-   */
-  ResourceManager getResources();
-
-  /**
-   * Returns the quest tracker.
-   *
-   * @return the quest tracker
-   */
   QuestTracker getQuestTracker();
-
-  /**
-   * Returns the physics engine.
-   *
-   * @return the physics system
-   */
-  PhysicsSystem getPhysicsEngine();
-
-  /**
-   * Returns the script engine (GraalVM Polyglot context).
-   *
-   * @return the script engine context
-   */
-  Context getScriptEngine();
 
   // ========== Actions ==========
 
-  /**
-   * Executes a JavaScript script.
-   *
-   * @param script the script to execute
-   * @return the result of the script execution
-   */
+  ScriptEngine getScriptEngine();
+
   Object execute(String script);
 
   /** Quits the application. */
@@ -116,4 +54,6 @@ public interface GameContext {
    * @param event the event to post
    */
   void post(EventObject event);
+
+  PhysicsSystem getPhysicsEngine();
 }

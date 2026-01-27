@@ -1,13 +1,9 @@
 package neon.maps;
 
-import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
 import java.util.Collection;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
 import org.h2.mvstore.MVStore;
@@ -29,14 +25,18 @@ class AtlasIntegrationTest {
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    ZoneActivator zoneActivator =
+        new ZoneActivator(
+            TestEngineContext.getTestUiEngineContext().getPhysicsEngine(),
+            TestEngineContext.getTestUiEngineContext());
     atlas =
         new Atlas(
-            TestEngineContext.getStubFileSystem(),
+            TestEngineContext.getGameStore(),
             testDb,
-            new EngineEntityStore(),
-            new EngineResourceProvider(),
-            new EngineQuestProvider(),
-            createDefaultZoneActivator());
+            TestEngineContext.getTestQuestTracker(),
+            zoneActivator,
+            new MapLoader(TestEngineContext.getTestUiEngineContext()),
+            TestEngineContext.getTestUiEngineContext());
   }
 
   @AfterEach

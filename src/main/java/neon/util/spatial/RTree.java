@@ -24,6 +24,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import neon.util.mapstorage.MapStore;
 import org.h2.mvstore.MVStore;
 import org.jetbrains.annotations.NotNull;
 

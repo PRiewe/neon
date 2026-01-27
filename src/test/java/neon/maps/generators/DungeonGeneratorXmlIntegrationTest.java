@@ -56,6 +56,19 @@ class DungeonGeneratorXmlIntegrationTest {
   private static Map<String, RZoneTheme> zoneThemes;
 
   // ==================== Setup ====================
+  MVStore testDb;
+
+  @BeforeEach
+  void setUp() throws Exception {
+    testDb = MapDbTestHelper.createInMemoryDB();
+    TestEngineContext.initialize(testDb);
+  }
+
+  @AfterEach
+  void tearDown() {
+    TestEngineContext.reset();
+    MapDbTestHelper.cleanup(testDb);
+  }
 
   @BeforeAll
   static void loadThemes() throws Exception {
@@ -134,10 +147,10 @@ class DungeonGeneratorXmlIntegrationTest {
 
   // ==================== Helper Methods ====================
 
-  private DungeonGenerator createGenerator(ZoneThemeScenario scenario) {
+  private DungeonTileGenerator createGenerator(ZoneThemeScenario scenario) {
     MapUtils mapUtils = MapUtils.withSeed(scenario.seed());
     Dice dice = Dice.withSeed(scenario.seed());
-    return new DungeonGenerator(scenario.theme(), null, null, null, mapUtils, dice);
+    return new DungeonTileGenerator(scenario.theme(), mapUtils, dice);
   }
 
   // ==================== Tests ====================
@@ -146,10 +159,10 @@ class DungeonGeneratorXmlIntegrationTest {
   @MethodSource("zoneThemeScenarios")
   void generateTiles_withXmlZoneTheme_generatesValidTerrain(ZoneThemeScenario scenario) {
     // Given
-    DungeonGenerator generator = createGenerator(scenario);
+    DungeonTileGenerator generator = createGenerator(scenario);
 
     // When
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: visualize (controlled by PRINT_DUNGEONS flag)
     if (PRINT_DUNGEONS) {
@@ -196,7 +209,7 @@ class DungeonGeneratorXmlIntegrationTest {
   @MethodSource("connectivityScenarios")
   void generateBaseTiles_withXmlZoneTheme_isConnected(ZoneThemeScenario scenario) {
     // Given
-    DungeonGenerator generator = createGenerator(scenario);
+    DungeonTileGenerator generator = createGenerator(scenario);
 
     // When: use larger size (40x40) for more reliable connectivity
     int size = Math.max(40, scenario.theme().min);
@@ -210,12 +223,12 @@ class DungeonGeneratorXmlIntegrationTest {
   @MethodSource("zoneThemeScenarios")
   void generateTiles_withXmlZoneTheme_isDeterministic(ZoneThemeScenario scenario) {
     // Given: two generators with same seed
-    DungeonGenerator gen1 = createGenerator(scenario);
-    DungeonGenerator gen2 = createGenerator(scenario);
+    DungeonTileGenerator gen1 = createGenerator(scenario);
+    DungeonTileGenerator gen2 = createGenerator(scenario);
 
     // When
-    String[][] terrain1 = gen1.generateTiles();
-    String[][] terrain2 = gen2.generateTiles();
+    String[][] terrain1 = gen1.generateTiles().terrain();
+    String[][] terrain2 = gen2.generateTiles().terrain();
 
     // Then
     assertTerrainMatch(terrain1, terrain2);
@@ -225,10 +238,10 @@ class DungeonGeneratorXmlIntegrationTest {
   @MethodSource("zoneThemeScenariosWithEntities")
   void generateTiles_withXmlZoneTheme_placesEntities(ZoneThemeScenario scenario) {
     // Given
-    DungeonGenerator generator = createGenerator(scenario);
+    DungeonTileGenerator generator = createGenerator(scenario);
 
     // When
-    String[][] terrain = generator.generateTiles();
+    String[][] terrain = generator.generateTiles().terrain();
 
     // Then: only assert for entities with sufficient counts to reliably place
     int creatureSum =
@@ -489,9 +502,8 @@ class DungeonGeneratorXmlIntegrationTest {
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
-              entityStore,
-              TestEngineContext.getTestResourceProvider(),
-              new NoQuestProvider(),
+              TestEngineContext.getTestQuestTracker(),
+              TestEngineContext.getTestUiEngineContext(),
               MapUtils.withSeed(scenario.seed()),
               Dice.withSeed(scenario.seed()));
 
@@ -527,9 +539,8 @@ class DungeonGeneratorXmlIntegrationTest {
       DungeonGenerator generator =
           new DungeonGenerator(
               targetZone,
-              entityStore,
-              TestEngineContext.getTestResourceProvider(),
-              new NoQuestProvider(),
+              TestEngineContext.getTestQuestTracker(),
+              TestEngineContext.getTestUiEngineContext(),
               MapUtils.withSeed(scenario.seed()),
               Dice.withSeed(scenario.seed()));
 

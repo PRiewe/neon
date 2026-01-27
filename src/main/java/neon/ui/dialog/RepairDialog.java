@@ -25,7 +25,7 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.entities.Armor;
 import neon.entities.Creature;
 import neon.entities.Item;
@@ -39,9 +39,9 @@ public class RepairDialog implements KeyListener {
   private JList<Item> items;
   private ArrayList<Item> listData;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
-  public RepairDialog(UserInterface ui, GameContext context) {
+  public RepairDialog(UserInterface ui, UIEngineContext context) {
     this.ui = ui;
     this.context = context;
     JFrame parent = ui.getWindow();

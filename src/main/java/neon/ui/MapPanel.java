@@ -21,7 +21,7 @@ package neon.ui;
 import java.awt.*;
 import java.util.*;
 import javax.swing.JComponent;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.maps.Region;
 import neon.maps.Zone;
 import neon.ui.graphics.ZComparator;
@@ -37,10 +37,10 @@ public class MapPanel extends JComponent {
   private float zoom;
   private boolean fill;
   private ZComparator comparator;
-  private final GameContext context;
+  private final UIEngineContext context;
 
   /** Initializes this <code>MapPanel</code>. */
-  public MapPanel(Zone zone, GameContext context) {
+  public MapPanel(Zone zone, UIEngineContext context) {
     this.context = context;
     setBackground(Color.black);
     this.zone = zone;

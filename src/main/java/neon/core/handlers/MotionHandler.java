@@ -21,9 +21,7 @@ package neon.core.handlers;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
-import javax.swing.SwingConstants;
-import neon.core.Engine;
-import neon.core.event.MessageEvent;
+import neon.core.UIEngineContext;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.Entity;
@@ -47,60 +45,12 @@ public class MotionHandler {
   public static final byte DOOR = 4;
   public static final byte NULL = 5;
   public static final byte HABITAT = 6;
+  public final UIEngineContext uiEngineContext;
+  public final MapLoader mapLoader;
 
-  /**
-   * Teleports a creature. Two results are possible:
-   *
-   * <ul>
-   *   <li>OK - creature was teleported
-   *   <li>DOOR - this portal is just a door and does not support teleporting
-   * </ul>
-   *
-   * @param creature the creature to teleport.
-   * @param door the portal that the creature used
-   * @return the result
-   */
-  public static byte teleport(Creature creature, Door door) {
-    if (door.portal.isPortal()) {
-      Zone previous = Engine.getAtlas().getCurrentZone(); // briefly buffer current zone
-      if (door.portal.getDestMap() != 0) {
-        // load map and have door refer back
-        Map map = Engine.getAtlas().getMap(door.portal.getDestMap());
-        Zone zone = map.getZone(door.portal.getDestZone());
-        for (long uid : zone.getItems(door.portal.getDestPos())) {
-          Entity i = Engine.getStore().getEntity(uid);
-          if (i instanceof Door) {
-            ((Door) i).portal.setDestMap(Engine.getAtlas().getCurrentMap());
-          }
-        }
-        Engine.getAtlas().setMap(map);
-        Engine.getScriptEngine().getBindings("js").putMember("map", map);
-        door.portal.setDestMap(Engine.getAtlas().getCurrentMap());
-      } else if (door.portal.getDestTheme() != null) {
-        Dungeon dungeon = MapLoader.loadDungeon(door.portal.getDestTheme());
-        Engine.getAtlas().setMap(dungeon);
-        door.portal.setDestMap(Engine.getAtlas().getCurrentMap());
-      }
-
-      Engine.getAtlas().enterZone(door, previous);
-
-      walk(creature, door.portal.getDestPos());
-      // check if there is a door at the destination, if so, unlock and open this door
-      Rectangle bounds = creature.getShapeComponent();
-      for (long uid : Engine.getAtlas().getCurrentZone().getItems(bounds)) {
-        Entity i = Engine.getStore().getEntity(uid);
-        if (i instanceof Door) {
-          ((Door) i).lock.open();
-        }
-      }
-
-      // if there is a sign on the door, show it now
-      if (door.hasSign()) {
-        Engine.post(new MessageEvent(door, door.toString(), 3, SwingConstants.BOTTOM));
-      }
-      return OK;
-    }
-    return DOOR;
+  public MotionHandler(UIEngineContext uiEngineContext) {
+    this.uiEngineContext = uiEngineContext;
+    this.mapLoader = new MapLoader(uiEngineContext);
   }
 
   /**
@@ -120,16 +70,16 @@ public class MotionHandler {
    * @param p the point the creature wants to move to
    * @return the result of the movement
    */
-  public static byte move(Creature actor, Point p) {
-    Region region = Engine.getAtlas().getCurrentZone().getRegion(p);
+  public byte move(Creature actor, Point p) {
+    Region region = uiEngineContext.getAtlas().getCurrentZone().getRegion(p);
     if (p == null || region == null) {
       return NULL;
     }
 
     // check if there is no closed door present
-    Collection<Long> items = Engine.getAtlas().getCurrentZone().getItems(p);
+    Collection<Long> items = uiEngineContext.getAtlas().getCurrentZone().getItems(p);
     for (long uid : items) {
-      Entity i = Engine.getStore().getEntity(uid);
+      Entity i = uiEngineContext.getStore().getEntity(uid);
       if (i instanceof Door) {
         if (((Door) i).lock.getState() != Lock.OPEN) {
           return DOOR;
@@ -147,16 +97,12 @@ public class MotionHandler {
       }
     }
 
-    switch (mov) {
-      case NONE:
-        return walk(actor, p);
-      case SWIM:
-        return swim(actor, p);
-      case CLIMB:
-        return climb(actor, p);
-      default:
-        return BLOCKED;
-    }
+    return switch (mov) {
+      case NONE -> walk(actor, p);
+      case SWIM -> swim(actor, p);
+      case CLIMB -> climb(actor, p);
+      default -> BLOCKED;
+    };
   }
 
   /**
@@ -167,11 +113,11 @@ public class MotionHandler {
    * @param y
    * @return the result of the movement
    */
-  public static byte move(Creature creature, int x, int y) {
+  public byte move(Creature creature, int x, int y) {
     return move(creature, new Point(x, y));
   }
 
-  private static byte swim(Creature swimmer, Point p) {
+  private byte swim(Creature swimmer, Point p) {
     if (swimmer.species.habitat == Habitat.WATER) {
       return OK;
     } else if (SkillHandler.check(swimmer, Skill.SWIMMING) > 20) {
@@ -202,7 +148,7 @@ public class MotionHandler {
     }
   }
 
-  private static byte walk(Creature walker, Point p) {
+  static byte walk(Creature walker, Point p) {
     Rectangle bounds = walker.getShapeComponent();
     if (walker.species.habitat == Habitat.WATER) {
       return HABITAT;

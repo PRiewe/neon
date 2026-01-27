@@ -33,10 +33,13 @@ import neon.resources.RCreature;
 import neon.resources.RWeapon.WeaponType;
 
 public class Player extends Hominid {
+  public static final Player PLACEHOLDER =
+      new Player(
+          new RCreature("test"), "TestPlayer", Gender.MALE, Specialisation.combat, "Warrior");
   private final int baseLevel;
-  private Journal journal = new Journal();
-  private Specialisation spec;
-  private String profession;
+  private final Journal journal = new Journal();
+  private final Specialisation spec;
+  private final String profession;
   private EnumMap<Skill, Float> mods;
   private String sign;
   private boolean sneak = false;

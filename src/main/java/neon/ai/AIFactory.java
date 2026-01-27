@@ -19,12 +19,20 @@
 package neon.ai;
 
 import java.awt.Point;
+import neon.core.UIEngineContext;
 import neon.entities.Creature;
 import neon.resources.RCreature;
 import neon.resources.RCreature.AIType;
 import neon.resources.RPerson;
 
 public class AIFactory {
+
+  private final UIEngineContext uiEngineContext;
+
+  public AIFactory(UIEngineContext uiEngineContext) {
+    this.uiEngineContext = uiEngineContext;
+  }
+
   /**
    * Loads the AI of an NPC.
    *
@@ -72,14 +80,18 @@ public class AIFactory {
 
   private AI getAI(AIType type, Creature creature, byte aggression, byte confidence, int range) {
     switch (type) {
-      case wander:
-        return new BasicAI(creature, aggression, confidence);
-      case guard:
-        return new GuardAI(creature, aggression, confidence, range);
-      case schedule:
-        return new ScheduleAI(creature, aggression, confidence, new Point[0]);
-      default:
-        return new GuardAI(creature, aggression, confidence, range);
+      case wander -> {
+        return new BasicAI(creature, aggression, confidence, uiEngineContext);
+      }
+      case guard -> {
+        return new GuardAI(creature, aggression, confidence, range, uiEngineContext);
+      }
+      case schedule -> {
+        return new ScheduleAI(creature, aggression, confidence, new Point[0], uiEngineContext);
+      }
+      default -> {
+        return new GuardAI(creature, aggression, confidence, range, uiEngineContext);
+      }
     }
   }
 }

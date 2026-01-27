@@ -23,7 +23,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.core.handlers.CombatUtils;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Player;
@@ -47,7 +47,7 @@ public class JournalState extends State implements FocusListener {
   private JLabel instructions;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
   // character sheet panel
   private JPanel stats, stuff, skills;
@@ -58,7 +58,7 @@ public class JournalState extends State implements FocusListener {
   private JList<RSpell> sList;
 
   public JournalState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;

@@ -27,7 +27,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.entities.Clothing;
 import neon.entities.Creature;
 import neon.entities.Item;
@@ -46,9 +46,9 @@ public class EnchantDialog implements KeyListener, ListSelectionListener {
   private JList<Effect> spellList;
   private DefaultListModel<Effect> spellModel;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
-  public EnchantDialog(UserInterface ui, GameContext context) {
+  public EnchantDialog(UserInterface ui, UIEngineContext context) {
     this.ui = ui;
     this.context = context;
     JFrame parent = ui.getWindow();

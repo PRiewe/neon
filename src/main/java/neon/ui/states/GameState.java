@@ -23,8 +23,8 @@ import java.io.InputStream;
 import java.util.EventObject;
 import java.util.Scanner;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.GameContext;
 import neon.core.ScriptInterface;
+import neon.core.UIEngineContext;
 import neon.core.event.*;
 import neon.core.handlers.TurnHandler;
 import neon.entities.Player;
@@ -47,10 +47,10 @@ public class GameState extends State implements KeyListener, CollisionListener {
   private CClient keys;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
   public GameState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
     super(parent, "game module");
     this.bus = bus;
     this.ui = ui;
@@ -60,8 +60,8 @@ public class GameState extends State implements KeyListener, CollisionListener {
     setVariable("panel", panel);
 
     // makes functions available for scripting:
-    context.getScriptEngine().getBindings("js").putMember("engine", new ScriptInterface(panel));
-    bus.subscribe(new TurnHandler(panel));
+    context.getScriptEngine().getBindings().putMember("engine", new ScriptInterface(panel));
+    bus.subscribe(new TurnHandler(panel, context));
   }
 
   @Override
@@ -121,7 +121,7 @@ public class GameState extends State implements KeyListener, CollisionListener {
         panel.toggleHUD();
         break;
       case KeyEvent.VK_F3:
-        ui.showConsole(context.getScriptEngine());
+        ui.showConsole(context.getScriptEngine().getContext());
         break;
       default:
         if (code == keys.map) {

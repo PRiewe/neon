@@ -25,7 +25,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MagicHandler;
 import neon.core.handlers.SkillHandler;
@@ -52,10 +52,10 @@ public class InventoryState extends State implements KeyListener, MouseListener 
   private DescriptionPanel description;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
 
   public InventoryState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
     super(parent, "inventory module");
     this.bus = bus;
     this.ui = ui;

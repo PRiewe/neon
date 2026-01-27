@@ -21,14 +21,22 @@ package neon.entities.serialization;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import neon.core.UIEngineContext;
 import neon.entities.Creature;
 import neon.entities.Entity;
 import neon.entities.Item;
 
 public class EntitySerializer {
   private static final long serialVersionUID = 4682346337753485512L;
-  private ItemSerializer itemSerializer = new ItemSerializer();
-  private CreatureSerializer creatureSerializer = new CreatureSerializer();
+  private final UIEngineContext uiEngineContext;
+  private ItemSerializer itemSerializer;
+  private CreatureSerializer creatureSerializer;
+
+  public EntitySerializer(UIEngineContext uiEngineContext) {
+    this.uiEngineContext = uiEngineContext;
+    itemSerializer = new ItemSerializer(uiEngineContext);
+    creatureSerializer = new CreatureSerializer(uiEngineContext);
+  }
 
   public Entity deserialize(DataInput input) throws IOException {
     switch (input.readUTF()) {

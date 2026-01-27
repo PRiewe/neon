@@ -23,7 +23,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.EventObject;
 import javax.swing.Popup;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.core.event.CombatEvent;
 import neon.core.handlers.MotionHandler;
 import neon.entities.Creature;
@@ -42,14 +42,16 @@ public class BumpState extends State implements KeyListener {
   private GamePanel panel;
   private MBassador<EventObject> bus;
   private UserInterface ui;
-  private final GameContext context;
+  private final UIEngineContext context;
+  private final MotionHandler motionHandler;
 
   public BumpState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;
     this.context = context;
+    this.motionHandler = new MotionHandler(context);
   }
 
   @Override
@@ -126,7 +128,7 @@ public class BumpState extends State implements KeyListener {
     Rectangle pBounds = player.getShapeComponent();
     Rectangle cBounds = creature.getShapeComponent();
 
-    if (MotionHandler.move(player, cBounds.x, cBounds.y) == MotionHandler.OK) {
+    if (motionHandler.move(player, cBounds.x, cBounds.y) == MotionHandler.OK) {
       cBounds.setLocation(pBounds.x, pBounds.y);
     }
   }

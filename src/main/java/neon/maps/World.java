@@ -45,6 +45,17 @@ public class World implements Map {
     this.uid = uid;
   }
 
+  /**
+   * Initializes this {@code World} with the given parameters.
+   *
+   * @param name the name of this map
+   * @param uid the uid of this map
+   */
+  public World(String name, int uid, ZoneFactory zoneFactory) {
+    zone = new Zone("world", uid, 0);
+    this.name = name;
+    this.uid = uid;
+  }
   public World() {}
 
   public Zone getZone(int i) {

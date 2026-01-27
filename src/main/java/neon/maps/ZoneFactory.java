@@ -19,6 +19,7 @@
 package neon.maps;
 
 import neon.resources.RZoneTheme;
+import neon.util.mapstorage.MapStore;
 import org.h2.mvstore.MVStore;
 
 /**

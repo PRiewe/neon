@@ -20,7 +20,7 @@ package neon.core;
 
 import java.io.IOException;
 import java.util.EventObject;
-import javax.script.*;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.event.*;
 import neon.core.handlers.CombatHandler;
@@ -52,41 +52,38 @@ public class Engine implements Runnable {
   // Singleton instance for backward compatibility during migration
   private static Engine instance;
 
+  @Getter private static GameStore gameStore;
+
+  @Getter private static GameServices gameServices;
   // GameContext provides instance-based access to all services
   // TODO: migrate all static accessors to use context, then remove static state
-  private static DefaultGameContext context;
+  private static DefaultUIEngineContext gameEngineState;
 
   // initialized by engine
-  private static Context engine;
-  private static org.graalvm.polyglot.Engine polyengine;
+  private static ScriptEngine scriptEngine;
+
   private static FileSystem files; // virtual file system
   private static PhysicsSystem physics; // the physics engine
   private static QuestTracker quests;
   private static MBassador<EventObject> bus; // event bus
   private static ResourceManager resources;
 
-  private TaskQueue queue;
+  @Getter private TaskQueue queue;
   private Configuration config;
 
   // set externally
   private static Game game;
 
-  /** Initializes the engine. */
-  public Engine(Port port) throws IOException {
-    instance = this;
-    context = new DefaultGameContext();
-
-    // set up engine components
-    bus = port.getBus();
+  public static ScriptEngine createScriptEngine() {
     // Create a custom Engine with desired options or settings
-    polyengine =
+    org.graalvm.polyglot.Engine polyengine =
         org.graalvm.polyglot.Engine.newBuilder("js")
             // Example: configure an engine-level option
             .option("engine.WarnInterpreterOnly", "false")
             .build();
 
     // Create a Context using that engine
-    engine =
+    Context engine =
         Context.newBuilder("js")
             .engine(polyengine)
             .allowHostAccess(HostAccess.ALL)
@@ -95,26 +92,32 @@ public class Engine implements Runnable {
             // Configure context-level options (e.g., host access)
             .allowAllAccess(true)
             .build();
+    return new ScriptEngine(engine);
+  }
 
+  /** Initializes the engine. */
+  public Engine(Port port) throws IOException {
+    instance = this;
+    // set up engine components
+    bus = port.getBus();
     files = new FileSystem();
+    scriptEngine = createScriptEngine();
     physics = new PhysicsSystem();
-    queue = new TaskQueue();
+    gameServices = new GameServices(physics, scriptEngine);
 
+    queue = new TaskQueue();
     // create a resourcemanager to keep track of all the resources
     resources = new ResourceManager();
+    gameStore = new GameStore(files, resources);
     // we use an IniBuilder to add all resources to the manager
     new IniBuilder("neon.ini.xml", files, queue).build(resources);
 
     // set up remaining engine components
-    quests = new QuestTracker();
     config = new Configuration(resources);
-
-    // Initialize the GameContext with all engine systems
-    context.setResources(resources);
-    context.setQuestTracker(quests);
-    context.setPhysicsEngine(physics);
-    context.setScriptEngine(engine);
-    context.setBus(bus);
+    gameEngineState = new DefaultUIEngineContext(new QuestTracker(gameStore, gameServices));
+    gameEngineState.setGameStore(gameStore);
+    gameEngineState.setGameServices(gameServices);
+    gameEngineState.setBus(bus);
   }
 
   /** This method is the run method of the gamethread. It sets up the event system. */
@@ -122,11 +125,11 @@ public class Engine implements Runnable {
     EventAdapter adapter = new EventAdapter(quests);
     bus.subscribe(queue);
     bus.subscribe(new CombatHandler());
-    bus.subscribe(new DeathHandler());
+    bus.subscribe(new DeathHandler(gameStore, gameServices));
     bus.subscribe(new InventoryHandler());
     bus.subscribe(adapter);
     bus.subscribe(quests);
-    bus.subscribe(new GameLoader(this, config));
+    bus.subscribe(new GameLoader(config, gameStore, gameServices, gameEngineState));
     bus.subscribe(new GameSaver(queue));
   }
 
@@ -147,17 +150,11 @@ public class Engine implements Runnable {
    *
    * @param script the script to execute
    * @return the result of the script
-   * @deprecated Use {@link GameContext#execute(String)} instead
+   * @deprecated Use {@link UIEngineContext#execute(String)} instead
    */
   @Deprecated
   public static Object execute(String script) {
-    try {
-
-      return engine.eval("js", script);
-    } catch (Exception e) {
-      System.err.println(e);
-      return null; // not very good
-    }
+    return scriptEngine.execute(script);
   }
 
   /*
@@ -165,27 +162,27 @@ public class Engine implements Runnable {
    */
   /**
    * @return the player
-   * @deprecated Use {@link GameContext#getPlayer()} instead
+   * @deprecated Use {@link UIEngineContext#getPlayer()} instead
    */
   @Deprecated
   public static Player getPlayer() {
-    if (game != null) {
-      return game.getPlayer();
+    if (gameStore != null) {
+      return gameStore.getPlayer();
     } else return null;
   }
 
   /**
    * @return the quest tracker
-   * @deprecated Use {@link GameContext#getQuestTracker()} instead
+   * @deprecated Use {@link UIEngineContext#getQuestTracker()} instead
    */
   @Deprecated
   public static QuestTracker getQuestTracker() {
-    return quests;
+    return gameEngineState.getQuestTracker();
   }
 
   /**
    * @return the timer
-   * @deprecated Use {@link GameContext#getTimer()} instead
+   * @deprecated Use {@link UIEngineContext#getTimer()} instead
    */
   @Deprecated
   public static Timer getTimer() {
@@ -195,58 +192,55 @@ public class Engine implements Runnable {
   /**
    * @return the virtual filesystem of the engine
    */
+  @Deprecated
   public static FileSystem getFileSystem() {
     // Note: FileSystem is not part of GameContext as it's an engine-internal system
-    return files;
+    return gameStore.getFileSystem();
   }
 
   /**
    * @return the physics engine
-   * @deprecated Use {@link GameContext#getPhysicsEngine()} instead
+   * @deprecated Use {@link UIEngineContext#getPhysicsEngine()} instead
    */
   @Deprecated
   public static PhysicsSystem getPhysicsEngine() {
-    return physics;
+    return gameServices.physicsEngine();
   }
 
   /**
    * @return the script engine
-   * @deprecated Use {@link GameContext#getScriptEngine()} instead
+   * @deprecated Use {@link UIEngineContext#getScriptEngine()} instead
    */
   @Deprecated
-  public static Context getScriptEngine() {
-    return engine;
+  public static ScriptEngine getScriptEngine() {
+    return scriptEngine;
   }
 
   /**
    * @return the entity store
-   * @deprecated Use {@link GameContext#getStore()} instead
+   * @deprecated Use {@link UIEngineContext#getStore()} instead
    */
   @Deprecated
   public static UIDStore getStore() {
-    return game.getStore();
+    return gameStore.getUidStore();
   }
 
   /**
    * @return the resource manager
-   * @deprecated Use {@link GameContext#getResources()} instead
+   * @deprecated Use {@link UIEngineContext#getResources()} instead
    */
   @Deprecated
   public static ResourceManager getResources() {
-    return resources;
+    return gameStore.getResourceManager();
   }
 
   /**
    * @return the atlas
-   * @deprecated Use {@link GameContext#getAtlas()} instead
+   * @deprecated Use {@link UIEngineContext#getAtlas()} instead
    */
   @Deprecated
   public static Atlas getAtlas() {
     return game.getAtlas();
-  }
-
-  public TaskQueue getQueue() {
-    return queue;
   }
 
   /**
@@ -255,41 +249,31 @@ public class Engine implements Runnable {
    *
    * @return the game context
    */
-  public GameContext getContext() {
-    return context;
-  }
-
-  /**
-   * Returns the static GameContext instance. This is a transitional method to allow gradual
-   * migration from static accessors.
-   *
-   * @return the game context
-   */
-  public static GameContext getStaticContext() {
-    return context;
+  public UIEngineContext getGameEngineState() {
+    return gameEngineState;
   }
 
   /** Starts a new game. */
   public void startGame(Game game) {
     System.out.printf("Engine.startGame() start game %s%n", game);
     Engine.game = game;
-    context.setGame(game);
+    gameEngineState.setGame(game);
 
     // set up missing systems
     bus.subscribe(new MagicHandler(queue, game));
 
     // register player
     Player player = game.getPlayer();
-    engine.getBindings("js").putMember("journal", player.getJournal());
-    engine.getBindings("js").putMember("player", player);
-    engine.getBindings("js").putMember("PC", player);
+    scriptEngine.getContext().getBindings("js").putMember("journal", player.getJournal());
+    scriptEngine.getContext().getBindings("js").putMember("player", player);
+    scriptEngine.getContext().getBindings("js").putMember("PC", player);
     System.out.println("Engine.startGame() exit");
   }
 
   /**
    * Quit the game.
    *
-   * @deprecated Use {@link GameContext#quit()} instead
+   * @deprecated Use {@link UIEngineContext#quit()} instead
    */
   @Deprecated
   public static void quit() {

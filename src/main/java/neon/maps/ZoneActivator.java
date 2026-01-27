@@ -18,8 +18,7 @@
 
 package neon.maps;
 
-import java.util.function.Supplier;
-import neon.entities.Player;
+import neon.core.UIStorage;
 import neon.maps.services.PhysicsManager;
 
 /**
@@ -30,17 +29,17 @@ import neon.maps.services.PhysicsManager;
  */
 public class ZoneActivator {
   private final PhysicsManager physicsManager;
-  private final Supplier<Player> player;
+  private final UIStorage gameStore;
 
   /**
    * Creates a new ZoneActivator with the given dependencies.
    *
    * @param physicsManager the physics system manager
-   * @param player the player entity
+   * @param gameStore contains the player entity
    */
-  public ZoneActivator(PhysicsManager physicsManager, Supplier<Player> player) {
+  public ZoneActivator(PhysicsManager physicsManager, UIStorage gameStore) {
     this.physicsManager = physicsManager;
-    this.player = player;
+    this.gameStore = gameStore;
   }
 
   /**
@@ -60,6 +59,6 @@ public class ZoneActivator {
     }
 
     // Re-register the player
-    physicsManager.register(player.get().getPhysicsComponent());
+    physicsManager.register(gameStore.getPlayer().getPhysicsComponent());
   }
 }

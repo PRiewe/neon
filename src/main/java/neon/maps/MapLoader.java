@@ -28,8 +28,6 @@ import neon.entities.Item;
 import neon.entities.UIDStore;
 import neon.entities.components.Enchantment;
 import neon.entities.components.Lock;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineResourceProvider;
 import neon.maps.services.EntityStore;
 import neon.maps.services.ResourceProvider;
 import neon.resources.RDungeonTheme;
@@ -38,7 +36,6 @@ import neon.resources.RRegionTheme;
 import neon.resources.RSpell;
 import neon.resources.RTerrain;
 import neon.resources.RZoneTheme;
-import neon.systems.files.FileSystem;
 import neon.systems.files.XMLTranslator;
 import org.jdom2.*;
 
@@ -53,51 +50,28 @@ public class MapLoader {
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
   private final MapUtils mapUtils;
-
+  private final UIEngineContext uiEngineContext;
+  private final EntityFactory entityFactory;
   /**
    * Creates a MapLoader with dependency injection.
    *
-   * @param entityStore the entity store service
-   * @param resourceProvider the resource provider service
+   * @param uiEngineContext
    */
-  public MapLoader(EntityStore entityStore, ResourceProvider resourceProvider) {
-    this(entityStore, resourceProvider, new MapUtils());
+  public MapLoader(UIEngineContext uiEngineContext) {
+    this(new MapUtils(), uiEngineContext);
   }
 
   /**
    * Creates a MapLoader with dependency injection and custom random source.
    *
-   * @param entityStore the entity store service
-   * @param resourceProvider the resource provider service
    * @param mapUtils the MapUtils instance for random operations
    */
-  public MapLoader(EntityStore entityStore, ResourceProvider resourceProvider, MapUtils mapUtils) {
-    this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
+  public MapLoader(MapUtils mapUtils, UIEngineContext uiEngineContext) {
+    this.entityStore = uiEngineContext.getStore();
+    this.resourceProvider = uiEngineContext.getResources();
     this.mapUtils = mapUtils;
-  }
-
-  /**
-   * Creates a MapLoader using Engine singletons (for backward compatibility).
-   *
-   * @return a new MapLoader instance
-   */
-  private static MapLoader createDefault() {
-    return new MapLoader(new EngineEntityStore(), new EngineResourceProvider());
-  }
-
-  /**
-   * Returns a map described in an xml file with the given name.
-   *
-   * @param path the pathname of a map file
-   * @param uid the unique identifier of this map
-   * @param files the file system
-   * @return the <code>Map</code> described by the map file
-   * @deprecated Use instance method {@link #load(String[], int, FileSystem)} instead
-   */
-  @Deprecated
-  public static Map loadMap(String[] path, int uid, FileSystem files) {
-    return createDefault().load(path, uid, files);
+    this.uiEngineContext = uiEngineContext;
+    this.entityFactory = new EntityFactory(uiEngineContext);
   }
 
   /**
@@ -105,11 +79,11 @@ public class MapLoader {
    *
    * @param path the pathname of a map file
    * @param uid the unique identifier of this map
-   * @param files the file system
    * @return the <code>Map</code> described by the map file
    */
-  public Map load(String[] path, int uid, FileSystem files) {
-    Document doc = files.getFile(new XMLTranslator(), path);
+  public Map loadMap(String[] path, int uid) {
+
+    Document doc = uiEngineContext.getFileSystem().getFile(new XMLTranslator(), path);
     Element root = doc.getRootElement();
     if (root.getName().equals("world")) {
       return loadWorld(root, uid);
@@ -121,20 +95,13 @@ public class MapLoader {
   /**
    * Loads a dungeon behind a themed door.
    *
-   * @param theme
-   * @return
-   */
-  /**
-   * Loads a dungeon with a theme (static wrapper for backward compatibility).
-   *
    * @param theme the theme ID
    * @return a new Dungeon
    * @deprecated Use instance method {@link #loadThemedDungeon(String, String, int)} instead
    */
-  @Deprecated
-  public static Dungeon loadDungeon(String theme) {
-    MapLoader loader = createDefault();
-    return loader.loadThemedDungeon(theme, theme, loader.entityStore.createNewMapUID());
+  public Dungeon loadDungeon(String theme) {
+
+    return this.loadThemedDungeon(theme, theme, this.entityStore.createNewMapUID());
   }
 
   private World loadWorld(Element root, int uid) {
@@ -213,7 +180,7 @@ public class MapLoader {
         int x = Integer.parseInt(c.getAttributeValue("x"));
         int y = Integer.parseInt(c.getAttributeValue("y"));
         long creatureUID = UIDStore.getObjectUID(uid, Integer.parseInt(c.getAttributeValue("uid")));
-        Creature creature = EntityFactory.getCreature(species, x, y, creatureUID);
+        Creature creature = entityFactory.getCreature(species, x, y, creatureUID);
         entityStore.addEntity(creature);
         map.getZone(l).addCreature(creature);
       }
@@ -230,7 +197,7 @@ public class MapLoader {
         } else if (i.getName().equals("door")) {
           item = loadDoor(i, id, x, y, itemUID, uid); // because doors are complicated too
         } else {
-          item = EntityFactory.getItem(id, x, y, itemUID);
+          item = entityFactory.getItem(id, x, y, itemUID);
         }
         map.getZone(l).addItem(item);
         entityStore.addEntity(item);
@@ -242,7 +209,7 @@ public class MapLoader {
    * this is going to get messy, with a whole if-then-else heap
    */
   private Door loadDoor(Element door, String id, int x, int y, long itemUID, int mapUID) {
-    Door d = (Door) EntityFactory.getItem(id, x, y, itemUID);
+    Door d = (Door) entityFactory.getItem(id, x, y, itemUID);
 
     // lock difficulty
     int lock = 0;
@@ -319,7 +286,7 @@ public class MapLoader {
 
   private Container loadContainer(
       Element container, String id, int x, int y, long itemUID, int mapUID) {
-    Container cont = (Container) EntityFactory.getItem(id, x, y, itemUID);
+    Container cont = (Container) entityFactory.getItem(id, x, y, itemUID);
 
     // lock difficulty
     if (container.getAttribute("lock") != null) {
@@ -352,12 +319,12 @@ public class MapLoader {
       for (Element e : container.getChildren("item")) {
         long contentUID =
             UIDStore.getObjectUID(mapUID, Integer.parseInt(e.getAttributeValue("uid")));
-        entityStore.addEntity(EntityFactory.getItem(e.getAttributeValue("id"), contentUID));
+        entityStore.addEntity(entityFactory.getItem(e.getAttributeValue("id"), contentUID));
         cont.addItem(contentUID);
       }
     } else { // otherwise default items
       for (String s : ((RItem.Container) cont.resource).contents) {
-        Item i = EntityFactory.getItem(s, entityStore.createNewEntityUID());
+        Item i = entityFactory.getItem(s, entityStore.createNewEntityUID());
         entityStore.addEntity(i);
         cont.addItem(i.getUID());
       }

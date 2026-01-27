@@ -19,6 +19,7 @@
 package neon.entities;
 
 import java.io.*;
+import neon.maps.services.EntityStore;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -28,7 +29,7 @@ import org.h2.mvstore.MVStore;
  *
  * @author mdriesen
  */
-public class UIDStore extends AbstractUIDStore implements Closeable {
+public class UIDStore extends AbstractUIDStore implements Closeable, EntityStore {
 
   // uid database
   private final MVStore uidDb;

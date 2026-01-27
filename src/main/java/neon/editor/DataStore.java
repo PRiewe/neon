@@ -24,11 +24,14 @@ import java.io.File;
 import java.util.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import neon.core.UIStorage;
 import neon.editor.resources.RFaction;
 import neon.editor.resources.RMap;
 import neon.editor.resources.RZoneFactory;
 import neon.entities.AbstractUIDStore;
 import neon.entities.MemoryUIDStore;
+import neon.entities.Player;
+import neon.maps.services.ResourceProvider;
 import neon.resources.*;
 import neon.resources.quest.RQuest;
 import neon.systems.files.FileSystem;
@@ -38,7 +41,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 
 @Slf4j
-public class DataStore {
+public class DataStore implements UIStorage {
   @Getter private final HashMap<String, RScript> scripts = new HashMap<String, RScript>();
   @Getter private final Multimap<String, String> events = ArrayListMultimap.create();
   private final HashMap<String, RMod> mods = new HashMap<String, RMod>();
@@ -274,5 +277,25 @@ public class DataStore {
     } catch (NullPointerException e) {
       log.error("loadThemes error. RMod: {}, path: {}", mod, path, e);
     }
+  }
+
+  @Override
+  public Player getPlayer() {
+    return null;
+  }
+
+  @Override
+  public ResourceProvider getResources() {
+    return resourceManager;
+  }
+
+  @Override
+  public AbstractUIDStore getStore() {
+    return uidStore;
+  }
+
+  @Override
+  public FileSystem getFileSystem() {
+    return files;
   }
 }

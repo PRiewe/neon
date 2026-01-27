@@ -24,7 +24,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.EventObject;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.core.event.TurnEvent;
@@ -45,12 +45,16 @@ public class MoveState extends State implements KeyListener {
   private GamePanel panel;
   private CClient keys;
   private MBassador<EventObject> bus;
-  private final GameContext context;
+  private final UIEngineContext context;
+  private final MotionHandler motionHandler;
+  private final TeleportHandler teleportHandler;
 
-  public MoveState(State parent, MBassador<EventObject> bus, GameContext context) {
+  public MoveState(State parent, MBassador<EventObject> bus, UIEngineContext context) {
     super(parent, "move module");
     this.bus = bus;
     this.context = context;
+    this.motionHandler = new MotionHandler(context);
+    this.teleportHandler = new TeleportHandler(context);
     keys = (CClient) context.getResources().getResource("client", "config");
   }
 
@@ -81,7 +85,7 @@ public class MoveState extends State implements KeyListener {
         bus.publishAsync(new TransitionEvent("bump", "creature", other));
       }
     } else { // no one in the way, so move
-      if (MotionHandler.move(player, p) == MotionHandler.DOOR) {
+      if (motionHandler.move(player, p) == MotionHandler.DOOR) {
         for (long uid : context.getAtlas().getCurrentZone().getItems(p)) {
           if (context.getStore().getEntity(uid) instanceof Door) {
             bus.publishAsync(
@@ -120,7 +124,7 @@ public class MoveState extends State implements KeyListener {
           bus.publishAsync(new TransitionEvent("container", "holder", entity));
         }
       } else if (entity instanceof Door) {
-        if (MotionHandler.teleport(player, (Door) entity) == MotionHandler.OK) {
+        if (teleportHandler.teleport(player, (Door) entity) == MotionHandler.OK) {
           bus.publishAsync(new TurnEvent(context.getTimer().addTick()));
         }
       } else if (entity instanceof Creature) {

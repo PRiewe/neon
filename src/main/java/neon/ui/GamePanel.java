@@ -28,7 +28,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.text.DefaultCaret;
 import lombok.Getter;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.core.handlers.CombatUtils;
 import neon.entities.Player;
 import neon.entities.components.HealthComponent;
@@ -54,14 +54,14 @@ public class GamePanel extends JComponent {
   private DefaultRenderable cursor;
   private TitledBorder sBorder, aBorder, cBorder;
   private JVectorPane drawing;
-  @Getter private final GameContext context;
+  @Getter private final UIEngineContext context;
 
   // components of the stats panel
   private JLabel intLabel, conLabel, dexLabel, strLabel, wisLabel, chaLabel;
   private JLabel healthLabel, magicLabel, AVLabel, DVLabel;
 
   /** Initializes this GamePanel. */
-  public GamePanel(GameContext context) {
+  public GamePanel(UIEngineContext context) {
     this.context = context;
     drawing = new JVectorPane();
     drawing.setFilter(new LightFilter());

@@ -31,7 +31,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
-import neon.core.GameContext;
+import neon.core.UIEngineContext;
 import neon.entities.Creature;
 import neon.entities.Player;
 import neon.entities.components.HealthComponent;
@@ -77,10 +77,10 @@ public class DialogState extends State implements KeyListener {
   private MBassador<EventObject> bus;
   private UserInterface ui;
   private Topic topic;
-  private final GameContext context;
+  private final UIEngineContext context;
 
   public DialogState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;
@@ -151,7 +151,7 @@ public class DialogState extends State implements KeyListener {
     }
     if (target != null) {
       left.setBorder(new TitledBorder(target.toString()));
-      context.getScriptEngine().getBindings("js").putMember("NPC", target);
+      context.getScriptEngine().getBindings().putMember("NPC", target);
       initDialog();
       initServices();
       ui.showPanel(panel);
