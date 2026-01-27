@@ -67,14 +67,12 @@ public class ItemSerializer {
       readEnchantment(input, item, uid);
     }
 
-    if (item instanceof Door) {
-      Door door = (Door) item;
+    if (item instanceof Door door) {
       door.setSign(input.readUTF());
       readPortal(input, door.portal);
       readLock(input, door.lock);
       readTrap(input, door.trap);
-    } else if (item instanceof Container) {
-      Container container = (Container) item;
+    } else if (item instanceof Container container) {
       readLock(input, container.lock);
       readTrap(input, container.trap);
       readContents(input, container);
@@ -103,14 +101,12 @@ public class ItemSerializer {
       output.writeBoolean(false);
     }
 
-    if (item instanceof Door) {
-      Door door = (Door) item;
+    if (item instanceof Door door) {
       output.writeUTF(door.toString());
       writePortal(output, door.portal);
       writeLock(output, door.lock);
       writeTrap(output, door.trap);
-    } else if (item instanceof Container) {
-      Container container = (Container) item;
+    } else if (item instanceof Container container) {
       writeLock(output, container.lock);
       writeTrap(output, container.trap);
       writeContents(output, container);

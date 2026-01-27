@@ -56,6 +56,7 @@ public class World implements Map {
     this.name = name;
     this.uid = uid;
   }
+
   public World() {}
 
   public Zone getZone(int i) {

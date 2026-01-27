@@ -21,8 +21,8 @@ package neon.narrative;
 import java.util.*;
 
 public class Journal {
-  private HashMap<String, Integer> quests;
-  private HashMap<String, String> subjects;
+  private final HashMap<String, Integer> quests;
+  private final HashMap<String, String> subjects;
 
   public Journal() {
     quests = new HashMap<String, Integer>();

@@ -49,8 +49,7 @@ public class SVGExporter {
       Collections.sort(regions, new ZComparator());
 
       for (Renderable i : regions) {
-        if (i instanceof IRegion) {
-          IRegion ri = (IRegion) i;
+        if (i instanceof IRegion ri) {
           Element region = new Element("rect", ns);
           region.setAttribute("x", Integer.toString(ri.x));
           region.setAttribute("y", Integer.toString(ri.y));

@@ -28,8 +28,8 @@ public class RMod extends Resource {
   public ArrayList<String> ccItems = new ArrayList<String>();
   public ArrayList<String> ccRaces = new ArrayList<String>();
   public ArrayList<String> ccSpells = new ArrayList<String>();
-  private HashMap<String, String> info = new HashMap<String, String>();
-  private ArrayList<String[]> maps = new ArrayList<String[]>();
+  private final HashMap<String, String> info = new HashMap<String, String>();
+  private final ArrayList<String[]> maps = new ArrayList<String[]>();
 
   public RMod(Element main, Element cc, String... path) {
     super(main.getAttributeValue("id"), path);

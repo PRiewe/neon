@@ -42,9 +42,9 @@ import neon.resources.RWeapon;
 
 @SuppressWarnings("serial")
 public class DescriptionPanel extends JPanel {
-  private JLabel label = new JLabel();
-  private JPanel properties = new JPanel();
-  private String coin;
+  private final JLabel label = new JLabel();
+  private final JPanel properties = new JPanel();
+  private final String coin;
 
   public DescriptionPanel(String coin) {
     this.coin = coin;
@@ -82,8 +82,7 @@ public class DescriptionPanel extends JPanel {
 
       } else if (entity instanceof Container) {
 
-      } else if (entity instanceof Item) {
-        Item item = (Item) entity;
+      } else if (entity instanceof Item item) {
         if (item.resource.cost > 0) {
           properties.add(new JLabel("  Price: " + item.resource.cost + " " + coin));
         }

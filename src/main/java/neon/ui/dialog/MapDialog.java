@@ -29,8 +29,8 @@ import neon.maps.Zone;
 import neon.ui.MapPanel;
 
 public class MapDialog implements KeyListener {
-  private JDialog frame;
-  private MapPanel map;
+  private final JDialog frame;
+  private final MapPanel map;
   private final UIEngineContext context;
 
   public MapDialog(JFrame parent, Zone zone, UIEngineContext context) {

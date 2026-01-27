@@ -27,8 +27,8 @@ import neon.entities.property.Slot;
 
 public class Inventory implements Iterable<Long>, Component {
   private final long uid;
-  private CopyOnWriteArrayList<Long> items;
-  private EnumMap<Slot, Long> equiped;
+  private final CopyOnWriteArrayList<Long> items;
+  private final EnumMap<Slot, Long> equiped;
   private int money = 0;
 
   public Inventory(long owner) {

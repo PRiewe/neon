@@ -31,10 +31,10 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 
 public class HelpWindow implements KeyListener {
-  private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-  private JDialog frame;
-  private JTextPane area;
-  private JScrollPane scroller;
+  private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+  private final JDialog frame;
+  private final JTextPane area;
+  private final JScrollPane scroller;
 
   public HelpWindow(JFrame parent) {
     frame = new JDialog(parent, "Help");

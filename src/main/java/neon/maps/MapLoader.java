@@ -52,6 +52,7 @@ public class MapLoader {
   private final MapUtils mapUtils;
   private final UIEngineContext uiEngineContext;
   private final EntityFactory entityFactory;
+
   /**
    * Creates a MapLoader with dependency injection.
    *

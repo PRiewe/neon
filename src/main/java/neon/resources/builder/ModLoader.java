@@ -34,9 +34,9 @@ import org.jdom2.*;
 @Slf4j
 public class ModLoader {
   private String path;
-  private TaskQueue queue;
-  private FileSystem files;
-  private ResourceManager resourceManager;
+  private final TaskQueue queue;
+  private final FileSystem files;
+  private final ResourceManager resourceManager;
 
   public ModLoader(String mod, TaskQueue queue, FileSystem files, ResourceManager resources) {
     this.queue = queue;

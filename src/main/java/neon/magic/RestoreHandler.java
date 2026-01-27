@@ -23,7 +23,7 @@ import neon.entities.components.HealthComponent;
 import neon.entities.property.Damage;
 
 public class RestoreHandler implements EffectHandler {
-  private Damage type;
+  private final Damage type;
 
   public RestoreHandler(Damage type) {
     this.type = type;

@@ -48,17 +48,27 @@ import neon.util.ColorFactory;
 @SuppressWarnings("serial")
 public class GamePanel extends JComponent {
   // components
-  private JTextArea text;
-  private JScrollPane scroller;
-  private JPanel stats;
+  private final JTextArea text;
+  private final JScrollPane scroller;
+  private final JPanel stats;
   private DefaultRenderable cursor;
-  private TitledBorder sBorder, aBorder, cBorder;
-  private JVectorPane drawing;
+  private final TitledBorder sBorder;
+  private final TitledBorder aBorder;
+  private final TitledBorder cBorder;
+  private final JVectorPane drawing;
   @Getter private final UIEngineContext context;
 
   // components of the stats panel
-  private JLabel intLabel, conLabel, dexLabel, strLabel, wisLabel, chaLabel;
-  private JLabel healthLabel, magicLabel, AVLabel, DVLabel;
+  private final JLabel intLabel;
+  private final JLabel conLabel;
+  private final JLabel dexLabel;
+  private final JLabel strLabel;
+  private final JLabel wisLabel;
+  private final JLabel chaLabel;
+  private final JLabel healthLabel;
+  private final JLabel magicLabel;
+  private final JLabel AVLabel;
+  private final JLabel DVLabel;
 
   /** Initializes this GamePanel. */
   public GamePanel(UIEngineContext context) {
@@ -377,7 +387,7 @@ public class GamePanel extends JComponent {
       g.drawImage(src, src.getMinX(), src.getMinY(), null);
 
       if (context.getAtlas().getCurrentMap() instanceof World) {
-        int hour = (context.getTimer().getTime() / (60 * 1) + 12) % 24;
+        int hour = (context.getTimer().getTime() / (60) + 12) % 24;
         g.setColor(new Color(0, 0, 0, (hour - 12) * (hour - 12) * 3 / 2));
         g.fill(area);
       } else {

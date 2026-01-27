@@ -77,7 +77,7 @@ public class ComplexGenerator {
     }
 
     // connect rooms: choose starting room, then take room and tunnel, etc.
-    Collections.shuffle(rooms, mapUtils.getRandomSource().getRandom()); // shuffle a bit first
+    Collections.shuffle(rooms, mapUtils.randomSource().getRandom()); // shuffle a bit first
     Area area = null;
     for (RoomGenerator.Room room : rooms) {
       if (area == null) {
@@ -105,7 +105,7 @@ public class ComplexGenerator {
   protected int[][] generateBSPDungeon(int width, int height, int rMin, int rMax) {
     ArrayList<Rectangle> rooms =
         blocksGenerator.createBSPRectangles(width - 1, height - 1, rMin, rMax);
-    Collections.shuffle(rooms, mapUtils.getRandomSource().getRandom());
+    Collections.shuffle(rooms, mapUtils.randomSource().getRandom());
     int[][] tiles = new int[width][height];
     Area area = new Area();
 
@@ -161,7 +161,7 @@ public class ComplexGenerator {
 
     // merge a few rooms into polygons
     boolean[] wasted = new boolean[rooms.size()];
-    while (mapUtils.getRandomSource().nextDouble() < 0.5) {
+    while (mapUtils.randomSource().nextDouble() < 0.5) {
       int index = mapUtils.random(0, wasted.length - 1);
       if (!wasted[index]) {
         wasted[index] = combine(rooms.get(index), rooms, tiles);
@@ -373,7 +373,7 @@ public class ComplexGenerator {
             && isFloor(tiles[x][y - 1])
             && isFloor(tiles[x + 1][y])
             && isFloor(tiles[x - 1][y])) {
-          if (mapUtils.getRandomSource().nextDouble()
+          if (mapUtils.randomSource().nextDouble()
               < 0.5) { // to not always pick the left or top door
             if (isRoomWall(tiles[x + 2][y])) {
               tiles[x + 1][y] = MapUtils.WALL_ROOM;
@@ -394,7 +394,6 @@ public class ComplexGenerator {
 
   private static void floodFill(int[][] fill, int x, int y, int target, int replacement) {
     if (fill[x][y] != target) {
-      return;
     } else {
       fill[x][y] = replacement;
       if (x > 0) {

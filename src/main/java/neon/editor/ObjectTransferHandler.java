@@ -32,9 +32,9 @@ import org.jdom2.Element;
 
 @SuppressWarnings("serial")
 public class ObjectTransferHandler extends TransferHandler {
-  private RZone zone;
-  private EditablePane pane;
-  private DataStore dataStore;
+  private final RZone zone;
+  private final EditablePane pane;
+  private final DataStore dataStore;
 
   public ObjectTransferHandler(DataStore dataStore, RZone zone, EditablePane pane) {
     this.zone = zone;
@@ -51,9 +51,8 @@ public class ObjectTransferHandler extends TransferHandler {
       String id = ts.getTransferable().getTransferData(DataFlavor.stringFlavor).toString();
       String type = "item";
 
-      if (Editor.resources.getResource(id) instanceof RItem) {
+      if (Editor.resources.getResource(id) instanceof RItem item) {
         System.out.println(id);
-        RItem item = (RItem) Editor.resources.getResource(id);
         if (item instanceof RItem.Door) {
           type = "door";
         } else if (item.type == Type.container) {

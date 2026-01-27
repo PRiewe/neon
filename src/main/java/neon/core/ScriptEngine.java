@@ -1,15 +1,9 @@
 package neon.core;
 
-import lombok.Getter;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
-public class ScriptEngine {
-  @Getter private final Context context;
-
-  public ScriptEngine(Context context) {
-    this.context = context;
-  }
+public record ScriptEngine(Context context) {
 
   public Object execute(String script) {
     try {

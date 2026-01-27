@@ -27,8 +27,8 @@ import neon.magic.Spell;
 import neon.util.fsm.Action;
 
 public class MagicTask implements Action {
-  private Spell spell;
-  private int stop;
+  private final Spell spell;
+  private final int stop;
 
   public MagicTask(Spell spell, int stop) {
     this.spell = spell;

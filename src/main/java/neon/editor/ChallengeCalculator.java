@@ -7,14 +7,14 @@ import javax.swing.*;
 import neon.util.Dice;
 
 public class ChallengeCalculator {
-  private JLabel uitkomst;
-  private JFrame window;
-  private JTextField hpField1 = new JTextField(10);
-  private JTextField hpField2 = new JTextField(10);
-  private JTextField spdField1 = new JTextField(10);
-  private JTextField spdField2 = new JTextField(10);
-  private JTextField avField1 = new JTextField(10);
-  private JTextField avField2 = new JTextField(10);
+  private final JLabel uitkomst;
+  private final JFrame window;
+  private final JTextField hpField1 = new JTextField(10);
+  private final JTextField hpField2 = new JTextField(10);
+  private final JTextField spdField1 = new JTextField(10);
+  private final JTextField spdField2 = new JTextField(10);
+  private final JTextField avField1 = new JTextField(10);
+  private final JTextField avField2 = new JTextField(10);
 
   public ChallengeCalculator() {
     window = new JFrame("Calculator");

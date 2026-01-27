@@ -41,16 +41,19 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
   private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
   private static final Color line = defaults.getColor("List.foreground");
 
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
   private Creature trader;
-  private JList<Item> sellList, buyList;
-  private JScrollPane sScroll, bScroll;
-  private JLabel info;
-  private JPanel panel;
-  private DescriptionPanel description;
-  private String big, small;
-  private UserInterface ui;
+  private final JList<Item> sellList;
+  private final JList<Item> buyList;
+  private final JScrollPane sScroll;
+  private final JScrollPane bScroll;
+  private final JLabel info;
+  private final JPanel panel;
+  private final DescriptionPanel description;
+  private final String big;
+  private final String small;
+  private final UserInterface ui;
   private final UIEngineContext context;
 
   /**

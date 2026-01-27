@@ -24,7 +24,7 @@ import neon.entities.property.Skill;
 
 @SuppressWarnings("serial")
 public class SkillEvent extends EventObject {
-  private boolean levelled;
+  private final boolean levelled;
   private Attribute stat;
 
   public SkillEvent(Skill skill, Attribute stat) {

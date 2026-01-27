@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class CGame extends Resource {
-  private ArrayList<String> playableRaces = new ArrayList<>();
-  private ArrayList<String> startingItems = new ArrayList<>();
-  private ArrayList<String> startingSpells = new ArrayList<>();
-  private Point startPosition = new Point(0, 0);
+  private final ArrayList<String> playableRaces = new ArrayList<>();
+  private final ArrayList<String> startingItems = new ArrayList<>();
+  private final ArrayList<String> startingSpells = new ArrayList<>();
+  private final Point startPosition = new Point(0, 0);
   private String[] startMap;
   private int startZone = 0; // default
 

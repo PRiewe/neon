@@ -25,5 +25,5 @@ public enum Attribute {
   INTELLIGENCE,
   WISDOM,
   CHARISMA,
-  NONE;
+  NONE
 }

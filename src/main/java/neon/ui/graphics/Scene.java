@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 public class Scene {
-  private HashMap<Integer, Layer> layers = new HashMap<Integer, Layer>();
+  private final HashMap<Integer, Layer> layers = new HashMap<Integer, Layer>();
 
   /**
    * @return all renderables in this Scene

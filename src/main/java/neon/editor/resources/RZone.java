@@ -49,7 +49,7 @@ public class RZone extends RData {
   public RMap map;
   public RZoneTheme theme;
   private Scene scene;
-  private List<String> outs = new ArrayList<>();
+  private final List<String> outs = new ArrayList<>();
 
   // zone loaded as element from file
   RZone(ResourceManager rm, Element properties, RMap map, String... path) {
@@ -122,7 +122,7 @@ public class RZone extends RData {
     try { // regions
       var regionList = zone.getChild("regions").getChildren();
       for (Element region : regionList) {
-        Instance r = new IRegion(rf.getDataStore(), region);
+        Instance r = new IRegion(rf.dataStore(), region);
         scene.addElement(r, r.getBounds(), r.z);
       }
     } catch (NullPointerException e) {

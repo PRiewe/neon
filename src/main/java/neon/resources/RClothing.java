@@ -28,7 +28,7 @@ public class RClothing extends RItem implements Serializable {
     LIGHT,
     MEDIUM,
     HEAVY,
-    NONE;
+    NONE
   }
 
   // general properties

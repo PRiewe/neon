@@ -37,9 +37,9 @@ public class RWeapon extends RItem implements Serializable {
     AXE_ONE("one-handed axe"),
     AXE_TWO("two-handed axe");
 
-    private String description;
+    private final String description;
 
-    private WeaponType(String description) {
+    WeaponType(String description) {
       this.description = description;
     }
 

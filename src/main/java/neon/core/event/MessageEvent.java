@@ -28,9 +28,9 @@ import javax.swing.SwingConstants;
  */
 @SuppressWarnings("serial")
 public class MessageEvent extends EventObject {
-  private String message;
-  private int time;
-  private int position;
+  private final String message;
+  private final int time;
+  private final int position;
 
   public MessageEvent(Object source, String message, int duration, int position) {
     super(source);

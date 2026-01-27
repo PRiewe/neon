@@ -29,8 +29,8 @@ import neon.entities.Item;
 public class EntitySerializer {
   private static final long serialVersionUID = 4682346337753485512L;
   private final UIEngineContext uiEngineContext;
-  private ItemSerializer itemSerializer;
-  private CreatureSerializer creatureSerializer;
+  private final ItemSerializer itemSerializer;
+  private final CreatureSerializer creatureSerializer;
 
   public EntitySerializer(UIEngineContext uiEngineContext) {
     this.uiEngineContext = uiEngineContext;

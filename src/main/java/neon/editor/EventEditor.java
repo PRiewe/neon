@@ -27,12 +27,12 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 
 public class EventEditor implements ListSelectionListener, ActionListener, MouseListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Multimap<String, String> events;
-  private JList<String> times;
-  private JList<String> list;
-  private DefaultListModel<String> model;
-  private DefaultListModel<String> stampModel;
+  private final JList<String> times;
+  private final JList<String> list;
+  private final DefaultListModel<String> model;
+  private final DefaultListModel<String> stampModel;
   private String[] scripts;
 
   public EventEditor(JFrame parent) {
@@ -89,7 +89,7 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
     // blijkbaar worden er twee events gefired bij selectie
     if (e.getValueIsAdjusting()) {
       stampModel.clear();
-      for (String s : events.get(list.getSelectedValue().toString())) {
+      for (String s : events.get(list.getSelectedValue())) {
         stampModel.addElement(s);
       }
     }
@@ -166,26 +166,25 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
         try {
           if (list.getSelectedIndex() >= 0) {
             int index = list.getSelectedIndex();
-            events.removeAll(list.getSelectedValue().toString());
+            events.removeAll(list.getSelectedValue());
             model.remove(index);
           }
         } catch (ArrayIndexOutOfBoundsException a) {
         }
       } else if (e.getActionCommand().equals("Add timestamp")) {
         String s =
-            (String)
-                JOptionPane.showInputDialog(
-                    frame, "Timestamp:", "Add timestamp", JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showInputDialog(
+                frame, "Timestamp:", "Add timestamp", JOptionPane.QUESTION_MESSAGE);
         if (s.matches("\\d*:?\\d*:?\\d*")) { // X:Y:Z
           stampModel.addElement(s);
-          events.put(list.getSelectedValue().toString(), s);
+          events.put(list.getSelectedValue(), s);
           times.setSelectedValue(s, true);
         }
       } else if (e.getActionCommand().equals("Remove timestamp")) {
         try {
           if (times.getSelectedIndex() >= 0) {
             int index = times.getSelectedIndex();
-            events.remove(list.getSelectedValue().toString(), times.getSelectedValue().toString());
+            events.remove(list.getSelectedValue(), times.getSelectedValue());
             stampModel.remove(index);
           }
         } catch (ArrayIndexOutOfBoundsException a) {

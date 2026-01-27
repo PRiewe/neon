@@ -22,7 +22,7 @@ import neon.entities.Creature;
 import neon.entities.property.Skill;
 
 public class DrainSkillHandler implements EffectHandler {
-  private Skill skill;
+  private final Skill skill;
 
   public DrainSkillHandler(Skill skill) {
     this.skill = skill;

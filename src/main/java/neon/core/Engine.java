@@ -68,8 +68,8 @@ public class Engine implements Runnable {
   private static MBassador<EventObject> bus; // event bus
   private static ResourceManager resources;
 
-  @Getter private TaskQueue queue;
-  private Configuration config;
+  @Getter private final TaskQueue queue;
+  private final Configuration config;
 
   // set externally
   private static Game game;
@@ -264,9 +264,9 @@ public class Engine implements Runnable {
 
     // register player
     Player player = game.getPlayer();
-    scriptEngine.getContext().getBindings("js").putMember("journal", player.getJournal());
-    scriptEngine.getContext().getBindings("js").putMember("player", player);
-    scriptEngine.getContext().getBindings("js").putMember("PC", player);
+    scriptEngine.context().getBindings("js").putMember("journal", player.getJournal());
+    scriptEngine.context().getBindings("js").putMember("player", player);
+    scriptEngine.context().getBindings("js").putMember("PC", player);
     System.out.println("Engine.startGame() exit");
   }
 

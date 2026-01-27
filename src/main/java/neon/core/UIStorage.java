@@ -2,7 +2,6 @@ package neon.core;
 
 import neon.entities.AbstractUIDStore;
 import neon.entities.Player;
-import neon.maps.ZoneFactory;
 import neon.maps.services.ResourceProvider;
 import neon.systems.files.FileSystem;
 
@@ -14,5 +13,4 @@ public interface UIStorage {
   AbstractUIDStore getStore();
 
   FileSystem getFileSystem();
-
 }

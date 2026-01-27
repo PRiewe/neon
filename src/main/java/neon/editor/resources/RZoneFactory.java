@@ -1,16 +1,10 @@
 package neon.editor.resources;
 
-import lombok.Getter;
 import neon.editor.DataStore;
 import neon.resources.RPerson;
 import org.jdom2.Element;
 
-public class RZoneFactory {
-  @Getter private final DataStore dataStore;
-
-  public RZoneFactory(DataStore dataStore) {
-    this.dataStore = dataStore;
-  }
+public record RZoneFactory(DataStore dataStore) {
 
   public Instance getInstance(Element e, RZone zone) {
     if (dataStore.getResourceManager().getResource(e.getAttributeValue("id")) instanceof RPerson) {

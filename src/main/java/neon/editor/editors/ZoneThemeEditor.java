@@ -35,12 +35,19 @@ import neon.resources.RZoneTheme;
 
 @SuppressWarnings("serial")
 public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
-  private JTextField floorField, wallsField, doorsField;
-  private JFormattedTextField minField, maxField;
-  private DefaultTableModel creatureModel, itemModel, featureModel;
-  private JTable creatureTable, itemTable, featureTable;
-  private RZoneTheme theme;
-  private JComboBox<String> typeBox;
+  private final JTextField floorField;
+  private final JTextField wallsField;
+  private final JTextField doorsField;
+  private final JFormattedTextField minField;
+  private final JFormattedTextField maxField;
+  private final DefaultTableModel creatureModel;
+  private final DefaultTableModel itemModel;
+  private final DefaultTableModel featureModel;
+  private final JTable creatureTable;
+  private final JTable itemTable;
+  private final JTable featureTable;
+  private final RZoneTheme theme;
+  private final JComboBox<String> typeBox;
 
   public ZoneThemeEditor(JFrame parent, RZoneTheme theme) {
     super(parent, "Zone theme: " + theme.id);
@@ -200,17 +207,17 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
     theme.setPath(Editor.getStore().getActive().get("id"));
 
     theme.creatures.clear();
-    for (Vector<?> data : (Vector<Vector>) creatureModel.getDataVector()) {
+    for (Vector<?> data : creatureModel.getDataVector()) {
       theme.creatures.put(data.get(0).toString(), (Integer) data.get(1));
     }
 
     theme.features.clear();
-    for (Vector<?> data : (Vector<Vector>) featureModel.getDataVector()) {
+    for (Vector<?> data : featureModel.getDataVector()) {
       theme.features.add(data.toArray());
     }
 
     theme.items.clear();
-    for (Vector<?> data : (Vector<Vector>) itemModel.getDataVector()) {
+    for (Vector<?> data : itemModel.getDataVector()) {
       theme.items.put(data.get(0).toString(), (Integer) data.get(1));
     }
   }
@@ -338,7 +345,7 @@ public class ZoneThemeEditor extends ObjectEditor implements MouseListener {
   }
 
   private static class ThemesTableModel extends DefaultTableModel {
-    private Class<?>[] classes;
+    private final Class<?>[] classes;
 
     public ThemesTableModel(String[] columns, Class<?>... classes) {
       super(columns, 0);

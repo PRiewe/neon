@@ -29,11 +29,15 @@ import neon.magic.Effect;
 import neon.resources.RSpell;
 
 public class PowerEditor extends ObjectEditor implements ActionListener {
-  private JTextField nameField;
-  private JFormattedTextField areaField, rangeField, sizeField, durationField, intervalField;
-  private JComboBox<Effect> effectBox;
-  private JTextArea scriptArea;
-  private RSpell.Power data;
+  private final JTextField nameField;
+  private final JFormattedTextField areaField;
+  private final JFormattedTextField rangeField;
+  private final JFormattedTextField sizeField;
+  private final JFormattedTextField durationField;
+  private final JFormattedTextField intervalField;
+  private final JComboBox<Effect> effectBox;
+  private final JTextArea scriptArea;
+  private final RSpell.Power data;
 
   public PowerEditor(JFrame parent, RSpell.Power data) {
     super(parent, "Power: " + data.id);

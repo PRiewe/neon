@@ -23,7 +23,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.event.LoadEvent;
 import neon.core.event.MagicTask;
@@ -62,8 +61,8 @@ import org.jdom2.input.SAXBuilder;
 @Slf4j
 public class GameLoader {
   private Engine engine;
-  private TaskQueue queue;
-  private Configuration config;
+  private final TaskQueue queue;
+  private final Configuration config;
   private final GameStore gameStore;
   private final GameServices gameServices;
   private final UIEngineContext uiEngineContext;
@@ -324,7 +323,7 @@ public class GameLoader {
         Integer.parseInt(playerData.getChild("stats").getAttributeValue("cha")) - stats.getCha());
 
     // skills
-    for (Attribute skill : (List<Attribute>) playerData.getChild("skills").getAttributes()) {
+    for (Attribute skill : playerData.getChild("skills").getAttributes()) {
       player.setSkill(Skill.valueOf(skill.getName()), Integer.parseInt(skill.getValue()));
     }
 

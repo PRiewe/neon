@@ -41,12 +41,12 @@ public class MapEditor {
   private static JToggleButton selectButton;
   @Setter private static UndoAction undoAction;
   private final DataStore dataStore;
-  private JScrollPane mapScrollPane;
+  private final JScrollPane mapScrollPane;
   @Getter private final JTree mapTree;
 
-  private JTabbedPane tabs;
-  private JCheckBox levelBox;
-  private JSpinner levelSpinner;
+  private final JTabbedPane tabs;
+  private final JCheckBox levelBox;
+  private final JSpinner levelSpinner;
 
   public MapEditor(JTabbedPane tabs, JPanel panel, DataStore dataStore) {
     this.dataStore = dataStore;
@@ -108,11 +108,7 @@ public class MapEditor {
   public static boolean isVisible(Instance r) {
     if (r instanceof IRegion && Editor.tShow.isSelected()) {
       return true;
-    } else if (r instanceof IObject && Editor.oShow.isSelected()) {
-      return true;
-    } else {
-      return false;
-    }
+    } else return r instanceof IObject && Editor.oShow.isSelected();
   }
 
   private static short createNewUID(DataStore store) {

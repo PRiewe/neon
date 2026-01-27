@@ -22,11 +22,11 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
 public interface Renderable {
-  public int getZ();
+  int getZ();
 
-  public void setZ(int z);
+  void setZ(int z);
 
-  public void paint(Graphics2D graphics, float zoom, boolean isSelected);
+  void paint(Graphics2D graphics, float zoom, boolean isSelected);
 
-  public Rectangle getBounds();
+  Rectangle getBounds();
 }

@@ -44,7 +44,7 @@ class AtlasTest {
 
   @Test
   void testSetMapAddsToCache() {
-    World world = new World("Test World", 100,TestEngineContext.getTestZoneFactory());
+    World world = new World("Test World", 100, TestEngineContext.getTestZoneFactory());
 
     atlas.setMap(world);
 
@@ -56,8 +56,8 @@ class AtlasTest {
 
   @Test
   void testGetCurrentMapReturnsSetMap() {
-    World world1 = new World("World 1", 101,TestEngineContext.getTestZoneFactory());
-    World world2 = new World("World 2", 102,TestEngineContext.getTestZoneFactory());
+    World world1 = new World("World 1", 101, TestEngineContext.getTestZoneFactory());
+    World world2 = new World("World 2", 102, TestEngineContext.getTestZoneFactory());
 
     atlas.setMap(world1);
     assertEquals(101, atlas.getCurrentMap().getUID());
@@ -68,7 +68,7 @@ class AtlasTest {
 
   @Test
   void testGetCurrentZoneReturnsCorrectZone() {
-    World world = new World("Test World", 103,TestEngineContext.getTestZoneFactory());
+    World world = new World("Test World", 103, TestEngineContext.getTestZoneFactory());
     atlas.setMap(world);
 
     Zone zone = atlas.getCurrentZone();
@@ -79,7 +79,7 @@ class AtlasTest {
 
   @Test
   void testGetCurrentZoneIndexDefaultsToZero() {
-    World world = new World("Test World", 104,TestEngineContext.getTestZoneFactory());
+    World world = new World("Test World", 104, TestEngineContext.getTestZoneFactory());
     atlas.setMap(world);
 
     assertEquals(0, atlas.getCurrentZoneIndex());
@@ -87,8 +87,8 @@ class AtlasTest {
 
   @Test
   void testMultipleMapsDoNotInterfere() {
-    World world1 = new World("World 1", 201,TestEngineContext.getTestZoneFactory());
-    World world2 = new World("World 2", 202,TestEngineContext.getTestZoneFactory());
+    World world1 = new World("World 1", 201, TestEngineContext.getTestZoneFactory());
+    World world2 = new World("World 2", 202, TestEngineContext.getTestZoneFactory());
 
     atlas.setMap(world1);
     atlas.setMap(world2);
@@ -106,7 +106,7 @@ class AtlasTest {
 
   @Test
   void testSetMapOnlyAddsToCacheOnce() {
-    World world = new World("Test World", 300,TestEngineContext.getTestZoneFactory());
+    World world = new World("Test World", 300, TestEngineContext.getTestZoneFactory());
 
     atlas.setMap(world);
     atlas.setMap(world); // Second call should not duplicate
@@ -119,7 +119,7 @@ class AtlasTest {
   void testCacheWithMultipleMaps() {
     // Add multiple maps to cache
     for (int i = 0; i < 10; i++) {
-      World world = new World("World " + i, 400 + i,TestEngineContext.getTestZoneFactory());
+      World world = new World("World " + i, 400 + i, TestEngineContext.getTestZoneFactory());
       atlas.setMap(world);
     }
 
@@ -127,7 +127,7 @@ class AtlasTest {
     assertEquals(409, atlas.getCurrentMap().getUID());
 
     // Switch between maps
-    World world5 = new World("World 5", 405,TestEngineContext.getTestZoneFactory());
+    World world5 = new World("World 5", 405, TestEngineContext.getTestZoneFactory());
     atlas.setMap(world5);
     assertEquals(405, atlas.getCurrentMap().getUID());
   }
@@ -135,7 +135,7 @@ class AtlasTest {
   @Test
   void testWorldWithMultipleZones() {
     // Worlds only have one zone, but we can test zone access
-    World world = new World("Single Zone World", 500,TestEngineContext.getTestZoneFactory());
+    World world = new World("Single Zone World", 500, TestEngineContext.getTestZoneFactory());
     atlas.setMap(world);
 
     Zone zone = atlas.getCurrentZone();
@@ -155,7 +155,8 @@ class AtlasTest {
         PerformanceHarness.measure(
             () -> {
               for (int i = 0; i < mapCount; i++) {
-                World world = new World("World " + i, 700 + i,TestEngineContext.getTestZoneFactory());
+                World world =
+                    new World("World " + i, 700 + i, TestEngineContext.getTestZoneFactory());
                 atlas.setMap(world);
               }
               return null;
@@ -174,7 +175,7 @@ class AtlasTest {
   void testCacheRetrievalPerformance() throws Exception {
     // Add maps to cache
     for (int i = 0; i < 20; i++) {
-      World world = new World("World " + i, 800 + i,TestEngineContext.getTestZoneFactory());
+      World world = new World("World " + i, 800 + i, TestEngineContext.getTestZoneFactory());
       atlas.setMap(world);
     }
 
@@ -194,7 +195,7 @@ class AtlasTest {
   void testMapDbPersistsAcrossAtlasInstances() throws IOException {
     // Create first atlas and add map
     Atlas atlas1 = TestEngineContext.getTestAtlas();
-    World world = new World("Persistent World", 900,TestEngineContext.getTestZoneFactory());
+    World world = new World("Persistent World", 900, TestEngineContext.getTestZoneFactory());
     atlas1.setMap(world);
 
     // Create second atlas with same cache name

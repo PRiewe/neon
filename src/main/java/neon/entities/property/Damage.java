@@ -28,5 +28,5 @@ public enum Damage {
   FROST,
   SHOCK,
   MANA,
-  HEALTH;
+  HEALTH
 }

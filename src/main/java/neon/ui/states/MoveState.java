@@ -43,8 +43,8 @@ import net.engio.mbassy.bus.MBassador;
 public class MoveState extends State implements KeyListener {
   private Player player;
   private GamePanel panel;
-  private CClient keys;
-  private MBassador<EventObject> bus;
+  private final CClient keys;
+  private final MBassador<EventObject> bus;
   private final UIEngineContext context;
   private final MotionHandler motionHandler;
   private final TeleportHandler teleportHandler;
@@ -112,8 +112,7 @@ public class MoveState extends State implements KeyListener {
 
     if (items.size() == 1) {
       Entity entity = context.getStore().getEntity(items.get(0));
-      if (entity instanceof Container) {
-        Container container = (Container) entity;
+      if (entity instanceof Container container) {
         if (container.lock.isLocked()) {
           if (container.lock.hasKey() && hasItem(player, container.lock.getKey())) {
             bus.publishAsync(new TransitionEvent("container", "holder", entity));

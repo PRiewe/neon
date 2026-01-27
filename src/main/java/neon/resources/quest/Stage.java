@@ -27,7 +27,7 @@ public class Stage {
   /** The resource ID of the quest this stage belongs to. */
   public final String questID;
 
-  private int index;
+  private final int index;
 
   /**
    * Initializes a quest stage.

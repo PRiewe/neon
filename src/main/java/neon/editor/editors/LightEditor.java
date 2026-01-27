@@ -30,10 +30,12 @@ import neon.resources.RItem;
 import neon.util.ColorFactory;
 
 public class LightEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JFormattedTextField costField, weightField, charField;
-  private JComboBox<String> colorBox;
-  private RItem data;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final RItem data;
 
   public LightEditor(JFrame parent, RItem data) {
     super(parent, "Light Editor: " + data.id);

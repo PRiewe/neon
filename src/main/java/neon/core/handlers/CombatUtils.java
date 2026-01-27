@@ -154,8 +154,7 @@ public class CombatUtils {
     float AR = creature.species.dv;
     for (Slot s : creature.getInventoryComponent().slots()) {
       Entity item = Engine.getStore().getEntity(creature.getInventoryComponent().get(s));
-      if (item instanceof Armor) {
-        Armor c = (Armor) item;
+      if (item instanceof Armor c) {
         int mod = 0;
         switch (((RClothing) c.resource).kind) {
           case LIGHT:

@@ -36,8 +36,8 @@ public class DoorState extends State implements KeyListener {
   private Door door;
   private GamePanel panel;
   private Popup popup;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final UIEngineContext context;
 
   public DoorState(

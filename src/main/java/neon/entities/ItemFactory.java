@@ -45,8 +45,7 @@ public class ItemFactory {
   public Item getItem(String id, int x, int y, long uid) {
     // item aanmaken
     RItem resource;
-    if (dataStore.getResources().getResource(id) instanceof LItem) {
-      LItem li = (LItem) dataStore.getResources().getResource(id);
+    if (dataStore.getResources().getResource(id) instanceof LItem li) {
       ArrayList<String> items = new ArrayList<String>(li.items.keySet());
       resource =
           (RItem) dataStore.getResources().getResource(items.get(Dice.roll(1, items.size(), -1)));
@@ -86,7 +85,7 @@ public class ItemFactory {
   private Item getItem(RItem resource, long uid) {
     // item aanmaken
     return switch (resource.type) {
-      case container -> new Container(uid, (RItem.Container) resource);
+      case container -> new Container(uid, resource);
       case food -> new Item.Food(uid, resource);
       case aid -> new Item.Aid(uid, resource);
       case book -> new Item.Book(uid, (RItem.Text) resource);

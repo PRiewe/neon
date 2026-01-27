@@ -58,7 +58,7 @@ public class CClient extends Resource {
   private int keys = NUMPAD;
 
   // language settings
-  private Properties strings;
+  private final Properties strings;
 
   // other settings
   private String bigCoin = "\u20AC"; // Euro symbol

@@ -105,9 +105,12 @@ public class LevelDialog implements ActionListener {
   }
 
   public static class Properties {
-    private boolean ok;
-    private int width, height;
-    private String terrain, name, theme;
+    private final boolean ok;
+    private final int width;
+    private final int height;
+    private final String terrain;
+    private final String name;
+    private final String theme;
 
     public Properties(
         boolean cancelled, int width, int height, String terrain, String name, String theme) {

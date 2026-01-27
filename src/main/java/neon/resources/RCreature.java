@@ -31,7 +31,7 @@ public class RCreature extends RData {
     small,
     medium,
     large,
-    huge;
+    huge
   }
 
   public enum Type {
@@ -42,13 +42,13 @@ public class RCreature extends RData {
     goblin,
     humanoid,
     monster,
-    player;
+    player
   }
 
   public enum AIType {
     wander,
     guard,
-    schedule;
+    schedule
   }
 
   public static final AIType defaultAiType = AIType.guard;

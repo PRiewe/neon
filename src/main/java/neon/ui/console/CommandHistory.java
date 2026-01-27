@@ -38,9 +38,9 @@ public class CommandHistory {
   }
 
   private int length;
-  private Node top; // the top command with an empty string
+  private final Node top; // the top command with an empty string
   private Node current;
-  private int capacity;
+  private final int capacity;
 
   /** Creates a CommandHistory with the default capacity of 64 */
   protected CommandHistory() {

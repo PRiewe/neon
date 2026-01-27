@@ -43,7 +43,7 @@ public class RMap extends RData {
   public HashMap<Integer, RZone> zones = new HashMap<Integer, RZone>();
   public RDungeonTheme theme;
   public short uid;
-  private boolean type;
+  private final boolean type;
   private ArrayList<Integer> uids;
   private final DataStore dataStore;
   private final List<String> outs = new ArrayList<>();

@@ -35,11 +35,11 @@ import neon.resources.RRecipe;
 import neon.ui.UserInterface;
 
 public class PotionDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<RRecipe> potions;
-  private String coin;
-  private UserInterface ui;
+  private final JList<RRecipe> potions;
+  private final String coin;
+  private final UserInterface ui;
   private final UIEngineContext context;
   private final EntityFactory entityFactory;
 
@@ -151,7 +151,7 @@ public class PotionDialog implements KeyListener {
   }
 
   private class PotionCellRenderer implements ListCellRenderer<RRecipe> {
-    private UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    private final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
     /**
      * Returns this renderer with the right properties (color, font, background color).

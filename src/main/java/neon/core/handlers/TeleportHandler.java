@@ -88,7 +88,7 @@ public class TeleportHandler {
 
       uiEngineContext.getAtlas().enterZone(door, previous);
 
-      motionHandler.walk(creature, door.portal.getDestPos());
+      MotionHandler.walk(creature, door.portal.getDestPos());
       // check if there is a door at the destination, if so, unlock and open this door
       Rectangle bounds = creature.getShapeComponent();
       for (long uid : uiEngineContext.getAtlas().getCurrentZone().getItems(bounds)) {

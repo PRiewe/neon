@@ -36,8 +36,7 @@ public class SpellFactory {
    * @return the spell with the given id
    */
   public static RSpell getSpell(String id) {
-    if (Engine.getResources().getResource(id, "magic") instanceof LSpell) {
-      LSpell ls = (LSpell) Engine.getResources().getResource(id, "magic");
+    if (Engine.getResources().getResource(id, "magic") instanceof LSpell ls) {
       return getSpell(ls.spells.keySet().toArray()[Dice.roll(1, ls.spells.size(), -1)].toString());
     } else {
       return (RSpell) Engine.getResources().getResource(id, "magic");

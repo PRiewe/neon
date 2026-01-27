@@ -25,27 +25,25 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.*;
-
 import lombok.Getter;
 import neon.core.Engine;
 import neon.entities.Creature;
 import neon.entities.Item;
 import neon.resources.RZoneTheme;
 import neon.ui.graphics.*;
-import neon.util.mapstorage.MapStore;
 import neon.util.spatial.*;
 import org.h2.mvstore.MVStore;
 
 public class Zone implements Externalizable {
   private static final ZComparator comparator = new ZComparator();
   private String name;
-  @Getter
-  private int map;
-  @Getter
-  private RZoneTheme theme;
+  @Getter private int map;
+  @Getter private RZoneTheme theme;
+
   @Getter
   // the index of this zone
   private int index;
+
   private HashMap<Point, Integer> lights = new HashMap<Point, Integer>();
   private SimpleIndex<Long> creatures = new SimpleIndex<Long>();
   private GridIndex<Long> items = new GridIndex<Long>();

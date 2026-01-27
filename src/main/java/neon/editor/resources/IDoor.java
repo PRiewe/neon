@@ -86,7 +86,7 @@ public class IDoor extends IObject {
   public enum State {
     open,
     closed,
-    locked;
+    locked
   }
 
   public boolean isPortal() {

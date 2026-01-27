@@ -81,13 +81,11 @@ public class EntityFactory {
   public Creature getCreature(String id, int x, int y, long uid) {
     Creature creature;
     Resource resource = uiEngineContext.getResources().getResource(id);
-    if (resource instanceof RPerson) {
-      RPerson rp = (RPerson) resource;
+    if (resource instanceof RPerson rp) {
       RCreature species = (RCreature) uiEngineContext.getResources().getResource(rp.species);
       creature = getPerson(id, x, y, uid, species);
       creature.brain = aiFactory.getAI(creature, rp);
-    } else if (resource instanceof LCreature) {
-      LCreature lc = (LCreature) resource;
+    } else if (resource instanceof LCreature lc) {
       ArrayList<String> creatures = new ArrayList<String>(lc.creatures.keySet());
       return getCreature(creatures.get(Dice.roll(1, creatures.size(), -1)), x, y, uid);
     } else {

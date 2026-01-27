@@ -33,10 +33,10 @@ import neon.ui.UserInterface;
 
 public class ChargeDialog implements KeyListener {
   private Player player;
-  private JList<Item> items;
-  private JDialog frame;
-  private JScrollPane scroller;
-  private UserInterface ui;
+  private final JList<Item> items;
+  private final JDialog frame;
+  private final JScrollPane scroller;
+  private final UserInterface ui;
   private final UIEngineContext context;
 
   public ChargeDialog(UserInterface ui, UIEngineContext context) {
@@ -103,7 +103,7 @@ public class ChargeDialog implements KeyListener {
         break;
       case KeyEvent.VK_ENTER:
         try {
-          Item item = (Item) items.getSelectedValue();
+          Item item = items.getSelectedValue();
           item.getMagicComponent().setModifier(0);
           ui.showMessage("Item charged.", 2);
         } catch (ArrayIndexOutOfBoundsException f) {

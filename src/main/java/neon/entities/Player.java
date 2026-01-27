@@ -40,7 +40,7 @@ public class Player extends Hominid {
   private final Journal journal = new Journal();
   private final Specialisation spec;
   private final String profession;
-  private EnumMap<Skill, Float> mods;
+  private final EnumMap<Skill, Float> mods;
   private String sign;
   private boolean sneak = false;
   private Creature mount;
@@ -69,11 +69,7 @@ public class Player extends Hominid {
    * allerlei actions die de player kan ondernemen en niet in een aparte handler staan
    */
   public boolean pickLock(Lock lock) {
-    if (SkillHandler.check(this, Skill.LOCKPICKING) > lock.getLockDC()) {
-      return true;
-    } else {
-      return false;
-    }
+    return SkillHandler.check(this, Skill.LOCKPICKING) > lock.getLockDC();
   }
 
   public void setSneaking(boolean sneaking) {
@@ -221,7 +217,7 @@ public class Player extends Hominid {
   public enum Specialisation {
     combat,
     magic,
-    stealth;
+    stealth
   }
 
   public void trainSkill(Skill skill, float mod) {

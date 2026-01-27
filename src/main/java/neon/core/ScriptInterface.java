@@ -19,17 +19,18 @@
 package neon.core;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import neon.entities.Entity;
 import neon.ui.GamePanel;
 
 public class ScriptInterface {
-  private GamePanel panel;
+  private final GamePanel panel;
 
   public ScriptInterface(GamePanel panel) {
     this.panel = panel;
     InputStream input = Engine.class.getResourceAsStream("scripts.js");
-    Scanner scanner = new Scanner(input, "UTF-8");
+    Scanner scanner = new Scanner(input, StandardCharsets.UTF_8);
     Engine.execute(scanner.useDelimiter("\\A").next());
     scanner.close();
   }
