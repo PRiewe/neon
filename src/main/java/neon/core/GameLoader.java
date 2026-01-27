@@ -65,7 +65,7 @@ public class GameLoader {
   private final Configuration config;
   private final GameStore gameStore;
   private final GameServices gameServices;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
   private final EntityFactory entityFactory;
   private final MapLoader mapLoader;
 
@@ -75,16 +75,16 @@ public class GameLoader {
       GameServices gameServices,
       TaskQueue taskQueue,
       Engine engine,
-      UIEngineContext uiEngineContext) {
+      GameContext gameContext) {
     this.gameStore = gameStore;
     this.gameServices = gameServices;
-    this.uiEngineContext = uiEngineContext;
-    this.entityFactory = new EntityFactory(uiEngineContext);
+    this.gameContext = gameContext;
+    this.entityFactory = new EntityFactory(gameContext);
     this.config = config;
     this.engine = engine;
     queue = taskQueue;
 
-    mapLoader = new MapLoader(uiEngineContext);
+    mapLoader = new MapLoader(gameContext);
   }
 
   @Handler
@@ -140,11 +140,11 @@ public class GameLoader {
           new Atlas(
               gameStore,
               gameStore.getStore().getCache(),
-              uiEngineContext.getQuestTracker(),
-              new ZoneActivator(uiEngineContext.getPhysicsEngine(), uiEngineContext),
-              new MapLoader(new MapUtils(), uiEngineContext),
-              uiEngineContext);
-      engine.startGame(new Game(gameStore, uiEngineContext, atlas));
+              gameContext.getQuestTracker(),
+              new ZoneActivator(gameContext.getPhysicsEngine(), gameContext),
+              new MapLoader(new MapUtils(), gameContext),
+              gameContext);
+      engine.startGame(new Game(gameStore, gameContext, atlas));
       setSign(player, sign);
       for (Skill skill : Skill.values()) {
         SkillHandler.checkFeat(skill, player);
@@ -170,10 +170,10 @@ public class GameLoader {
       Rectangle bounds = player.getShapeComponent();
       bounds.setLocation(game.getStartPosition().x, game.getStartPosition().y);
       Map map =
-          uiEngineContext.getAtlas().getMap(gameStore.getUidStore().getMapUID(game.getStartMap()));
+          gameContext.getAtlas().getMap(gameStore.getUidStore().getMapUID(game.getStartMap()));
       gameServices.scriptEngine().getBindings().putMember("map", map);
-      uiEngineContext.getAtlas().setMap(map);
-      uiEngineContext.getAtlas().setCurrentZone(game.getStartZone());
+      gameContext.getAtlas().setMap(map);
+      gameContext.getAtlas().setCurrentZone(game.getStartZone());
     } catch (RuntimeException re) {
       log.error("Error during initGame", re);
     }
@@ -219,7 +219,7 @@ public class GameLoader {
     initMaps();
 
     // set time correctly (using setTime(), otherwise listeners would be called)
-    uiEngineContext
+    gameContext
         .getTimer()
         .setTime(Integer.parseInt(root.getChild("timer").getAttributeValue("ticks")));
 
@@ -231,11 +231,11 @@ public class GameLoader {
 
     // quests
     Element journal = root.getChild("journal");
-    Player player = uiEngineContext.getPlayer();
+    Player player = gameContext.getPlayer();
     if (player != null) {
       for (Element e : journal.getChildren()) {
-        uiEngineContext.getPlayer().getJournal().addQuest(e.getAttributeValue("id"), e.getText());
-        uiEngineContext
+        gameContext.getPlayer().getJournal().addQuest(e.getAttributeValue("id"), e.getText());
+        gameContext
             .getPlayer()
             .getJournal()
             .updateQuest(e.getAttributeValue("id"), Integer.parseInt(e.getAttributeValue("stage")));
@@ -308,11 +308,11 @@ public class GameLoader {
         new Atlas(
             gameStore,
             gameStore.getStore().getCache(),
-            uiEngineContext.getQuestTracker(),
-            new ZoneActivator(uiEngineContext.getPhysicsEngine(), uiEngineContext),
-            new MapLoader(new MapUtils(), uiEngineContext),
-            uiEngineContext);
-    engine.startGame(new Game(gameStore, uiEngineContext, atlas));
+            gameContext.getQuestTracker(),
+            new ZoneActivator(gameContext.getPhysicsEngine(), gameContext),
+            new MapLoader(new MapUtils(), gameContext),
+            gameContext);
+    engine.startGame(new Game(gameStore, gameContext, atlas));
     Rectangle bounds = player.getShapeComponent();
     bounds.setLocation(
         Integer.parseInt(playerData.getAttributeValue("x")),
@@ -322,9 +322,9 @@ public class GameLoader {
 
     // start map
     int mapUID = Integer.parseInt(playerData.getAttributeValue("map"));
-    uiEngineContext.getAtlas().setMap(uiEngineContext.getAtlas().getMap(mapUID));
+    gameContext.getAtlas().setMap(gameContext.getAtlas().getMap(mapUID));
     int level = Integer.parseInt(playerData.getAttributeValue("l"));
-    uiEngineContext.getAtlas().setCurrentZone(level);
+    gameContext.getAtlas().setCurrentZone(level);
 
     // stats
     Stats stats = player.getStatsComponent();

@@ -22,8 +22,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentMap;
 import lombok.extern.slf4j.Slf4j;
+import neon.core.GameContext;
 import neon.core.GameStore;
-import neon.core.UIEngineContext;
 import neon.entities.Door;
 import neon.maps.generators.DungeonGenerator;
 import neon.maps.services.MapAtlas;
@@ -43,7 +43,7 @@ public class Atlas implements Closeable, MapAtlas {
   private final MapStore db;
   private final ConcurrentMap<Integer, Map> maps;
   private final MapLoader mapLoader;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
   private int currentZone = 0;
   private int currentMap = 0;
   private final QuestProvider questProvider;
@@ -63,7 +63,7 @@ public class Atlas implements Closeable, MapAtlas {
       QuestProvider questProvider,
       ZoneActivator zoneActivator,
       MapLoader mapLoader,
-      UIEngineContext uiEngineContext) {
+      GameContext gameContext) {
     this.gameStore = gameStore;
     this.questProvider = questProvider;
     this.zoneActivator = zoneActivator;
@@ -74,7 +74,7 @@ public class Atlas implements Closeable, MapAtlas {
     // db = MVStore.open(fileName);
     maps = atlasStore.openMap("maps");
     this.mapLoader = mapLoader;
-    this.uiEngineContext = uiEngineContext;
+    this.gameContext = gameContext;
   }
 
   private MapStore getMapStore(FileSystem files, String fileName) {
@@ -163,7 +163,7 @@ public class Atlas implements Closeable, MapAtlas {
     }
 
     if (getCurrentMap() instanceof Dungeon && getCurrentZone().isRandom()) {
-      new DungeonGenerator(getCurrentZone(), questProvider, uiEngineContext)
+      new DungeonGenerator(getCurrentZone(), questProvider, gameContext)
           .generate(door, previousZone, this);
     }
   }

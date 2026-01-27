@@ -32,7 +32,7 @@ import neon.systems.timing.Timer;
 import net.engio.mbassy.bus.MBassador;
 
 /**
- * Default implementation of {@link UIEngineContext} that holds references to all game services and
+ * Default implementation of {@link GameContext} that holds references to all game services and
  * state. This class is instantiated by the Engine and provides instance-based access to services
  * that were previously accessed via static methods.
  *
@@ -41,7 +41,7 @@ import net.engio.mbassy.bus.MBassador;
  *
  * @author mdriesen
  */
-public class DefaultUIEngineContext implements UIEngineContext {
+public class DefaultUIEngineContext implements GameContext {
 
   // Engine-level systems (set during engine initialization)
   @Setter private GameStore gameStore;

@@ -23,7 +23,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.EventObject;
 import javax.swing.Popup;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.handlers.MotionHandler;
 import neon.entities.Creature;
@@ -42,11 +42,11 @@ public class BumpState extends State implements KeyListener {
   private GamePanel panel;
   private final MBassador<EventObject> bus;
   private final UserInterface ui;
-  private final UIEngineContext context;
+  private final GameContext context;
   private final MotionHandler motionHandler;
 
   public BumpState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;

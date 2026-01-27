@@ -22,7 +22,7 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.JComponent;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.maps.Region;
 import neon.maps.Zone;
 import neon.ui.graphics.ZComparator;
@@ -39,10 +39,10 @@ public class MapPanel extends JComponent {
   private float zoom;
   private boolean fill;
   private final ZComparator comparator;
-  private final UIEngineContext context;
+  private final GameContext context;
 
   /** Initializes this <code>MapPanel</code>. */
-  public MapPanel(Zone zone, UIEngineContext context) {
+  public MapPanel(Zone zone, GameContext context) {
     this.context = context;
     setBackground(Color.black);
     this.zone = zone;

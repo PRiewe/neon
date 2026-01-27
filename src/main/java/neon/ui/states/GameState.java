@@ -24,8 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.EventObject;
 import java.util.Scanner;
 import lombok.extern.slf4j.Slf4j;
+import neon.core.GameContext;
 import neon.core.ScriptInterface;
-import neon.core.UIEngineContext;
 import neon.core.event.*;
 import neon.core.handlers.TurnHandler;
 import neon.entities.Player;
@@ -48,10 +48,10 @@ public class GameState extends State implements KeyListener, CollisionListener {
   private final CClient keys;
   private final MBassador<EventObject> bus;
   private final UserInterface ui;
-  private final UIEngineContext context;
+  private final GameContext context;
 
   public GameState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent, "game module");
     this.bus = bus;
     this.ui = ui;

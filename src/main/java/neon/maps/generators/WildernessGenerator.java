@@ -22,7 +22,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.util.Collection;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.entities.*;
 import neon.entities.property.Habitat;
 import neon.maps.Decomposer;
@@ -53,7 +53,7 @@ public class WildernessGenerator {
   private String[][] terrain; // general terrain info
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
   private final EntityFactory entityFactory;
   // random sources
   private final MapUtils mapUtils;
@@ -69,8 +69,8 @@ public class WildernessGenerator {
    *
    * @param zone the zone to generate
    */
-  public WildernessGenerator(Zone zone, UIEngineContext uiEngineContext) {
-    this(zone, uiEngineContext, new MapUtils(), new Dice());
+  public WildernessGenerator(Zone zone, GameContext gameContext) {
+    this(zone, gameContext, new MapUtils(), new Dice());
   }
 
   /**
@@ -80,19 +80,17 @@ public class WildernessGenerator {
    * @param mapUtils the MapUtils instance for random operations
    * @param dice the Dice instance for random operations
    */
-  public WildernessGenerator(
-      Zone zone, UIEngineContext uiEngineContext, MapUtils mapUtils, Dice dice) {
+  public WildernessGenerator(Zone zone, GameContext gameContext, MapUtils mapUtils, Dice dice) {
     this.zone = zone;
-    this.entityStore = uiEngineContext.getStore();
-    this.resourceProvider = uiEngineContext.getResources();
-    this.uiEngineContext = uiEngineContext;
+    this.entityStore = gameContext.getStore();
+    this.resourceProvider = gameContext.getResources();
+    this.gameContext = gameContext;
     this.mapUtils = mapUtils;
     this.dice = dice;
     this.blocksGenerator = new BlocksGenerator(mapUtils);
     this.caveGenerator = new CaveGenerator(dice);
-    this.entityFactory = new EntityFactory(uiEngineContext);
-    this.wildernessTerrainGenerator =
-        new WildernessTerrainGenerator(mapUtils, dice, uiEngineContext);
+    this.entityFactory = new EntityFactory(gameContext);
+    this.wildernessTerrainGenerator = new WildernessTerrainGenerator(mapUtils, dice, gameContext);
   }
 
   /**
@@ -100,8 +98,8 @@ public class WildernessGenerator {
    *
    * @param terrain the terrain array
    */
-  public WildernessGenerator(String[][] terrain, UIEngineContext uiEngineContext) {
-    this(terrain, uiEngineContext, new MapUtils(), new Dice());
+  public WildernessGenerator(String[][] terrain, GameContext gameContext) {
+    this(terrain, gameContext, new MapUtils(), new Dice());
   }
 
   /**
@@ -113,18 +111,17 @@ public class WildernessGenerator {
    * @param dice the Dice instance for random operations
    */
   public WildernessGenerator(
-      String[][] terrain, UIEngineContext uiEngineContext, MapUtils mapUtils, Dice dice) {
+      String[][] terrain, GameContext gameContext, MapUtils mapUtils, Dice dice) {
     this.terrain = terrain;
-    this.entityStore = uiEngineContext.getStore();
-    this.resourceProvider = uiEngineContext.getResources();
-    this.uiEngineContext = uiEngineContext;
-    this.entityFactory = new EntityFactory(uiEngineContext);
+    this.entityStore = gameContext.getStore();
+    this.resourceProvider = gameContext.getResources();
+    this.gameContext = gameContext;
+    this.entityFactory = new EntityFactory(gameContext);
     this.mapUtils = mapUtils;
     this.dice = dice;
     this.blocksGenerator = new BlocksGenerator(mapUtils);
     this.caveGenerator = new CaveGenerator(dice);
-    this.wildernessTerrainGenerator =
-        new WildernessTerrainGenerator(mapUtils, dice, uiEngineContext);
+    this.wildernessTerrainGenerator = new WildernessTerrainGenerator(mapUtils, dice, gameContext);
   }
 
   /** Generates a piece of wilderness using the supplied parameters. */

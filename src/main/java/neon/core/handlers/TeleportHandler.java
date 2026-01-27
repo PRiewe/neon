@@ -21,7 +21,7 @@ package neon.core.handlers;
 import java.awt.Rectangle;
 import javax.swing.SwingConstants;
 import neon.core.Engine;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.event.MessageEvent;
 import neon.entities.Creature;
 import neon.entities.Door;
@@ -42,14 +42,14 @@ public class TeleportHandler {
   public static final byte DOOR = 4;
   public static final byte NULL = 5;
   public static final byte HABITAT = 6;
-  public final UIEngineContext uiEngineContext;
+  public final GameContext gameContext;
   public final MapLoader mapLoader;
   private final MotionHandler motionHandler;
 
-  public TeleportHandler(UIEngineContext uiEngineContext) {
-    this.uiEngineContext = uiEngineContext;
-    this.mapLoader = new MapLoader(uiEngineContext);
-    this.motionHandler = new MotionHandler(uiEngineContext);
+  public TeleportHandler(GameContext gameContext) {
+    this.gameContext = gameContext;
+    this.mapLoader = new MapLoader(gameContext);
+    this.motionHandler = new MotionHandler(gameContext);
   }
 
   /**
@@ -66,33 +66,33 @@ public class TeleportHandler {
    */
   public byte teleport(Creature creature, Door door) {
     if (door.portal.isPortal()) {
-      Zone previous = uiEngineContext.getAtlas().getCurrentZone(); // briefly buffer current zone
+      Zone previous = gameContext.getAtlas().getCurrentZone(); // briefly buffer current zone
       if (door.portal.getDestMap() != 0) {
         // load map and have door refer back
-        Map map = uiEngineContext.getAtlas().getMap(door.portal.getDestMap());
+        Map map = gameContext.getAtlas().getMap(door.portal.getDestMap());
         Zone zone = map.getZone(door.portal.getDestZone());
         for (long uid : zone.getItems(door.portal.getDestPos())) {
-          Entity i = uiEngineContext.getStore().getEntity(uid);
+          Entity i = gameContext.getStore().getEntity(uid);
           if (i instanceof Door) {
-            ((Door) i).portal.setDestMap(uiEngineContext.getAtlas().getCurrentMap());
+            ((Door) i).portal.setDestMap(gameContext.getAtlas().getCurrentMap());
           }
         }
-        uiEngineContext.getAtlas().setMap(map);
-        uiEngineContext.getScriptEngine().getBindings().putMember("map", map);
-        door.portal.setDestMap(uiEngineContext.getAtlas().getCurrentMap());
+        gameContext.getAtlas().setMap(map);
+        gameContext.getScriptEngine().getBindings().putMember("map", map);
+        door.portal.setDestMap(gameContext.getAtlas().getCurrentMap());
       } else if (door.portal.getDestTheme() != null) {
         Dungeon dungeon = mapLoader.loadDungeon(door.portal.getDestTheme());
-        uiEngineContext.getAtlas().setMap(dungeon);
-        door.portal.setDestMap(uiEngineContext.getAtlas().getCurrentMap());
+        gameContext.getAtlas().setMap(dungeon);
+        door.portal.setDestMap(gameContext.getAtlas().getCurrentMap());
       }
 
-      uiEngineContext.getAtlas().enterZone(door, previous);
+      gameContext.getAtlas().enterZone(door, previous);
 
       MotionHandler.walk(creature, door.portal.getDestPos());
       // check if there is a door at the destination, if so, unlock and open this door
       Rectangle bounds = creature.getShapeComponent();
-      for (long uid : uiEngineContext.getAtlas().getCurrentZone().getItems(bounds)) {
-        Entity i = uiEngineContext.getStore().getEntity(uid);
+      for (long uid : gameContext.getAtlas().getCurrentZone().getItems(bounds)) {
+        Entity i = gameContext.getStore().getEntity(uid);
         if (i instanceof Door) {
           ((Door) i).lock.open();
         }

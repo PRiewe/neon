@@ -32,7 +32,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.entities.Creature;
 import neon.entities.Player;
 import neon.entities.components.HealthComponent;
@@ -81,10 +81,10 @@ public class DialogState extends State implements KeyListener {
   private final MBassador<EventObject> bus;
   private final UserInterface ui;
   private Topic topic;
-  private final UIEngineContext context;
+  private final GameContext context;
 
   public DialogState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;

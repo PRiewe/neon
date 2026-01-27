@@ -23,7 +23,7 @@ import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.Popup;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.core.handlers.*;
@@ -58,11 +58,10 @@ public class AimState extends State implements KeyListener {
   private final CClient keys;
   private final MBassador<EventObject> bus;
   private final UserInterface ui;
-  private final UIEngineContext context;
+  private final GameContext context;
 
   /** Constructs a new AimModule. */
-  public AimState(
-      State state, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
+  public AimState(State state, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(state);
     this.bus = bus;
     this.ui = ui;

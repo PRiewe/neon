@@ -24,7 +24,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import neon.core.Engine;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.entities.Armor;
 import neon.entities.Container;
 import neon.entities.Door;
@@ -46,12 +46,12 @@ import neon.resources.RItem;
 public class ItemSerializer {
   private static final long serialVersionUID = 2138679015831709732L;
 
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
   private final EntityFactory entityFactory;
 
-  public ItemSerializer(UIEngineContext uiEngineContext) {
-    this.uiEngineContext = uiEngineContext;
-    this.entityFactory = new EntityFactory(uiEngineContext);
+  public ItemSerializer(GameContext gameContext) {
+    this.gameContext = gameContext;
+    this.entityFactory = new EntityFactory(gameContext);
   }
 
   public Item deserialize(DataInput input) throws IOException {

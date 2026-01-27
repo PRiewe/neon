@@ -50,16 +50,16 @@ public class MapLoader {
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
   private final MapUtils mapUtils;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
   private final EntityFactory entityFactory;
 
   /**
    * Creates a MapLoader with dependency injection.
    *
-   * @param uiEngineContext
+   * @param gameContext
    */
-  public MapLoader(UIEngineContext uiEngineContext) {
-    this(new MapUtils(), uiEngineContext);
+  public MapLoader(GameContext gameContext) {
+    this(new MapUtils(), gameContext);
   }
 
   /**
@@ -67,12 +67,12 @@ public class MapLoader {
    *
    * @param mapUtils the MapUtils instance for random operations
    */
-  public MapLoader(MapUtils mapUtils, UIEngineContext uiEngineContext) {
-    this.entityStore = uiEngineContext.getStore();
-    this.resourceProvider = uiEngineContext.getResources();
+  public MapLoader(MapUtils mapUtils, GameContext gameContext) {
+    this.entityStore = gameContext.getStore();
+    this.resourceProvider = gameContext.getResources();
     this.mapUtils = mapUtils;
-    this.uiEngineContext = uiEngineContext;
-    this.entityFactory = new EntityFactory(uiEngineContext);
+    this.gameContext = gameContext;
+    this.entityFactory = new EntityFactory(gameContext);
   }
 
   /**
@@ -84,7 +84,7 @@ public class MapLoader {
    */
   public Map loadMap(String[] path, int uid) {
 
-    Document doc = uiEngineContext.getFileSystem().getFile(new XMLTranslator(), path);
+    Document doc = gameContext.getFileSystem().getFile(new XMLTranslator(), path);
     Element root = doc.getRootElement();
     if (root.getName().equals("world")) {
       return loadWorld(root, uid);

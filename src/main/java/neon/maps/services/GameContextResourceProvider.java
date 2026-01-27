@@ -19,7 +19,7 @@
 package neon.maps.services;
 
 import java.util.Vector;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.resources.Resource;
 
 /**
@@ -29,9 +29,9 @@ import neon.resources.Resource;
  * @author mdriesen
  */
 public class GameContextResourceProvider implements ResourceProvider {
-  private final UIEngineContext context;
+  private final GameContext context;
 
-  public GameContextResourceProvider(UIEngineContext context) {
+  public GameContextResourceProvider(GameContext context) {
     this.context = context;
   }
 

@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.event.StoreEvent;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
@@ -46,11 +46,11 @@ public class CrafterDialog implements KeyListener {
   private final String coin;
   private final MBassador<EventObject> bus;
   private final UserInterface ui;
-  private final UIEngineContext context;
+  private final GameContext context;
   private final EntityFactory entityFactory;
 
   public CrafterDialog(
-      UserInterface ui, String coin, MBassador<EventObject> bus, UIEngineContext context) {
+      UserInterface ui, String coin, MBassador<EventObject> bus, GameContext context) {
     this.ui = ui;
     this.context = context;
     this.entityFactory = new EntityFactory(context);

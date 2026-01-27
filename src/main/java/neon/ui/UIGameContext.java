@@ -1,18 +1,17 @@
 package neon.ui;
 
+import neon.core.GameContext;
 import neon.core.GameServices;
 import neon.core.GameStore;
-import neon.core.UIEngineContext;
 
 public class UIGameContext {
   private final GameServices gameServices;
   private final GameStore gameStore;
-  private final UIEngineContext UIEngineContext;
+  private final GameContext GameContext;
 
-  public UIGameContext(
-      GameServices gameServices, GameStore gameStore, UIEngineContext UIEngineContext) {
+  public UIGameContext(GameServices gameServices, GameStore gameStore, GameContext GameContext) {
     this.gameServices = gameServices;
     this.gameStore = gameStore;
-    this.UIEngineContext = UIEngineContext;
+    this.GameContext = GameContext;
   }
 }

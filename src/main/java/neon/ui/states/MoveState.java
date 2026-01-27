@@ -24,7 +24,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.EventObject;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.core.event.TurnEvent;
@@ -45,11 +45,11 @@ public class MoveState extends State implements KeyListener {
   private GamePanel panel;
   private final CClient keys;
   private final MBassador<EventObject> bus;
-  private final UIEngineContext context;
+  private final GameContext context;
   private final MotionHandler motionHandler;
   private final TeleportHandler teleportHandler;
 
-  public MoveState(State parent, MBassador<EventObject> bus, UIEngineContext context) {
+  public MoveState(State parent, MBassador<EventObject> bus, GameContext context) {
     super(parent, "move module");
     this.bus = bus;
     this.context = context;

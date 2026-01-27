@@ -30,12 +30,12 @@ import neon.systems.timing.Timer;
 public class Game implements Closeable {
   private final Timer timer = new Timer();
   private final GameStore gameStore;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
   private final Atlas atlas;
 
-  public Game(GameStore gameStore, UIEngineContext uiEngineContext, Atlas atlas) {
+  public Game(GameStore gameStore, GameContext gameContext, Atlas atlas) {
     this.gameStore = gameStore;
-    this.uiEngineContext = uiEngineContext;
+    this.gameContext = gameContext;
     this.atlas = atlas;
   }
 
@@ -54,6 +54,6 @@ public class Game implements Closeable {
   @Override
   public void close() throws IOException {
     gameStore.close();
-    getUiEngineContext().getAtlas().close();
+    getGameContext().getAtlas().close();
   }
 }

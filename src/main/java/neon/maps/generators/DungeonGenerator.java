@@ -19,9 +19,8 @@
 package neon.maps.generators;
 
 import java.awt.*;
-import java.awt.geom.*;
 import java.util.*;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.entities.Container;
 import neon.entities.Creature;
 import neon.entities.Door;
@@ -55,7 +54,7 @@ public class DungeonGenerator {
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
   private final QuestProvider questProvider;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
   private final EntityFactory entityFactory;
 
   // random sources
@@ -71,9 +70,8 @@ public class DungeonGenerator {
    * @param theme the zone theme
    * @param questProvider the quest provider service
    */
-  public DungeonGenerator(
-      RZoneTheme theme, QuestProvider questProvider, UIEngineContext uiEngineContext) {
-    this(theme, questProvider, uiEngineContext, new MapUtils(), new Dice());
+  public DungeonGenerator(RZoneTheme theme, QuestProvider questProvider, GameContext gameContext) {
+    this(theme, questProvider, gameContext, new MapUtils(), new Dice());
   }
 
   /**
@@ -87,15 +85,15 @@ public class DungeonGenerator {
   public DungeonGenerator(
       RZoneTheme theme,
       QuestProvider questProvider,
-      UIEngineContext uiEngineContext,
+      GameContext gameContext,
       MapUtils mapUtils,
       Dice dice) {
     this.theme = theme;
-    this.uiEngineContext = uiEngineContext;
+    this.gameContext = gameContext;
     this.zone = null;
-    this.entityStore = uiEngineContext.getStore();
-    this.resourceProvider = uiEngineContext.getResources();
-    this.entityFactory = new EntityFactory(uiEngineContext);
+    this.entityStore = gameContext.getStore();
+    this.resourceProvider = gameContext.getResources();
+    this.entityFactory = new EntityFactory(gameContext);
     this.questProvider = questProvider;
     this.dungeonTileGenerator = new DungeonTileGenerator(theme, mapUtils, dice);
     this.mapUtils = mapUtils;
@@ -108,8 +106,8 @@ public class DungeonGenerator {
    * @param zone the zone to generate
    * @param questProvider the quest provider service
    */
-  public DungeonGenerator(Zone zone, QuestProvider questProvider, UIEngineContext uiEngineContext) {
-    this(zone, questProvider, uiEngineContext, new MapUtils(), new Dice());
+  public DungeonGenerator(Zone zone, QuestProvider questProvider, GameContext gameContext) {
+    this(zone, questProvider, gameContext, new MapUtils(), new Dice());
   }
 
   /**
@@ -124,16 +122,16 @@ public class DungeonGenerator {
   public DungeonGenerator(
       Zone zone,
       QuestProvider questProvider,
-      UIEngineContext uiEngineContext,
+      GameContext gameContext,
       MapUtils mapUtils,
       Dice dice) {
     this.zone = zone;
     this.theme = zone.getTheme();
-    this.entityStore = uiEngineContext.getStore();
-    this.resourceProvider = uiEngineContext.getResources();
+    this.entityStore = gameContext.getStore();
+    this.resourceProvider = gameContext.getResources();
     this.questProvider = questProvider;
-    this.uiEngineContext = uiEngineContext;
-    this.entityFactory = new EntityFactory(uiEngineContext);
+    this.gameContext = gameContext;
+    this.entityFactory = new EntityFactory(gameContext);
     this.dungeonTileGenerator = new DungeonTileGenerator(theme, mapUtils, dice);
 
     this.mapUtils = mapUtils;

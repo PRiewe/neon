@@ -22,7 +22,7 @@ import java.awt.Rectangle;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.event.TurnEvent;
 import neon.core.event.UpdateEvent;
 import neon.entities.Creature;
@@ -53,13 +53,13 @@ public class TurnHandler {
   private final int range;
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
 
-  public TurnHandler(GamePanel panel, UIEngineContext uiEngineContext) {
+  public TurnHandler(GamePanel panel, GameContext gameContext) {
     this.panel = panel;
     this.entityStore = new GameContextEntityStore(panel.getContext());
     this.resourceProvider = new GameContextResourceProvider(panel.getContext());
-    this.uiEngineContext = uiEngineContext;
+    this.gameContext = gameContext;
 
     CServer ini = (CServer) panel.getContext().getResources().getResource("ini", "config");
     range = ini.getAIRange();
@@ -151,10 +151,10 @@ public class TurnHandler {
           RRegionTheme theme = r.getTheme();
           r.fix(); // vanaf hier wordt theme null
           if (theme.id.startsWith("town")) {
-            new TownGenerator(zone, uiEngineContext)
+            new TownGenerator(zone, gameContext)
                 .generate(r.getX(), r.getY(), r.getWidth(), r.getHeight(), theme, r.getZ());
           } else {
-            new WildernessGenerator(zone, uiEngineContext).generate(r, theme);
+            new WildernessGenerator(zone, gameContext).generate(r, theme);
           }
         }
       }

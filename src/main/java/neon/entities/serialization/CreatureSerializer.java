@@ -24,7 +24,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import neon.ai.AIFactory;
 import neon.core.Engine;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.entities.Construct;
 import neon.entities.Creature;
 import neon.entities.Daemon;
@@ -39,11 +39,11 @@ import neon.resources.RCreature;
 public class CreatureSerializer {
   private static final long serialVersionUID = -2452444993764883434L;
   private final AIFactory aiFactory;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
 
-  public CreatureSerializer(UIEngineContext uiEngineContext) {
-    this.uiEngineContext = uiEngineContext;
-    this.aiFactory = new AIFactory(uiEngineContext);
+  public CreatureSerializer(GameContext gameContext) {
+    this.gameContext = gameContext;
+    this.aiFactory = new AIFactory(gameContext);
   }
 
   public Creature deserialize(DataInput in) throws IOException {

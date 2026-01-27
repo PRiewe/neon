@@ -28,7 +28,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
 import neon.entities.Entity;
@@ -54,13 +54,13 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
   private final String big;
   private final String small;
   private final UserInterface ui;
-  private final UIEngineContext context;
+  private final GameContext context;
 
   /**
    * @param big name of major denominations (euro, dollar)
    * @param small name of minor denominations (cents)
    */
-  public TradeDialog(UserInterface ui, String big, String small, UIEngineContext context) {
+  public TradeDialog(UserInterface ui, String big, String small, GameContext context) {
     this.big = big;
     this.small = small;
     this.ui = ui;

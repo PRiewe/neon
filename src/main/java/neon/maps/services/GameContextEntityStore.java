@@ -18,7 +18,7 @@
 
 package neon.maps.services;
 
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.entities.Entity;
 
 /**
@@ -28,9 +28,9 @@ import neon.entities.Entity;
  * @author mdriesen
  */
 public class GameContextEntityStore implements EntityStore {
-  private final UIEngineContext context;
+  private final GameContext context;
 
-  public GameContextEntityStore(UIEngineContext context) {
+  public GameContextEntityStore(GameContext context) {
     this.context = context;
   }
 

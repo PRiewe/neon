@@ -27,7 +27,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MotionHandler;
 import neon.core.handlers.TeleportHandler;
@@ -51,7 +51,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   private Object container;
   private final MBassador<EventObject> bus;
   private final UserInterface ui;
-  private final UIEngineContext context;
+  private final GameContext context;
 
   // components of the JPanel
   private final JPanel panel;
@@ -67,7 +67,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   private final HashMap<String, Integer> iData;
 
   public ContainerState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, UIEngineContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent);
     this.bus = bus;
     this.ui = ui;

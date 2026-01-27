@@ -31,7 +31,7 @@ import neon.systems.timing.Timer;
  *
  * @author mdriesen
  */
-public interface UIEngineContext extends UIStorage {
+public interface GameContext extends UIStorage {
 
   Atlas getAtlas();
 

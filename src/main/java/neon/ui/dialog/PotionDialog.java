@@ -25,7 +25,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
 import neon.entities.EntityFactory;
@@ -40,10 +40,10 @@ public class PotionDialog implements KeyListener {
   private final JList<RRecipe> potions;
   private final String coin;
   private final UserInterface ui;
-  private final UIEngineContext context;
+  private final GameContext context;
   private final EntityFactory entityFactory;
 
-  public PotionDialog(UserInterface ui, String coin, UIEngineContext context) {
+  public PotionDialog(UserInterface ui, String coin, GameContext context) {
     this.ui = ui;
     this.coin = coin;
     this.context = context;

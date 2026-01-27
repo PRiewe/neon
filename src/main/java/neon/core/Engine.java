@@ -151,7 +151,7 @@ public class Engine implements Runnable {
    *
    * @param script the script to execute
    * @return the result of the script
-   * @deprecated Use {@link UIEngineContext#execute(String)} instead
+   * @deprecated Use {@link GameContext#execute(String)} instead
    */
   @Deprecated
   public static Object execute(String script) {
@@ -163,7 +163,7 @@ public class Engine implements Runnable {
    */
   /**
    * @return the player
-   * @deprecated Use {@link UIEngineContext#getPlayer()} instead
+   * @deprecated Use {@link GameContext#getPlayer()} instead
    */
   @Deprecated
   public static Player getPlayer() {
@@ -181,7 +181,7 @@ public class Engine implements Runnable {
 
   /**
    * @return the quest tracker
-   * @deprecated Use {@link UIEngineContext#getQuestTracker()} instead
+   * @deprecated Use {@link GameContext#getQuestTracker()} instead
    */
   @Deprecated
   public static QuestTracker getQuestTracker() {
@@ -190,7 +190,7 @@ public class Engine implements Runnable {
 
   /**
    * @return the timer
-   * @deprecated Use {@link UIEngineContext#getTimer()} instead
+   * @deprecated Use {@link GameContext#getTimer()} instead
    */
   @Deprecated
   public static Timer getTimer() {
@@ -208,7 +208,7 @@ public class Engine implements Runnable {
 
   /**
    * @return the physics engine
-   * @deprecated Use {@link UIEngineContext#getPhysicsEngine()} instead
+   * @deprecated Use {@link GameContext#getPhysicsEngine()} instead
    */
   @Deprecated
   public static PhysicsSystem getPhysicsEngine() {
@@ -217,7 +217,7 @@ public class Engine implements Runnable {
 
   /**
    * @return the script engine
-   * @deprecated Use {@link UIEngineContext#getScriptEngine()} instead
+   * @deprecated Use {@link GameContext#getScriptEngine()} instead
    */
   @Deprecated
   public static ScriptEngine getScriptEngine() {
@@ -226,7 +226,7 @@ public class Engine implements Runnable {
 
   /**
    * @return the entity store
-   * @deprecated Use {@link UIEngineContext#getStore()} instead
+   * @deprecated Use {@link GameContext#getStore()} instead
    */
   @Deprecated
   public static UIDStore getStore() {
@@ -235,7 +235,7 @@ public class Engine implements Runnable {
 
   /**
    * @return the resource manager
-   * @deprecated Use {@link UIEngineContext#getResources()} instead
+   * @deprecated Use {@link GameContext#getResources()} instead
    */
   @Deprecated
   public static ResourceManager getResources() {
@@ -248,7 +248,7 @@ public class Engine implements Runnable {
    *
    * @return the game context
    */
-  public UIEngineContext getGameEngineState() {
+  public GameContext getGameEngineState() {
     return gameEngineState;
   }
 
@@ -272,7 +272,7 @@ public class Engine implements Runnable {
   /**
    * Quit the game.
    *
-   * @deprecated Use {@link UIEngineContext#quit()} instead
+   * @deprecated Use {@link GameContext#quit()} instead
    */
   @Deprecated
   public static void quit() {

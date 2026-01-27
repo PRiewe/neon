@@ -20,7 +20,7 @@ package neon.maps.generators;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.entities.Door;
 import neon.entities.EntityFactory;
 import neon.maps.MapUtils;
@@ -40,12 +40,12 @@ public class TownGenerator {
   private final Zone zone;
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
   private final EntityFactory entityFactory;
   private final MapUtils mapUtils;
 
-  public TownGenerator(Zone zone, UIEngineContext uiEngineContext) {
-    this(zone, uiEngineContext, new MapUtils());
+  public TownGenerator(Zone zone, GameContext gameContext) {
+    this(zone, gameContext, new MapUtils());
   }
 
   /**
@@ -53,12 +53,12 @@ public class TownGenerator {
    *
    * @param zone the zone to generate
    */
-  public TownGenerator(Zone zone, UIEngineContext uiEngineContext, MapUtils mapUtils) {
+  public TownGenerator(Zone zone, GameContext gameContext, MapUtils mapUtils) {
     this.zone = zone;
-    this.entityStore = uiEngineContext.getStore();
-    this.resourceProvider = uiEngineContext.getResources();
-    this.uiEngineContext = uiEngineContext;
-    this.entityFactory = new EntityFactory(uiEngineContext);
+    this.entityStore = gameContext.getStore();
+    this.resourceProvider = gameContext.getResources();
+    this.gameContext = gameContext;
+    this.entityFactory = new EntityFactory(gameContext);
     this.mapUtils = mapUtils;
   }
 

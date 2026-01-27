@@ -21,7 +21,7 @@ package neon.entities;
 import java.awt.Rectangle;
 import java.util.*;
 import neon.ai.*;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.components.FactionComponent;
 import neon.entities.property.Gender;
@@ -30,13 +30,13 @@ import neon.util.Dice;
 
 public class EntityFactory {
   private final AIFactory aiFactory;
-  private final UIEngineContext uiEngineContext;
+  private final GameContext gameContext;
   private final ItemFactory itemFactory;
 
-  public EntityFactory(UIEngineContext uiEngineContext) {
-    this.uiEngineContext = uiEngineContext;
-    this.aiFactory = new AIFactory(uiEngineContext);
-    this.itemFactory = new ItemFactory(uiEngineContext);
+  public EntityFactory(GameContext gameContext) {
+    this.gameContext = gameContext;
+    this.aiFactory = new AIFactory(gameContext);
+    this.itemFactory = new ItemFactory(gameContext);
   }
 
   public Item getItem(String id, long uid) {
@@ -52,7 +52,7 @@ public class EntityFactory {
    */
   private Creature getPerson(String id, int x, int y, long uid, RCreature species) {
     String name = id;
-    RPerson person = (RPerson) uiEngineContext.getResources().getResource(id);
+    RPerson person = (RPerson) gameContext.getResources().getResource(id);
     if (person.name != null) {
       name = person.name;
     }
@@ -60,9 +60,9 @@ public class EntityFactory {
     Rectangle bounds = creature.getShapeComponent();
     bounds.setLocation(x, y);
     for (String i : person.items) {
-      long itemUID = uiEngineContext.getStore().createNewEntityUID();
+      long itemUID = gameContext.getStore().createNewEntityUID();
       Item item = getItem(i, itemUID);
-      uiEngineContext.getStore().addEntity(item);
+      gameContext.getStore().addEntity(item);
       InventoryHandler.addItem(creature, itemUID);
     }
     for (String s : person.spells) {
@@ -80,16 +80,16 @@ public class EntityFactory {
 
   public Creature getCreature(String id, int x, int y, long uid) {
     Creature creature;
-    Resource resource = uiEngineContext.getResources().getResource(id);
+    Resource resource = gameContext.getResources().getResource(id);
     if (resource instanceof RPerson rp) {
-      RCreature species = (RCreature) uiEngineContext.getResources().getResource(rp.species);
+      RCreature species = (RCreature) gameContext.getResources().getResource(rp.species);
       creature = getPerson(id, x, y, uid, species);
       creature.brain = aiFactory.getAI(creature, rp);
     } else if (resource instanceof LCreature lc) {
       ArrayList<String> creatures = new ArrayList<String>(lc.creatures.keySet());
       return getCreature(creatures.get(Dice.roll(1, creatures.size(), -1)), x, y, uid);
     } else {
-      RCreature rc = (RCreature) uiEngineContext.getResources().getResource(id);
+      RCreature rc = (RCreature) gameContext.getResources().getResource(id);
       switch (rc.type) {
         case construct -> creature = new Construct(id, uid, rc);
         case humanoid -> creature = new Hominid(id, uid, rc);

@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.EventObject;
 import javax.swing.UIManager;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.event.LoadEvent;
 import neon.core.event.MagicEvent;
 import neon.core.event.MessageEvent;
@@ -47,9 +47,9 @@ public class Client implements Runnable {
   private final FiniteStateMachine fsm;
   private final MBassador<EventObject> bus;
   private final String version;
-  private final UIEngineContext context;
+  private final GameContext context;
 
-  public Client(Port port, String version, UIEngineContext context) {
+  public Client(Port port, String version, GameContext context) {
     bus = port.getBus();
     this.version = version;
     this.context = context;

@@ -19,7 +19,7 @@
 package neon.ai;
 
 import java.awt.Point;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.entities.Creature;
 import neon.entities.components.HealthComponent;
 import neon.entities.components.ShapeComponent;
@@ -29,12 +29,8 @@ public class GuardAI extends AI {
   private final Point home;
 
   public GuardAI(
-      Creature creature,
-      byte aggression,
-      byte confidence,
-      int range,
-      UIEngineContext uiEngineContext) {
-    super(creature, aggression, confidence, uiEngineContext);
+      Creature creature, byte aggression, byte confidence, int range, GameContext gameContext) {
+    super(creature, aggression, confidence, gameContext);
     this.range = range;
     ShapeComponent bounds = creature.getShapeComponent();
     home = new Point(bounds.x, bounds.y);
@@ -43,16 +39,16 @@ public class GuardAI extends AI {
   public void act() {
     // TODO: not only pay attention to player, but also to other creatures in sight
     ShapeComponent cBounds = creature.getShapeComponent();
-    ShapeComponent pBounds = uiEngineContext.getPlayer().getShapeComponent();
+    ShapeComponent pBounds = gameContext.getPlayer().getShapeComponent();
     if (isHostile() && cBounds.getLocation().distance(pBounds.getLocation()) < range) {
       HealthComponent health = creature.getHealthComponent();
       if (100 * health.getHealth() / health.getBaseHealth() < confidence / 100) {
         // 80% chance to just flee, 20% chance to heal; if no heal spell, flee anyway
         if (Math.random() > 0.2 || !(cure() || heal())) {
-          flee(uiEngineContext.getPlayer());
+          flee(gameContext.getPlayer());
         }
       } else {
-        hunt(range, home, uiEngineContext.getPlayer());
+        hunt(range, home, gameContext.getPlayer());
       }
     } else {
       wander(range, home);

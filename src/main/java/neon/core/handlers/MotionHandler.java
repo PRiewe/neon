@@ -22,7 +22,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.Entity;
@@ -47,12 +47,12 @@ public class MotionHandler {
   public static final byte DOOR = 4;
   public static final byte NULL = 5;
   public static final byte HABITAT = 6;
-  public final UIEngineContext uiEngineContext;
+  public final GameContext gameContext;
   public final MapLoader mapLoader;
 
-  public MotionHandler(UIEngineContext uiEngineContext) {
-    this.uiEngineContext = uiEngineContext;
-    this.mapLoader = new MapLoader(uiEngineContext);
+  public MotionHandler(GameContext gameContext) {
+    this.gameContext = gameContext;
+    this.mapLoader = new MapLoader(gameContext);
   }
 
   /**
@@ -73,15 +73,15 @@ public class MotionHandler {
    * @return the result of the movement
    */
   public byte move(Creature actor, Point p) {
-    Region region = uiEngineContext.getAtlas().getCurrentZone().getRegion(p);
+    Region region = gameContext.getAtlas().getCurrentZone().getRegion(p);
     if (p == null || region == null) {
       return NULL;
     }
 
     // check if there is no closed door present
-    Collection<Long> items = uiEngineContext.getAtlas().getCurrentZone().getItems(p);
+    Collection<Long> items = gameContext.getAtlas().getCurrentZone().getItems(p);
     for (long uid : items) {
-      Entity i = uiEngineContext.getStore().getEntity(uid);
+      Entity i = gameContext.getStore().getEntity(uid);
       if (i instanceof Door) {
         if (((Door) i).lock.getState() != Lock.OPEN) {
           return DOOR;

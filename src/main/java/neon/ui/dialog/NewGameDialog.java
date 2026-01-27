@@ -25,7 +25,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.UIEngineContext;
+import neon.core.GameContext;
 import neon.core.event.LoadEvent;
 import neon.entities.Player;
 import neon.entities.property.Gender;
@@ -47,9 +47,9 @@ public class NewGameDialog {
   private final HashMap<String, String> raceList;
   private final MBassador<EventObject> bus;
   private final UserInterface ui;
-  private final UIEngineContext context;
+  private final GameContext context;
 
-  public NewGameDialog(UserInterface ui, MBassador<EventObject> bus, UIEngineContext context) {
+  public NewGameDialog(UserInterface ui, MBassador<EventObject> bus, GameContext context) {
     this.bus = bus;
     this.ui = ui;
     this.context = context;
