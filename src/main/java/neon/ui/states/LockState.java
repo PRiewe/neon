@@ -21,7 +21,7 @@ package neon.ui.states;
 import java.awt.event.*;
 import java.util.EventObject;
 import javax.swing.Popup;
-import neon.core.GameContext;
+import neon.entities.UIDStore;
 import neon.entities.components.Lock;
 import neon.ui.GamePanel;
 import neon.ui.UserInterface;
@@ -32,15 +32,15 @@ public class LockState extends State implements KeyListener {
   private Lock lock;
   private GamePanel panel;
   private Popup popup;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
-  private final GameContext context;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
+  private final UIDStore uidStore;
 
-  public LockState(State state, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+  public LockState(State state, MBassador<EventObject> bus, UserInterface ui, UIDStore uidStore) {
     super(state);
     this.bus = bus;
     this.ui = ui;
-    this.context = context;
+    this.uidStore = uidStore;
   }
 
   @Override
@@ -70,7 +70,7 @@ public class LockState extends State implements KeyListener {
     switch (ke.getKeyCode()) {
       case KeyEvent.VK_1:
       case KeyEvent.VK_NUMPAD1:
-        if (context.getPlayer().pickLock(lock)) {
+        if (uidStore.getPlayer().pickLock(lock)) {
           lock.unlock();
           ui.showMessage("Lock picked.", 1);
         } else {

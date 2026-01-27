@@ -18,12 +18,8 @@
 
 package neon.entities;
 
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MutableClassToInstanceMap;
-import java.io.Serializable;
-import neon.entities.components.Component;
+import java.io.*;
 import neon.entities.components.PhysicsComponent;
-import neon.entities.components.RenderComponent;
 import neon.entities.components.ScriptComponent;
 import neon.entities.components.ShapeComponent;
 
@@ -32,11 +28,10 @@ import neon.entities.components.ShapeComponent;
  *
  * @author mdriesen
  */
-public abstract class Entity implements Serializable {
+public abstract class Entity extends EntityBase implements Serializable {
+
   // components
   public final ShapeComponent bounds;
-
-  protected ClassToInstanceMap<Component> components = MutableClassToInstanceMap.create();
 
   private final long uid;
   private final String id;
@@ -46,9 +41,9 @@ public abstract class Entity implements Serializable {
    * @param uid
    */
   public Entity(String id, long uid) {
+    super();
     this.id = id;
     this.uid = uid;
-
     // components
     bounds = new ShapeComponent(this, 0, 0, 1, 1);
     components.putInstance(PhysicsComponent.class, new PhysicsComponent(uid, bounds));
@@ -71,21 +66,5 @@ public abstract class Entity implements Serializable {
 
   public ShapeComponent getShapeComponent() {
     return bounds;
-  }
-
-  public RenderComponent getRenderComponent() {
-    return components.getInstance(RenderComponent.class);
-  }
-
-  public void setRenderComponent(RenderComponent renderer) {
-    components.putInstance(RenderComponent.class, renderer);
-  }
-
-  public PhysicsComponent getPhysicsComponent() {
-    return components.getInstance(PhysicsComponent.class);
-  }
-
-  public ScriptComponent getScriptComponent() {
-    return components.getInstance(ScriptComponent.class);
   }
 }

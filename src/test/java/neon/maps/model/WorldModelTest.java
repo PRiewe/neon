@@ -59,8 +59,8 @@ public class WorldModelTest {
     assertEquals(1, world.creatures.size());
     assertEquals(100, world.creatures.get(0).x);
     assertEquals("goblin", world.creatures.get(0).id);
-    assertEquals(1, world.items.items.size());
-    assertEquals("sword", world.items.items.get(0).id);
+    assertEquals(1, world.items.size());
+    assertEquals("sword", world.items.get(0).id);
     assertEquals(1, world.regions.size());
     assertEquals("grass", world.regions.get(0).text);
   }
@@ -71,11 +71,11 @@ public class WorldModelTest {
         "<world>"
             + "<header uid=\"1\"><name>World</name></header>"
             + "<creatures />"
-            + "<items>"
+            + "<doors>"
             + "<door x=\"10\" y=\"20\" id=\"oak_door\" uid=\"5\" state=\"open\" lock=\"10\">"
             + "<dest x=\"30\" y=\"40\" z=\"1\" map=\"2\" />"
             + "</door>"
-            + "</items>"
+            + "</doors>"
             + "<regions />"
             + "</world>";
     JacksonMapper mapper = new JacksonMapper();
@@ -84,9 +84,9 @@ public class WorldModelTest {
     WorldModel world = mapper.fromXml(input, WorldModel.class);
 
     assertNotNull(world);
-    assertEquals(0, world.items.items.size());
-    assertEquals(1, world.items.doors.size());
-    WorldModel.DoorPlacement door = world.items.doors.get(0);
+    assertEquals(0, world.items.size());
+    assertEquals(1, world.doors.size());
+    WorldModel.DoorPlacement door = world.doors.get(0);
     assertEquals(10, door.x);
     assertEquals("oak_door", door.id);
     assertEquals("open", door.state);
@@ -102,11 +102,11 @@ public class WorldModelTest {
         "<world>"
             + "<header uid=\"1\"><name>World</name></header>"
             + "<creatures />"
-            + "<items>"
+            + "<doors>"
             + "<door x=\"10\" y=\"20\" id=\"hole\" uid=\"5\" state=\"open\">"
             + "<dest theme=\"dungeon_dark\" />"
             + "</door>"
-            + "</items>"
+            + "</doors>"
             + "<regions />"
             + "</world>";
     JacksonMapper mapper = new JacksonMapper();
@@ -114,8 +114,8 @@ public class WorldModelTest {
 
     WorldModel world = mapper.fromXml(input, WorldModel.class);
 
-    assertEquals(1, world.items.doors.size());
-    WorldModel.DoorPlacement door = world.items.doors.get(0);
+    assertEquals(1, world.doors.size());
+    WorldModel.DoorPlacement door = world.doors.get(0);
     assertNotNull(door.destination);
     assertEquals("dungeon_dark", door.destination.theme);
   }
@@ -126,12 +126,12 @@ public class WorldModelTest {
         "<world>"
             + "<header uid=\"1\"><name>World</name></header>"
             + "<creatures />"
-            + "<items>"
+            + "<containers>"
             + "<container x=\"50\" y=\"60\" id=\"chest\" uid=\"8\" lock=\"15\" trap=\"10\">"
             + "<item id=\"gold\" uid=\"9\" />"
             + "<item id=\"potion\" uid=\"10\" />"
             + "</container>"
-            + "</items>"
+            + "</containers>"
             + "<regions />"
             + "</world>";
     JacksonMapper mapper = new JacksonMapper();
@@ -140,9 +140,9 @@ public class WorldModelTest {
     WorldModel world = mapper.fromXml(input, WorldModel.class);
 
     assertNotNull(world);
-    assertEquals(0, world.items.items.size());
-    assertEquals(1, world.items.containers.size());
-    WorldModel.ContainerPlacement container = world.items.containers.get(0);
+    assertEquals(0, world.items.size());
+    assertEquals(1, world.containers.size());
+    WorldModel.ContainerPlacement container = world.containers.get(0);
     assertEquals(50, container.x);
     assertEquals("chest", container.id);
     assertEquals(15, container.lock);
@@ -164,14 +164,18 @@ public class WorldModelTest {
           <creatures/>
           <items>
               <item x="1" y="2" id="sword" uid="1"/>
+              <item x="7" y="8" id="shield" uid="5"/>
+          </items>
+          <doors>
               <door x="3" y="4" id="door" uid="2" state="closed">
                   <dest x="10" y="10" map="2"/>
               </door>
+              </doors>
+              <containers>
               <container x="5" y="6" id="chest" uid="3">
                   <item id="gold" uid="4"/>
               </container>
-              <item x="7" y="8" id="shield" uid="5"/>
-          </items>
+              </containers>
           <regions/>
       </world>""";
     JacksonMapper mapper = new JacksonMapper();
@@ -180,12 +184,12 @@ public class WorldModelTest {
     WorldModel world = mapper.fromXml(input, WorldModel.class);
 
     // Note: Jackson may only parse first consecutive sequence of <item> elements
-    assertFalse(world.items.items.isEmpty());
-    assertEquals(1, world.items.doors.size());
-    assertEquals(1, world.items.containers.size());
-    assertEquals(1, world.items.items.stream().filter(x -> x.id.equals("sword")).count());
-    assertEquals("door", world.items.doors.get(0).id);
-    assertEquals("chest", world.items.containers.get(0).id);
+    assertFalse(world.items.isEmpty());
+    assertEquals(1, world.doors.size());
+    assertEquals(1, world.containers.size());
+    assertEquals(1, world.items.stream().filter(x -> x.id.equals("sword")).count());
+    assertEquals("door", world.doors.get(0).id);
+    assertEquals("chest", world.containers.get(0).id);
   }
 
   @Test
@@ -231,9 +235,9 @@ public class WorldModelTest {
     assertNotNull(world);
     assertEquals("Empty", world.header.name);
     assertEquals(0, world.creatures.size());
-    assertEquals(0, world.items.items.size());
-    assertEquals(0, world.items.doors.size());
-    assertEquals(0, world.items.containers.size());
+    assertEquals(0, world.items.size());
+    assertEquals(0, world.doors.size());
+    assertEquals(0, world.containers.size());
     assertEquals(0, world.regions.size());
   }
 

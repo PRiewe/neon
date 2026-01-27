@@ -30,19 +30,22 @@ import neon.resources.RRecipe;
 
 @SuppressWarnings("serial")
 public class ResourceNode extends DefaultMutableTreeNode {
-  private static NodeComparator nodeComparator = new NodeComparator();
+  private static final NodeComparator nodeComparator = new NodeComparator();
   private RData resource;
-  private ResourceType type;
+  private final ResourceType type;
   private String name;
+  private final DataStore dataStore;
 
-  public ResourceNode(RData r, ResourceType t) {
+  public ResourceNode(RData r, ResourceType t, DataStore dataStore) {
     resource = r;
     type = t;
+    this.dataStore = dataStore;
   }
 
-  public ResourceNode(String name, ResourceType t) {
+  public ResourceNode(String name, ResourceType t, DataStore dataStore) {
     this.name = name;
     type = t;
+    this.dataStore = dataStore;
   }
 
   public RData getResource() {
@@ -63,7 +66,7 @@ public class ResourceNode extends DefaultMutableTreeNode {
       id = resource.name;
     }
 
-    if (!resource.getPath()[0].equals(Editor.getStore().getActive().get("id"))) {
+    if (!resource.getPath()[0].equals(dataStore.getActive().get("id"))) {
       // niet-actieve data is cursief weergegeven
       return "<html><i>" + id + "</i></html>";
     } else {
@@ -108,13 +111,13 @@ public class ResourceNode extends DefaultMutableTreeNode {
     DISEASE("magic"),
     RECIPE("magic");
 
-    private String namespace;
+    private final String namespace;
 
-    private ResourceType() {
+    ResourceType() {
       this(null);
     }
 
-    private ResourceType(String namespace) {
+    ResourceType(String namespace) {
       this.namespace = namespace;
     }
 

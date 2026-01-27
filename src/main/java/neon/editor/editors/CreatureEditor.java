@@ -23,7 +23,7 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.editor.ColorCellRenderer;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.entities.property.Habitat;
@@ -32,23 +32,34 @@ import neon.resources.RCreature.Size;
 import neon.resources.RCreature.Type;
 
 public class CreatureEditor extends ObjectEditor {
-  private RCreature data;
-  private JTextField nameField;
-  private JComboBox<String> colorBox;
-  private JFormattedTextField charField;
-  private JFormattedTextField speedField, defenseField, rangeField, manaField;
-  private JTextField hitField;
-  private JComboBox<Type> typeBox;
-  private JComboBox<Size> sizeBox;
-  private JComboBox<Habitat> habitatBox;
-  private JTextField attackField;
-  private JFormattedTextField strField, conField, dexField, intField, wisField, chaField;
-  private JComboBox<RCreature.AIType> aiTypeBox;
-  private JSpinner aggressionSpinner, confidenceSpinner;
+  private final RCreature data;
+  private final JTextField nameField;
+  private final JComboBox<String> colorBox;
+  private final JFormattedTextField charField;
+  private final JFormattedTextField speedField;
+  private final JFormattedTextField defenseField;
+  private final JFormattedTextField rangeField;
+  private final JFormattedTextField manaField;
+  private final JTextField hitField;
+  private final JComboBox<Type> typeBox;
+  private final JComboBox<Size> sizeBox;
+  private final JComboBox<Habitat> habitatBox;
+  private final JTextField attackField;
+  private final JFormattedTextField strField;
+  private final JFormattedTextField conField;
+  private final JFormattedTextField dexField;
+  private final JFormattedTextField intField;
+  private final JFormattedTextField wisField;
+  private final JFormattedTextField chaField;
+  private final JComboBox<RCreature.AIType> aiTypeBox;
+  private final JSpinner aggressionSpinner;
+  private final JSpinner confidenceSpinner;
+  private final DataStore dataStore;
 
-  public CreatureEditor(JFrame parent, RCreature rCreature) {
+  public CreatureEditor(JFrame parent, RCreature rCreature, DataStore dataStore) {
     super(parent, "Creature Editor: " + rCreature.id);
     this.data = rCreature;
+    this.dataStore = dataStore;
 
     // algemeen
     JPanel propPanel = new JPanel();
@@ -399,7 +410,7 @@ public class CreatureEditor extends ObjectEditor {
     data.aiAggr = (Integer) aggressionSpinner.getValue();
     data.aiConf = (Integer) confidenceSpinner.getValue();
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {

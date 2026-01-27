@@ -44,26 +44,28 @@ import neon.resources.quest.RQuest;
 
 @SuppressWarnings("serial")
 public class ResourceAction extends AbstractAction {
-  private ResourceType type;
-  private JTree tree;
-  private DefaultTreeModel model;
-  private ResourceTreeListener listener;
+  private final ResourceType type;
+  private final JTree tree;
+  private final DefaultTreeModel model;
+  private final ResourceTreeListener listener;
+  private final DataStore dataStore;
 
-  public ResourceAction(String name, ResourceType type, ResourceTreeListener listener) {
+  public ResourceAction(
+      String name, ResourceType type, ResourceTreeListener listener, DataStore dataStore) {
     super(name);
     this.type = type;
     this.listener = listener;
     tree = listener.getTree();
-    ;
+    this.dataStore = dataStore;
     model = (DefaultTreeModel) tree.getModel();
   }
 
   public void actionPerformed(ActionEvent e) {
-    String mod = Editor.getStore().getActive().get("id");
+    String mod = dataStore.getActive().get("id");
     RData object = null;
     if (e.getActionCommand().startsWith("New")) {
       NewObjectDialog.Properties props =
-          new NewObjectDialog()
+          new NewObjectDialog(dataStore)
               .showInputDialog(
                   Editor.getFrame(),
                   "Create new " + type.toString().toLowerCase(),
@@ -71,7 +73,8 @@ public class ResourceAction extends AbstractAction {
       if (!props.cancelled()) {
         switch (type) {
           case RECIPE:
-            Collection<RItem.Potion> potions = Editor.resources.getResources(RItem.Potion.class);
+            Collection<RItem.Potion> potions =
+                dataStore.getResourceManager().getResources(RItem.Potion.class);
             if (!potions.isEmpty()) { // check if potions have already been created
               RItem potion =
                   (RItem)
@@ -85,14 +88,14 @@ public class ResourceAction extends AbstractAction {
                           0);
               if (potion != null) {
                 object = new RRecipe(props.getID(), potion, mod);
-                Editor.resources.addResource((RRecipe) object, "magic");
+                dataStore.getResourceManager().addResource(object, "magic");
               }
             } else {
               JOptionPane.showMessageDialog(Editor.getFrame(), "No potions defined!");
             }
             break;
           case CRAFT:
-            Collection<RItem> items = Editor.resources.getResources(RItem.class);
+            Collection<RItem> items = dataStore.getResourceManager().getResources(RItem.class);
             if (!items.isEmpty()) { // check if items have already been created
               RItem craft =
                   (RItem)
@@ -106,7 +109,7 @@ public class ResourceAction extends AbstractAction {
                           0);
               if (craft != null) {
                 object = new RCraft(props.getID(), craft, mod);
-                Editor.resources.addResource((RCraft) object);
+                dataStore.getResourceManager().addResource(object);
               }
             } else {
               JOptionPane.showMessageDialog(Editor.getFrame(), "No items defined!");
@@ -114,68 +117,68 @@ public class ResourceAction extends AbstractAction {
             break;
           case FACTION:
             object = new RFaction(props.getID(), mod);
-            Editor.resources.addResource(object, "faction");
+            dataStore.getResourceManager().addResource(object, "faction");
             break;
           case REGION:
             object = new RRegionTheme(props.getID(), mod);
-            Editor.resources.addResource(object, "theme");
+            dataStore.getResourceManager().addResource(object, "theme");
             break;
           case ZONE:
             object = new RZoneTheme(props.getID(), mod);
-            Editor.resources.addResource(object, "theme");
+            dataStore.getResourceManager().addResource(object, "theme");
             break;
           case DUNGEON:
             object = new RDungeonTheme(props.getID(), mod);
-            Editor.resources.addResource(object, "theme");
+            dataStore.getResourceManager().addResource(object, "theme");
             break;
           case QUEST:
             object = new RQuest(props.getID(), mod);
-            Editor.resources.addResource(object, "quest");
+            dataStore.getResourceManager().addResource(object, "quest");
             break;
           case CURSE:
             object = new RSpell(props.getID(), SpellType.CURSE, mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
           case DISEASE:
             object = new RSpell(props.getID(), SpellType.DISEASE, mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
           case ENCHANTMENT:
             object = new RSpell.Enchantment(props.getID(), mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
           case LEVEL_SPELL:
             object = new LSpell(props.getID(), mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
           case POISON:
             object = new RSpell(props.getID(), SpellType.POISON, mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
           case POWER:
             object = new RSpell.Power(props.getID(), mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
           case SIGN:
             object = new RSign(props.getID(), mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
           case SPELL:
             object = new RSpell(props.getID(), SpellType.SPELL, mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
           case TATTOO:
             object = new RTattoo(props.getID(), mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
           default:
             object = new RSpell(props.getID(), SpellType.SPELL, mod);
-            Editor.resources.addResource(object, "magic");
+            dataStore.getResourceManager().addResource(object, "magic");
             break;
         }
 
         // push node to the correct place in tree
-        ResourceNode node = new ResourceNode(object, type);
+        ResourceNode node = new ResourceNode(object, type, dataStore);
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
         listener.launchEditor(node);
         for (int i = 0; i < root.getChildCount(); i++) {
@@ -196,7 +199,7 @@ public class ResourceAction extends AbstractAction {
       // remove from tree and datastore
       ResourceNode node = (ResourceNode) tree.getLastSelectedPathComponent();
       model.removeNodeFromParent(node);
-      Editor.resources.removeResource(node.getResource());
+      dataStore.getResourceManager().removeResource(node.getResource());
     }
   }
 }

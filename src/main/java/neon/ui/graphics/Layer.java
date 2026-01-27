@@ -24,8 +24,8 @@ import neon.util.spatial.RTree;
 import neon.util.spatial.SpatialIndex;
 
 public class Layer {
-  private SpatialIndex<Renderable> index;
-  private int depth;
+  private final SpatialIndex<Renderable> index;
+  private final int depth;
   private boolean visible = true;
 
   public Layer(int depth) {

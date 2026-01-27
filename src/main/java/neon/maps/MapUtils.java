@@ -29,7 +29,7 @@ import neon.util.RandomSource;
  * Utility class for map generation operations including random shape generation. Can be
  * instantiated with a specific {@link RandomSource} for deterministic testing.
  */
-public class MapUtils {
+public record MapUtils(RandomSource randomSource) {
   public static final int WALL = 0;
   public static final int FLOOR = 1;
   public static final int DOOR = 2;
@@ -40,8 +40,6 @@ public class MapUtils {
   public static final int ENTRY = 7;
   public static final int CORNER = 8;
   public static final int TEMP = 9;
-
-  private final RandomSource randomSource;
 
   /** Creates a new MapUtils with a default (non-deterministic) random source. */
   public MapUtils() {
@@ -54,9 +52,7 @@ public class MapUtils {
    *
    * @param randomSource the random source to use
    */
-  public MapUtils(RandomSource randomSource) {
-    this.randomSource = randomSource;
-  }
+  public MapUtils {}
 
   /**
    * Factory method to create a MapUtils with a seeded random source for reproducible results.
@@ -149,7 +145,8 @@ public class MapUtils {
    *
    * @return the random source
    */
-  public RandomSource getRandomSource() {
+  @Override
+  public RandomSource randomSource() {
     return randomSource;
   }
 
@@ -243,7 +240,7 @@ public class MapUtils {
    */
   public Point[] randomRibbon(Rectangle r, boolean horizontal) {
     // direction: true is horizontal, false is vertical
-    Point ribbon[];
+    Point[] ribbon;
 
     if (horizontal) {
       ribbon = new Point[r.width];

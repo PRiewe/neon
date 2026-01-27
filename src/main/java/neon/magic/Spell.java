@@ -28,10 +28,10 @@ import neon.resources.RSpell.SpellType;
  * @author mdriesen
  */
 public class Spell {
-  private Effect effect;
-  private float magnitude;
-  private String script;
-  private SpellType type;
+  private final Effect effect;
+  private final float magnitude;
+  private final String script;
+  private final SpellType type;
   private Entity caster;
   private Entity target;
 

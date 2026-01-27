@@ -23,22 +23,30 @@ import java.text.ParseException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.editor.*;
+import neon.editor.ColorCellRenderer;
+import neon.editor.DataStore;
+import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RItem;
 import neon.resources.RSpell;
 import neon.util.ColorFactory;
 
 public class FoodEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JFormattedTextField costField, weightField, charField;
-  private JComboBox<String> colorBox, spellBox;
-  private RItem data;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final JComboBox<String> spellBox;
+  private final RItem data;
+  private final DataStore dataStore;
+  private final HelpLabels helpLabels;
 
-  public FoodEditor(JFrame parent, RItem data) {
+  public FoodEditor(JFrame parent, RItem data, DataStore dataStore) {
     super(parent, "Scroll Editor: " + data.id);
     this.data = data;
-
+    this.dataStore = dataStore;
+    helpLabels = new HelpLabels(dataStore);
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
     itemProps.setLayout(layout);
@@ -60,7 +68,7 @@ public class FoodEditor extends ObjectEditor {
     weightField = new JFormattedTextField(NeonFormat.getFloatInstance());
     spellBox = new JComboBox<String>(loadSpells());
     JLabel nameHelpLabel = HelpLabels.getNameHelpLabel();
-    JLabel costHelpLabel = HelpLabels.getCostHelpLabel();
+    JLabel costHelpLabel = helpLabels.getCostHelpLabel();
     JLabel colorHelpLabel = HelpLabels.getColorHelpLabel();
     JLabel charHelpLabel = HelpLabels.getCharHelpLabel();
     JLabel weightHelpLabel = HelpLabels.getWeightHelpLabel();
@@ -159,7 +167,7 @@ public class FoodEditor extends ObjectEditor {
     if (spellBox.getSelectedItem() != null) {
       data.spell = spellBox.getSelectedItem().toString();
     }
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {
@@ -174,7 +182,8 @@ public class FoodEditor extends ObjectEditor {
   private Vector<String> loadSpells() {
     Vector<String> spells = new Vector<String>();
     spells.add(null);
-    for (RSpell.Enchantment spell : Editor.resources.getResources(RSpell.Enchantment.class)) {
+    for (RSpell.Enchantment spell :
+        dataStore.getResourceManager().getResources(RSpell.Enchantment.class)) {
       if (spell.item.equals("nutrition")) {
         spells.add(spell.id);
       }

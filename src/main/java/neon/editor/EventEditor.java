@@ -27,16 +27,18 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 
 public class EventEditor implements ListSelectionListener, ActionListener, MouseListener {
-  private JDialog frame;
+  private final JDialog frame;
+  private final DataStore dataStore;
   private Multimap<String, String> events;
-  private JList<String> times;
-  private JList<String> list;
-  private DefaultListModel<String> model;
-  private DefaultListModel<String> stampModel;
+  private final JList<String> times;
+  private final JList<String> list;
+  private final DefaultListModel<String> model;
+  private final DefaultListModel<String> stampModel;
   private String[] scripts;
 
-  public EventEditor(JFrame parent) {
+  public EventEditor(JFrame parent, DataStore dataStore) {
     frame = new JDialog(parent, "Event Editor");
+    this.dataStore = dataStore;
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     frame.setPreferredSize(new Dimension(480, 300));
 
@@ -74,10 +76,10 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
 
   public void show() {
     model.clear();
-    scripts = Editor.getStore().getScripts().keySet().toArray(new String[0]);
+    scripts = dataStore.getScripts().keySet().toArray(new String[0]);
     events = ArrayListMultimap.create();
-    for (String event : Editor.getStore().getEvents().keySet()) {
-      events.putAll(event, Editor.getStore().getEvents().get(event));
+    for (String event : dataStore.getEvents().keySet()) {
+      events.putAll(event, dataStore.getEvents().get(event));
       model.addElement(event);
     }
     frame.pack();
@@ -89,16 +91,16 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
     // blijkbaar worden er twee events gefired bij selectie
     if (e.getValueIsAdjusting()) {
       stampModel.clear();
-      for (String s : events.get(list.getSelectedValue().toString())) {
+      for (String s : events.get(list.getSelectedValue())) {
         stampModel.addElement(s);
       }
     }
   }
 
   private void save() {
-    Editor.getStore().getEvents().clear();
+    dataStore.getEvents().clear();
     for (String event : events.keySet()) {
-      Editor.getStore().getEvents().putAll(event, events.get(event));
+      dataStore.getEvents().putAll(event, events.get(event));
     }
   }
 
@@ -166,26 +168,25 @@ public class EventEditor implements ListSelectionListener, ActionListener, Mouse
         try {
           if (list.getSelectedIndex() >= 0) {
             int index = list.getSelectedIndex();
-            events.removeAll(list.getSelectedValue().toString());
+            events.removeAll(list.getSelectedValue());
             model.remove(index);
           }
         } catch (ArrayIndexOutOfBoundsException a) {
         }
       } else if (e.getActionCommand().equals("Add timestamp")) {
         String s =
-            (String)
-                JOptionPane.showInputDialog(
-                    frame, "Timestamp:", "Add timestamp", JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showInputDialog(
+                frame, "Timestamp:", "Add timestamp", JOptionPane.QUESTION_MESSAGE);
         if (s.matches("\\d*:?\\d*:?\\d*")) { // X:Y:Z
           stampModel.addElement(s);
-          events.put(list.getSelectedValue().toString(), s);
+          events.put(list.getSelectedValue(), s);
           times.setSelectedValue(s, true);
         }
       } else if (e.getActionCommand().equals("Remove timestamp")) {
         try {
           if (times.getSelectedIndex() >= 0) {
             int index = times.getSelectedIndex();
-            events.remove(list.getSelectedValue().toString(), times.getSelectedValue().toString());
+            events.remove(list.getSelectedValue(), times.getSelectedValue());
             stampModel.remove(index);
           }
         } catch (ArrayIndexOutOfBoundsException a) {

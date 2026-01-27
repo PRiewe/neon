@@ -21,12 +21,8 @@ package neon.core.handlers;
 import java.util.ArrayList;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.Engine;
 import neon.core.event.StoreEvent;
-import neon.entities.Clothing;
-import neon.entities.Creature;
-import neon.entities.Item;
-import neon.entities.Weapon;
+import neon.entities.*;
 import neon.entities.components.Inventory;
 import neon.entities.property.Slot;
 import neon.magic.Effect;
@@ -40,6 +36,13 @@ import net.engio.mbassy.listener.References;
 @Listener(references = References.Strong)
 @Slf4j
 public class InventoryHandler {
+
+  private final UIDStore uidStore;
+
+  public InventoryHandler(UIDStore gameStores) {
+    this.uidStore = gameStores;
+  }
+
   /**
    * Adds or removes an {@code Entity} from the {@code UIDStore}.
    *
@@ -50,10 +53,10 @@ public class InventoryHandler {
     log.trace("handle {}", event);
     switch (event.getMode()) {
       case ADD:
-        Engine.getStore().addEntity(event.getEntity());
+        uidStore.addEntity(event.getEntity());
         break;
       case REMOVE:
-        Engine.getStore().removeEntity(event.getUID());
+        uidStore.removeEntity(event.getUID());
         break;
     }
   }
@@ -64,8 +67,8 @@ public class InventoryHandler {
    * @param creature a creature
    * @param uid the uid of the item to add
    */
-  public static void addItem(Creature creature, long uid) {
-    Item item = (Item) Engine.getStore().getEntity(uid);
+  public void addItem(Creature creature, long uid) {
+    Item item = (Item) uidStore.getEntity(uid);
     if (item instanceof Item.Coin) {
       creature.getInventoryComponent().addMoney(item.resource.cost);
     } else {
@@ -78,7 +81,7 @@ public class InventoryHandler {
    *
    * @param uid the uid of the the item to remove
    */
-  public static void removeItem(Creature creature, long uid) {
+  public void removeItem(Creature creature, long uid) {
     if (creature.getInventoryComponent().hasEquiped(uid)) {
       unequip(uid, creature); // first unequip if you still have this equipped
     }
@@ -91,12 +94,12 @@ public class InventoryHandler {
    * @param id		the name of the item to remove
    * @param amount	the number of items to remove
    */
-  public static Collection<Long> removeItems(Creature creature, String id, int amount) {
+  public Collection<Long> removeItems(Creature creature, String id, int amount) {
     ArrayList<Long> removal = new ArrayList<Long>();
     for (Long uid : creature.getInventoryComponent()) {
-      Item item = (Item) Engine.getStore().getEntity(uid);
+      Item item = (Item) uidStore.getEntity(uid);
       if (item.getID().equals(id)) {
-        InventoryHandler.removeItem(creature, item.getUID());
+        removeItem(creature, item.getUID());
         removal.add(uid);
         amount--;
       }
@@ -107,10 +110,9 @@ public class InventoryHandler {
     return removal;
   }
 
-  public static void equip(Item item, Creature creature) {
+  public void equip(Item item, Creature creature) {
     Inventory inventory = creature.getInventoryComponent();
-    if (item instanceof Clothing) {
-      Clothing c = (Clothing) item;
+    if (item instanceof Clothing c) {
       switch (c.getSlot()) {
         case RING:
           if (inventory.get(Slot.RING_LEFT) == 0) {
@@ -138,12 +140,12 @@ public class InventoryHandler {
         default:
           break;
       }
-      if (c.getMagicComponent().getSpell() != null) {
+      if (c.getMagicComponent() != null && c.getMagicComponent().getSpell() != null) {
         MagicUtils.equip(creature, (Clothing) item);
       }
     } else if (item instanceof Weapon) {
-      Weapon weapon = (Weapon) Engine.getStore().getEntity((inventory.get(Slot.WEAPON)));
-      Weapon ammo = (Weapon) Engine.getStore().getEntity((inventory.get(Slot.AMMO)));
+      Weapon weapon = (Weapon) uidStore.getEntity((inventory.get(Slot.WEAPON)));
+      Weapon ammo = (Weapon) uidStore.getEntity((inventory.get(Slot.AMMO)));
 
       switch (((Weapon) item).getWeaponType()) {
         case THROWN:
@@ -183,11 +185,10 @@ public class InventoryHandler {
     }
   }
 
-  public static void unequip(long uid, Creature creature) {
+  public void unequip(long uid, Creature creature) {
     Inventory inventory = creature.getInventoryComponent();
-    Item item = (Item) Engine.getStore().getEntity(uid);
-    if (item instanceof Clothing) {
-      Clothing c = (Clothing) item;
+    Item item = (Item) uidStore.getEntity(uid);
+    if (item instanceof Clothing c) {
       if (c.getSlot().equals(Slot.RING)) {
         if (inventory.get(Slot.RING_LEFT) == c.getUID()) {
           inventory.remove(Slot.RING_LEFT);
@@ -218,10 +219,10 @@ public class InventoryHandler {
    * @param id
    * @return the number of items with the given id the given creature owns
    */
-  public static int getAmount(Creature creature, String id) {
+  public int getAmount(Creature creature, String id) {
     int count = 0;
     for (long uid : creature.getInventoryComponent()) {
-      Item item = (Item) Engine.getStore().getEntity(uid);
+      Item item = (Item) uidStore.getEntity(uid);
       if (item.getID().equals(id)) {
         count++;
       }
@@ -232,10 +233,10 @@ public class InventoryHandler {
   /**
    * @return a creature's weight
    */
-  public static int getWeight(Creature creature) {
+  public int getWeight(Creature creature) {
     float sum = 0;
     for (long uid : creature.getInventoryComponent()) {
-      sum += ((Item) Engine.getStore().getEntity(uid)).resource.weight;
+      sum += ((Item) uidStore.getEntity(uid)).resource.weight;
     }
     // in case of 'burden' spell
     for (Spell s : creature.getActiveSpells()) {

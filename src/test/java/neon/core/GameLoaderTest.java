@@ -25,7 +25,7 @@ import neon.entities.property.Gender;
 import neon.resources.RSign;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
  */
 public class GameLoaderTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
 
   @BeforeEach
   public void setUp() throws Exception {
@@ -61,17 +61,17 @@ public class GameLoaderTest {
 
     // Create instance of GameLoader with GameContext
     // Configuration is not needed for initGame(), only for loadGame()
-    GameLoader gameLoader = new GameLoader(context, null);
+    GameLoader gameLoader = new GameLoader(context, TestEngineContext.getGameStores(), null);
 
     // Get RSign "alraun" from our resource manager
-    RSign alraun = (RSign) context.getResources().getResource("s_alraun", "magic");
+    RSign alraun = (RSign) TestEngineContext.getTestResources().getResource("s_alraun", "magic");
 
     // Call gameLoader.initGame
     gameLoader.initGame(
         "dwarf", "Bilbo", Gender.MALE, Player.Specialisation.combat, "adventurer", alraun);
 
     // Verify player was created
-    assertNotNull(context.getPlayer());
-    assertEquals("Bilbo", context.getPlayer().getName());
+    assertNotNull(TestEngineContext.getGameStores().getStore().getPlayer());
+    assertEquals("Bilbo", TestEngineContext.getGameStores().getStore().getPlayer().getName());
   }
 }

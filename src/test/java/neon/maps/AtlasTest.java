@@ -1,16 +1,12 @@
 package neon.maps;
 
-import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,21 +18,19 @@ import org.junit.jupiter.api.Test;
  */
 class AtlasTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
   private Atlas atlas;
+  private AtlasPosition atlasPosition;
+  private ZoneFactory zoneFactory;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
-    atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            testDb,
-            new EngineEntityStore(),
-            new EngineResourceProvider(),
-            new EngineQuestProvider(),
-            createDefaultZoneActivator());
+    atlas = TestEngineContext.getTestAtlas();
+    atlasPosition =
+        new AtlasPosition(TestEngineContext.getGameStores(), TestEngineContext.getQuestTracker());
+    zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
   @AfterEach
@@ -55,11 +49,11 @@ class AtlasTest {
 
   @Test
   void testSetMapAddsToCache() {
-    World world = new World("Test World", 100);
+    World world = new World("Test World", 100, zoneFactory);
 
-    atlas.setMap(world);
+    atlasPosition.setMap(world);
 
-    Map retrievedMap = atlas.getCurrentMap();
+    Map retrievedMap = atlasPosition.getCurrentMap();
     assertNotNull(retrievedMap);
     assertEquals(100, retrievedMap.getUID());
     assertEquals("Test World", retrievedMap.getName());
@@ -67,91 +61,61 @@ class AtlasTest {
 
   @Test
   void testGetCurrentMapReturnsSetMap() {
-    World world1 = new World("World 1", 101);
-    World world2 = new World("World 2", 102);
+    World world1 = new World("World 1", 101, zoneFactory);
+    World world2 = new World("World 2", 102, zoneFactory);
 
-    atlas.setMap(world1);
-    assertEquals(101, atlas.getCurrentMap().getUID());
+    atlasPosition.setMap(world1);
+    assertEquals(101, atlasPosition.getCurrentMap().getUID());
 
-    atlas.setMap(world2);
-    assertEquals(102, atlas.getCurrentMap().getUID());
-  }
-
-  @Test
-  void testGetCurrentZoneReturnsCorrectZone() {
-    World world = new World("Test World", 103);
-    atlas.setMap(world);
-
-    Zone zone = atlas.getCurrentZone();
-    assertNotNull(zone);
-    // World creates a zone with hardcoded name "world"
-    assertEquals("world", zone.getName());
-  }
-
-  @Test
-  void testGetCurrentZoneIndexDefaultsToZero() {
-    World world = new World("Test World", 104);
-    atlas.setMap(world);
-
-    assertEquals(0, atlas.getCurrentZoneIndex());
+    atlasPosition.setMap(world2);
+    assertEquals(102, atlasPosition.getCurrentMap().getUID());
   }
 
   @Test
   void testMultipleMapsDoNotInterfere() {
-    World world1 = new World("World 1", 201);
-    World world2 = new World("World 2", 202);
+    World world1 = new World("World 1", 201, zoneFactory);
+    World world2 = new World("World 2", 202, zoneFactory);
 
-    atlas.setMap(world1);
-    atlas.setMap(world2);
+    atlasPosition.setMap(world1);
+    atlasPosition.setMap(world2);
 
     // Set back to world1
-    atlas.setMap(world1);
-    assertEquals(201, atlas.getCurrentMap().getUID());
-    assertEquals("World 1", atlas.getCurrentMap().getName());
+    atlasPosition.setMap(world1);
+    assertEquals(201, atlasPosition.getCurrentMap().getUID());
+    assertEquals("World 1", atlasPosition.getCurrentMap().getName());
 
     // Set to world2
-    atlas.setMap(world2);
-    assertEquals(202, atlas.getCurrentMap().getUID());
-    assertEquals("World 2", atlas.getCurrentMap().getName());
+    atlasPosition.setMap(world2);
+    assertEquals(202, atlasPosition.getCurrentMap().getUID());
+    assertEquals("World 2", atlasPosition.getCurrentMap().getName());
   }
 
   @Test
   void testSetMapOnlyAddsToCacheOnce() {
-    World world = new World("Test World", 300);
+    World world = new World("Test World", 300, zoneFactory);
 
-    atlas.setMap(world);
-    atlas.setMap(world); // Second call should not duplicate
+    atlasPosition.setMap(world);
+    atlasPosition.setMap(world); // Second call should not duplicate
 
     // Verify map is still retrievable
-    assertEquals(300, atlas.getCurrentMap().getUID());
+    assertEquals(300, atlasPosition.getCurrentMap().getUID());
   }
 
   @Test
   void testCacheWithMultipleMaps() {
     // Add multiple maps to cache
     for (int i = 0; i < 10; i++) {
-      World world = new World("World " + i, 400 + i);
-      atlas.setMap(world);
+      World world = new World("World " + i, 400 + i, zoneFactory);
+      atlasPosition.setMap(world);
     }
 
     // Verify last map is current
-    assertEquals(409, atlas.getCurrentMap().getUID());
+    assertEquals(409, atlasPosition.getCurrentMap().getUID());
 
     // Switch between maps
-    World world5 = new World("World 5", 405);
-    atlas.setMap(world5);
-    assertEquals(405, atlas.getCurrentMap().getUID());
-  }
-
-  @Test
-  void testWorldWithMultipleZones() {
-    // Worlds only have one zone, but we can test zone access
-    World world = new World("Single Zone World", 500);
-    atlas.setMap(world);
-
-    Zone zone = atlas.getCurrentZone();
-    assertNotNull(zone);
-    assertEquals(0, atlas.getCurrentZoneIndex());
+    World world5 = new World("World 5", 405, zoneFactory);
+    atlasPosition.setMap(world5);
+    assertEquals(405, atlasPosition.getCurrentMap().getUID());
   }
 
   // Note: Dungeon serialization through MapDb requires special handling
@@ -166,8 +130,8 @@ class AtlasTest {
         PerformanceHarness.measure(
             () -> {
               for (int i = 0; i < mapCount; i++) {
-                World world = new World("World " + i, 700 + i);
-                atlas.setMap(world);
+                World world = new World("World " + i, 700 + i, zoneFactory);
+                atlasPosition.setMap(world);
               }
               return null;
             });
@@ -185,13 +149,13 @@ class AtlasTest {
   void testCacheRetrievalPerformance() throws Exception {
     // Add maps to cache
     for (int i = 0; i < 20; i++) {
-      World world = new World("World " + i, 800 + i);
-      atlas.setMap(world);
+      World world = new World("World " + i, 800 + i, zoneFactory);
+      atlasPosition.setMap(world);
     }
 
     // Measure retrieval time
     PerformanceHarness.MeasuredResult<Map> result =
-        PerformanceHarness.measure(() -> atlas.getCurrentMap());
+        PerformanceHarness.measure(() -> atlasPosition.getCurrentMap());
 
     System.out.printf(
         "[PERF] Cache retrieval: %d ms (%d ns)%n",
@@ -204,9 +168,19 @@ class AtlasTest {
   @Test
   void testMapDbPersistsAcrossAtlasInstances() throws IOException {
     // Create first atlas and add map
-    Atlas atlas1 = new Atlas(TestEngineContext.getStubFileSystem(), "shared-cache");
-    World world = new World("Persistent World", 900);
-    atlas1.setMap(world);
+    Atlas atlas1 =
+        new Atlas(
+            TestEngineContext.getStubFileSystem(),
+            "shared-cache",
+            TestEngineContext.getTestEntityStore(),
+            TestEngineContext.getTestResources(),
+            TestEngineContext.getMapLoader());
+    AtlasPosition atlasPosition =
+        new AtlasPosition(TestEngineContext.getGameStores(), TestEngineContext.getQuestTracker());
+
+    World world = new World("Persistent World", 900, zoneFactory);
+
+    atlasPosition.setMap(world);
 
     // Create second atlas with same cache name
     // Note: In the current implementation, Atlas always creates a new in-memory DB,

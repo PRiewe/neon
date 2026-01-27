@@ -18,11 +18,8 @@
 
 package neon.core.handlers;
 
-import neon.core.Engine;
-import neon.entities.Armor;
-import neon.entities.Creature;
-import neon.entities.Entity;
-import neon.entities.Weapon;
+import java.io.Serializable;
+import neon.entities.*;
 import neon.entities.components.Inventory;
 import neon.entities.property.Skill;
 import neon.entities.property.Slot;
@@ -30,33 +27,29 @@ import neon.resources.RClothing;
 import neon.resources.RWeapon.WeaponType;
 import neon.util.Dice;
 
-public class CombatUtils {
+public class CombatUtils implements Serializable {
+
+  private final UIDStore uidStore;
+
+  public CombatUtils(UIDStore uidStore) {
+    this.uidStore = uidStore;
+  }
+
   /**
    * Does an attack roll. This is used to determine if this creature is able to hit anything with an
    * attack.
    *
    * @return an attack roll
    */
-  protected static int attack(Creature creature) {
-    switch (getWeaponType(creature)) {
-      case BLADE_ONE:
-      case BLADE_TWO:
-        return SkillHandler.check(creature, Skill.BLADE);
-      case BLUNT_ONE:
-      case BLUNT_TWO:
-        return SkillHandler.check(creature, Skill.BLUNT);
-      case AXE_ONE:
-      case AXE_TWO:
-        return SkillHandler.check(creature, Skill.AXE);
-      case SPEAR:
-        return SkillHandler.check(creature, Skill.SPEAR);
-      case BOW:
-      case CROSSBOW:
-      case THROWN:
-        return SkillHandler.check(creature, Skill.ARCHERY);
-      default:
-        return SkillHandler.check(creature, Skill.UNARMED);
-    }
+  protected int attack(Creature creature) {
+    return switch (getWeaponType(creature)) {
+      case BLADE_ONE, BLADE_TWO -> SkillHandler.check(creature, Skill.BLADE);
+      case BLUNT_ONE, BLUNT_TWO -> SkillHandler.check(creature, Skill.BLUNT);
+      case AXE_ONE, AXE_TWO -> SkillHandler.check(creature, Skill.AXE);
+      case SPEAR -> SkillHandler.check(creature, Skill.SPEAR);
+      case BOW, CROSSBOW, THROWN -> SkillHandler.check(creature, Skill.ARCHERY);
+      default -> SkillHandler.check(creature, Skill.UNARMED);
+    };
   }
 
   /**
@@ -64,20 +57,20 @@ public class CombatUtils {
    *
    * @return the attack value
    */
-  protected static int getAV(Creature creature) {
+  protected int getAV(Creature creature) {
     Inventory inventory = creature.getInventoryComponent();
 
     int damage;
     if (inventory.hasEquiped(Slot.WEAPON)) {
-      Weapon weapon = (Weapon) Engine.getStore().getEntity(inventory.get(Slot.WEAPON));
+      Weapon weapon = (Weapon) uidStore.getEntity(inventory.get(Slot.WEAPON));
       damage = Dice.roll(weapon.getDamage());
       if (weapon.getWeaponType().equals(WeaponType.BOW)
           || weapon.getWeaponType().equals(WeaponType.CROSSBOW)) {
-        Weapon ammo = (Weapon) Engine.getStore().getEntity(inventory.get(Slot.AMMO));
+        Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
         damage = (damage + Dice.roll(ammo.getDamage())) / 2;
       }
     } else if (inventory.hasEquiped(Slot.AMMO)) {
-      Weapon ammo = (Weapon) Engine.getStore().getEntity(inventory.get(Slot.AMMO));
+      Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
       damage = Dice.roll(ammo.getDamage());
     } else {
       damage = Dice.roll(creature.species.av);
@@ -85,22 +78,10 @@ public class CombatUtils {
 
     float mod = 1f;
     switch (getWeaponType(creature)) {
-      case BLADE_ONE:
-      case BLADE_TWO:
-      case BLUNT_ONE:
-      case BLUNT_TWO:
-      case AXE_ONE:
-      case AXE_TWO:
-      case SPEAR:
-        mod = creature.species.dex / 20;
-        break;
-      case BOW:
-      case CROSSBOW:
-      case THROWN:
-        mod = creature.species.str / 20;
-        break;
-      default:
-        break;
+      case BLADE_ONE, BLADE_TWO, BLUNT_ONE, BLUNT_TWO, AXE_ONE, AXE_TWO, SPEAR ->
+          mod = creature.species.dex / 20;
+      case BOW, CROSSBOW, THROWN -> mod = creature.species.str / 20;
+      default -> {}
     }
     return (int) (damage * mod);
   }
@@ -111,23 +92,15 @@ public class CombatUtils {
    *
    * @return a block skill check
    */
-  protected static int block(Creature creature) {
+  protected int block(Creature creature) {
     if (creature.getInventoryComponent().hasEquiped(Slot.SHIELD)) {
       float mod = 1f;
-      Armor armor =
-          (Armor) Engine.getStore().getEntity(creature.getInventoryComponent().get(Slot.SHIELD));
+      Armor armor = (Armor) uidStore.getEntity(creature.getInventoryComponent().get(Slot.SHIELD));
       switch (((RClothing) (armor.resource)).kind) {
-        case LIGHT:
-          mod = creature.getSkill(Skill.LIGHT_ARMOR) / 20f;
-          break;
-        case MEDIUM:
-          mod = creature.getSkill(Skill.MEDIUM_ARMOR) / 20f;
-          break;
-        case HEAVY:
-          mod = creature.getSkill(Skill.HEAVY_ARMOR) / 20f;
-          break;
-        default:
-          break;
+        case LIGHT -> mod = creature.getSkill(Skill.LIGHT_ARMOR) / 20f;
+        case MEDIUM -> mod = creature.getSkill(Skill.MEDIUM_ARMOR) / 20f;
+        case HEAVY -> mod = creature.getSkill(Skill.HEAVY_ARMOR) / 20f;
+        default -> {}
       }
 
       return (int) (SkillHandler.check(creature, Skill.BLOCK) * mod);
@@ -141,7 +114,7 @@ public class CombatUtils {
    *
    * @return a dodge skill check
    */
-  protected static int dodge(Creature creature) {
+  protected int dodge(Creature creature) {
     return SkillHandler.check(creature, Skill.DODGING);
   }
 
@@ -150,25 +123,17 @@ public class CombatUtils {
    *
    * @return the defense value
    */
-  public static int getDV(Creature creature) {
+  public int getDV(Creature creature) {
     float AR = creature.species.dv;
     for (Slot s : creature.getInventoryComponent().slots()) {
-      Entity item = Engine.getStore().getEntity(creature.getInventoryComponent().get(s));
-      if (item instanceof Armor) {
-        Armor c = (Armor) item;
+      Entity item = uidStore.getEntity(creature.getInventoryComponent().get(s));
+      if (item instanceof Armor c) {
         int mod = 0;
         switch (((RClothing) c.resource).kind) {
-          case LIGHT:
-            mod = 1 + creature.getSkill(Skill.LIGHT_ARMOR) / 20;
-            break;
-          case MEDIUM:
-            mod = 1 + creature.getSkill(Skill.MEDIUM_ARMOR) / 20;
-            break;
-          case HEAVY:
-            mod = 1 + creature.getSkill(Skill.HEAVY_ARMOR) / 20;
-            break;
-          default:
-            break;
+          case LIGHT -> mod = 1 + creature.getSkill(Skill.LIGHT_ARMOR) / 20;
+          case MEDIUM -> mod = 1 + creature.getSkill(Skill.MEDIUM_ARMOR) / 20;
+          case HEAVY -> mod = 1 + creature.getSkill(Skill.HEAVY_ARMOR) / 20;
+          default -> {}
         }
         AR += ((RClothing) c.resource).rating * s.getArmorModifier() * mod;
       }
@@ -180,13 +145,13 @@ public class CombatUtils {
    * @param creature
    * @return the type of the currently equiped weapon
    */
-  public static WeaponType getWeaponType(Creature creature) {
+  public WeaponType getWeaponType(Creature creature) {
     Inventory inventory = creature.getInventoryComponent();
     if (inventory.hasEquiped(Slot.WEAPON)) {
-      Weapon weapon = (Weapon) Engine.getStore().getEntity(inventory.get(Slot.WEAPON));
+      Weapon weapon = (Weapon) uidStore.getEntity(inventory.get(Slot.WEAPON));
       return (weapon.getWeaponType());
     } else if (inventory.hasEquiped(Slot.AMMO)
-        && ((Weapon) Engine.getStore().getEntity(inventory.get(Slot.AMMO))).getWeaponType()
+        && ((Weapon) uidStore.getEntity(inventory.get(Slot.AMMO))).getWeaponType()
             == WeaponType.THROWN) {
       return WeaponType.THROWN;
     } else {

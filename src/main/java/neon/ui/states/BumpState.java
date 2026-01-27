@@ -24,6 +24,7 @@ import java.awt.event.KeyListener;
 import java.util.EventObject;
 import javax.swing.Popup;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.event.CombatEvent;
 import neon.core.handlers.MotionHandler;
 import neon.entities.Creature;
@@ -40,13 +41,21 @@ public class BumpState extends State implements KeyListener {
   private Creature creature;
   private Popup popup;
   private GamePanel panel;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
+  private final GameStores gameStores;
+  private final MotionHandler motionHandler;
 
   public BumpState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(parent);
+    this.gameStores = gameStores;
+    this.motionHandler = new MotionHandler(gameStores.getStore());
     this.bus = bus;
     this.ui = ui;
     this.context = context;
@@ -81,8 +90,8 @@ public class BumpState extends State implements KeyListener {
     switch (ke.getKeyCode()) {
       case KeyEvent.VK_1:
       case KeyEvent.VK_NUMPAD1:
-        bus.publishAsync(new CombatEvent(context.getPlayer(), creature));
-        creature.brain.makeHostile(context.getPlayer());
+        bus.publishAsync(new CombatEvent(gameStores.getStore().getPlayer(), creature));
+        creature.brain.makeHostile(gameStores.getStore().getPlayer());
         bus.publishAsync(new TransitionEvent("return"));
         break;
       case KeyEvent.VK_2:
@@ -104,12 +113,12 @@ public class BumpState extends State implements KeyListener {
       case KeyEvent.VK_5:
       case KeyEvent.VK_NUMPAD5:
         if (isMount(creature)) {
-          Player player = context.getPlayer();
+          Player player = gameStores.getStore().getPlayer();
           player.mount(creature);
           Rectangle pBounds = player.getShapeComponent();
           Rectangle cBounds = creature.getShapeComponent();
           pBounds.setLocation(cBounds.x, cBounds.y);
-          context.getAtlas().getCurrentZone().removeCreature(creature.getUID());
+          context.getAtlasPosition().getCurrentZone().removeCreature(creature.getUID());
           panel.repaint();
           bus.publishAsync(new TransitionEvent("return"));
         }
@@ -122,11 +131,11 @@ public class BumpState extends State implements KeyListener {
   }
 
   private void swap() {
-    Player player = context.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     Rectangle pBounds = player.getShapeComponent();
     Rectangle cBounds = creature.getShapeComponent();
 
-    if (MotionHandler.move(player, cBounds.x, cBounds.y) == MotionHandler.OK) {
+    if (motionHandler.move(player, cBounds.x, cBounds.y) == MotionHandler.OK) {
       cBounds.setLocation(pBounds.x, pBounds.y);
     }
   }

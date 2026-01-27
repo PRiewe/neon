@@ -22,22 +22,28 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.magic.Effect;
 import neon.resources.RSpell;
 
 public class PowerEditor extends ObjectEditor implements ActionListener {
-  private JTextField nameField;
-  private JFormattedTextField areaField, rangeField, sizeField, durationField, intervalField;
-  private JComboBox<Effect> effectBox;
-  private JTextArea scriptArea;
-  private RSpell.Power data;
+  private final JTextField nameField;
+  private final JFormattedTextField areaField;
+  private final JFormattedTextField rangeField;
+  private final JFormattedTextField sizeField;
+  private final JFormattedTextField durationField;
+  private final JFormattedTextField intervalField;
+  private final JComboBox<Effect> effectBox;
+  private final JTextArea scriptArea;
+  private final RSpell.Power data;
+  private final DataStore dataStore;
 
-  public PowerEditor(JFrame parent, RSpell.Power data) {
+  public PowerEditor(JFrame parent, RSpell.Power data, DataStore dataStore) {
     super(parent, "Power: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel();
     GroupLayout layout = new GroupLayout(props);
@@ -181,7 +187,7 @@ public class PowerEditor extends ObjectEditor implements ActionListener {
     data.duration = Integer.parseInt(durationField.getText());
     data.interval = Integer.parseInt(intervalField.getText());
     data.script = scriptArea.getText();
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   public void actionPerformed(ActionEvent e) {

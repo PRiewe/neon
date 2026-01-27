@@ -6,15 +6,15 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+import neon.entities.UIDStore;
 import neon.maps.Atlas;
 import neon.maps.MapUtils;
 import neon.maps.Region;
 import neon.maps.Zone;
-import neon.maps.services.EntityStore;
 import neon.resources.RRegionTheme;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -109,9 +109,9 @@ class TownGeneratorIntegrationTest {
 
   @Nested
   class GenerateWithFullContextTests {
-    private MVStore testDb;
+    private MapStore testDb;
     private Atlas testAtlas;
-    private EntityStore entityStore;
+    private UIDStore entityStore;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -119,7 +119,7 @@ class TownGeneratorIntegrationTest {
       TestEngineContext.initialize(testDb);
       TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
       testAtlas = TestEngineContext.getTestAtlas();
-      entityStore = TestEngineContext.getTestEntityStore();
+      entityStore = TestEngineContext.getTestStore();
     }
 
     @AfterEach
@@ -138,7 +138,7 @@ class TownGeneratorIntegrationTest {
           new TownGenerator(
               zone,
               entityStore,
-              TestEngineContext.getTestResourceProvider(),
+              TestEngineContext.getTestResources(),
               MapUtils.withSeed(scenario.seed()));
 
       // When
@@ -171,7 +171,7 @@ class TownGeneratorIntegrationTest {
           new TownGenerator(
               zone,
               entityStore,
-              TestEngineContext.getTestResourceProvider(),
+              TestEngineContext.getTestResources(),
               MapUtils.withSeed(scenario.seed()));
 
       // When
@@ -198,7 +198,7 @@ class TownGeneratorIntegrationTest {
           new TownGenerator(
               zone,
               entityStore,
-              TestEngineContext.getTestResourceProvider(),
+              TestEngineContext.getTestResources(),
               MapUtils.withSeed(scenario.seed()));
 
       // When
@@ -235,7 +235,7 @@ class TownGeneratorIntegrationTest {
           new TownGenerator(
               zone,
               entityStore,
-              TestEngineContext.getTestResourceProvider(),
+              TestEngineContext.getTestResources(),
               MapUtils.withSeed(scenario.seed()));
 
       // When

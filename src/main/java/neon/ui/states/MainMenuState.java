@@ -29,6 +29,7 @@ import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.resources.CClient;
 import neon.ui.UserInterface;
 import neon.ui.dialog.LoadGameDialog;
@@ -39,29 +40,31 @@ import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.bus.MBassador;
 
 public class MainMenuState extends State {
-  private JPanel main;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JPanel main;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
+  private final GameStores gameStores;
 
   public MainMenuState(
       State parent,
       MBassador<EventObject> bus,
       UserInterface ui,
       String version,
-      GameContext context) {
+      GameContext context,
+      GameStores gameStores) {
     super(parent, "main menu");
     this.bus = bus;
     this.ui = ui;
     this.context = context;
-
+    this.gameStores = gameStores;
     // the main menu JPanel itself
     main = new JPanel(new BorderLayout());
 
     JPanel buttons = new JPanel(new GridLayout(0, 1));
     buttons.setBorder(new EmptyBorder(70, 120, 70, 120));
 
-    CClient ini = (CClient) context.getResources().getResource("client", "config");
+    CClient ini = (CClient) gameStores.getResources().getResource("client", "config");
 
     JLabel title =
         new JLabel("<html><font size=\"18\">" + ini.getTitle() + "</font></html>", JLabel.CENTER);
@@ -128,11 +131,11 @@ public class MainMenuState extends State {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("n")) {
-        new NewGameDialog(ui, bus, context).show();
+        new NewGameDialog(ui, bus, gameStores).show();
       } else if (e.getActionCommand().equals("l")) {
         new LoadGameDialog(ui.getWindow(), bus).show();
       } else if (e.getActionCommand().equals("o")) {
-        new OptionDialog(ui.getWindow(), context).show();
+        new OptionDialog(ui.getWindow(), context, gameStores).show();
       } else if (e.getActionCommand().equals("q")) {
         System.exit(0);
       }

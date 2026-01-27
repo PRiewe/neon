@@ -22,22 +22,28 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.editor.ColorCellRenderer;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RItem;
 import neon.util.ColorFactory;
 
 public class BookEditor extends ObjectEditor {
-  private JTextField nameField, textField;
-  private JFormattedTextField costField, weightField, charField;
-  private JComboBox<String> colorBox;
-  private RItem.Text data;
+  private final JTextField nameField;
+  private final JTextField textField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final RItem.Text data;
+  private final DataStore dataStore;
+  private final HelpLabels helpLabels;
 
-  public BookEditor(JFrame parent, RItem.Text data) {
+  public BookEditor(JFrame parent, RItem.Text data, DataStore dataStore) {
     super(parent, "Book Editor: " + data.id);
     this.data = data;
-
+    this.dataStore = dataStore;
+    helpLabels = new HelpLabels(dataStore);
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
     itemProps.setLayout(layout);
@@ -59,7 +65,7 @@ public class BookEditor extends ObjectEditor {
     weightField = new JFormattedTextField(NeonFormat.getFloatInstance());
     textField = new JTextField(15);
     JLabel nameHelpLabel = HelpLabels.getNameHelpLabel();
-    JLabel costHelpLabel = HelpLabels.getCostHelpLabel();
+    JLabel costHelpLabel = helpLabels.getCostHelpLabel();
     JLabel colorHelpLabel = HelpLabels.getColorHelpLabel();
     JLabel charHelpLabel = HelpLabels.getCharHelpLabel();
     JLabel weightHelpLabel = HelpLabels.getWeightHelpLabel();
@@ -161,6 +167,6 @@ public class BookEditor extends ObjectEditor {
     data.weight = Float.parseFloat(weightField.getText());
     data.content = textField.getText();
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 }

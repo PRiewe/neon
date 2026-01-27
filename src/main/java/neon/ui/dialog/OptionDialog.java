@@ -24,26 +24,33 @@ import java.awt.event.ActionEvent;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.swing.*;
 import javax.swing.border.*;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.model.NeonConfig;
 import neon.resources.CClient;
 import neon.systems.files.JacksonMapper;
 
 @Slf4j
 public class OptionDialog {
-  private JCheckBox audioBox;
-  private JRadioButton numpad, qwerty, azerty, qwertz;
-  private ButtonGroup group;
-  private JDialog frame;
+  private final JCheckBox audioBox;
+  private final JRadioButton numpad;
+  private final JRadioButton qwerty;
+  private final JRadioButton azerty;
+  private final JRadioButton qwertz;
+  private final ButtonGroup group;
+  private final JDialog frame;
   private final GameContext context;
+  private final GameStores gameStores;
 
-  public OptionDialog(JFrame parent, GameContext context) {
+  public OptionDialog(JFrame parent, GameContext context, GameStores gameStores) {
     this.context = context;
     frame = new JDialog(parent, false);
+    this.gameStores = gameStores;
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
     frame.setUndecorated(true);
     frame.setTitle("Options");
@@ -141,7 +148,7 @@ public class OptionDialog {
   }
 
   public void show() {
-    CClient keys = (CClient) context.getResources().getResource("client", "config");
+    CClient keys = (CClient) gameStores.getResources().getResource("client", "config");
 
     switch (keys.getSettings()) {
       case CClient.AZERTY:
@@ -206,7 +213,7 @@ public class OptionDialog {
       Configuration.audio = audioBox.isSelected();
 
       // Update keyboard layout
-      CClient keys = (CClient) context.getResources().getResource("client", "config");
+      CClient keys = (CClient) gameStores.getResources().getResource("client", "config");
       if (group.isSelected(numpad.getModel())) {
         keys.setKeys(CClient.NUMPAD);
         config.keys = "numpad";
@@ -224,9 +231,9 @@ public class OptionDialog {
       // Save config
       try {
         java.io.ByteArrayOutputStream out = mapper.toXml(config);
-        String xml = out.toString("UTF-8");
+        String xml = out.toString(StandardCharsets.UTF_8);
         FileOutputStream fileOut = new FileOutputStream("neon.ini.xml");
-        fileOut.write(xml.getBytes("UTF-8"));
+        fileOut.write(xml.getBytes(StandardCharsets.UTF_8));
         fileOut.close();
       } catch (IOException e) {
         log.error("Error saving config", e);

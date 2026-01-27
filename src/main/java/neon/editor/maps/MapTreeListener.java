@@ -21,14 +21,14 @@ package neon.editor.maps;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.tree.*;
+import neon.editor.DataStore;
 import neon.editor.Editor;
 import neon.editor.resources.IObject;
 import neon.editor.resources.IRegion;
 import neon.editor.resources.Instance;
 import neon.editor.resources.RMap;
 import neon.editor.resources.RZone;
-import neon.editor.services.EditorResourceProvider;
-import neon.maps.generators.DungeonGenerator;
+import neon.maps.generators.DungeonTerrainGenerator;
 import neon.resources.RCreature;
 import neon.resources.RItem;
 import neon.resources.RTerrain;
@@ -37,14 +37,16 @@ import neon.ui.graphics.Scene;
 import org.jdom2.Element;
 
 public class MapTreeListener implements MouseListener {
-  private JTree tree;
-  private JTabbedPane tabs;
-  private MapEditor editor;
+  private final JTree tree;
+  private final JTabbedPane tabs;
+  private final MapEditor editor;
+  private final DataStore dataStore;
 
-  public MapTreeListener(JTree tree, JTabbedPane mapPane, MapEditor editor) {
+  public MapTreeListener(JTree tree, JTabbedPane mapPane, MapEditor editor, DataStore dataStore) {
     this.tree = tree;
     tabs = mapPane;
     this.editor = editor;
+    this.dataStore = dataStore;
   }
 
   public void mouseExited(MouseEvent e) {}
@@ -57,8 +59,7 @@ public class MapTreeListener implements MouseListener {
     if (e.getButton() == MouseEvent.BUTTON1) {
       if (e.getClickCount() == 2) {
         Object selection = tree.getLastSelectedPathComponent();
-        if (tree.getSelectionPath() != null && selection instanceof ZoneTreeNode) {
-          ZoneTreeNode node = (ZoneTreeNode) selection;
+        if (tree.getSelectionPath() != null && selection instanceof ZoneTreeNode node) {
           RMap map = node.getZone().map;
           int choice = JOptionPane.NO_OPTION; // default just put zone on screen
           if (node.getZone().theme != null) { // unless a theme is set
@@ -77,7 +78,7 @@ public class MapTreeListener implements MouseListener {
           if (choice != JOptionPane.CANCEL_OPTION) { // and put on screen
             node.getZone().theme = null;
             if (node.getPane() == null) {
-              node.setPane(new EditablePane(node, tabs.getWidth(), tabs.getHeight()));
+              node.setPane(new EditablePane(node, tabs.getWidth(), tabs.getHeight(), dataStore));
               editor.getActiveMaps().add(node.getZone().map);
             }
             if (tabs.indexOfComponent(node.getPane()) == -1) {
@@ -125,8 +126,7 @@ public class MapTreeListener implements MouseListener {
   private void generateZone(RZone zone) {
     RZoneTheme theme = zone.theme;
 
-    String[][] terrain =
-        new DungeonGenerator(theme, null, new EditorResourceProvider(), null).generateTiles();
+    String[][] terrain = new DungeonTerrainGenerator().generateTilesOnly(theme).terrain();
     int width = terrain.length;
     int height = terrain[0].length;
     zone.map.load(); // map in orde brengen
@@ -134,12 +134,13 @@ public class MapTreeListener implements MouseListener {
 
     Instance r =
         new IRegion(
-            (RTerrain) Editor.resources.getResource(theme.walls, "terrain"),
+            (RTerrain) dataStore.getResourceManager().getResource(theme.walls, "terrain"),
             0,
             0,
             0,
             width,
-            height);
+            height,
+            dataStore);
     scene.addElement(r, r.getBounds(), r.z);
 
     byte layer = 1;
@@ -150,24 +151,38 @@ public class MapTreeListener implements MouseListener {
 
           Instance region =
               new IRegion(
-                  (RTerrain) Editor.resources.getResource(content[0], "terrain"),
+                  (RTerrain) dataStore.getResourceManager().getResource(content[0], "terrain"),
                   x,
                   y,
                   layer,
                   1,
-                  1);
+                  1,
+                  dataStore);
           scene.addElement(region, region.getBounds(), region.z);
 
           if (content.length > 1) {
             for (int i = 1; i < content.length; i++) {
               if (content[i].startsWith("i")) {
                 String id = content[i].replace("i:", "");
-                Instance item = new IObject((RItem) Editor.resources.getResource(id), x, y, 1, 1);
+                Instance item =
+                    new IObject(
+                        (RItem) dataStore.getResourceManager().getResource(id),
+                        x,
+                        y,
+                        1,
+                        1,
+                        dataStore);
                 scene.addElement(item, item.getBounds(), item.z);
               } else if (content[i].startsWith("c")) {
                 String id = content[i].replace("c:", "");
                 Instance creature =
-                    new IObject((RCreature) Editor.resources.getResource(id), x, y, 1, 1);
+                    new IObject(
+                        (RCreature) dataStore.getResourceManager().getResource(id),
+                        x,
+                        y,
+                        1,
+                        1,
+                        dataStore);
                 scene.addElement(creature, creature.getBounds(), creature.z);
                 //							} else if(content[i].startsWith("p")) {
                 //								String id = content[i].replace("p:", "");
@@ -180,7 +195,7 @@ public class MapTreeListener implements MouseListener {
   }
 
   private class TabLabelListener implements ActionListener {
-    private ZoneTreeNode node;
+    private final ZoneTreeNode node;
 
     public TabLabelListener(ZoneTreeNode node) {
       this.node = node;
@@ -193,7 +208,7 @@ public class MapTreeListener implements MouseListener {
 
   @SuppressWarnings("serial")
   private class ClickAction extends AbstractAction {
-    private RMap map;
+    private final RMap map;
 
     public ClickAction(String name, RMap map) {
       super(name);
@@ -211,7 +226,8 @@ public class MapTreeListener implements MouseListener {
                     Editor.getFrame(), question, "Theme warning", JOptionPane.YES_NO_OPTION)
                 == JOptionPane.OK_OPTION) {
           map.theme = null;
-          LevelDialog.Properties props = new LevelDialog().showInputDialog(Editor.getFrame());
+          LevelDialog.Properties props =
+              new LevelDialog(dataStore).showInputDialog(Editor.getFrame());
           if (!props.cancelled()) {
             int index = 0;
             while (map.zones.containsKey(index)) {
@@ -226,15 +242,16 @@ public class MapTreeListener implements MouseListener {
               region.setAttribute("h", Integer.toString(props.getHeight()));
               region.setAttribute("text", props.getTerrain());
               region.setAttribute("l", "0");
-              IRegion ri = new IRegion(region);
-              zone = new RZone(props.getName(), map.getPath()[0], ri, map);
+              IRegion ri = new IRegion(region, dataStore);
+              zone = new RZone(props.getName(), map.getPath()[0], ri, map, dataStore);
             } else {
               System.out.println(props.getTheme());
               RZoneTheme theme =
-                  (RZoneTheme) Editor.resources.getResource(props.getTheme(), "theme");
-              zone = new RZone(props.getName(), map.getPath()[0], theme, map);
+                  (RZoneTheme)
+                      dataStore.getResourceManager().getResource(props.getTheme(), "theme");
+              zone = new RZone(props.getName(), map.getPath()[0], theme, map, dataStore);
             }
-            ZoneTreeNode node = new ZoneTreeNode(index, zone);
+            ZoneTreeNode node = new ZoneTreeNode(index, zone, dataStore);
             map.zones.put(index, zone);
             MapTreeNode top = (MapTreeNode) tree.getLastSelectedPathComponent();
             model.insertNodeInto(node, top, index);
@@ -247,16 +264,16 @@ public class MapTreeListener implements MouseListener {
         map.removeZone(node.getZoneLevel());
       } else if (e.getActionCommand().equals("Edit zone")) {
         ZoneTreeNode node = (ZoneTreeNode) tree.getLastSelectedPathComponent();
-        new ZoneEditor(node, Editor.getFrame()).show();
+        new ZoneEditor(node, Editor.getFrame(), dataStore).show();
       } else if (e.getActionCommand().equals("Add map")) {
-        editor.makeMap(new MapDialog().showInputDialog(Editor.getFrame()));
+        editor.makeMap(new MapDialog(dataStore).showInputDialog(Editor.getFrame()));
       } else if (e.getActionCommand().equals("Delete map")) {
         MapTreeNode map = (MapTreeNode) tree.getLastSelectedPathComponent();
         model.removeNodeFromParent(map);
         editor.deleteMap(map.getMap().id);
       } else if (e.getActionCommand().equals("Edit map")) {
         MapTreeNode map = (MapTreeNode) tree.getLastSelectedPathComponent();
-        new MapInfoEditor(Editor.getFrame(), map, tree).show();
+        new MapInfoEditor(Editor.getFrame(), map, tree, dataStore).show();
       }
     }
   }

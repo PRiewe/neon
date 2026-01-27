@@ -76,7 +76,7 @@ public class FeatureGenerator {
   protected void generateRiver(String[][] terrain, int[][] tiles, String type, int size) {
     int width = terrain.length;
     int height = terrain[0].length;
-    boolean direction = mapUtils.getRandomSource().nextDouble() > 0.5;
+    boolean direction = mapUtils.randomSource().nextDouble() > 0.5;
     Point[] points = mapUtils.randomRibbon(new Rectangle(width + 1, height + 1), direction);
     Polygon river = generateRiverPolygon(points, size, direction);
     for (int x = 0; x < tiles.length; x++) {

@@ -29,10 +29,10 @@ import neon.core.event.LoadEvent;
 import net.engio.mbassy.bus.MBassador;
 
 public class LoadGameDialog {
-  private JDialog frame;
-  private JList<String> games;
-  private JPanel menu;
-  private MBassador<EventObject> bus;
+  private final JDialog frame;
+  private final JList<String> games;
+  private final JPanel menu;
+  private final MBassador<EventObject> bus;
 
   public LoadGameDialog(JFrame parent, MBassador<EventObject> bus) {
     this.bus = bus;
@@ -138,7 +138,7 @@ public class LoadGameDialog {
 
     public void actionPerformed(ActionEvent a) {
       if (a.getActionCommand().equals("ok")) {
-        bus.publishAsync(new LoadEvent(this, (String) games.getSelectedValue()));
+        bus.publishAsync(new LoadEvent(this, games.getSelectedValue()));
       }
       frame.dispose();
     }

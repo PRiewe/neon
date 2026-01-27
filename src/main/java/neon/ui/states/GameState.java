@@ -20,14 +20,16 @@ package neon.ui.states;
 
 import java.awt.event.*;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.EventObject;
 import java.util.Scanner;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.ScriptInterface;
 import neon.core.event.*;
+import neon.core.handlers.CombatUtils;
 import neon.core.handlers.TurnHandler;
-import neon.entities.Player;
 import neon.entities.components.HealthComponent;
 import neon.entities.property.Attribute;
 import neon.resources.CClient;
@@ -42,33 +44,40 @@ import net.phys2d.raw.CollisionListener;
 
 @Slf4j
 public class GameState extends State implements KeyListener, CollisionListener {
-  private Player player;
-  private GamePanel panel;
-  private CClient keys;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final GamePanel panel;
+  private final CClient keys;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
+  private final GameStores gameStores;
 
   public GameState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(parent, "game module");
     this.bus = bus;
     this.ui = ui;
     this.context = context;
-    keys = (CClient) context.getResources().getResource("client", "config");
-    panel = new GamePanel(context);
+    keys = (CClient) gameStores.getResources().getResource("client", "config");
+    panel = new GamePanel(gameStores.getStore(), new CombatUtils(gameStores.getStore()), context);
+    this.gameStores = gameStores;
     setVariable("panel", panel);
 
     // makes functions available for scripting:
-    context.getScriptEngine().getBindings("js").putMember("engine", new ScriptInterface(panel));
-    bus.subscribe(new TurnHandler(panel));
+    context
+        .getScriptEngine()
+        .getBindings("js")
+        .putMember("engine", new ScriptInterface(panel, gameStores.getStore(), context));
+    bus.subscribe(new TurnHandler(panel, gameStores, context));
   }
 
   @Override
   public void enter(TransitionEvent e) {
     ui.showPanel(panel);
     if (e.toString().equals("start")) {
-      player = context.getPlayer();
       context.getPhysicsEngine().addListener(this);
       // in case game starts, the events of the current clock tick must be executed now
       bus.publishAsync(new TurnEvent(context.getTimer().getTime(), true));
@@ -103,35 +112,33 @@ public class GameState extends State implements KeyListener, CollisionListener {
   public void keyPressed(KeyEvent key) {
     int code = key.getKeyCode();
     switch (code) {
-      case KeyEvent.VK_CONTROL:
-        bus.publishAsync(new TransitionEvent("inventory"));
-        break;
-      case KeyEvent.VK_F5:
-        save(false);
-        break;
-      case KeyEvent.VK_ESCAPE:
-        save(true);
-        break;
-      case KeyEvent.VK_F1:
+      case KeyEvent.VK_CONTROL -> bus.publishAsync(new TransitionEvent("inventory"));
+      case KeyEvent.VK_F5 -> save(false);
+      case KeyEvent.VK_ESCAPE -> save(true);
+      case KeyEvent.VK_F1 -> {
         InputStream input = GameState.class.getResourceAsStream("/neon/core/help.html");
-        String help = new Scanner(input, "UTF-8").useDelimiter("\\A").next();
+        String help = new Scanner(input, StandardCharsets.UTF_8).useDelimiter("\\A").next();
         ui.showHelp(help);
-        break;
-      case KeyEvent.VK_F2:
-        panel.toggleHUD();
-        break;
-      case KeyEvent.VK_F3:
-        ui.showConsole(context.getScriptEngine());
-        break;
-      default:
+      }
+      case KeyEvent.VK_F2 -> panel.toggleHUD();
+      case KeyEvent.VK_F3 -> ui.showConsole(context.getScriptEngine());
+      default -> {
         if (code == keys.map) {
-          new MapDialog(ui.getWindow(), context.getAtlas().getCurrentZone(), context).show();
+          new MapDialog(
+                  ui.getWindow(),
+                  context.getAtlasPosition().getCurrentZone(),
+                  gameStores.getStore())
+              .show();
         } else if (code == keys.sneak) {
-          player.setSneaking(!player.isSneaking());
+          gameStores
+              .getStore()
+              .getPlayer()
+              .setSneaking(!gameStores.getStore().getPlayer().isSneaking());
           panel.repaint();
         } else if (code == keys.journal) {
           bus.publishAsync(new TransitionEvent("journal"));
         }
+      }
     }
   }
 
@@ -161,12 +168,12 @@ public class GameState extends State implements KeyListener, CollisionListener {
     try {
       if (one.equals(0L) && two instanceof neon.maps.Region) {
         for (String s : ((neon.maps.Region) two).getScripts()) {
-          RScript rs = (RScript) context.getResources().getResource(s, "script");
+          RScript rs = (RScript) gameStores.getResources().getResource(s, "script");
           context.execute(rs.script);
         }
       } else if (one instanceof neon.maps.Region && two.equals(0L)) {
         for (String s : ((neon.maps.Region) one).getScripts()) {
-          RScript rs = (RScript) context.getResources().getResource(s, "script");
+          RScript rs = (RScript) gameStores.getResources().getResource(s, "script");
           context.execute(rs.script);
         }
       }
@@ -182,24 +189,20 @@ public class GameState extends State implements KeyListener, CollisionListener {
   public void handleCombat(CombatEvent ce) {
     log.trace("handleCombat {}", ce);
     if (ce.isFinished()) {
-      if (ce.getDefender() == player) {
+      if (ce.getDefender() == gameStores.getStore().getPlayer()) {
         panel.print("You were attacked!");
       } else {
         switch (ce.getResult()) {
-          case CombatEvent.DODGE:
-            panel.print("The " + ce.getDefender() + " dodges the attack.");
-            break;
-          case CombatEvent.BLOCK:
-            panel.print("The " + ce.getDefender() + " blocks the attack.");
-            break;
-          case CombatEvent.ATTACK:
+          case CombatEvent.DODGE -> panel.print("The " + ce.getDefender() + " dodges the attack.");
+          case CombatEvent.BLOCK -> panel.print("The " + ce.getDefender() + " blocks the attack.");
+          case CombatEvent.ATTACK -> {
             HealthComponent health = ce.getDefender().getHealthComponent();
             panel.print("You strike the " + ce.getDefender() + " (" + health.getHealth() + ").");
-            break;
-          case CombatEvent.DIE:
+          }
+          case CombatEvent.DIE -> {
             panel.print("You killed the " + ce.getDefender() + ".");
             bus.publishAsync(new DeathEvent(ce.getDefender(), context.getTimer().getTime()));
-            break;
+          }
         }
       }
     }

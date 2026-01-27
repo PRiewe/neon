@@ -90,9 +90,9 @@ class WildernessGeneratorTest {
 
   @ParameterizedTest(name = "{index}: {0}")
   @MethodSource("islandScenarios")
-  void generateIslands_withVariousSeeds_generatesValidPatterns(IslandScenario scenario) {
+  void generateTerrainOnlyIslands_withVariousSeeds_generatesValidPatterns(IslandScenario scenario) {
     // Given
-    WildernessGenerator generator = createGenerator(scenario.seed());
+    var generator = createGenerator(scenario.seed());
 
     // When
     boolean[][] islands =
@@ -119,10 +119,10 @@ class WildernessGeneratorTest {
 
   @ParameterizedTest(name = "{index}: {0}")
   @MethodSource("islandScenarios")
-  void generateIslands_isDeterministic(IslandScenario scenario) {
+  void generateTerrainOnlyIslands_isDeterministic(IslandScenario scenario) {
     // Given: two generators with same seed
-    WildernessGenerator gen1 = createGenerator(scenario.seed());
-    WildernessGenerator gen2 = createGenerator(scenario.seed());
+    var gen1 = createGenerator(scenario.seed());
+    var gen2 = createGenerator(scenario.seed());
 
     // When
     boolean[][] islands1 =
@@ -146,9 +146,9 @@ class WildernessGeneratorTest {
 
   @ParameterizedTest(name = "{index}: {0}")
   @MethodSource("edgeCaseIslandScenarios")
-  void generateIslands_withEdgeCases_handlesCorrectly(IslandScenario scenario) {
+  void generateTerrainOnlyIslands_withEdgeCases_handlesCorrectly(IslandScenario scenario) {
     // Given
-    WildernessGenerator generator = createGenerator(scenario.seed());
+    var generator = createGenerator(scenario.seed());
 
     // When
     boolean[][] islands =
@@ -181,9 +181,9 @@ class WildernessGeneratorTest {
   }
 
   @Test
-  void generateIslands_withSmallSize_handlesEdgeNeighbors() {
+  void generateTerrainOnlyIslands_withSmallSize_handlesEdgeNeighbors() {
     // Given: very small grid where edge cases matter
-    WildernessGenerator generator = createGenerator(42L);
+    var generator = createGenerator(42L);
 
     // When
     boolean[][] islands = generator.generateIslands(3, 3, 50, 4, 3);
@@ -201,15 +201,14 @@ class WildernessGeneratorTest {
   // Placeholder for future integration tests
   // @ParameterizedTest(name = "{index}: {0}")
   // @MethodSource("editorScenarios")
-  void generate_editorMode_returnsTerrainArray_SKIPPED(EditorScenario scenario) {
+  void generate_TerrainOnly_editorMode_returnsTerrainArray_SKIPPED(EditorScenario scenario) {
     // Given
-    WildernessGenerator generator =
-        createGeneratorWithTerrain(scenario.seed(), scenario.width(), scenario.height());
+    var generator = createGenerator(scenario.seed());
     RRegionTheme theme = createTestTheme("grass");
 
     // When
     String[][] terrain =
-        generator.generate(
+        generator.generateTerrainOnly(
             new Rectangle(0, 0, scenario.width(), scenario.height()), theme, "grass");
 
     // Then: visualize if enabled
@@ -228,33 +227,34 @@ class WildernessGeneratorTest {
 
   // @ParameterizedTest(name = "{index}: {0}")
   // @MethodSource("editorScenarios")
-  void generate_editorMode_isDeterministic_SKIPPED(EditorScenario scenario) {
+  void generate_TerrainOnly_editorMode_isDeterministic_SKIPPED(EditorScenario scenario) {
     // Given: two generators with same seed
-    WildernessGenerator gen1 =
-        createGeneratorWithTerrain(scenario.seed(), scenario.width(), scenario.height());
-    WildernessGenerator gen2 =
-        createGeneratorWithTerrain(scenario.seed(), scenario.width(), scenario.height());
+    var gen1 = createGenerator(scenario.seed());
+    var gen2 = createGenerator(scenario.seed());
     RRegionTheme theme = createTestTheme("grass");
 
     // When
     String[][] terrain1 =
-        gen1.generate(new Rectangle(0, 0, scenario.width(), scenario.height()), theme, "grass");
+        gen1.generateTerrainOnly(
+            new Rectangle(0, 0, scenario.width(), scenario.height()), theme, "grass");
     String[][] terrain2 =
-        gen2.generate(new Rectangle(0, 0, scenario.width(), scenario.height()), theme, "grass");
+        gen2.generateTerrainOnly(
+            new Rectangle(0, 0, scenario.width(), scenario.height()), theme, "grass");
 
     // Then
     TileAssertions.assertTerrainMatch(terrain1, terrain2);
   }
 
   // @Test
-  void generate_editorMode_respectsBounds_SKIPPED() {
+  void generate_TerrainOnly_editorMode_respectsBounds_SKIPPED() {
     // Given
-    WildernessGenerator generator = createGeneratorWithTerrain(42L, 50, 50);
+    var gen1 = createGenerator(21L);
+
     RRegionTheme theme = createTestTheme("stone");
     Rectangle bounds = new Rectangle(10, 10, 20, 15);
 
     // When
-    String[][] terrain = generator.generate(bounds, theme, "stone");
+    String[][] terrain = gen1.generateTerrainOnly(bounds, theme, "stone");
 
     // Then: should respect the bounds
     assertEquals(20, terrain.length, "Width should match bounds");
@@ -269,11 +269,11 @@ class WildernessGeneratorTest {
    * @param seed random seed
    * @return configured generator
    */
-  private WildernessGenerator createGenerator(long seed) {
+  private WildernessTerrainGenerator createGenerator(long seed) {
     String[][] terrain = new String[32][32]; // Default size with padding
     MapUtils mapUtils = MapUtils.withSeed(seed);
     Dice dice = Dice.withSeed(seed);
-    return new WildernessGenerator(terrain, null, null, mapUtils, dice);
+    return new WildernessTerrainGenerator(mapUtils, dice);
   }
 
   /**
@@ -284,11 +284,11 @@ class WildernessGeneratorTest {
    * @param height terrain height
    * @return configured generator
    */
-  private WildernessGenerator createGeneratorWithTerrain(long seed, int width, int height) {
+  private WildernessTerrainGenerator createGeneratorWithTerrain(long seed, int width, int height) {
     String[][] terrain = new String[width][height];
     MapUtils mapUtils = MapUtils.withSeed(seed);
     Dice dice = Dice.withSeed(seed);
-    return new WildernessGenerator(terrain, null, null, mapUtils, dice);
+    return new WildernessTerrainGenerator(mapUtils, dice);
   }
 
   /**
@@ -309,9 +309,9 @@ class WildernessGeneratorTest {
    */
   private int countFilled(boolean[][] grid) {
     int count = 0;
-    for (int x = 0; x < grid.length; x++) {
-      for (int y = 0; y < grid[x].length; y++) {
-        if (grid[x][y]) count++;
+    for (boolean[] booleans : grid) {
+      for (boolean aBoolean : booleans) {
+        if (aBoolean) count++;
       }
     }
     return count;

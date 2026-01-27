@@ -145,6 +145,7 @@ public class FiniteStateMachine extends State {
         for (State other : currents) {
           if (other.parent == next) {
             check = false;
+            break;
           }
         }
 

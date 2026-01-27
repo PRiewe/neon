@@ -63,8 +63,16 @@ public class DungeonModel {
     public List<CreaturePlacement> creatures = new ArrayList<>();
 
     @JacksonXmlElementWrapper(localName = "items")
-    @JacksonXmlProperty(localName = "items")
-    public WorldModel.ItemsWrapper items = new WorldModel.ItemsWrapper();
+    @JacksonXmlProperty(localName = "item")
+    public List<ItemPlacement> items = new ArrayList<>();
+
+    @JacksonXmlElementWrapper(localName = "doors")
+    @JacksonXmlProperty(localName = "door")
+    public List<DoorPlacement> doors = new ArrayList<>();
+
+    @JacksonXmlElementWrapper(localName = "containers")
+    @JacksonXmlProperty(localName = "container")
+    public List<ContainerPlacement> containers = new ArrayList<>();
 
     @JacksonXmlElementWrapper(localName = "regions")
     @JacksonXmlProperty(localName = "region")

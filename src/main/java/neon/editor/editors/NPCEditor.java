@@ -25,7 +25,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
-import neon.editor.*;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.editor.resources.RFaction;
 import neon.entities.property.Skill;
@@ -34,40 +34,52 @@ import neon.resources.RSpell.SpellType;
 import org.jdom2.Element;
 
 public class NPCEditor extends ObjectEditor implements MouseListener {
-  private RPerson data;
-  private JList<String> spellList, itemList, destList;
-  private JTextField nameField;
-  private JComboBox<RFaction> factionBox;
-  private JComboBox<RCreature> raceBox;
-  private JComboBox<RCreature.AIType> aiTypeBox;
-  private JSpinner aggressionSpinner, confidenceSpinner, factionSpinner;
-  private JFormattedTextField rangeField, destX, destY, destCost, skillField;
+  private final RPerson data;
+  private final DataStore dataStore;
+  private final JList<String> spellList;
+  private final JList<String> itemList;
+  private final JList<String> destList;
+  private final JTextField nameField;
+  private final JComboBox<RFaction> factionBox;
+  private final JComboBox<RCreature> raceBox;
+  private final JComboBox<RCreature.AIType> aiTypeBox;
+  private final JSpinner aggressionSpinner;
+  private final JSpinner confidenceSpinner;
+  private final JSpinner factionSpinner;
+  private final JFormattedTextField rangeField;
+  private final JFormattedTextField destX;
+  private final JFormattedTextField destY;
+  private final JFormattedTextField destCost;
+  private final JFormattedTextField skillField;
   private HashMap<Skill, Integer> skills;
-  private Set<Skill> trainedSkills;
-  private HashMap<String, Integer> joinedFactions;
-  private HashMap<String, Element> destMap;
-  private JCheckBox spellBox,
-      skillBox,
-      tradeBox,
-      travelBox,
-      trainBox,
-      spellMakerBox,
-      factionCheckBox,
-      potionBox,
-      healerBox,
-      tattooBox;
-  private JComboBox<Skill> skillComboBox;
-  private DefaultListModel<String> destListModel, spellListModel, itemListModel;
+  private final Set<Skill> trainedSkills;
+  private final HashMap<String, Integer> joinedFactions;
+  private final HashMap<String, Element> destMap;
+  private final JCheckBox spellBox;
+  private final JCheckBox skillBox;
+  private final JCheckBox tradeBox;
+  private final JCheckBox travelBox;
+  private final JCheckBox trainBox;
+  private final JCheckBox spellMakerBox;
+  private final JCheckBox factionCheckBox;
+  private final JCheckBox potionBox;
+  private final JCheckBox healerBox;
+  private final JCheckBox tattooBox;
+  private final JComboBox<Skill> skillComboBox;
+  private final DefaultListModel<String> destListModel;
+  private final DefaultListModel<String> spellListModel;
+  private final DefaultListModel<String> itemListModel;
   private Skill currentSkill;
   private Element currentDest;
-  private ArrayList<String> spells;
+  private final ArrayList<String> spells;
 
-  public NPCEditor(JFrame parent, RPerson data) {
+  public NPCEditor(JFrame parent, RPerson data, DataStore dataStore) {
     super(parent, "NPC Editor: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     spells = new ArrayList<String>();
-    for (RSpell spell : Editor.resources.getResources(RSpell.class)) {
+    for (RSpell spell : dataStore.getResourceManager().getResources(RSpell.class)) {
       if (spell.type == SpellType.SPELL) {
         spells.add(spell.id);
       }
@@ -81,7 +93,8 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     JPanel generalPanel = new JPanel();
     generalPanel.setBorder(new TitledBorder("General"));
     nameField = new JTextField(10);
-    raceBox = new JComboBox<RCreature>(Editor.resources.getResources(RCreature.class));
+    raceBox =
+        new JComboBox<RCreature>(dataStore.getResourceManager().getResources(RCreature.class));
     generalPanel.add(new JLabel("Name: "));
     generalPanel.add(nameField);
     generalPanel.add(new JLabel(" "));
@@ -278,7 +291,8 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     joinedFactions = new HashMap<String, Integer>();
     FactionListListener fl = new FactionListListener();
 
-    factionBox = new JComboBox<RFaction>(Editor.resources.getResources(RFaction.class));
+    factionBox =
+        new JComboBox<RFaction>(dataStore.getResourceManager().getResources(RFaction.class));
     factionBox.addActionListener(fl);
     factionPanel.add(factionBox);
     factionCheckBox = new JCheckBox();
@@ -301,7 +315,7 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
 
   protected void load() {
     nameField.setText(data.name);
-    RCreature species = (RCreature) Editor.resources.getResource(data.species);
+    RCreature species = (RCreature) dataStore.getResourceManager().getResource(data.species);
     raceBox.setSelectedItem(species);
 
     for (String s : data.factions.keySet()) {
@@ -528,7 +542,7 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
       data.services.add(service);
     }
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   private class SkillListListener implements ActionListener {
@@ -586,7 +600,7 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
       String faction = factionBox.getSelectedItem().toString();
       if (joinedFactions.containsKey(faction)) {
         joinedFactions.put(faction, (Integer) factionSpinner.getValue());
-        System.out.println("state.factions.put: " + (Integer) factionSpinner.getValue());
+        System.out.println("state.factions.put: " + factionSpinner.getValue());
       }
     }
   }
@@ -626,7 +640,7 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add item")) {
-        Object[] items = Editor.resources.getResources(RItem.class).toArray();
+        Object[] items = dataStore.getResourceManager().getResources(RItem.class).toArray();
         String s =
             (String)
                 JOptionPane.showInputDialog(
@@ -668,9 +682,8 @@ public class NPCEditor extends ObjectEditor implements MouseListener {
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add destination")) {
         String s =
-            (String)
-                JOptionPane.showInputDialog(
-                    frame, "New destination:", "New destination", JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showInputDialog(
+                frame, "New destination:", "New destination", JOptionPane.QUESTION_MESSAGE);
         if ((s != null) && (s.length() > 0)) {
           destListModel.addElement(s);
           Element dest = new Element("dest");

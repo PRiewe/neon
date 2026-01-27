@@ -27,13 +27,15 @@ import javax.swing.event.*;
 import neon.resources.RScript;
 
 public class ScriptEditor implements ListSelectionListener, ActionListener, MouseListener {
-  private JDialog frame;
-  private JTextArea text;
-  private JList<RScript> list;
-  private DefaultListModel<RScript> model;
+  private final JDialog frame;
+  private final DataStore dataStore;
+  private final JTextArea text;
+  private final JList<RScript> list;
+  private final DefaultListModel<RScript> model;
 
-  public ScriptEditor(JFrame parent) {
+  public ScriptEditor(JFrame parent, DataStore dataStore) {
     frame = new JDialog(parent, "Script Editor");
+    this.dataStore = dataStore;
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     frame.setPreferredSize(new Dimension(480, 300));
 
@@ -41,7 +43,7 @@ public class ScriptEditor implements ListSelectionListener, ActionListener, Mous
     list = new JList<RScript>(model);
     list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     list.addListSelectionListener(this);
-    list.setCellRenderer(new ModCellRenderer());
+    list.setCellRenderer(new ModCellRenderer(dataStore));
     JScrollPane listScroller = new JScrollPane(list);
     listScroller.setBorder(new TitledBorder("Scripts"));
 
@@ -70,7 +72,7 @@ public class ScriptEditor implements ListSelectionListener, ActionListener, Mous
 
   public void show() {
     model.clear();
-    for (RScript script : Editor.getStore().getScripts().values()) {
+    for (RScript script : dataStore.getScripts().values()) {
       model.addElement(new RScript(script));
     }
     frame.pack();
@@ -92,14 +94,14 @@ public class ScriptEditor implements ListSelectionListener, ActionListener, Mous
   }
 
   private void save() {
-    HashMap<String, RScript> temp = new HashMap<String, RScript>(Editor.getStore().getScripts());
-    Editor.getStore().getScripts().clear();
+    HashMap<String, RScript> temp = new HashMap<String, RScript>(dataStore.getScripts());
+    dataStore.getScripts().clear();
     for (Enumeration<RScript> rs = model.elements(); rs.hasMoreElements(); ) {
       RScript script = rs.nextElement();
       if (!equals(script, temp.get(script.id))) { // script gewijzigd, dan naar active mod
-        script.setPath(Editor.getStore().getActive().get("id"));
+        script.setPath(dataStore.getActive().get("id"));
       }
-      Editor.getStore().getScripts().put(script.id, script);
+      dataStore.getScripts().put(script.id, script);
     }
   }
 
@@ -145,11 +147,10 @@ public class ScriptEditor implements ListSelectionListener, ActionListener, Mous
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("New script")) {
         String s =
-            (String)
-                JOptionPane.showInputDialog(
-                    frame, "Script name:", "New script", JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showInputDialog(
+                frame, "Script name:", "New script", JOptionPane.QUESTION_MESSAGE);
         if ((s != null) && (s.length() > 0)) {
-          RScript script = new RScript(s, Editor.getStore().getActive().get("id"));
+          RScript script = new RScript(s, dataStore.getActive().get("id"));
           model.addElement(script);
           list.setSelectedValue(script, true);
           text.setText("");

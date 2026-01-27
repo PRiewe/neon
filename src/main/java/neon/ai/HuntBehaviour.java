@@ -21,6 +21,8 @@ package neon.ai;
 import java.awt.Point;
 import java.awt.Rectangle;
 import neon.core.Engine;
+import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.event.MagicEvent;
 import neon.entities.Creature;
 import neon.entities.components.ShapeComponent;
@@ -29,12 +31,19 @@ import neon.resources.RSpell;
 import neon.util.Dice;
 
 public class HuntBehaviour implements Behaviour {
-  private Creature creature;
-  private Creature prey;
+  private final Creature creature;
+  private final Creature prey;
+  private final PathFinder pathFinder;
+  private final GameContext gameContext;
+  private final GameStores gameStores;
 
-  public HuntBehaviour(Creature hunter, Creature prey) {
+  public HuntBehaviour(
+      Creature hunter, Creature prey, GameContext gameContext, GameStores gameStores) {
     creature = hunter;
     this.prey = prey;
+    this.gameContext = gameContext;
+    this.gameStores = gameStores;
+    this.pathFinder = new PathFinder(gameStores.getStore());
   }
 
   public void act() {
@@ -43,7 +52,7 @@ public class HuntBehaviour implements Behaviour {
     Rectangle preyPos = prey.getShapeComponent();
 
     if (dice == 1) {
-      int time = Engine.getTimer().getTime();
+      int time = gameContext.getTimer().getTime();
       for (RSpell.Power power : creature.getMagicComponent().getPowers()) {
         if (power.effect.getSchool().equals(Skill.DESTRUCTION)
             && creature.getMagicComponent().canUse(power, time)
@@ -84,7 +93,7 @@ public class HuntBehaviour implements Behaviour {
     } else { // if creature is smarter, try A*
       ShapeComponent cBounds = creature.getShapeComponent();
       ShapeComponent pBounds = prey.getShapeComponent();
-      p = PathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
+      p = pathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
     }
 
     if (p.distance(preyPos.x, preyPos.y) < 1) {

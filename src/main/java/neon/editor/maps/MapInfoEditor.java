@@ -25,22 +25,24 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.resources.RMap;
 import neon.resources.RDungeonTheme;
 
 public class MapInfoEditor implements ActionListener {
-  private JDialog frame;
-  private JPanel itemProps;
-  private JTextField nameField;
-  private JComboBox<RDungeonTheme> themeBox;
-  private RMap data;
-  private MapTreeNode node;
-  private JTree tree;
+  private final JDialog frame;
+  private final JPanel itemProps;
+  private final JTextField nameField;
+  private final JComboBox<RDungeonTheme> themeBox;
+  private final RMap data;
+  private final MapTreeNode node;
+  private final JTree tree;
+  private final DataStore dataStore;
 
-  public MapInfoEditor(JFrame parent, MapTreeNode node, JTree tree) {
+  public MapInfoEditor(JFrame parent, MapTreeNode node, JTree tree, DataStore dataStore) {
     data = node.getMap();
     frame = new JDialog(parent, "Map editor: " + data.id);
+    this.dataStore = dataStore;
     JPanel content = new JPanel(new BorderLayout());
     frame.setContentPane(content);
     this.node = node;
@@ -66,7 +68,9 @@ public class MapInfoEditor implements ActionListener {
     JLabel nameLabel = new JLabel("Name: ");
     JLabel themeLabel = new JLabel("Theme: ");
     nameField = new JTextField(15);
-    themeBox = new JComboBox<RDungeonTheme>(Editor.resources.getResources(RDungeonTheme.class));
+    themeBox =
+        new JComboBox<RDungeonTheme>(
+            dataStore.getResourceManager().getResources(RDungeonTheme.class));
     themeBox.addItem(null);
     themeBox.setEnabled(node.getMap().isDungeon());
     themeBox.addActionListener(this);
@@ -131,13 +135,13 @@ public class MapInfoEditor implements ActionListener {
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         @SuppressWarnings("unchecked")
         Enumeration<?> mtn = node.children();
-        for (; mtn.hasMoreElements(); ) {
+        while (mtn.hasMoreElements()) {
           model.removeNodeFromParent((MutableTreeNode) mtn.nextElement());
         }
         data.theme = (RDungeonTheme) themeBox.getSelectedItem();
       }
     }
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   public void actionPerformed(ActionEvent e) {

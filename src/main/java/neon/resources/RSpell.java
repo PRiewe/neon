@@ -36,7 +36,7 @@ public class RSpell extends RData {
     POISON,
     CURSE,
     POWER,
-    ENCHANT;
+    ENCHANT
   }
 
   public SpellType type; // Set externally based on element name

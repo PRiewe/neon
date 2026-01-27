@@ -21,8 +21,10 @@ package neon.narrative;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
+import neon.core.GameStores;
 import neon.core.event.TurnEvent;
 import neon.entities.Creature;
+import neon.resources.ResourceManager;
 import neon.resources.quest.Conversation;
 import neon.resources.quest.RQuest;
 import neon.resources.quest.Topic;
@@ -36,7 +38,15 @@ public class QuestTracker {
   // temporary map for quests that have been loaded for the dialog module
   private final HashMap<String, Quest> temp = new HashMap<>();
 
-  public QuestTracker() {}
+  private final ResourceManager resourceManager;
+
+  public QuestTracker(GameStores gameStores) {
+    this(gameStores.getResources());
+  }
+
+  public QuestTracker(ResourceManager resourceManager) {
+    this.resourceManager = resourceManager;
+  }
 
   /**
    * Return all dialog topics for the given creature. The caller of this method should take care to
@@ -98,7 +108,7 @@ public class QuestTracker {
       Quest quest = temp.remove(id);
       quests.put(id, quest);
     } else if (!quests.containsKey(id)) {
-      RQuest quest = (RQuest) Engine.getResources().getResource(id, "quest");
+      RQuest quest = (RQuest) resourceManager.getResource(id, "quest");
       quests.put(id, new Quest(quest));
     }
   }
@@ -148,7 +158,7 @@ public class QuestTracker {
   public void start(TurnEvent te) {
     log.trace("start {}", te);
     if (te.isStart()) {
-      for (RQuest quest : Engine.getResources().getResources(RQuest.class)) {
+      for (RQuest quest : resourceManager.getResources(RQuest.class)) {
         if (quest.initial) {
           startQuest(quest.id);
         }

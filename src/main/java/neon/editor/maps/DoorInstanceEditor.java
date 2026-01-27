@@ -25,7 +25,7 @@ import java.awt.event.*;
 import java.text.NumberFormat;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.editor.resources.IDoor;
 import neon.editor.resources.RMap;
@@ -36,21 +36,27 @@ import neon.resources.RItem.Type;
 import neon.resources.RSpell;
 
 public class DoorInstanceEditor implements ActionListener, ItemListener {
-  private IDoor door;
-  private JDialog frame;
-  private JComboBox<RZone> zoneBox;
-  private JTextField textField;
-  private JFormattedTextField xField, yField;
-  private JComboBox<RDungeonTheme> themeBox;
-  private JCheckBox destBox, lockBox, trapBox;
-  private JSpinner lockSpinner, trapSpinner;
-  private JComboBox<RMap> mapBox;
-  private JComboBox<IDoor.State> stateBox;
-  private JComboBox<RItem> keyBox;
-  private JComboBox<RSpell.Enchantment> spellBox;
+  private final IDoor door;
+  private final JDialog frame;
+  private final JComboBox<RZone> zoneBox;
+  private final JTextField textField;
+  private final JFormattedTextField xField;
+  private final JFormattedTextField yField;
+  private final JComboBox<RDungeonTheme> themeBox;
+  private final JCheckBox destBox;
+  private final JCheckBox lockBox;
+  private final JCheckBox trapBox;
+  private final JSpinner lockSpinner;
+  private final JSpinner trapSpinner;
+  private final JComboBox<RMap> mapBox;
+  private final JComboBox<IDoor.State> stateBox;
+  private final JComboBox<RItem> keyBox;
+  private final JComboBox<RSpell.Enchantment> spellBox;
+  private final DataStore dataStore;
 
-  public DoorInstanceEditor(IDoor door, JFrame parent) {
+  public DoorInstanceEditor(IDoor door, JFrame parent, DataStore dataStore) {
     this.door = door;
+    this.dataStore = dataStore;
     frame = new JDialog(parent, "Door instance editor: " + door.resource.id);
     JPanel content = new JPanel(new BorderLayout());
     frame.setContentPane(content);
@@ -273,7 +279,7 @@ public class DoorInstanceEditor implements ActionListener, ItemListener {
 
   public void initDoor() {
     // maps laden
-    for (RMap map : Editor.resources.getResources(RMap.class)) {
+    for (RMap map : dataStore.getResourceManager().getResources(RMap.class)) {
       mapBox.addItem(map);
     }
 
@@ -285,7 +291,7 @@ public class DoorInstanceEditor implements ActionListener, ItemListener {
     }
 
     // themes laden
-    for (RDungeonTheme theme : Editor.resources.getResources(RDungeonTheme.class)) {
+    for (RDungeonTheme theme : dataStore.getResourceManager().getResources(RDungeonTheme.class)) {
       themeBox.addItem(theme);
     }
 
@@ -307,7 +313,7 @@ public class DoorInstanceEditor implements ActionListener, ItemListener {
     }
 
     // keys laden
-    for (RItem ri : Editor.resources.getResources(RItem.class)) {
+    for (RItem ri : dataStore.getResourceManager().getResources(RItem.class)) {
       if (ri.type == Type.item) {
         keyBox.addItem(ri);
       }
@@ -321,7 +327,8 @@ public class DoorInstanceEditor implements ActionListener, ItemListener {
     keyBox.setSelectedItem(door.key);
     stateBox.setSelectedItem(door.state);
     // spells laden
-    for (RSpell.Enchantment rs : Editor.resources.getResources(RSpell.Enchantment.class)) {
+    for (RSpell.Enchantment rs :
+        dataStore.getResourceManager().getResources(RSpell.Enchantment.class)) {
       if (rs.item.equals("trap")) {
         spellBox.addItem(rs);
       }

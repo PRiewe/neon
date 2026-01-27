@@ -23,6 +23,7 @@ import java.awt.event.*;
 import java.util.EventObject;
 import javax.swing.Popup;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.Player;
@@ -36,15 +37,20 @@ public class DoorState extends State implements KeyListener {
   private Door door;
   private GamePanel panel;
   private Popup popup;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
-  private final GameContext context;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
+  private final GameStores gameStores;
 
-  public DoorState(State state, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+  public DoorState(
+      State state,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(state);
     this.bus = bus;
     this.ui = ui;
-    this.context = context;
+    this.gameStores = gameStores;
   }
 
   @Override
@@ -53,7 +59,7 @@ public class DoorState extends State implements KeyListener {
     panel.addKeyListener(this);
     door = (Door) e.getParameter("door");
 
-    Rectangle pBounds = context.getPlayer().getShapeComponent();
+    Rectangle pBounds = gameStores.getStore().getPlayer().getShapeComponent();
     Rectangle dBounds = door.getShapeComponent();
 
     if (pBounds.getLocation().distance(dBounds.getLocation()) < 2) {
@@ -81,7 +87,7 @@ public class DoorState extends State implements KeyListener {
   public void keyTyped(KeyEvent ke) {}
 
   public void keyPressed(KeyEvent ke) {
-    Player player = context.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     switch (ke.getKeyCode()) {
       case KeyEvent.VK_1:
       case KeyEvent.VK_NUMPAD1:
@@ -138,7 +144,7 @@ public class DoorState extends State implements KeyListener {
 
   private boolean hasItem(Creature creature, RItem item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (context.getStore().getEntity(uid).getID().equals(item.id)) {
+      if (gameStores.getStore().getEntity(uid).getID().equals(item.id)) {
         return true;
       }
     }

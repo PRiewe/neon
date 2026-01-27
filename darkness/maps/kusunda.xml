@@ -9,10 +9,12 @@
     </creatures>
     <items>
       <item x="2" y="3" id="platinum" uid="1" />
+    </items>
+    <doors>
       <door x="5" y="3" id="door" uid="2" state="open">
         <dest x="34012" y="15163" z="0" map="1" />
       </door>
-    </items>
+    </doors>
     <regions>
       <region x="0" y="0" w="6" h="6" l="0" text="wall" />
       <region x="1" y="1" w="4" h="4" l="1" text="floor" />
@@ -21,19 +23,21 @@
   </level>
   <level name="temple of Furun" l="1">
     <creatures />
-    <items>
+    <doors>
       <door x="3" y="6" id="door" uid="4" state="closed">
         <dest x="34021" y="15177" z="0" map="1" />
       </door>
+      <door x="1" y="1" id="door_stone" uid="5" state="open" lock="1">
+        <dest sign="temple catacombs" theme="tengri_tomb" />
+      </door>
+    </doors>
+    <containers>
       <container x="4" y="1" id="altar" uid="17">
         <item id="copper" uid="3" />
         <item id="silver" uid="6" />
         <item id="gold" uid="7" />
       </container>
-      <door x="1" y="1" id="door_stone" uid="5" state="open" lock="1">
-        <dest sign="temple catacombs" theme="tengri_tomb" />
-      </door>
-    </items>
+    </containers>
     <regions>
       <region x="0" y="0" w="8" h="7" l="0" text="wall" />
       <region x="1" y="1" w="6" h="5" l="1" text="floor" />
@@ -42,11 +46,11 @@
   </level>
   <level name="harbor master" l="2">
     <creatures />
-    <items>
+    <doors>
       <door x="5" y="3" id="door" uid="8" state="closed">
         <dest x="34013" y="15150" z="0" map="1" />
       </door>
-    </items>
+    </doors>
     <regions>
       <region x="0" y="0" w="6" h="7" l="0" text="wall" />
       <region x="1" y="1" w="4" h="5" l="1" text="floor" />
@@ -55,11 +59,11 @@
   </level>
   <level name="Kasku's house" l="3">
     <creatures />
-    <items>
+    <doors>
       <door x="5" y="3" id="door" uid="9" state="locked" lock="1">
         <dest x="34013" y="15157" z="0" map="1" />
       </door>
-    </items>
+    </doors>
     <regions>
       <region x="0" y="0" w="6" h="6" l="0" text="wall_adobe" />
       <region x="1" y="1" w="4" h="4" l="1" text="floor" />
@@ -70,11 +74,11 @@
     <creatures>
       <creature x="3" y="2" id="Zari" uid="10" />
     </creatures>
-    <items>
+    <doors>
       <door x="5" y="3" id="door" uid="11" state="locked" lock="1">
         <dest x="34012" y="15183" z="0" map="1" />
       </door>
-    </items>
+    </doors>
     <regions>
       <region x="0" y="0" w="6" h="7" l="0" text="wall" />
       <region x="1" y="1" w="4" h="5" l="1" text="floor" />
@@ -85,11 +89,11 @@
     <creatures>
       <creature x="3" y="2" id="Os'cues" uid="12" />
     </creatures>
-    <items>
+    <doors>
       <door x="3" y="5" id="door" uid="13" state="locked" lock="1">
         <dest x="34006" y="15174" z="0" map="1" />
       </door>
-    </items>
+    </doors>
     <regions>
       <region x="0" y="0" w="8" h="6" l="0" text="wall" />
       <region x="1" y="1" w="6" h="4" l="1" text="floor" />
@@ -100,11 +104,11 @@
     <creatures>
       <creature x="3" y="2" id="Uenia" uid="14" />
     </creatures>
-    <items>
+    <doors>
       <door x="3" y="5" id="door" uid="15" state="locked" lock="1">
         <dest x="34034" y="15181" z="0" map="1" />
       </door>
-    </items>
+    </doors>
     <regions>
       <region x="0" y="0" w="8" h="6" l="0" text="wall" />
       <region x="1" y="1" w="6" h="4" l="1" text="floor" />
@@ -115,11 +119,11 @@
     <creatures>
       <creature x="3" y="2" id="Ares Talo" uid="16" />
     </creatures>
-    <items>
+    <doors>
       <door x="4" y="5" id="door" uid="18" state="locked" lock="1">
         <dest x="34041" y="15183" z="0" map="1" />
       </door>
-    </items>
+    </doors>
     <regions>
       <region x="0" y="0" w="8" h="6" l="0" text="wall" />
       <region x="1" y="1" w="6" h="4" l="1" text="floor" />

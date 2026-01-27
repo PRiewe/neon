@@ -24,7 +24,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.entities.property.Ability;
 import neon.resources.RSign;
@@ -32,14 +32,18 @@ import neon.resources.RSpell;
 
 @SuppressWarnings("serial")
 public class SignEditor extends ObjectEditor implements MouseListener {
-  private DefaultTableModel abilityModel, powerModel;
-  private JTable abilityTable, powerTable;
-  private RSign sign;
-  private JTextField nameField;
+  private final DefaultTableModel abilityModel;
+  private final DefaultTableModel powerModel;
+  private final JTable abilityTable;
+  private final JTable powerTable;
+  private final RSign sign;
+  private final JTextField nameField;
+  private final DataStore dataStore;
 
-  public SignEditor(JFrame parent, RSign sign) {
+  public SignEditor(JFrame parent, RSign sign, DataStore dataStore) {
     super(parent, "Birth sign: " + sign.id);
     this.sign = sign;
+    this.dataStore = dataStore;
 
     JLabel nameLabel = new JLabel("Name: ");
     nameField = new JTextField(15);
@@ -78,14 +82,14 @@ public class SignEditor extends ObjectEditor implements MouseListener {
   protected void save() {
     sign.name = nameField.getText();
     sign.abilities.clear();
-    for (Vector<?> data : (Vector<Vector>) abilityModel.getDataVector()) {
+    for (Vector<?> data : abilityModel.getDataVector()) {
       sign.abilities.put((Ability) data.get(0), (Integer) data.get(1));
     }
     sign.powers.clear();
-    for (Vector<String> data : (Vector<Vector>) powerModel.getDataVector()) {
-      sign.powers.add(data.get(0).toString());
+    for (Vector<String> data : powerModel.getDataVector()) {
+      sign.powers.add(data.get(0));
     }
-    sign.setPath(Editor.getStore().getActive().get("id"));
+    sign.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {
@@ -136,7 +140,7 @@ public class SignEditor extends ObjectEditor implements MouseListener {
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add power")) {
         ArrayList<String> powers = new ArrayList<String>();
-        for (RSpell.Power power : Editor.resources.getResources(RSpell.Power.class)) {
+        for (RSpell.Power power : dataStore.getResourceManager().getResources(RSpell.Power.class)) {
           powers.add(power.id);
         }
         String s =
@@ -178,7 +182,7 @@ public class SignEditor extends ObjectEditor implements MouseListener {
   }
 
   private static class SignsTableModel extends DefaultTableModel {
-    private Class<?>[] classes;
+    private final Class<?>[] classes;
 
     public SignsTableModel(String[] columns, Class<?>... classes) {
       super(columns, 0);

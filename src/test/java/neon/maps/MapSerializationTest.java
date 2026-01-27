@@ -3,11 +3,14 @@ package neon.maps;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.Collection;
+import neon.maps.mvstore.WorldDataType;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
+import org.h2.mvstore.WriteBuffer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,12 +23,18 @@ import org.junit.jupiter.api.Test;
  */
 class MapSerializationTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
+  private ZoneFactory zoneFactory;
+  private WorldDataType worldDataType;
+  private Dungeon.DungeonDataType dungeonDataType;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    zoneFactory = TestEngineContext.getTestZoneFactory();
+    worldDataType = new WorldDataType(zoneFactory);
+    dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
   }
 
   @AfterEach
@@ -38,7 +47,7 @@ class MapSerializationTest {
 
   @Test
   void testEmptyWorldRoundTrip() throws Exception {
-    World original = new World("Test World", 100);
+    World original = new World("Test World", 100, zoneFactory);
 
     World deserialized = serializeAndDeserializeWorld(original);
 
@@ -49,7 +58,7 @@ class MapSerializationTest {
 
   @Test
   void testWorldWithRegions() throws Exception {
-    World original = new World("World With Regions", 101);
+    World original = new World("World With Regions", 101, zoneFactory);
 
     // Add regions to the world's zone
     Zone zone = original.getZone(0);
@@ -71,7 +80,7 @@ class MapSerializationTest {
     int[] uids = {1, 100, 999, 12345};
 
     for (int uid : uids) {
-      World original = new World("World-" + uid, uid);
+      World original = new World("World-" + uid, uid, zoneFactory);
       World deserialized = serializeAndDeserializeWorld(original);
 
       assertEquals(uid, deserialized.getUID());
@@ -80,7 +89,7 @@ class MapSerializationTest {
 
   @Test
   void testWorldZoneDataIntegrity() throws Exception {
-    World original = new World("Integrity Test", 102);
+    World original = new World("Integrity Test", 102, zoneFactory);
     Zone zone = original.getZone(0);
 
     // Add various regions
@@ -100,7 +109,7 @@ class MapSerializationTest {
 
   @Test
   void testEmptyDungeonRoundTrip() throws Exception {
-    Dungeon original = new Dungeon("Test Dungeon", 200);
+    Dungeon original = new Dungeon("Test Dungeon", 200, zoneFactory);
 
     Dungeon deserialized = serializeAndDeserializeDungeon(original);
 
@@ -110,7 +119,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonWithSingleZone() throws Exception {
-    Dungeon original = new Dungeon("Single Zone Dungeon", 201);
+    Dungeon original = new Dungeon("Single Zone Dungeon", 201, zoneFactory);
     original.addZone(0, "Level 1");
 
     // Add a region to the zone
@@ -128,7 +137,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonWithMultipleZones() throws Exception {
-    Dungeon original = new Dungeon("Multi-Level Dungeon", 202);
+    Dungeon original = new Dungeon("Multi-Level Dungeon", 202, zoneFactory);
 
     // Add 5 zones
     for (int i = 0; i < 5; i++) {
@@ -152,7 +161,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonZoneConnections() throws Exception {
-    Dungeon original = new Dungeon("Connected Dungeon", 203);
+    Dungeon original = new Dungeon("Connected Dungeon", 203, zoneFactory);
 
     // Create 3 zones connected in a chain
     for (int i = 0; i < 3; i++) {
@@ -179,7 +188,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonBidirectionalConnections() throws Exception {
-    Dungeon original = new Dungeon("Bidirectional Dungeon", 204);
+    Dungeon original = new Dungeon("Bidirectional Dungeon", 204, zoneFactory);
 
     original.addZone(0, "Hub");
     original.addZone(1, "North");
@@ -204,7 +213,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonWithComplexZones() throws Exception {
-    Dungeon original = new Dungeon("Complex Dungeon", 205);
+    Dungeon original = new Dungeon("Complex Dungeon", 205, zoneFactory);
 
     // Create 3 zones with different numbers of regions
     original.addZone(0, "Small");
@@ -239,7 +248,7 @@ class MapSerializationTest {
     int[] uids = {200, 500, 999, 54321};
 
     for (int uid : uids) {
-      Dungeon original = new Dungeon("Dungeon-" + uid, uid);
+      Dungeon original = new Dungeon("Dungeon-" + uid, uid, zoneFactory);
       original.addZone(0, "Level 1");
 
       Dungeon deserialized = serializeAndDeserializeDungeon(original);
@@ -252,7 +261,7 @@ class MapSerializationTest {
 
   @Test
   void testWorldSerializationPerformance() throws Exception {
-    World world = new World("Performance World", 300);
+    World world = new World("Performance World", 300, zoneFactory);
     Zone zone = world.getZone(0);
 
     // Add 100 regions
@@ -277,7 +286,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonSerializationPerformance() throws Exception {
-    Dungeon dungeon = new Dungeon("Performance Dungeon", 400);
+    Dungeon dungeon = new Dungeon("Performance Dungeon", 400, zoneFactory);
 
     // Create 10 zones with 20 regions each
     for (int z = 0; z < 10; z++) {
@@ -312,33 +321,22 @@ class MapSerializationTest {
   /** Helper method to serialize and deserialize a World. */
   private World serializeAndDeserializeWorld(World original)
       throws IOException, ClassNotFoundException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(baos);
-    original.writeExternal(oos);
-    oos.flush();
+    WriteBuffer writeBuffer = new WriteBuffer();
+    worldDataType.write(writeBuffer, original);
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    ObjectInputStream ois = new ObjectInputStream(bais);
-    World deserialized = new World();
-    deserialized.readExternal(ois);
-
-    return deserialized;
+    byte[] serialized = writeBuffer.getBuffer().array();
+    ByteBuffer readBuffer = ByteBuffer.wrap(serialized);
+    return worldDataType.read(readBuffer);
   }
 
   /** Helper method to serialize and deserialize a Dungeon. */
   private Dungeon serializeAndDeserializeDungeon(Dungeon original)
       throws IOException, ClassNotFoundException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(baos);
-    original.writeExternal(oos);
-    oos.flush();
+    WriteBuffer writeBuffer = new WriteBuffer();
+    dungeonDataType.write(writeBuffer, original);
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    ObjectInputStream ois = new ObjectInputStream(bais);
-    // Dungeon doesn't have no-arg constructor, create with dummy values that will be overwritten
-    Dungeon deserialized = new Dungeon("temp", 0);
-    deserialized.readExternal(ois);
-
-    return deserialized;
+    byte[] serialized = writeBuffer.getBuffer().array();
+    ByteBuffer readBuffer = ByteBuffer.wrap(serialized);
+    return dungeonDataType.read(readBuffer);
   }
 }

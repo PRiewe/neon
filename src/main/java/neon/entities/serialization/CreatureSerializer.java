@@ -23,21 +23,27 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import neon.ai.AIFactory;
-import neon.core.Engine;
-import neon.entities.Construct;
-import neon.entities.Creature;
-import neon.entities.Daemon;
-import neon.entities.Dragon;
-import neon.entities.Hominid;
+import neon.entities.*;
 import neon.entities.components.HealthComponent;
 import neon.entities.property.Slot;
 import neon.magic.SpellFactory;
 import neon.resources.RCreature;
+import neon.resources.ResourceManager;
 
 // TODO: factions
 public class CreatureSerializer {
   private static final long serialVersionUID = -2452444993764883434L;
-  private static AIFactory aiFactory = new AIFactory();
+  private final AIFactory aiFactory;
+  private final SpellFactory spellFactory;
+  private final ResourceManager resourceManager;
+
+  public CreatureSerializer(ResourceManager resourceManager, UIDStore uidStore) {
+    spellFactory = new SpellFactory(resourceManager);
+    this.resourceManager = resourceManager;
+
+    // AIFactory can be null if gameContext is null (for write-only or test scenarios)
+    aiFactory = new AIFactory(resourceManager, uidStore);
+  }
 
   public Creature deserialize(DataInput in) throws IOException {
     String id = in.readUTF();
@@ -59,7 +65,7 @@ public class CreatureSerializer {
     creature.getMagicComponent().setModifier(in.readFloat());
     String spell = in.readUTF();
     if (!spell.isEmpty()) {
-      creature.getMagicComponent().equipSpell(SpellFactory.getSpell(spell));
+      creature.getMagicComponent().equipSpell(spellFactory.getSpell(spell));
     }
 
     int date = in.readInt();
@@ -87,7 +93,7 @@ public class CreatureSerializer {
 
   public void serialize(DataOutput out, Creature creature) throws IOException {
     out.writeUTF(creature.getID());
-    out.writeUTF(creature.species.id);
+    out.writeUTF(creature.getSpecies().id);
     Rectangle bounds = creature.getShapeComponent();
     out.writeInt(bounds.x);
     out.writeInt(bounds.y);
@@ -127,27 +133,16 @@ public class CreatureSerializer {
   private Creature getCreature(String id, int x, int y, long uid, String species) {
     Creature creature;
 
-    RCreature rc = (RCreature) Engine.getResources().getResource(species);
-    switch (rc.type) {
-      case construct:
-        creature = new Construct(id, uid, rc);
-        break;
-      case humanoid:
-        creature = new Hominid(id, uid, rc);
-        break;
-      case daemon:
-        creature = new Daemon(id, uid, rc);
-        break;
-      case dragon:
-        creature = new Dragon(id, uid, rc);
-        break;
-      case goblin:
-        creature = new Hominid(id, uid, rc);
-        break;
-      default:
-        creature = new Creature(id, uid, rc);
-        break;
-    }
+    RCreature rc = (RCreature) resourceManager.getResource(species);
+    creature =
+        switch (rc.type) {
+          case construct -> new Construct(id, uid, rc);
+          case humanoid -> new Hominid(id, uid, rc);
+          case daemon -> new Daemon(id, uid, rc);
+          case dragon -> new Dragon(id, uid, rc);
+          case goblin -> new Hominid(id, uid, rc);
+          default -> new Creature(id, uid, rc);
+        };
 
     return creature;
   }

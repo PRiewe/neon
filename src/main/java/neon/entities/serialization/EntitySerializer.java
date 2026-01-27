@@ -21,24 +21,30 @@ package neon.entities.serialization;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Entity;
 import neon.entities.Item;
 
 public class EntitySerializer {
-  private static final long serialVersionUID = 4682346337753485512L;
-  private ItemSerializer itemSerializer = new ItemSerializer();
-  private CreatureSerializer creatureSerializer = new CreatureSerializer();
+
+  private final ItemSerializer itemSerializer;
+  private final CreatureSerializer creatureSerializer;
+  private final GameContext gameContext;
+
+  EntitySerializer(GameStores gameStores, GameContext gameContext) {
+    itemSerializer = new ItemSerializer(gameStores.getResources());
+    creatureSerializer = new CreatureSerializer(gameStores.getResources(), gameStores.getStore());
+    this.gameContext = gameContext;
+  }
 
   public Entity deserialize(DataInput input) throws IOException {
-    switch (input.readUTF()) {
-      case "item":
-        return itemSerializer.deserialize(input);
-      case "creature":
-        return creatureSerializer.deserialize(input);
-      default:
-        return null;
-    }
+    return switch (input.readUTF()) {
+      case "item" -> itemSerializer.deserialize(input);
+      case "creature" -> creatureSerializer.deserialize(input);
+      default -> null;
+    };
   }
 
   public void serialize(DataOutput output, Entity entity) throws IOException {

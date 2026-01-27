@@ -30,13 +30,16 @@ import neon.resources.RSpell;
 import neon.ui.UserInterface;
 
 public class SpellMakerDialog {
-  private JDialog frame;
-  private JPanel panel, options;
+  private final JDialog frame;
+  private final JPanel panel;
+  private final JPanel options;
   private Player player;
-  private JComboBox<Effect> effectBox;
-  private JSpinner sizeSpinner, rangeSpinner, durationSpinner;
-  private JTextField nameField;
-  private UserInterface ui;
+  private final JComboBox<Effect> effectBox;
+  private final JSpinner sizeSpinner;
+  private final JSpinner rangeSpinner;
+  private final JSpinner durationSpinner;
+  private final JTextField nameField;
+  private final UserInterface ui;
 
   public SpellMakerDialog(UserInterface ui) {
     this.ui = ui;

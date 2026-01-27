@@ -26,6 +26,7 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Item;
 import neon.entities.Player;
 import neon.entities.components.Enchantment;
@@ -33,15 +34,17 @@ import neon.ui.UserInterface;
 
 public class ChargeDialog implements KeyListener {
   private Player player;
-  private JList<Item> items;
-  private JDialog frame;
-  private JScrollPane scroller;
-  private UserInterface ui;
+  private final JList<Item> items;
+  private final JDialog frame;
+  private final JScrollPane scroller;
+  private final UserInterface ui;
   private final GameContext context;
+  private final GameStores gameStores;
 
-  public ChargeDialog(UserInterface ui, GameContext context) {
+  public ChargeDialog(UserInterface ui, GameContext context, GameStores gameStores) {
     this.ui = ui;
     this.context = context;
+    this.gameStores = gameStores;
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -103,7 +106,7 @@ public class ChargeDialog implements KeyListener {
         break;
       case KeyEvent.VK_ENTER:
         try {
-          Item item = (Item) items.getSelectedValue();
+          Item item = items.getSelectedValue();
           item.getMagicComponent().setModifier(0);
           ui.showMessage("Item charged.", 2);
         } catch (ArrayIndexOutOfBoundsException f) {
@@ -116,7 +119,7 @@ public class ChargeDialog implements KeyListener {
   private void initItems() {
     Vector<Item> listData = new Vector<Item>();
     for (long uid : player.getInventoryComponent()) {
-      Item item = (Item) context.getStore().getEntity(uid);
+      Item item = (Item) gameStores.getStore().getEntity(uid);
       Enchantment enchantment = item.getMagicComponent();
       if (enchantment != null && enchantment.getMana() < enchantment.getBaseMana()) {
         listData.add(item);

@@ -25,11 +25,9 @@ package neon.util;
  *
  * @author mdriesen
  */
-public class Dice {
+public record Dice(RandomSource randomSource) {
   /** Shared default instance for static convenience methods. */
   private static final Dice DEFAULT_INSTANCE = new Dice();
-
-  private final RandomSource randomSource;
 
   /** Creates a new Dice with a default (non-deterministic) random source. */
   public Dice() {
@@ -42,9 +40,7 @@ public class Dice {
    *
    * @param randomSource the random source to use
    */
-  public Dice(RandomSource randomSource) {
-    this.randomSource = randomSource;
-  }
+  public Dice {}
 
   /**
    * Factory method to create a Dice with a seeded random source for reproducible results.
@@ -120,12 +116,12 @@ public class Dice {
 
     if (index2 > 0) { // -1 wilt zeggen dat er geen + is gevonden
       dice = Integer.parseInt(roll.substring(index1 + 1, index2));
-      mod = Integer.parseInt(roll.substring(index2 + 1, roll.length()));
+      mod = Integer.parseInt(roll.substring(index2 + 1));
     } else if (index3 > 0) { // -1 wilt zeggen dat er geen - is gevonden
       dice = Integer.parseInt(roll.substring(index1 + 1, index3));
-      mod = -Integer.parseInt(roll.substring(index3 + 1, roll.length()));
+      mod = -Integer.parseInt(roll.substring(index3 + 1));
     } else {
-      dice = Integer.parseInt(roll.substring(index1 + 1, roll.length()));
+      dice = Integer.parseInt(roll.substring(index1 + 1));
     }
 
     return rollDice(number, dice, mod);
@@ -136,7 +132,8 @@ public class Dice {
    *
    * @return the random source
    */
-  public RandomSource getRandomSource() {
+  @Override
+  public RandomSource randomSource() {
     return randomSource;
   }
 }

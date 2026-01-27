@@ -19,9 +19,9 @@
 package neon.maps.services;
 
 import java.awt.Rectangle;
-import neon.core.Engine;
 import neon.entities.components.PhysicsComponent;
 import neon.maps.Region;
+import neon.systems.physics.PhysicsSystem;
 
 /**
  * Adapter implementation of PhysicsManager that delegates to the Engine singleton. This class
@@ -30,18 +30,24 @@ import neon.maps.Region;
  * @author mdriesen
  */
 public class EnginePhysicsManager implements PhysicsManager {
+  private final PhysicsSystem physicsSystem;
+
+  public EnginePhysicsManager(PhysicsSystem physicsSystem) {
+    this.physicsSystem = physicsSystem;
+  }
+
   @Override
   public void clear() {
-    Engine.getPhysicsEngine().clear();
+    physicsSystem.clear();
   }
 
   @Override
   public void register(Region region, Rectangle bounds, boolean fixed) {
-    Engine.getPhysicsEngine().register(region, bounds, fixed);
+    physicsSystem.register(region, bounds, fixed);
   }
 
   @Override
   public void register(PhysicsComponent component) {
-    Engine.getPhysicsEngine().register(component.getTheBody());
+    physicsSystem.register(component.getTheBody());
   }
 }

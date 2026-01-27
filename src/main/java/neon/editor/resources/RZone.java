@@ -20,7 +20,8 @@ package neon.editor.resources;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import neon.editor.Editor;
+import lombok.Getter;
+import neon.editor.DataStore;
 import neon.resources.RData;
 import neon.resources.RPerson;
 import neon.resources.RZoneTheme;
@@ -46,9 +47,10 @@ public class RZone extends RData {
   public RMap map;
   public RZoneTheme theme;
   private Scene scene;
+  @Getter private final DataStore dataStore;
 
   // zone loaded as element from file
-  public RZone(Element properties, RMap map, String... path) {
+  public RZone(Element properties, RMap map, DataStore dataStore, String... path) {
     // messy trick because id is final.
     super(
         (map.isDungeon()
@@ -56,22 +58,28 @@ public class RZone extends RData {
             : properties.getChild("header").getChildText("name")),
         path);
     this.map = map;
+    this.dataStore = dataStore;
     name = id;
     theme =
-        (RZoneTheme) Editor.resources.getResource(properties.getAttributeValue("theme"), "theme");
+        (RZoneTheme)
+            dataStore
+                .getResourceManager()
+                .getResource(properties.getAttributeValue("theme"), "theme");
   }
 
   // new zone with theme
-  public RZone(String id, String mod, RZoneTheme theme, RMap map) {
+  public RZone(String id, String mod, RZoneTheme theme, RMap map, DataStore dataStore) {
     super(id, mod);
+    this.dataStore = dataStore;
     name = id;
     this.map = map;
     this.theme = theme;
   }
 
   // new zone with renderables
-  public RZone(String id, String mod, Instance instance, RMap map) {
+  public RZone(String id, String mod, Instance instance, RMap map, DataStore dataStore) {
     super(id, mod);
+    this.dataStore = dataStore;
     name = id;
     scene = new Scene();
     scene.addElement(instance, instance.getBounds(), instance.z);
@@ -111,7 +119,7 @@ public class RZone extends RData {
     } // if map contains no creatures
     try { // regions
       for (Element region : zone.getChild("regions").getChildren()) {
-        Instance r = new IRegion(region);
+        Instance r = new IRegion(region, dataStore);
         scene.addElement(r, r.getBounds(), r.z);
       }
     } catch (NullPointerException e) {
@@ -132,15 +140,15 @@ public class RZone extends RData {
     return uids;
   }
 
-  public static Instance getInstance(Element e, RZone zone) {
-    if (Editor.resources.getResource(e.getAttributeValue("id")) instanceof RPerson) {
-      return new IPerson(e);
+  public Instance getInstance(Element e, RZone zone) {
+    if (dataStore.getResourceManager().getResource(e.getAttributeValue("id")) instanceof RPerson) {
+      return new IPerson(e, dataStore);
     } else if (e.getName().equals("door")) {
-      return new IDoor(e, zone);
+      return new IDoor(e, zone, dataStore);
     } else if (e.getName().equals("container")) {
-      return new IContainer(e);
+      return new IContainer(e, dataStore);
     } else {
-      return new IObject(e);
+      return new IObject(e, dataStore);
     }
   }
 

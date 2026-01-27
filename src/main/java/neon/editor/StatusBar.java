@@ -24,7 +24,7 @@ import javax.swing.border.BevelBorder;
 
 @SuppressWarnings("serial")
 public class StatusBar extends JComponent {
-  private JLabel label;
+  private final JLabel label;
 
   public StatusBar() {
     setLayout(new BorderLayout());

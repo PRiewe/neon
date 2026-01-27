@@ -31,6 +31,7 @@ import lombok.Getter;
 import neon.core.GameContext;
 import neon.core.handlers.CombatUtils;
 import neon.entities.Player;
+import neon.entities.UIDStore;
 import neon.entities.components.HealthComponent;
 import neon.entities.components.ShapeComponent;
 import neon.entities.components.Stats;
@@ -48,21 +49,34 @@ import neon.util.ColorFactory;
 @SuppressWarnings("serial")
 public class GamePanel extends JComponent {
   // components
-  private JTextArea text;
-  private JScrollPane scroller;
-  private JPanel stats;
+  private final JTextArea text;
+  private final JScrollPane scroller;
+  private final JPanel stats;
   private DefaultRenderable cursor;
-  private TitledBorder sBorder, aBorder, cBorder;
-  private JVectorPane drawing;
-  @Getter private final GameContext context;
-
+  private final TitledBorder sBorder;
+  private final TitledBorder aBorder;
+  private final TitledBorder cBorder;
+  private final JVectorPane drawing;
+  @Getter private final UIDStore uidStore;
+  @Getter private final GameContext gameContext;
+  private final CombatUtils combatUtils;
   // components of the stats panel
-  private JLabel intLabel, conLabel, dexLabel, strLabel, wisLabel, chaLabel;
-  private JLabel healthLabel, magicLabel, AVLabel, DVLabel;
+  private final JLabel intLabel;
+  private final JLabel conLabel;
+  private final JLabel dexLabel;
+  private final JLabel strLabel;
+  private final JLabel wisLabel;
+  private final JLabel chaLabel;
+  private final JLabel healthLabel;
+  private final JLabel magicLabel;
+  private final JLabel AVLabel;
+  private final JLabel DVLabel;
 
   /** Initializes this GamePanel. */
-  public GamePanel(GameContext context) {
-    this.context = context;
+  public GamePanel(UIDStore uidStore, CombatUtils combatUtils, GameContext gameContext) {
+    this.uidStore = uidStore;
+    this.combatUtils = combatUtils;
+    this.gameContext = gameContext;
     drawing = new JVectorPane();
     drawing.setFilter(new LightFilter());
 
@@ -157,14 +171,14 @@ public class GamePanel extends JComponent {
 
   @Override
   public void repaint() {
-    if (context.getPlayer() != null) {
+    if (uidStore.getPlayer() != null) {
       drawStats();
-      ShapeComponent bounds = context.getPlayer().getShapeComponent();
+      ShapeComponent bounds = uidStore.getPlayer().getShapeComponent();
       drawing.updateCamera(bounds.getLocation());
     }
     Collection<Renderable> renderables =
-        context.getAtlas().getCurrentZone().getRenderables(getVisibleRectangle());
-    renderables.add(context.getPlayer().getRenderComponent());
+        gameContext.getAtlasPosition().getCurrentZone().getRenderables(getVisibleRectangle());
+    renderables.add(uidStore.getPlayer().getRenderComponent());
     if (cursor != null) {
       renderables.add(cursor);
     }
@@ -204,7 +218,7 @@ public class GamePanel extends JComponent {
 
   private void drawStats() {
     // components
-    Player player = context.getPlayer();
+    Player player = uidStore.getPlayer();
     HealthComponent health = player.getHealthComponent();
 
     if (health.getHealth() * 4 < health.getBaseHealth()) {
@@ -239,7 +253,7 @@ public class GamePanel extends JComponent {
               + (int) (player.species.mana * player.species.iq));
     }
     AVLabel.setText("AV: " + player.getAVString());
-    DVLabel.setText("DV: " + CombatUtils.getDV(player));
+    DVLabel.setText("DV: " + combatUtils.getDV(player));
 
     Stats stats = player.getStatsComponent();
     if (stats.getStr() > (int) player.species.str) {
@@ -341,7 +355,7 @@ public class GamePanel extends JComponent {
 
     public BufferedImage filter(BufferedImage src, BufferedImage dest) {
       Rectangle view = drawing.getVisibleRectangle();
-      Player player = context.getPlayer();
+      Player player = uidStore.getPlayer();
       float zoom = drawing.getZoom();
       Area area = new Area(new Rectangle(src.getWidth(), src.getHeight()));
 
@@ -355,7 +369,7 @@ public class GamePanel extends JComponent {
                   (bounds.y - 8) * zoom - view.y * zoom,
                   (int) (17 * zoom),
                   (int) (17 * zoom))));
-      for (Point p : context.getAtlas().getCurrentZone().getLightMap().keySet()) {
+      for (Point p : gameContext.getAtlasPosition().getCurrentZone().getLightMap().keySet()) {
         // 4 en 9: cirkel met diameter 8, gecentreerd op licht
         area.subtract(
             new Area(
@@ -376,8 +390,8 @@ public class GamePanel extends JComponent {
       g.clearRect(0, 0, src.getWidth(), src.getHeight());
       g.drawImage(src, src.getMinX(), src.getMinY(), null);
 
-      if (context.getAtlas().getCurrentMap() instanceof World) {
-        int hour = (context.getTimer().getTime() / (60 * 1) + 12) % 24;
+      if (gameContext.getAtlasPosition().getCurrentMap() instanceof World) {
+        int hour = (gameContext.getTimer().getTime() / (60) + 12) % 24;
         g.setColor(new Color(0, 0, 0, (hour - 12) * (hour - 12) * 3 / 2));
         g.fill(area);
       } else {

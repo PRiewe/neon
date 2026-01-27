@@ -27,6 +27,8 @@ import javax.swing.event.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import lombok.extern.slf4j.Slf4j;
+import neon.editor.DataStore;
 import neon.editor.Editor;
 import neon.editor.resources.IObject;
 import neon.editor.resources.IRegion;
@@ -34,21 +36,24 @@ import neon.editor.resources.Instance;
 import neon.editor.resources.RMap;
 import neon.editor.resources.RZone;
 
+@Slf4j
 public class MapEditor {
   private static String terrain;
   private static JToggleButton drawButton;
   private static JToggleButton selectButton;
   private static UndoAction undoAction;
   private static HashMap<String, Short> mapUIDs;
-  private JScrollPane mapScrollPane;
-  private JTree mapTree;
-  private JButton undo;
-  private HashSet<RMap> activeMaps;
-  private JTabbedPane tabs;
-  private JCheckBox levelBox;
-  private JSpinner levelSpinner;
+  private final JScrollPane mapScrollPane;
+  private final JTree mapTree;
+  private final JButton undo;
+  private final HashSet<RMap> activeMaps;
+  private final JTabbedPane tabs;
+  private final JCheckBox levelBox;
+  private final JSpinner levelSpinner;
+  private final DataStore dataStore;
 
-  public MapEditor(JTabbedPane tabs, JPanel panel) {
+  public MapEditor(JTabbedPane tabs, JPanel panel, DataStore dataStore) {
+    this.dataStore = dataStore;
     activeMaps = new HashSet<RMap>();
     mapUIDs = new HashMap<String, Short>();
     this.tabs = tabs;
@@ -57,7 +62,7 @@ public class MapEditor {
     mapTree = new JTree(new DefaultMutableTreeNode("maps"));
     mapTree.setRootVisible(false);
     mapTree.setShowsRootHandles(true);
-    mapTree.addMouseListener(new MapTreeListener(mapTree, tabs, this));
+    mapTree.addMouseListener(new MapTreeListener(mapTree, tabs, this, dataStore));
     mapTree.setVisible(false);
     mapScrollPane = new JScrollPane(mapTree);
     mapScrollPane.setBorder(new TitledBorder("Maps"));
@@ -109,11 +114,7 @@ public class MapEditor {
   public static boolean isVisible(Instance r) {
     if (r instanceof IRegion && Editor.tShow.isSelected()) {
       return true;
-    } else if (r instanceof IObject && Editor.oShow.isSelected()) {
-      return true;
-    } else {
-      return false;
-    }
+    } else return r instanceof IObject && Editor.oShow.isSelected();
   }
 
   public static void setUndoAction(UndoAction undo) {
@@ -135,40 +136,41 @@ public class MapEditor {
   public void deleteMap(String id) {
     // TODO: activeMaps is <RMap>, not <String>!
     activeMaps.remove(id);
-    Editor.resources.removeResource(id);
+    dataStore.getResourceManager().removeResource(id);
   }
 
   public void makeMap(MapDialog.Properties props) {
     if (!props.cancelled()) {
       // editableMap maken
       short uid = createNewUID();
-      RMap map = new RMap(uid, Editor.getStore().getActive().get("id"), props);
+      RMap map = new RMap(uid, dataStore.getActive().get("id"), props, dataStore);
       activeMaps.add(map);
       // en node maken
       DefaultTreeModel model = (DefaultTreeModel) mapTree.getModel();
       DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-      MapTreeNode node = new MapTreeNode(map);
+      MapTreeNode node = new MapTreeNode(map, dataStore);
       if (!map.isDungeon()) {
-        node.add(new ZoneTreeNode(0, map.getZone(0)));
+        node.add(new ZoneTreeNode(0, map.getZone(0), dataStore));
       }
       model.insertNodeInto(node, root, root.getChildCount());
       mapTree.expandPath(new TreePath(root));
-      Editor.resources.addResource(map, "maps");
+      dataStore.getResourceManager().addResource(map, "maps");
     }
   }
 
   public void loadMaps(Collection<RMap> maps, String path) {
+    log.debug("Loading maps from {}", path);
     DefaultTreeModel model = (DefaultTreeModel) mapTree.getModel();
     DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
     for (RMap map : maps) {
       mapUIDs.put(map.id, map.uid);
-      MapTreeNode node = new MapTreeNode(map);
+      MapTreeNode node = new MapTreeNode(map, dataStore);
       if (map.isDungeon()) {
         for (Map.Entry<Integer, RZone> zone : map.zones.entrySet()) {
-          node.add(new ZoneTreeNode(zone.getKey(), zone.getValue()));
+          node.add(new ZoneTreeNode(zone.getKey(), zone.getValue(), dataStore));
         }
       } else {
-        node.add(new ZoneTreeNode(0, map.getZone(0)));
+        node.add(new ZoneTreeNode(0, map.getZone(0), dataStore));
       }
       model.insertNodeInto(node, root, root.getChildCount());
     }
@@ -203,6 +205,10 @@ public class MapEditor {
 
     public void actionPerformed(ActionEvent e) {
       EditablePane mapPane = (EditablePane) tabs.getSelectedComponent();
+      if (mapPane == null) {
+        log.error("Action performed on null mapPane");
+        return;
+      }
       if ("layer".equals(e.getActionCommand())) {
         reload(mapPane);
       } else if ("undo".equals(e.getActionCommand())) {

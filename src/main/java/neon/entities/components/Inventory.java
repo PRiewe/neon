@@ -23,22 +23,19 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import lombok.Getter;
 import neon.entities.property.Slot;
 
 public class Inventory implements Iterable<Long>, Component {
   private final long uid;
-  private CopyOnWriteArrayList<Long> items;
-  private EnumMap<Slot, Long> equiped;
-  private int money = 0;
+  private final CopyOnWriteArrayList<Long> items;
+  private final EnumMap<Slot, Long> equiped;
+  @Getter private int money = 0;
 
   public Inventory(long owner) {
     equiped = new EnumMap<Slot, Long>(Slot.class);
     items = new CopyOnWriteArrayList<Long>();
     uid = owner;
-  }
-
-  public int getMoney() {
-    return money;
   }
 
   public void addMoney(int amount) {

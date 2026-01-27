@@ -37,22 +37,25 @@ import neon.resources.RSpell.SpellType;
 
 public class CCEditor
     implements ActionListener, ItemListener, ListSelectionListener, MouseListener {
-  private JDialog frame;
-  private JCheckBox raceBox;
-  private JFormattedTextField xField, yField;
-  private JComboBox<RMap> mapBox;
-  private JComboBox<RZone> zoneBox;
+  private final JDialog frame;
+  private final JCheckBox raceBox;
+  private final JFormattedTextField xField;
+  private final JFormattedTextField yField;
+  private final JComboBox<RMap> mapBox;
+  private final JComboBox<RZone> zoneBox;
   private HashMap<RCreature, Boolean> races;
-  private JList<RCreature> raceList;
-  private JList<RItem> itemList;
-  private JList<RSpell> spellList;
+  private final JList<RCreature> raceList;
+  private final JList<RItem> itemList;
+  private final JList<RSpell> spellList;
   private RCreature currentRace;
-  private DefaultListModel<RSpell> spellListModel;
-  private DefaultListModel<RItem> itemListModel;
+  private final DefaultListModel<RSpell> spellListModel;
+  private final DefaultListModel<RItem> itemListModel;
   private String[] spells;
-  private JPanel raceEditPanel;
+  private final JPanel raceEditPanel;
+  private final DataStore dataStore;
 
-  public CCEditor(JFrame parent) {
+  public CCEditor(JFrame parent, DataStore dataStore) {
+    this.dataStore = dataStore;
     frame = new JDialog(parent, "Character Creation Editor", true); // modal dialog
     JPanel content = new JPanel(new BorderLayout());
     frame.setPreferredSize(new Dimension(400, 300));
@@ -188,13 +191,13 @@ public class CCEditor
   }
 
   public void show() {
-    DataStore store = Editor.getStore();
+    DataStore store = dataStore;
     RMod mod = store.getActive();
     List<RCreature> playableRaces = new ArrayList<RCreature>();
     // if species does not exist, automatically remove it
     for (String race : mod.getList("races")) {
-      if (Editor.resources.getResource(race) instanceof RCreature) {
-        playableRaces.add((RCreature) Editor.resources.getResource(race));
+      if (dataStore.getResourceManager().getResource(race) instanceof RCreature) {
+        playableRaces.add((RCreature) dataStore.getResourceManager().getResource(race));
       } else {
         mod.ccRaces.remove(race);
       }
@@ -202,8 +205,8 @@ public class CCEditor
     itemListModel.clear();
     // if item does not exist, automatically remove it
     for (String item : mod.getList("items")) {
-      if (Editor.resources.getResource(item) instanceof RItem) {
-        itemListModel.addElement((RItem) Editor.resources.getResource(item));
+      if (dataStore.getResourceManager().getResource(item) instanceof RItem) {
+        itemListModel.addElement((RItem) dataStore.getResourceManager().getResource(item));
       } else {
         mod.ccRaces.remove(item);
       }
@@ -211,15 +214,16 @@ public class CCEditor
     spellListModel.clear();
     // if spell does not exist, automatically remove it
     for (String spell : mod.getList("spells")) {
-      if (Editor.resources.getResource(spell, "magic") != null) {
-        spellListModel.addElement((RSpell) Editor.resources.getResource(spell, "magic"));
+      if (dataStore.getResourceManager().getResource(spell, "magic") != null) {
+        spellListModel.addElement(
+            (RSpell) dataStore.getResourceManager().getResource(spell, "magic"));
       } else {
         mod.ccRaces.remove(spell);
       }
     }
 
     races = new HashMap<RCreature, Boolean>();
-    for (RCreature rc : Editor.resources.getResources(RCreature.class)) {
+    for (RCreature rc : dataStore.getResourceManager().getResources(RCreature.class)) {
       // only humanoids or goblins
       if (rc.type == Type.humanoid || rc.type == Type.goblin) {
         races.put(rc, playableRaces.contains(rc));
@@ -227,12 +231,12 @@ public class CCEditor
     }
     raceList.setListData(races.keySet().toArray(new RCreature[0]));
 
-    for (RMap map : Editor.resources.getResources(RMap.class)) {
+    for (RMap map : dataStore.getResourceManager().getResources(RMap.class)) {
       if (map.theme == null) { // do not allow random maps
         mapBox.addItem(map);
       }
     }
-    RMap map = (RMap) Editor.resources.getResource(mod.get("map"), "maps");
+    RMap map = (RMap) dataStore.getResourceManager().getResource(mod.get("map"), "maps");
     mapBox.setSelectedItem(map);
     for (RZone zone : map.zones.values()) {
       if (zone.theme == null) { // do not allow random zones
@@ -244,7 +248,7 @@ public class CCEditor
     yField.setValue(Integer.parseInt(mod.get("y")));
 
     ArrayList<String> temp = new ArrayList<String>();
-    for (RSpell spell : Editor.resources.getResources(RSpell.class)) {
+    for (RSpell spell : dataStore.getResourceManager().getResources(RSpell.class)) {
       if (spell.type == SpellType.SPELL) {
         temp.add(spell.id);
       }
@@ -257,7 +261,7 @@ public class CCEditor
   }
 
   private void saveAll() {
-    RMod mod = Editor.getStore().getActive();
+    RMod mod = dataStore.getActive();
     if (mapBox.getSelectedItem() != null) {
       RMap map = (RMap) mapBox.getSelectedItem();
       mod.set("map", map.id);
@@ -386,7 +390,7 @@ public class CCEditor
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add item")) {
-        Object[] items = Editor.resources.getResources(RItem.class).toArray();
+        Object[] items = dataStore.getResourceManager().getResources(RItem.class).toArray();
         RItem ri =
             (RItem)
                 JOptionPane.showInputDialog(

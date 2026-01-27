@@ -19,20 +19,22 @@
 package neon.editor.maps;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.resources.RMap;
 
 @SuppressWarnings("serial")
 public class MapTreeNode extends DefaultMutableTreeNode {
-  private RMap map;
+  private final RMap map;
+  private final DataStore dataStore;
 
-  public MapTreeNode(RMap map) {
+  public MapTreeNode(RMap map, DataStore dataStore) {
     super(map.toString());
     this.map = map;
+    this.dataStore = dataStore;
   }
 
   public String toString() {
-    if (!map.getPath()[0].equals(Editor.getStore().getActive().get("id"))) {
+    if (!map.getPath()[0].equals(dataStore.getActive().get("id"))) {
       // niet-actieve data is cursief weergegeven
       return "<html><i>" + map.id + "</i></html>";
     } else {

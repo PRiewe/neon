@@ -24,6 +24,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
+import neon.editor.DataStore;
 import neon.editor.Editor;
 import neon.editor.resources.IContainer;
 import neon.editor.resources.IDoor;
@@ -34,14 +35,16 @@ import neon.resources.RZoneTheme;
 import neon.ui.graphics.Renderable;
 
 public class ZoneEditor implements ActionListener {
-  private JDialog frame;
-  private JTable table;
-  private ZoneTreeNode node;
-  private RZone zone;
-  private JTextField nameField;
-  private JComboBox<RZoneTheme> themeBox;
+  private final JDialog frame;
+  private final JTable table;
+  private final ZoneTreeNode node;
+  private final RZone zone;
+  private final JTextField nameField;
+  private final JComboBox<RZoneTheme> themeBox;
+  private final DataStore dataStore;
 
-  public ZoneEditor(ZoneTreeNode node, JFrame parent) {
+  public ZoneEditor(ZoneTreeNode node, JFrame parent, DataStore dataStore) {
+    this.dataStore = dataStore;
     JPanel content = new JPanel(new BorderLayout());
     frame = new JDialog(parent, "Zone editor: " + node);
     frame.setContentPane(content);
@@ -56,7 +59,8 @@ public class ZoneEditor implements ActionListener {
     JLabel nameLabel = new JLabel("Name: ");
     JLabel themeLabel = new JLabel("Theme: ");
     nameField = new JTextField(15);
-    themeBox = new JComboBox<RZoneTheme>(Editor.resources.getResources(RZoneTheme.class));
+    themeBox =
+        new JComboBox<RZoneTheme>(dataStore.getResourceManager().getResources(RZoneTheme.class));
     themeBox.addItem(null);
     themeBox.addActionListener(this);
     layout.setVerticalGroup(
@@ -213,9 +217,10 @@ public class ZoneEditor implements ActionListener {
       if (e.getButton() == MouseEvent.BUTTON1) {
         if (e.getClickCount() == 2) {
           if (instance instanceof IDoor) {
-            new DoorInstanceEditor((IDoor) instance, Editor.getFrame()).show();
+            new DoorInstanceEditor((IDoor) instance, Editor.getFrame(), dataStore).show();
           } else if (instance instanceof IContainer) {
-            new ContainerInstanceEditor((IContainer) instance, Editor.getFrame(), node).show();
+            new ContainerInstanceEditor((IContainer) instance, Editor.getFrame(), node, dataStore)
+                .show();
           }
         }
       }

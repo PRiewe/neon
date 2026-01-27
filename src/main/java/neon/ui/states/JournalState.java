@@ -23,7 +23,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.handlers.CombatUtils;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Player;
@@ -40,31 +40,41 @@ public class JournalState extends State implements FocusListener {
   private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
   private static final Color line = defaults.getColor("List.foreground");
 
-  private JPanel quests;
-  private CardLayout layout;
-  private JPanel cards;
-  private JPanel main;
-  private JLabel instructions;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
-  private final GameContext context;
+  private final JPanel quests;
+  private final CardLayout layout;
+  private final JPanel cards;
+  private final JPanel main;
+  private final JLabel instructions;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
 
   // character sheet panel
-  private JPanel stats, stuff, skills;
-  private JPanel feats, traits, abilities;
-  private JScrollPane skillScroller, featScroller, traitScroller, abilityScroller;
-
+  private final JPanel stats;
+  private final JPanel stuff;
+  private final JPanel skills;
+  private final JPanel feats;
+  private final JPanel traits;
+  private final JPanel abilities;
+  private final JScrollPane skillScroller;
+  private final JScrollPane featScroller;
+  private final JScrollPane traitScroller;
+  private final JScrollPane abilityScroller;
+  private final GameStores gameStores;
+  private final InventoryHandler inventoryHandler;
+  private final CombatUtils combatUtils;
   // spells panel
-  private JList<RSpell> sList;
+  private final JList<RSpell> sList;
 
   public JournalState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent, MBassador<EventObject> bus, UserInterface ui, GameStores gameStores) {
     super(parent);
+
     this.bus = bus;
     this.ui = ui;
-    this.context = context;
+    this.gameStores = gameStores;
     main = new JPanel(new BorderLayout());
-
+    inventoryHandler = new InventoryHandler(gameStores.getStore());
+    combatUtils = new CombatUtils(gameStores.getStore());
     // cardlayout om verschillende panels weer te geven.
     layout = new CardLayout();
     cards = new JPanel(layout);
@@ -164,8 +174,9 @@ public class JournalState extends State implements FocusListener {
 
   private void initJournal() {
     quests.removeAll();
-    HashMap<String, Integer> questList = context.getPlayer().getJournal().getQuests();
-    HashMap<String, String> questDescriptions = context.getPlayer().getJournal().getSubjects();
+    HashMap<String, Integer> questList = gameStores.getStore().getPlayer().getJournal().getQuests();
+    HashMap<String, String> questDescriptions =
+        gameStores.getStore().getPlayer().getJournal().getSubjects();
     for (Map.Entry<String, Integer> entry : questList.entrySet()) {
       quests.add(
           new JLabel(
@@ -181,13 +192,13 @@ public class JournalState extends State implements FocusListener {
 
   private void initSpells() {
     ArrayList<RSpell> formulae = new ArrayList<RSpell>();
-    formulae.addAll(context.getPlayer().getMagicComponent().getSpells());
-    formulae.addAll(context.getPlayer().getMagicComponent().getPowers());
+    formulae.addAll(gameStores.getStore().getPlayer().getMagicComponent().getSpells());
+    formulae.addAll(gameStores.getStore().getPlayer().getMagicComponent().getPowers());
     sList.setListData(formulae.toArray(new RSpell[0]));
   }
 
   private void initStats() {
-    Player player = context.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     HealthComponent health = player.getHealthComponent();
 
     stuff.removeAll();
@@ -221,7 +232,7 @@ public class JournalState extends State implements FocusListener {
     stuff.add(
         new JLabel(
             "Encumbrance: "
-                + InventoryHandler.getWeight(player)
+                + inventoryHandler.getWeight(player)
                 + " (of "
                 + light
                 + "/"
@@ -229,7 +240,7 @@ public class JournalState extends State implements FocusListener {
                 + "/"
                 + heavy
                 + ") kg"));
-    stuff.add(new JLabel("Defense value: " + CombatUtils.getDV(player)));
+    stuff.add(new JLabel("Defense value: " + combatUtils.getDV(player)));
     stuff.add(new JLabel("Attack value: " + player.getAVString()));
 
     for (Skill skill : Skill.values()) {
@@ -275,7 +286,7 @@ public class JournalState extends State implements FocusListener {
 
   @SuppressWarnings("serial")
   private class KeyAction extends AbstractAction {
-    private String command;
+    private final String command;
 
     public KeyAction(String command) {
       this.command = command;
@@ -309,7 +320,11 @@ public class JournalState extends State implements FocusListener {
           }
           break;
         case "equip":
-          context.getPlayer().getMagicComponent().equipSpell((RSpell) sList.getSelectedValue());
+          gameStores
+              .getStore()
+              .getPlayer()
+              .getMagicComponent()
+              .equipSpell(sList.getSelectedValue());
           initSpells();
           break;
         case "quests":
@@ -344,7 +359,7 @@ public class JournalState extends State implements FocusListener {
 
   @SuppressWarnings("serial")
   private class SpellCellRenderer extends JLabel implements ListCellRenderer<RSpell> {
-    private Font font;
+    private final Font font;
 
     /** Initializes this renderer. */
     public SpellCellRenderer() {
@@ -359,7 +374,7 @@ public class JournalState extends State implements FocusListener {
         boolean isSelected,
         boolean cellHasFocus) {
       setText(spell.name != null ? spell.name : spell.id);
-      if (context.getPlayer().getMagicComponent().getSpell() == spell) {
+      if (gameStores.getStore().getPlayer().getMagicComponent().getSpell() == spell) {
         setFont(new Font(getFont().getName(), Font.BOLD, getFont().getSize()));
       } else {
         setFont(font);

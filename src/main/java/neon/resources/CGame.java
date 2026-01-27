@@ -25,10 +25,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class CGame extends Resource {
-  private ArrayList<String> playableRaces = new ArrayList<>();
-  private ArrayList<String> startingItems = new ArrayList<>();
-  private ArrayList<String> startingSpells = new ArrayList<>();
-  @Getter private Point startPosition = new Point(0, 0);
+  private final ArrayList<String> playableRaces = new ArrayList<>();
+  private final ArrayList<String> startingItems = new ArrayList<>();
+  private final ArrayList<String> startingSpells = new ArrayList<>();
+  @Getter private final Point startPosition = new Point(0, 0);
   @Setter @Getter private String[] startMap;
   @Setter @Getter private int startZone = 0; // default
 

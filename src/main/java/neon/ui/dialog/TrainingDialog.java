@@ -25,7 +25,7 @@ import java.awt.event.KeyListener;
 import java.util.EventObject;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Player;
 import neon.entities.property.Skill;
@@ -35,19 +35,19 @@ import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.bus.MBassador;
 
 public class TrainingDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<Skill> skills;
+  private final JList<Skill> skills;
   private Creature trainer; // your trainer
-  private JScrollPane scroller;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
-  private final GameContext context;
+  private final JScrollPane scroller;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
+  private final GameStores gameStores;
 
-  public TrainingDialog(UserInterface ui, MBassador<EventObject> bus, GameContext context) {
+  public TrainingDialog(UserInterface ui, MBassador<EventObject> bus, GameStores gameStores) {
     this.bus = bus;
     this.ui = ui;
-    this.context = context;
+    this.gameStores = gameStores;
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -124,7 +124,7 @@ public class TrainingDialog implements KeyListener {
   private void initTraining() {
     DefaultListModel<Skill> model = new DefaultListModel<Skill>();
     for (RPerson.Service service :
-        ((RPerson) context.getResources().getResource(trainer.getName())).services) {
+        ((RPerson) gameStores.getResources().getResource(trainer.getName())).services) {
       if (service.id.equals("training")) {
         for (String skillName : service.skills) {
           model.addElement(Skill.valueOf(skillName.toUpperCase()));

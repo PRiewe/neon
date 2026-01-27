@@ -28,8 +28,10 @@ import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MotionHandler;
+import neon.core.handlers.TeleportHandler;
 import neon.entities.Container;
 import neon.entities.Creature;
 import neon.entities.Door;
@@ -48,27 +50,41 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
 
   private Player player;
   private Object container;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
-
+  private final GameStores gameStores;
   // components of the JPanel
-  private JPanel panel;
-  private JList<Item> iList;
-  private JList<Entity> cList;
-  private JScrollPane cScroll, iScroll;
-  private DescriptionPanel description;
+  private final JPanel panel;
+  private final JList<Item> iList;
+  private final JList<Entity> cList;
+  private final JScrollPane cScroll;
+  private final JScrollPane iScroll;
+  private final DescriptionPanel description;
 
   // lists
-  private HashMap<String, Integer> cData, iData;
+  private final HashMap<String, Integer> cData;
+  private final HashMap<String, Integer> iData;
+  private final InventoryHandler inventoryHandler;
+  private final MotionHandler motionHandler;
+  private final TeleportHandler teleportHandler;
 
   public ContainerState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(parent);
     this.bus = bus;
     this.ui = ui;
     this.context = context;
-
+    this.gameStores = gameStores;
+    this.inventoryHandler = new InventoryHandler(gameStores.getStore());
+    this.motionHandler = new MotionHandler(gameStores.getStore());
+    this.teleportHandler =
+        new TeleportHandler(
+            gameStores, context, context.getAtlasPosition(), context.getScriptEngine());
     panel = new JPanel(new BorderLayout());
     JPanel center = new JPanel(new java.awt.GridLayout(0, 3));
     panel.addKeyListener(this);
@@ -79,13 +95,13 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     iList.addListSelectionListener(this);
     iScroll = new JScrollPane(iList);
     iData = new HashMap<String, Integer>();
-    iList.setCellRenderer(new InventoryCellRenderer(iData, context));
+    iList.setCellRenderer(new InventoryCellRenderer(iData, gameStores.getStore()));
     iList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     iScroll.setBorder(new TitledBorder(new LineBorder(line.brighter(), 2), "Inventory"));
     center.add(iScroll);
 
     // description panel klaarmaken
-    CClient ini = (CClient) context.getResources().getResource("client", "config");
+    CClient ini = (CClient) gameStores.getResources().getResource("client", "config");
     description = new DescriptionPanel(ini.getSmall());
     center.add(description);
 
@@ -95,7 +111,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     cList.addListSelectionListener(this);
     cScroll = new JScrollPane(cList);
     cData = new HashMap<String, Integer>();
-    cList.setCellRenderer(new InventoryCellRenderer(cData, context));
+    cList.setCellRenderer(new InventoryCellRenderer(cData, gameStores.getStore()));
     cList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     center.add(cScroll);
     panel.add(center, BorderLayout.CENTER);
@@ -113,7 +129,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   public void enter(TransitionEvent t) {
     container = t.getParameter("holder");
     cScroll.setBorder(new TitledBorder(new LineBorder(line), container.toString()));
-    player = context.getPlayer();
+    player = gameStores.getStore().getPlayer();
     ui.showPanel(panel);
     update();
     iList.requestFocus();
@@ -151,39 +167,39 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
       case KeyEvent.VK_SPACE:
         try {
           if (iList.hasFocus()) { // drop something
-            Item item = (Item) iList.getSelectedValue();
-            InventoryHandler.removeItem(player, item.getUID());
+            Item item = iList.getSelectedValue();
+            inventoryHandler.removeItem(player, item.getUID());
             if (container instanceof Container) { // register change
               ((Container) container).addItem(item.getUID());
             } else if (container instanceof Zone) { // adjust item position
               Rectangle pBounds = player.getShapeComponent();
               Rectangle iBounds = item.getShapeComponent();
               iBounds.setLocation(pBounds.x, pBounds.y);
-              context.getAtlas().getCurrentZone().addItem(item);
+              context.getAtlasPosition().getCurrentZone().addItem(item);
             } else if (container instanceof Creature) {
-              InventoryHandler.addItem(((Creature) container), item.getUID());
+              inventoryHandler.addItem(((Creature) container), item.getUID());
             }
             update();
           } else { // pick up something
-            Entity item = (Entity) cList.getSelectedValue();
+            Entity item = cList.getSelectedValue();
             if (item instanceof Container) {
               bus.publishAsync(new TransitionEvent("return"));
               bus.publishAsync(new TransitionEvent("container", "holder", item));
             } else if (item instanceof Door) {
-              MotionHandler.teleport(player, (Door) item);
+              teleportHandler.teleport(player, (Door) item);
               bus.publishAsync(new TransitionEvent("return"));
             } else if (item instanceof Creature) {
               bus.publishAsync(new TransitionEvent("return"));
               bus.publishAsync(new TransitionEvent("container", "holder", item));
             } else {
               if (container instanceof Zone) {
-                context.getAtlas().getCurrentZone().removeItem((Item) item);
+                context.getAtlasPosition().getCurrentZone().removeItem((Item) item);
               } else if (container instanceof Creature) {
-                InventoryHandler.removeItem(((Creature) container), item.getUID());
+                inventoryHandler.removeItem(((Creature) container), item.getUID());
               } else {
                 ((Container) container).removeItem(item.getUID());
               }
-              InventoryHandler.addItem(player, item.getUID());
+              inventoryHandler.addItem(player, item.getUID());
               update();
             }
           }
@@ -204,8 +220,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     cData.clear();
 
     ArrayList<Object> items = new ArrayList<Object>();
-    if (container instanceof Zone) {
-      Zone zone = (Zone) container;
+    if (container instanceof Zone zone) {
       Rectangle bounds = player.getShapeComponent();
       items.addAll(zone.getItems(bounds.getLocation()));
     } else if (container instanceof Creature) {
@@ -219,7 +234,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
       if (o instanceof Item) {
         item = (Item) o;
       } else {
-        item = (Item) context.getStore().getEntity((Long) o);
+        item = (Item) gameStores.getStore().getEntity((Long) o);
       }
       if (!cData.containsKey(item.getID())) {
         cData.put(item.getID(), 1);
@@ -230,7 +245,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     }
 
     for (long uid : player.getInventoryComponent()) {
-      Item i = (Item) context.getStore().getEntity(uid);
+      Item i = (Item) gameStores.getStore().getEntity(uid);
       if (!iData.containsKey(i.getID())) {
         iData.put(i.getID(), 1);
         iBuffer.add(i);

@@ -26,11 +26,15 @@ import neon.editor.help.HelpLabels;
 import neon.resources.RMod;
 
 public class InfoEditor implements ActionListener {
-  private JDialog frame;
-  private JTextField titleField, bigField, smallField;
+  private final JDialog frame;
+  private final JTextField titleField;
+  private final JTextField bigField;
+  private final JTextField smallField;
+  private final DataStore dataStore;
 
-  public InfoEditor(JFrame parent) {
+  public InfoEditor(JFrame parent, DataStore dataStore) {
     frame = new JDialog(parent, "Game Info Editor");
+    this.dataStore = dataStore;
     JPanel content = new JPanel();
     content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
     frame.setContentPane(content);
@@ -117,7 +121,7 @@ public class InfoEditor implements ActionListener {
 
   public void show() {
     // assume that data is always valid...
-    RMod data = Editor.getStore().getActive();
+    RMod data = dataStore.getActive();
     titleField.setText(data.get("title"));
     if (data.get("big") != null) {
       bigField.setText(data.get("big"));
@@ -131,7 +135,7 @@ public class InfoEditor implements ActionListener {
   }
 
   private void save() {
-    RMod data = Editor.getStore().getActive();
+    RMod data = dataStore.getActive();
     // big may not be the same as small
     if (!bigField.getText().equals(smallField.getText())) {
       // big not null or "€"
@@ -144,7 +148,7 @@ public class InfoEditor implements ActionListener {
       }
     }
     // title not null or "", unless for extension
-    if (!Editor.getStore().getActive().isExtension()
+    if (!dataStore.getActive().isExtension()
         || !(titleField.getText() == null && titleField.getText().isEmpty())) {
       data.set("title", titleField.getText());
     }

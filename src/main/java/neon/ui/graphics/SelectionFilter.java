@@ -19,5 +19,5 @@
 package neon.ui.graphics;
 
 public interface SelectionFilter {
-  public boolean isSelectable(Renderable r);
+  boolean isSelectable(Renderable r);
 }

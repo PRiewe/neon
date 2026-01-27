@@ -20,7 +20,7 @@ package neon.editor.resources;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.maps.MapEditor;
 import neon.resources.RData;
 import neon.resources.RItem;
@@ -33,18 +33,18 @@ public class IObject extends Instance {
   private JVShape cachedSvgShape;
   private String cachedSvgContent;
 
-  public IObject(RData resource, int x, int y, int z, int uid) {
-    super(resource, x, y, z, 1, 1);
+  public IObject(RData resource, int x, int y, int z, int uid, DataStore dataStore) {
+    super(resource, x, y, z, 1, 1, dataStore);
     this.uid = uid;
   }
 
-  public IObject(Element properties) {
-    super(properties);
+  public IObject(Element properties, DataStore dataStore) {
+    super(properties, dataStore);
     width = 1;
     height = 1;
     uid = Integer.parseInt(properties.getAttributeValue("uid"));
     String id = properties.getAttributeValue("id");
-    resource = (RData) Editor.resources.getResource(id);
+    resource = (RData) dataStore.getResourceManager().getResource(id);
     if (properties.getName().equals("creature")) {
       z = Byte.MAX_VALUE - 1;
     } else { // kan "item", "door" of "container" zijn

@@ -22,7 +22,9 @@ import java.awt.*;
 import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.editor.*;
+import neon.editor.ColorCellRenderer;
+import neon.editor.DataStore;
+import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.entities.property.Slot;
 import neon.resources.RClothing;
@@ -30,16 +32,22 @@ import neon.resources.RSpell;
 import neon.util.ColorFactory;
 
 public class ClothingEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JFormattedTextField costField, weightField, charField;
-  private JComboBox<String> colorBox, spellBox;
-  private JComboBox<Slot> slotBox;
-  private RClothing data;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final JComboBox<String> spellBox;
+  private final JComboBox<Slot> slotBox;
+  private final RClothing data;
+  private final DataStore dataStore;
+  private final HelpLabels helpLabels;
 
-  public ClothingEditor(JFrame parent, RClothing data) {
+  public ClothingEditor(JFrame parent, RClothing data, DataStore dataStore) {
     super(parent, "Clothing Editor: " + data.id);
     this.data = data;
-
+    this.dataStore = dataStore;
+    helpLabels = new HelpLabels(dataStore);
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
     itemProps.setLayout(layout);
@@ -63,7 +71,7 @@ public class ClothingEditor extends ObjectEditor {
     slotBox = new JComboBox<Slot>(loadSlots());
     spellBox = new JComboBox<String>(loadSpells());
     JLabel nameHelpLabel = HelpLabels.getNameHelpLabel();
-    JLabel costHelpLabel = HelpLabels.getCostHelpLabel();
+    JLabel costHelpLabel = helpLabels.getCostHelpLabel();
     JLabel colorHelpLabel = HelpLabels.getColorHelpLabel();
     JLabel charHelpLabel = HelpLabels.getCharHelpLabel();
     JLabel weightHelpLabel = HelpLabels.getWeightHelpLabel();
@@ -178,13 +186,14 @@ public class ClothingEditor extends ObjectEditor {
       data.spell = spellBox.getSelectedItem().toString();
     }
 
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   private Vector<String> loadSpells() {
     Vector<String> spells = new Vector<String>();
     spells.add(null);
-    for (RSpell.Enchantment spell : Editor.resources.getResources(RSpell.Enchantment.class)) {
+    for (RSpell.Enchantment spell :
+        dataStore.getResourceManager().getResources(RSpell.Enchantment.class)) {
       if (spell.item.equals("clothing")) {
         spells.add(spell.id);
       }

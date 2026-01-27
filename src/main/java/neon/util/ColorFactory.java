@@ -28,7 +28,7 @@ import java.util.*;
  * @author mdriesen
  */
 public class ColorFactory {
-  private static LinkedHashMap<String, Color> colors;
+  private static final LinkedHashMap<String, Color> colors;
 
   static {
     colors = new LinkedHashMap<String, Color>();

@@ -25,6 +25,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import neon.editor.DataStore;
 import neon.editor.DialogEditor;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
@@ -32,22 +33,29 @@ import neon.resources.quest.QuestVariable;
 import neon.resources.quest.RQuest;
 
 public class QuestEditor extends ObjectEditor implements ActionListener, MouseListener {
-  private RQuest quest;
-  private JTextField nameField;
-  private JFormattedTextField freqField;
-  private DefaultTableModel conditionModel, varModel, dialogModel;
-  private JTable conditionTable, varTable, dialogTable;
-  private JCheckBox randomBox, initialBox;
-  private ClickAction cAdd = new ClickAction("Add condition");
-  private ClickAction cRemove = new ClickAction("Remove condition");
-  private ClickAction vAdd = new ClickAction("Add variable");
-  private ClickAction vRemove = new ClickAction("Remove variable");
-  private ClickAction tAdd = new ClickAction("Add topic");
-  private ClickAction tRemove = new ClickAction("Remove topic");
+  private final RQuest quest;
+  private final JTextField nameField;
+  private final JFormattedTextField freqField;
+  private final DefaultTableModel conditionModel;
+  private final DefaultTableModel varModel;
+  private final DefaultTableModel dialogModel;
+  private final JTable conditionTable;
+  private final JTable varTable;
+  private final JTable dialogTable;
+  private final JCheckBox randomBox;
+  private final JCheckBox initialBox;
+  private final ClickAction cAdd = new ClickAction("Add condition");
+  private final ClickAction cRemove = new ClickAction("Remove condition");
+  private final ClickAction vAdd = new ClickAction("Add variable");
+  private final ClickAction vRemove = new ClickAction("Remove variable");
+  private final ClickAction tAdd = new ClickAction("Add topic");
+  private final ClickAction tRemove = new ClickAction("Remove topic");
+  private final DataStore dataStore;
 
-  public QuestEditor(JFrame parent, RQuest quest) {
+  public QuestEditor(JFrame parent, RQuest quest, DataStore dataStore) {
     super(parent, "Quest Editor: " + quest.id);
     this.quest = quest;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel(new GridLayout(0, 1));
     props.setBorder(new TitledBorder("Properties"));
@@ -144,13 +152,13 @@ public class QuestEditor extends ObjectEditor implements ActionListener, MouseLi
 
     // condities
     quest.getConditions().clear();
-    for (Vector<String> data : (Vector<Vector>) conditionModel.getDataVector()) {
+    for (Vector<String> data : conditionModel.getDataVector()) {
       quest.getConditions().add(data.get(0));
     }
 
     // Convert table data to QuestVariable objects
     quest.getVariables().clear();
-    for (Vector<?> data : (Vector<Vector>) varModel.getDataVector()) {
+    for (Vector<?> data : varModel.getDataVector()) {
       QuestVariable var = new QuestVariable();
       var.name = data.get(0) != null ? data.get(0).toString() : null;
       var.category = data.get(1) != null ? data.get(1).toString() : null;
@@ -160,7 +168,7 @@ public class QuestEditor extends ObjectEditor implements ActionListener, MouseLi
     }
 
     //		quest.getTopics().clear();
-    for (Vector<?> data : (Vector<Vector>) dialogModel.getDataVector()) {
+    for (Vector<?> data : dialogModel.getDataVector()) {
       String id = data.get(0).toString();
       String condition = (data.get(1) != null ? data.get(1).toString() : null);
       String answer = (data.get(2) != null ? data.get(2).toString() : null);
@@ -199,11 +207,7 @@ public class QuestEditor extends ObjectEditor implements ActionListener, MouseLi
   }
 
   public void actionPerformed(ActionEvent e) {
-    if (randomBox.isSelected()) {
-      freqField.setEnabled(true);
-    } else {
-      freqField.setEnabled(false);
-    }
+    freqField.setEnabled(randomBox.isSelected());
   }
 
   public void mousePressed(MouseEvent e) {}
@@ -295,7 +299,7 @@ public class QuestEditor extends ObjectEditor implements ActionListener, MouseLi
 
   @SuppressWarnings("serial")
   private static class QuestsTableModel extends DefaultTableModel {
-    private Class<?>[] classes;
+    private final Class<?>[] classes;
 
     public QuestsTableModel(String[] columns, Class<?>... classes) {
       super(columns, 0);

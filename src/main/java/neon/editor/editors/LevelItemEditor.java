@@ -25,19 +25,21 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.resources.LItem;
 import neon.resources.RItem;
 
 public class LevelItemEditor extends ObjectEditor implements MouseListener {
-  private LItem data;
-  private JTable table;
-  private DefaultTableModel model;
+  private final LItem data;
+  private final DataStore dataStore;
+  private final JTable table;
+  private final DefaultTableModel model;
 
   @SuppressWarnings("serial")
-  public LevelItemEditor(JFrame parent, LItem data) {
+  public LevelItemEditor(JFrame parent, LItem data, DataStore dataStore) {
     super(parent, "Leveled Item Editor: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     // help
     JLabel help =
@@ -72,7 +74,7 @@ public class LevelItemEditor extends ObjectEditor implements MouseListener {
           (String) table.getModel().getValueAt(i, 0),
           Integer.parseInt(table.getModel().getValueAt(i, 1).toString()));
     }
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {
@@ -112,7 +114,7 @@ public class LevelItemEditor extends ObjectEditor implements MouseListener {
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add item")) {
         ArrayList<String> items = new ArrayList<String>();
-        for (RItem item : Editor.resources.getResources(RItem.class)) {
+        for (RItem item : dataStore.getResourceManager().getResources(RItem.class)) {
           if (!item.id.equals(data.id)) { // item niet in zichzelf steken
             items.add(item.id);
           }

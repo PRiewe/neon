@@ -20,19 +20,17 @@ package neon.maps;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentMap;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.Engine;
-import neon.entities.Door;
-import neon.maps.generators.DungeonGenerator;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
-import neon.maps.services.EntityStore;
+import neon.entities.UIDStore;
+import neon.maps.mvstore.IntegerDataType;
+import neon.maps.mvstore.MapDataType;
+import neon.maps.mvstore.WorldDataType;
 import neon.maps.services.MapAtlas;
-import neon.maps.services.QuestProvider;
-import neon.maps.services.ResourceProvider;
+import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
-import org.h2.mvstore.MVMap;
+import neon.util.mapstorage.MapStore;
+import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -42,108 +40,71 @@ import org.h2.mvstore.MVStore;
  */
 @Slf4j
 public class Atlas implements Closeable, MapAtlas {
-  private final MVStore db;
-  private final MVMap<Integer, Map> maps;
-  private int currentZone = 0;
-  private int currentMap = 0;
-  private final FileSystem files;
-  private final EntityStore entityStore;
-  private final ResourceProvider resourceProvider;
-  private final QuestProvider questProvider;
-  private final ZoneActivator zoneActivator;
+  private final MapStore db;
+  private final ConcurrentMap<Integer, Map> maps;
+  private final UIDStore entityStore;
+  private final ResourceManager resourceManager;
+  private final FileSystem fileSystem;
   private final MapLoader mapLoader;
+  private final ZoneFactory zoneFactory;
+  private final WorldDataType worldDataType;
+  private final Dungeon.DungeonDataType dungeonDataType;
+  private final MapDataType mapDataType;
 
-  /**
-   * Initializes this {@code Atlas} with the given {@code FileSystem} and cache path. The cache is
-   * lazy initialised.
-   *
-   * @param files a {@code FileSystem}
-   * @param path the path to the file used for caching
-   * @deprecated Use {@link #Atlas(FileSystem, String, EntityStore, ZoneActivator)} to avoid
-   *     dependency on Engine singleton
-   */
-  @Deprecated
-  public Atlas(FileSystem files, String path) {
-    this(
-        files,
-        getMVStore(files, path),
-        new EngineEntityStore(),
-        new EngineResourceProvider(),
-        new EngineQuestProvider(),
-        createDefaultZoneActivator());
-  }
-
-  /**
-   * Initializes this {@code Atlas} with dependency injection.
-   *
-   * @param files the file system
-   * @param atlasStore the MVStore for caching
-   * @param entityStore the entity store service
-   * @param resourceProvider the resource provider service
-   * @param questProvider the quest provider service
-   * @param zoneActivator the zone activator for physics management
-   */
   public Atlas(
-      FileSystem files,
-      MVStore atlasStore,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
-      QuestProvider questProvider,
-      ZoneActivator zoneActivator) {
-    this.files = files;
+      FileSystem fileSystem,
+      MapStore mapStore,
+      UIDStore entityStore,
+      ResourceManager resourceManager,
+      MapLoader mapLoader) {
+    this.fileSystem = fileSystem;
     this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
-    this.questProvider = questProvider;
-    this.zoneActivator = zoneActivator;
-    this.db = atlasStore;
+    this.db = mapStore;
+    this.resourceManager = resourceManager;
     // files.delete(path);
     // String fileName = files.getFullPath(path);
     // log.warn("Creating new MVStore at {}", fileName);
-    this.mapLoader = new MapLoader(this.entityStore, this.resourceProvider);
+    this.mapLoader = mapLoader;
+    zoneFactory = new ZoneFactory(mapStore, entityStore, resourceManager);
+    worldDataType = new WorldDataType(zoneFactory);
+    dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
+    mapDataType = new MapDataType(worldDataType, dungeonDataType);
     // db = MVStore.open(fileName);
-    maps = atlasStore.openMap("maps");
+    maps = db.openMap("maps", IntegerDataType.INSTANCE, mapDataType);
   }
 
-  private static MVStore getMVStore(FileSystem files, String path) {
-    files.delete(path);
-
-    log.warn("Creating new MVStore at {}", path);
-
-    return MVStore.open(path);
+  /** Initializes this {@code Atlas} with dependency injection. */
+  public Atlas(
+      FileSystem fileSystem,
+      String path,
+      UIDStore entityStore,
+      ResourceManager resourceManager,
+      MapLoader mapLoader) {
+    this.fileSystem = fileSystem;
+    this.entityStore = entityStore;
+    this.resourceManager = resourceManager;
+    this.db = getMapStore(fileSystem, path);
+    // files.delete(path);
+    // String fileName = files.getFullPath(path);
+    // log.warn("Creating new MVStore at {}", fileName);
+    this.mapLoader = mapLoader;
+    zoneFactory = new ZoneFactory(db, entityStore, resourceManager);
+    worldDataType = new WorldDataType(zoneFactory);
+    dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
+    mapDataType = new MapDataType(worldDataType, dungeonDataType);
+    // db = MVStore.open(fileName);
+    maps = db.openMap("maps", IntegerDataType.INSTANCE, mapDataType);
   }
 
-  /**
-   * Creates a default zone activator using Engine singleton (for backward compatibility).
-   *
-   * @return a zone activator
-   */
-  static ZoneActivator createDefaultZoneActivator() {
-    return new ZoneActivator(new neon.maps.services.EnginePhysicsManager(), Engine::getPlayer);
+  public static MapStore getMapStore(FileSystem files, String fileName) {
+    files.delete(fileName);
+
+    log.warn("Creating new MVStore at {}", fileName);
+    return new MapStoreMVStoreAdapter(MVStore.open(files.getFullPath(fileName)));
   }
 
-  public MVStore getCache() {
+  public MapStore getCache() {
     return db;
-  }
-
-  /**
-   * @return the current map
-   */
-  public Map getCurrentMap() {
-    return maps.get(currentMap);
-  }
-
-  /**
-   * @return the current zone
-   */
-  public Zone getCurrentZone() {
-    return maps.get(currentMap).getZone(currentZone);
-  }
-
-  /**
-   * @return the current zone
-   */
-  public int getCurrentZoneIndex() {
-    return currentZone;
   }
 
   /**
@@ -156,7 +117,7 @@ public class Atlas implements Closeable, MapAtlas {
       if (entityStore.getMapPath(uid) == null) {
         throw new RuntimeException(String.format("No existing mappath for uid %d", uid));
       }
-      Map map = mapLoader.load(entityStore.getMapPath(uid), uid, files);
+      Map map = mapLoader.load(entityStore.getMapPath(uid), uid);
       System.out.println("Loaded map " + map.toString());
       maps.put(uid, map);
     }
@@ -165,50 +126,15 @@ public class Atlas implements Closeable, MapAtlas {
 
   @Override
   public Map getMap(int uid, String... path) {
-    Map map = mapLoader.load(path, uid, files);
+    Map map = mapLoader.load(path, uid);
     return map;
   }
 
-  /**
-   * Sets the current zone.
-   *
-   * @param i the index of the current zone
-   */
-  public void setCurrentZone(int i) {
-    currentZone = i;
-    zoneActivator.activateZone(getCurrentZone());
-  }
-
-  /**
-   * Enter a new zone through a door.
-   *
-   * @param door
-   * @param previousZone
-   */
-  public void enterZone(Door door, Zone previousZone) {
-    if (door.portal.getDestZone() > -1) {
-      setCurrentZone(door.portal.getDestZone());
-    } else {
-      setCurrentZone(0);
-    }
-
-    if (getCurrentMap() instanceof Dungeon && getCurrentZone().isRandom()) {
-      new DungeonGenerator(getCurrentZone(), entityStore, resourceProvider, questProvider)
-          .generate(door, previousZone, this);
-    }
-  }
-
-  /**
-   * Set the current map.
-   *
-   * @param map the new current map
-   */
-  public void setMap(Map map) {
+  public void putMapIfNeeded(Map map) {
     if (!maps.containsKey(map.getUID())) {
       // could be a random map that's not in the database yet
       maps.put(map.getUID(), map);
     }
-    currentMap = map.getUID();
   }
 
   @Override

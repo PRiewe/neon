@@ -27,8 +27,8 @@ import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 
 public class IniBuilder extends Builder {
-  private String ini;
-  private TaskQueue queue;
+  private final String ini;
+  private final TaskQueue queue;
 
   /**
    * Initializes this {@code Builder}.

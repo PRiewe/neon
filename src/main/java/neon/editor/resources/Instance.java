@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
+import neon.editor.DataStore;
 import neon.editor.maps.MapEditor;
 import neon.resources.RData;
 import neon.ui.graphics.Renderable;
@@ -31,26 +32,29 @@ import neon.util.TextureFactory;
 import org.jdom2.Element;
 
 public abstract class Instance implements Renderable {
-  private static AlphaComposite alphaOn =
+  private static final AlphaComposite alphaOn =
       AlphaComposite.getInstance(AlphaComposite.SRC_OVER).derive(0.5f);
-  private static AlphaComposite alphaOff = AlphaComposite.getInstance(AlphaComposite.SRC);
+  private static final AlphaComposite alphaOff = AlphaComposite.getInstance(AlphaComposite.SRC);
 
   public int x, y, z, width, height;
   public RData resource;
   public boolean isCut = false;
+  protected final DataStore dataStore;
 
-  public Instance(RData resource, int x, int y, int z, int w, int h) {
+  public Instance(RData resource, int x, int y, int z, int w, int h, DataStore dataStore) {
     this.resource = resource;
     this.x = x;
     this.y = y;
     this.z = z;
     width = w;
     height = h;
+    this.dataStore = dataStore;
   }
 
-  public Instance(Element properties) {
+  public Instance(Element properties, DataStore dataStore) {
     x = Integer.parseInt(properties.getAttributeValue("x"));
     y = Integer.parseInt(properties.getAttributeValue("y"));
+    this.dataStore = dataStore;
     if (properties.getAttribute("w") != null) {
       width = Integer.parseInt(properties.getAttributeValue("w"));
     }

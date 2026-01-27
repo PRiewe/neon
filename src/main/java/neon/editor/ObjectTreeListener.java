@@ -42,13 +42,15 @@ import neon.resources.*;
 import neon.resources.RItem.Type;
 
 public class ObjectTreeListener implements MouseListener {
-  private JTree tree;
-  private JFrame frame;
-  private DefaultTreeModel model;
+  private final JTree tree;
+  private final JFrame frame;
+  private final DefaultTreeModel model;
+  private final DataStore dataStore;
 
-  public ObjectTreeListener(JTree objectTree, JFrame frame) {
+  public ObjectTreeListener(JTree objectTree, JFrame frame, DataStore dataStore) {
     this.frame = frame;
     tree = objectTree;
+    this.dataStore = dataStore;
     model = (DefaultTreeModel) tree.getModel();
   }
 
@@ -90,52 +92,52 @@ public class ObjectTreeListener implements MouseListener {
     ObjectEditor editor;
     switch (node.getType()) {
       case LEVEL_CREATURE:
-        editor = new LevelCreatureEditor(frame, (LCreature) node.getResource());
+        editor = new LevelCreatureEditor(frame, (LCreature) node.getResource(), dataStore);
         break;
       case BOOK:
-        editor = new BookEditor(frame, (RItem.Text) node.getResource());
+        editor = new BookEditor(frame, (RItem.Text) node.getResource(), dataStore);
         break;
       case ARMOR:
-        editor = new ArmorEditor(frame, (RClothing) node.getResource());
+        editor = new ArmorEditor(frame, (RClothing) node.getResource(), dataStore);
         break;
       case CLOTHING:
-        editor = new ClothingEditor(frame, (RClothing) node.getResource());
+        editor = new ClothingEditor(frame, (RClothing) node.getResource(), dataStore);
         break;
       case CONTAINER:
-        editor = new ContainerEditor(frame, (RItem.Container) node.getResource());
+        editor = new ContainerEditor(frame, (RItem.Container) node.getResource(), dataStore);
         break;
       case DOOR:
-        editor = new DoorEditor(frame, (RItem.Door) node.getResource());
+        editor = new DoorEditor(frame, (RItem.Door) node.getResource(), dataStore);
         break;
       case ITEM:
-        editor = new ItemEditor(frame, (RItem) node.getResource());
+        editor = new ItemEditor(frame, (RItem) node.getResource(), dataStore);
         break;
       case LIGHT:
-        editor = new LightEditor(frame, (RItem) node.getResource());
+        editor = new LightEditor(frame, (RItem) node.getResource(), dataStore);
         break;
       case MONEY:
-        editor = new MoneyEditor(frame, (RItem) node.getResource());
+        editor = new MoneyEditor(frame, (RItem) node.getResource(), dataStore);
         break;
       case NPC:
-        editor = new NPCEditor(frame, (RPerson) node.getResource());
+        editor = new NPCEditor(frame, (RPerson) node.getResource(), dataStore);
         break;
       case POTION:
-        editor = new PotionEditor(frame, (RItem) node.getResource());
+        editor = new PotionEditor(frame, (RItem) node.getResource(), dataStore);
         break;
       case SCROLL:
-        editor = new ScrollEditor(frame, (RItem.Text) node.getResource());
+        editor = new ScrollEditor(frame, (RItem.Text) node.getResource(), dataStore);
         break;
       case LEVEL_ITEM:
-        editor = new LevelItemEditor(frame, (LItem) node.getResource());
+        editor = new LevelItemEditor(frame, (LItem) node.getResource(), dataStore);
         break;
       case WEAPON:
-        editor = new WeaponEditor(frame, (RWeapon) node.getResource());
+        editor = new WeaponEditor(frame, (RWeapon) node.getResource(), dataStore);
         break;
       case FOOD:
-        editor = new FoodEditor(frame, (RItem) node.getResource());
+        editor = new FoodEditor(frame, (RItem) node.getResource(), dataStore);
         break;
       default:
-        editor = new CreatureEditor(frame, (RCreature) node.getResource());
+        editor = new CreatureEditor(frame, (RCreature) node.getResource(), dataStore);
         break;
     }
     editor.show();
@@ -143,7 +145,7 @@ public class ObjectTreeListener implements MouseListener {
 
   @SuppressWarnings("serial")
   public class ClickAction extends AbstractAction {
-    private ObjectNode.ObjectType type;
+    private final ObjectNode.ObjectType type;
 
     public ClickAction(String name, ObjectNode.ObjectType type) {
       super(name);
@@ -153,20 +155,20 @@ public class ObjectTreeListener implements MouseListener {
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("New " + type.toString().toLowerCase())) {
         NewObjectDialog.Properties props =
-            new NewObjectDialog()
+            new NewObjectDialog(dataStore)
                 .showInputDialog(frame, "Create new " + type.toString().toLowerCase());
         if (!props.cancelled()) {
           RData object;
           // create item and add to dataStore
           switch (type) {
             case CREATURE:
-              object = new RCreature(props.getID(), Editor.getStore().getActive().get("id"));
+              object = new RCreature(props.getID(), dataStore.getActive().get("id"));
               break;
             case LEVEL_CREATURE:
-              object = new LCreature(props.getID(), Editor.getStore().getActive().get("id"));
+              object = new LCreature(props.getID(), dataStore.getActive().get("id"));
               break;
             case NPC:
-              object = new RPerson(props.getID(), Editor.getStore().getActive().get("id"));
+              object = new RPerson(props.getID(), dataStore.getActive().get("id"));
               break;
             case BOOK:
             case SCROLL:
@@ -174,21 +176,21 @@ public class ObjectTreeListener implements MouseListener {
                   new RItem.Text(
                       props.getID(),
                       Type.valueOf(type.toString().toLowerCase()),
-                      Editor.getStore().getActive().get("id"));
+                      dataStore.getActive().get("id"));
               break;
             case DOOR:
               object =
                   new RItem.Door(
                       props.getID(),
                       Type.valueOf(type.toString().toLowerCase()),
-                      Editor.getStore().getActive().get("id"));
+                      dataStore.getActive().get("id"));
               break;
             case WEAPON:
               object =
                   new RWeapon(
                       props.getID(),
                       Type.valueOf(type.toString().toLowerCase()),
-                      Editor.getStore().getActive().get("id"));
+                      dataStore.getActive().get("id"));
               break;
             case CLOTHING:
             case ARMOR:
@@ -196,23 +198,23 @@ public class ObjectTreeListener implements MouseListener {
                   new RClothing(
                       props.getID(),
                       Type.valueOf(type.toString().toLowerCase()),
-                      Editor.getStore().getActive().get("id"));
+                      dataStore.getActive().get("id"));
               break;
             case LEVEL_ITEM:
-              object = new LItem(props.getID(), Editor.getStore().getActive().get("id"));
+              object = new LItem(props.getID(), dataStore.getActive().get("id"));
               break;
             default:
               object =
                   new RItem(
                       props.getID(),
                       Type.valueOf(type.toString().toLowerCase()),
-                      Editor.getStore().getActive().get("id"));
+                      dataStore.getActive().get("id"));
               break;
           }
 
           // push node to the correct place in tree
-          Editor.resources.addResource(object);
-          ObjectNode node = new ObjectNode(object, type);
+          dataStore.getResourceManager().addResource(object);
+          ObjectNode node = new ObjectNode(object, type, dataStore);
           DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
           for (int i = 0; i < root.getChildCount(); i++) {
             ObjectNode parent = (ObjectNode) root.getChildAt(i);
@@ -233,7 +235,7 @@ public class ObjectTreeListener implements MouseListener {
         // remove from tree and datastore
         ObjectNode node = (ObjectNode) tree.getLastSelectedPathComponent();
         model.removeNodeFromParent(node);
-        Editor.resources.removeResource(node.getResource());
+        dataStore.getResourceManager().removeResource(node.getResource());
       }
     }
   }

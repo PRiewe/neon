@@ -25,7 +25,7 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.resources.RCreature;
 import neon.resources.RItem;
 import neon.resources.RRegionTheme;
@@ -33,17 +33,21 @@ import neon.resources.RTerrain;
 
 @SuppressWarnings("serial")
 public class RegionThemeEditor extends ObjectEditor implements MouseListener {
-  private JTextField floorField;
-  private JComboBox<RRegionTheme.Type> typeBox;
-  private JComboBox<RItem.Door> doorBox;
-  private JComboBox<RTerrain> wallBox;
-  private JTable creatureTable, plantTable;
-  private DefaultTableModel creatureModel, plantModel;
-  private RRegionTheme theme;
+  private final JTextField floorField;
+  private final JComboBox<RRegionTheme.Type> typeBox;
+  private final JComboBox<RItem.Door> doorBox;
+  private final JComboBox<RTerrain> wallBox;
+  private final JTable creatureTable;
+  private final JTable plantTable;
+  private final DefaultTableModel creatureModel;
+  private final DefaultTableModel plantModel;
+  private final RRegionTheme theme;
+  private final DataStore dataStore;
 
-  public RegionThemeEditor(JFrame parent, RRegionTheme theme) {
+  public RegionThemeEditor(JFrame parent, RRegionTheme theme, DataStore dataStore) {
     super(parent, "Region theme: " + theme.id);
     this.theme = theme;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel();
     GroupLayout layout = new GroupLayout(props);
@@ -56,8 +60,9 @@ public class RegionThemeEditor extends ObjectEditor implements MouseListener {
     JLabel wallLabel = new JLabel("Walls: ");
     typeBox = new JComboBox<RRegionTheme.Type>(RRegionTheme.Type.values());
     floorField = new JTextField(15);
-    doorBox = new JComboBox<RItem.Door>(Editor.resources.getResources(RItem.Door.class));
-    wallBox = new JComboBox<RTerrain>(Editor.resources.getResources(RTerrain.class));
+    doorBox =
+        new JComboBox<RItem.Door>(dataStore.getResourceManager().getResources(RItem.Door.class));
+    wallBox = new JComboBox<RTerrain>(dataStore.getResourceManager().getResources(RTerrain.class));
     layout.setVerticalGroup(
         layout
             .createSequentialGroup()
@@ -140,21 +145,21 @@ public class RegionThemeEditor extends ObjectEditor implements MouseListener {
     theme.floor = floorField.getText();
     theme.type = (RRegionTheme.Type) typeBox.getSelectedItem();
     theme.creatures.clear();
-    for (Vector<?> data : (Vector<Vector>) creatureModel.getDataVector()) {
+    for (Vector<?> data : creatureModel.getDataVector()) {
       theme.creatures.put(data.get(0).toString(), (Integer) data.get(1));
     }
-    for (Vector<?> data : (Vector<Vector>) plantModel.getDataVector()) {
+    for (Vector<?> data : plantModel.getDataVector()) {
       theme.vegetation.put(data.get(0).toString(), (Integer) data.get(1));
     }
-    theme.setPath(Editor.getStore().getActive().get("id"));
+    theme.setPath(dataStore.getActive().get("id"));
   }
 
   protected void load() {
     typeBox.setSelectedItem(theme.type);
-    RItem.Door door = (RItem.Door) Editor.resources.getResource(theme.door);
+    RItem.Door door = (RItem.Door) dataStore.getResourceManager().getResource(theme.door);
     doorBox.setSelectedItem(door);
     floorField.setText(theme.floor);
-    RTerrain wall = (RTerrain) Editor.resources.getResource(theme.wall, "terrain");
+    RTerrain wall = (RTerrain) dataStore.getResourceManager().getResource(theme.wall, "terrain");
     wallBox.setSelectedItem(wall);
     creatureModel.setRowCount(0);
     for (Map.Entry<String, Integer> creature : theme.creatures.entrySet()) {
@@ -200,7 +205,7 @@ public class RegionThemeEditor extends ObjectEditor implements MouseListener {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add creature")) {
-        Object[] creatures = Editor.resources.getResources(RCreature.class).toArray();
+        Object[] creatures = dataStore.getResourceManager().getResources(RCreature.class).toArray();
         String s =
             JOptionPane.showInputDialog(
                     frame,
@@ -218,7 +223,7 @@ public class RegionThemeEditor extends ObjectEditor implements MouseListener {
       } else if (e.getActionCommand().equals("Remove creature")) {
         creatureModel.removeRow(creatureTable.getSelectedRow());
       } else if (e.getActionCommand().equals("Add vegetation")) {
-        Object[] plants = Editor.resources.getResources(RItem.class).toArray();
+        Object[] plants = dataStore.getResourceManager().getResources(RItem.class).toArray();
         String s =
             JOptionPane.showInputDialog(
                     frame,
@@ -240,7 +245,7 @@ public class RegionThemeEditor extends ObjectEditor implements MouseListener {
   }
 
   private static class ThemesTableModel extends DefaultTableModel {
-    private Class<?>[] classes;
+    private final Class<?>[] classes;
 
     public ThemesTableModel(String[] columns, Class<?>... classes) {
       super(columns, 0);

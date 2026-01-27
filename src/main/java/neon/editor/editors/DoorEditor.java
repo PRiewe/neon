@@ -22,22 +22,24 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import neon.editor.ColorCellRenderer;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.help.HelpLabels;
 import neon.resources.RItem;
 import neon.util.ColorFactory;
 
 public class DoorEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JComboBox<String> colorBox;
-  private JFormattedTextField openField;
-  private JFormattedTextField closedField;
-  private JFormattedTextField lockedField;
-  private RItem.Door data;
+  private final JTextField nameField;
+  private final JComboBox<String> colorBox;
+  private final JFormattedTextField openField;
+  private final JFormattedTextField closedField;
+  private final JFormattedTextField lockedField;
+  private final RItem.Door data;
+  private final DataStore dataStore;
 
-  public DoorEditor(JFrame parent, RItem.Door data) {
+  public DoorEditor(JFrame parent, RItem.Door data, DataStore dataStore) {
     super(parent, "Door Editor: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     JPanel itemProps = new JPanel();
     GroupLayout layout = new GroupLayout(itemProps);
@@ -155,6 +157,6 @@ public class DoorEditor extends ObjectEditor {
     if (!lockedField.getText().equals(closedField.getText())) {
       data.locked = lockedField.getText();
     }
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 }

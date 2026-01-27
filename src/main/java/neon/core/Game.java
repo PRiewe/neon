@@ -21,41 +21,36 @@ package neon.core;
 import java.io.Closeable;
 import java.io.IOException;
 import lombok.Getter;
-import neon.entities.Player;
-import neon.entities.UIDStore;
-import neon.maps.Atlas;
-import neon.systems.files.FileSystem;
+import neon.maps.AtlasPosition;
+import neon.maps.services.PhysicsManager;
+import neon.narrative.QuestTracker;
 import neon.systems.timing.Timer;
 
 @Getter
 public class Game implements Closeable {
-  private final UIDStore store;
-  private final Player player;
-  private final Timer timer = new Timer();
-  private final Atlas atlas;
 
-  public Game(Player player, FileSystem files) {
-    store = new UIDStore(files.getFullPath("uidstore"));
-    atlas = new Atlas(files, files.getFullPath("atlas"));
-    this.player = player;
+  private final Timer timer = new Timer();
+  private final AtlasPosition atlasPosition;
+  @Getter private final GameStores gameStores;
+
+  public Game(GameStores gameStores, PhysicsManager physicsManager, QuestTracker questTracker) {
+    this.gameStores = gameStores;
+    this.atlasPosition = new AtlasPosition(gameStores, questTracker);
   }
 
   /**
    * Constructor with dependency injection for testing.
    *
    * @param player the player
-   * @param atlas the atlas
-   * @param store the UID store
    */
-  public Game(Player player, Atlas atlas, UIDStore store) {
-    this.player = player;
-    this.atlas = atlas;
-    this.store = store;
+  public Game(GameStores gameStores, AtlasPosition atlasPosition) {
+    this.gameStores = gameStores;
+    this.atlasPosition = atlasPosition;
   }
 
   @Override
   public void close() throws IOException {
-    store.close();
-    atlas.close();
+    this.gameStores.getStore().close();
+    this.gameStores.getAtlas().close();
   }
 }

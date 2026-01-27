@@ -19,14 +19,14 @@
 package neon.editor.resources;
 
 import java.util.*;
-import neon.editor.Editor;
+import lombok.extern.slf4j.Slf4j;
+import neon.editor.DataStore;
 import neon.editor.maps.*;
 import neon.maps.model.DungeonModel;
 import neon.maps.model.WorldModel;
 import neon.resources.RData;
 import neon.resources.RDungeonTheme;
 import neon.resources.RScript;
-import neon.systems.files.XMLTranslator;
 import neon.ui.graphics.Renderable;
 import org.jdom2.*;
 
@@ -40,19 +40,24 @@ import org.jdom2.*;
  * 		b. random dungeon
  * 		c. outdoor
  */
+@Slf4j
 public class RMap extends RData {
   // id van map = path
   public static final boolean DUNGEON = true;
   public HashMap<Integer, RZone> zones = new HashMap<Integer, RZone>();
   public RDungeonTheme theme;
   public short uid;
-  private boolean type;
+  private final boolean type;
   private ArrayList<Integer> uids;
 
+  private final DataStore dataStore;
+
   // for already existing maps during loadMod
-  public RMap(String id, Element properties, String... path) {
+  public RMap(String id, Element properties, DataStore dataStore, String... path) {
     super(id, path);
     uid = Short.parseShort(properties.getChild("header").getAttributeValue("uid"));
+
+    this.dataStore = dataStore;
     name = properties.getChild("header").getChildText("name");
     type = properties.getName().equals("dungeon");
 
@@ -60,23 +65,27 @@ public class RMap extends RData {
       if (properties.getChild("header").getAttribute("theme") != null) {
         theme =
             (RDungeonTheme)
-                Editor.resources.getResource(
-                    properties.getChild("header").getAttributeValue("theme"), "theme");
+                dataStore
+                    .getResourceManager()
+                    .getResource(properties.getChild("header").getAttributeValue("theme"), "theme");
       } else {
         for (Element zone : properties.getChildren("level")) {
-          zones.put(Integer.parseInt(zone.getAttributeValue("l")), new RZone(zone, this, path));
+          zones.put(
+              Integer.parseInt(zone.getAttributeValue("l")),
+              new RZone(zone, this, dataStore, path));
         }
       }
     } else {
-      zones.put(0, new RZone(properties, this, path));
+      zones.put(0, new RZone(properties, this, dataStore, path));
     }
   }
 
   // for new maps to be created
-  public RMap(short uid, String mod, MapDialog.Properties props) {
+  public RMap(short uid, String mod, MapDialog.Properties props, DataStore dataStore) {
     super(props.getID(), mod);
     this.uid = uid;
     type = props.isDungeon();
+    this.dataStore = dataStore;
     name = props.getName();
 
     if (!props.isDungeon()) { // always set zone and base region for outdoor
@@ -87,8 +96,8 @@ public class RMap extends RData {
       region.setAttribute("h", Integer.toString(props.getHeight()));
       region.setAttribute("text", props.getTerrain());
       region.setAttribute("l", "0");
-      Instance ri = new IRegion(region);
-      RZone zone = new RZone(name, mod, ri, this);
+      Instance ri = new IRegion(region, dataStore);
+      RZone zone = new RZone(name, mod, ri, this, dataStore);
       zones.put(0, zone);
     }
   }
@@ -159,23 +168,26 @@ public class RMap extends RData {
       RZone zone = zones.get(0);
       Element creatures = new Element("creatures");
       Element items = new Element("items");
+      Element doors = new Element("doors");
+      Element containers = new Element("containers");
       Element regions = new Element("regions");
       for (Renderable r : zone.getScene().getElements()) {
         Instance i = (Instance) r;
         Element element = i.toElement();
         element.detach();
-        if (element.getName().equals("region")) {
-          regions.addContent(element);
-        } else if (element.getName().equals("creature")) {
-          creatures.addContent(element);
-        } else if (element.getName().equals("item")
-            || element.getName().equals("door")
-            || element.getName().equals("container")) {
-          items.addContent(element);
+        switch (element.getName()) {
+          case "region" -> regions.addContent(element);
+          case "creature" -> creatures.addContent(element);
+          case "item" -> items.addContent(element);
+          case "door" -> doors.addContent(element);
+          case "container" -> containers.addContent(element);
+          default -> log.warn("Unknown element {} with content {}", element.getName(), element);
         }
       }
       root.addContent(creatures);
       root.addContent(items);
+      root.addContent(doors);
+      root.addContent(containers);
       root.addContent(regions);
     }
 
@@ -199,19 +211,13 @@ public class RMap extends RData {
     for (Renderable r : zone.getScene().getElements()) {
       Instance instance = (Instance) r;
 
-      if (instance instanceof IRegion) {
-        model.regions.add(convertRegion((IRegion) instance));
-      } else if (instance instanceof IObject) {
-        IObject obj = (IObject) instance;
-        if (instance instanceof IDoor) {
-          model.items.doors.add(convertDoor((IDoor) instance));
-        } else if (instance instanceof IContainer) {
-          model.items.containers.add(convertContainer((IContainer) instance));
-        } else {
-          model.items.items.add(convertItem(obj));
-        }
-      } else if (instance instanceof IPerson) {
-        model.creatures.add(convertCreature((IPerson) instance));
+      switch (instance) {
+        case IRegion iRegion -> model.regions.add(convertRegion(iRegion));
+        case IPerson iPerson -> model.creatures.add(convertCreature(iPerson));
+        case IDoor iDoor -> model.doors.add(convertDoor(iDoor));
+        case IContainer iContainer -> model.containers.add(convertContainer(iContainer));
+        case IObject obj -> model.items.add(convertItem(obj));
+        case null, default -> {}
       }
     }
 
@@ -246,19 +252,13 @@ public class RMap extends RData {
         for (Renderable r : zone.getScene().getElements()) {
           Instance instance = (Instance) r;
 
-          if (instance instanceof IRegion) {
-            level.regions.add(convertRegion((IRegion) instance));
-          } else if (instance instanceof IObject) {
-            IObject obj = (IObject) instance;
-            if (instance instanceof IDoor) {
-              level.items.doors.add(convertDoor((IDoor) instance));
-            } else if (instance instanceof IContainer) {
-              level.items.containers.add(convertContainer((IContainer) instance));
-            } else {
-              level.items.items.add(convertItem(obj));
-            }
-          } else if (instance instanceof IPerson) {
-            level.creatures.add(convertCreature((IPerson) instance));
+          switch (instance) {
+            case IRegion iRegion -> level.regions.add(convertRegion(iRegion));
+            case IDoor iDoor -> level.doors.add(convertDoor(iDoor));
+            case IContainer iContainer -> level.containers.add(convertContainer(iContainer));
+            case IPerson iPerson -> level.creatures.add(convertCreature((IPerson) iPerson));
+            case IObject iObject -> level.items.add(convertItem(iObject));
+            default -> throw new IllegalStateException("Unexpected value: " + instance);
           }
         }
       }
@@ -393,21 +393,27 @@ public class RMap extends RData {
     if (uids == null) { // avoid loading map twice
       uids = new ArrayList<Integer>();
       try {
-        String file = Editor.getStore().getMod(path[0]).getPath()[0];
-        Element root =
-            Editor.files.getFile(new XMLTranslator(), file, "maps", id + ".xml").getRootElement();
+        String file = dataStore.getMod(path[0]).getPath()[0];
+        // Load XML directly without XMLTranslator
+        java.io.InputStream stream = dataStore.getFileSystem().getStream(file, "maps", id + ".xml");
+        if (stream != null) {
+          org.jdom2.input.SAXBuilder builder = new org.jdom2.input.SAXBuilder();
+          org.jdom2.Document doc = builder.build(stream);
+          stream.close();
+          Element root = doc.getRootElement();
 
-        if (root.getName().equals("world")) {
-          uids.addAll(zones.get(0).load(root));
-        } else if (root.getName().equals("dungeon")) {
-          for (Element level : root.getChildren("level")) {
-            uids.addAll(zones.get(Integer.parseInt(level.getAttributeValue("l"))).load(level));
+          if (root.getName().equals("world")) {
+            uids.addAll(zones.get(0).load(root));
+          } else if (root.getName().equals("dungeon")) {
+            for (Element level : root.getChildren("level")) {
+              uids.addAll(zones.get(Integer.parseInt(level.getAttributeValue("l"))).load(level));
+            }
+          } else {
+            System.out.println("fout in EditableMap.load(" + id + ")");
           }
-        } else {
-          System.out.println("fout in EditableMap.load(" + id + ")");
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        log.error("load", e);
       }
     }
   }

@@ -28,7 +28,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Player;
 import neon.resources.RPerson;
@@ -37,21 +37,22 @@ import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.bus.MBassador;
 
 public class TravelDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<String> destinations;
+  private final JList<String> destinations;
   private Creature agent; // your travel agent
   private HashMap<String, Point> listData;
   private HashMap<String, Integer> costData;
-  private JScrollPane scroller;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
-  private final GameContext context;
+  private final JScrollPane scroller;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
+  private final GameStores gameStores;
 
-  public TravelDialog(UserInterface ui, MBassador<EventObject> bus, GameContext context) {
+  public TravelDialog(UserInterface ui, MBassador<EventObject> bus, GameStores gameStores) {
     this.bus = bus;
     this.ui = ui;
-    this.context = context;
+
+    this.gameStores = gameStores;
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -133,7 +134,7 @@ public class TravelDialog implements KeyListener {
     listData = new HashMap<String, Point>();
     costData = new HashMap<String, Integer>();
     for (RPerson.Service service :
-        ((RPerson) context.getResources().getResource(agent.getID())).services) {
+        ((RPerson) gameStores.getResources().getResource(agent.getID())).services) {
       if (service.id.equals("travel")) {
         for (RPerson.Service.Destination dest : service.destinations) {
           listData.put(dest.name + ": " + dest.cost + " cp", new Point(dest.x, dest.y));

@@ -276,6 +276,47 @@ public class FileSystem {
     }
   }
 
+  /**
+   * Gets a file and deserializes it using JacksonMapper.
+   *
+   * @param <T> the type of object to deserialize to
+   * @param mapper the JacksonMapper instance to use
+   * @param type the class of the type to deserialize to
+   * @param path the path of the file
+   * @return the deserialized object, or null if an error occurs
+   */
+  public <T> T getFile(JacksonMapper mapper, Class<T> type, String... path) {
+    InputStream stream = getStream(path);
+    if (stream == null) {
+      return null;
+    }
+    return mapper.fromXml(stream, type);
+  }
+
+  /**
+   * Saves an object as XML to the temp directory using JacksonMapper.
+   *
+   * @param <T> the type of object to serialize
+   * @param object the object to serialize
+   * @param mapper the JacksonMapper instance to use
+   * @param path the path of the file
+   */
+  public <T> void saveToTemp(T object, JacksonMapper mapper, String... path) {
+    try {
+      File file = new File(temp.getPath() + toString(path));
+      if (!file.getParentFile().exists()) {
+        makeDir(file.getParent());
+      }
+      file.createNewFile();
+      ByteArrayOutputStream xmlStream = mapper.toXml(object);
+      FileOutputStream out = new FileOutputStream(file);
+      xmlStream.writeTo(out);
+      out.close();
+    } catch (IOException e) {
+      System.out.println("IOException in FileSystem.saveToTemp() with JacksonMapper");
+    }
+  }
+
   private String toString(String... path) {
     StringBuffer buffer = new StringBuffer();
     for (int i = 0; i < path.length; i++) {

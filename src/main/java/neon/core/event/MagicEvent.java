@@ -36,8 +36,8 @@ public class MagicEvent extends EventObject {
    * @author mdriesen
    */
   public static class OnCreature extends MagicEvent {
-    private RSpell spell;
-    private Creature target;
+    private final RSpell spell;
+    private final Creature target;
 
     public OnCreature(Object source, RSpell spell, Creature target) {
       super(source);
@@ -60,8 +60,8 @@ public class MagicEvent extends EventObject {
    * @author mdriesen
    */
   public static class OnPoint extends MagicEvent {
-    private RSpell spell;
-    private Point target;
+    private final RSpell spell;
+    private final Point target;
 
     public OnPoint(Object source, RSpell spell, Point target) {
       super(source);
@@ -84,8 +84,8 @@ public class MagicEvent extends EventObject {
    * @author mdriesen
    */
   public static class OnSelf extends MagicEvent {
-    private RSpell spell;
-    private Creature caster;
+    private final RSpell spell;
+    private final Creature caster;
 
     public OnSelf(Object source, Creature caster, RSpell spell) {
       super(source);
@@ -108,8 +108,8 @@ public class MagicEvent extends EventObject {
    * @author mdriesen
    */
   public static class ItemOnSelf extends MagicEvent {
-    private Item item;
-    private Creature caster;
+    private final Item item;
+    private final Creature caster;
 
     public ItemOnSelf(Object source, Creature caster, Item item) {
       super(source);
@@ -132,8 +132,8 @@ public class MagicEvent extends EventObject {
    * @author mdriesen
    */
   public static class CreatureOnPoint extends MagicEvent {
-    private Point target;
-    private Creature caster;
+    private final Point target;
+    private final Creature caster;
 
     public CreatureOnPoint(Object source, Creature caster, Point target) {
       super(source);
@@ -156,9 +156,9 @@ public class MagicEvent extends EventObject {
    * @author mdriesen
    */
   public static class ItemOnPoint extends MagicEvent {
-    private Point target;
-    private Creature caster;
-    private Item item;
+    private final Point target;
+    private final Creature caster;
+    private final Item item;
 
     public ItemOnPoint(Object source, Creature caster, Item item, Point target) {
       super(source);
@@ -181,8 +181,8 @@ public class MagicEvent extends EventObject {
   }
 
   public static class Result extends MagicEvent {
-    private Creature caster;
-    private int result;
+    private final Creature caster;
+    private final int result;
 
     public Result(Object source, Creature caster, int result) {
       super(source);

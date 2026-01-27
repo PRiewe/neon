@@ -21,9 +21,17 @@ package neon.entities;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.io.*;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import neon.entities.mvstore.EntityDataType;
+import neon.entities.mvstore.LongDataType;
+import neon.entities.mvstore.ModDataType;
+import neon.entities.mvstore.ShortDataType;
 import neon.maps.services.EntityStore;
+import neon.util.mapstorage.MapStore;
+import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -39,13 +47,14 @@ public class UIDStore implements EntityStore, Closeable {
   public static final long DUMMY = 0;
 
   // uid database
-  private final MVStore uidDb;
+  @Getter private final MapStore uidDb;
   // uids of all objects in the game
-  private final Map<Long, Entity> objects;
+  private ConcurrentMap<Long, Entity> objects;
   // uids of all loaded mods
-  private final Map<Short, Mod> mods;
+  private ConcurrentMap<Short, ModDataType.Mod> mods;
   // uids of all loaded maps
   private final BiMap<Integer, String> maps = HashBiMap.create();
+  @Getter @Setter private Player player;
 
   /**
    * Tells this UIDStore to use the given jdbm3 cache.
@@ -53,15 +62,35 @@ public class UIDStore implements EntityStore, Closeable {
    * @param file
    */
   public UIDStore(String file) {
-    uidDb = MVStore.open(file);
-    objects = uidDb.openMap("object");
-    mods = uidDb.openMap("mods");
+    if (file == null) {
+      uidDb = new MapStoreMVStoreAdapter(MVStore.open(null));
+    } else {
+      uidDb = new MapStoreMVStoreAdapter(MVStore.open(file));
+    }
+    // Maps will be opened after DataTypes are set via setDataTypes()
+  }
+
+  public UIDStore(MapStore mapStore) {
+    uidDb = mapStore;
+    // Maps will be opened after DataTypes are set via setDataTypes()
+  }
+
+  /**
+   * Sets the DataTypes for entity and mod serialization and opens the maps. This must be called
+   * after construction to initialize the UIDStore.
+   *
+   * @param entityDataType the DataType for entity serialization
+   * @param modDataType the DataType for mod serialization
+   */
+  public void setDataTypes(EntityDataType entityDataType, ModDataType modDataType) {
+    this.objects = uidDb.openMap("object", LongDataType.INSTANCE, entityDataType);
+    this.mods = uidDb.openMap("mods", ShortDataType.INSTANCE, modDataType);
   }
 
   /**
    * @return the jdbm3 cache used by this UIDStore
    */
-  public MVStore getCache() {
+  public MapStore getCache() {
     return uidDb;
   }
 
@@ -70,9 +99,9 @@ public class UIDStore implements EntityStore, Closeable {
    * @return the unique identifier of this mod
    */
   public short getModUID(String name) {
-    for (Mod mod : mods.values()) {
-      if (mod.name.equals(name)) {
-        return mod.uid;
+    for (ModDataType.Mod mod : mods.values()) {
+      if (mod.name().equals(name)) {
+        return mod.uid();
       }
     }
     throw new RuntimeException("Mod " + name + " not found");
@@ -81,8 +110,8 @@ public class UIDStore implements EntityStore, Closeable {
   }
 
   public boolean isModUIDLoaded(String name) {
-    for (Mod mod : mods.values()) {
-      if (mod.name.equals(name)) {
+    for (ModDataType.Mod mod : mods.values()) {
+      if (mod.name().equals(name)) {
         return true;
       }
     }
@@ -140,8 +169,8 @@ public class UIDStore implements EntityStore, Closeable {
     while (mods.containsKey(uid) || uid == 0) {
       uid++;
     }
-    Mod mod = new Mod(uid, id);
-    mods.put(mod.uid, mod);
+    ModDataType.Mod mod = new ModDataType.Mod(uid, id);
+    mods.put(mod.uid(), mod);
   }
 
   /**
@@ -232,6 +261,4 @@ public class UIDStore implements EntityStore, Closeable {
     uidDb.commit();
     uidDb.close();
   }
-
-  private record Mod(short uid, String name) implements Serializable {}
 }

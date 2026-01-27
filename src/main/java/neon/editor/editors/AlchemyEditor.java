@@ -23,7 +23,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.resources.RItem;
@@ -31,14 +31,16 @@ import neon.resources.RRecipe;
 
 @SuppressWarnings("serial")
 public class AlchemyEditor extends ObjectEditor implements MouseListener {
-  private JList<RItem> contentList;
-  private DefaultListModel<RItem> contentModel;
-  private RRecipe recipe;
-  private JFormattedTextField costField;
+  private final JList<RItem> contentList;
+  private final DefaultListModel<RItem> contentModel;
+  private final RRecipe recipe;
+  private final JFormattedTextField costField;
+  private final DataStore dataStore;
 
-  public AlchemyEditor(JFrame parent, RRecipe recipe) {
+  public AlchemyEditor(JFrame parent, RRecipe recipe, DataStore dataStore) {
     super(parent, "Recipe: " + recipe.id);
     this.recipe = recipe;
+    this.dataStore = dataStore;
 
     contentModel = new DefaultListModel<RItem>();
     contentList = new JList<RItem>(contentModel);
@@ -64,7 +66,7 @@ public class AlchemyEditor extends ObjectEditor implements MouseListener {
     contentModel.clear();
     costField.setValue(recipe.cost);
     for (String id : recipe.ingredients) {
-      RItem ri = (RItem) Editor.resources.getResource(id);
+      RItem ri = (RItem) dataStore.getResourceManager().getResource(id);
       contentModel.addElement(ri);
     }
   }
@@ -102,7 +104,7 @@ public class AlchemyEditor extends ObjectEditor implements MouseListener {
 
     public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand().equals("Add ingredient")) {
-        Object[] items = Editor.resources.getResources(RItem.class).toArray();
+        Object[] items = dataStore.getResourceManager().getResources(RItem.class).toArray();
         RItem ingredient =
             (RItem)
                 JOptionPane.showInputDialog(

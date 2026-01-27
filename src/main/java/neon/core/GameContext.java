@@ -20,12 +20,9 @@ package neon.core;
 
 import java.util.EventObject;
 import neon.core.event.TaskQueue;
-import neon.entities.Player;
-import neon.entities.UIDStore;
-import neon.maps.Atlas;
+import neon.maps.AtlasPosition;
+import neon.maps.services.PhysicsManager;
 import neon.narrative.QuestTracker;
-import neon.resources.ResourceManager;
-import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
 import org.graalvm.polyglot.Context;
@@ -39,51 +36,9 @@ import org.graalvm.polyglot.Context;
  */
 public interface GameContext {
 
-  // ========== Game State Accessors ==========
+  AtlasPosition getAtlasPosition();
 
-  /**
-   * Returns the player entity.
-   *
-   * @return the player, or null if no game is active
-   */
-  Player getPlayer();
-
-  /**
-   * Returns the atlas (map/world manager).
-   *
-   * @return the atlas
-   */
-  Atlas getAtlas();
-
-  /**
-   * Returns the entity store.
-   *
-   * @return the UID store containing all game entities
-   */
-  UIDStore getStore();
-
-  /**
-   * Returns the game timer.
-   *
-   * @return the timer
-   */
   Timer getTimer();
-
-  // ========== System Accessors ==========
-
-  /**
-   * Returns the resource manager.
-   *
-   * @return the resource manager
-   */
-  ResourceManager getResources();
-
-  /**
-   * Returns the file system.
-   *
-   * @return the file system for accessing game data files
-   */
-  FileSystem getFileSystem();
 
   /**
    * Returns the task queue.
@@ -99,28 +54,12 @@ public interface GameContext {
    */
   QuestTracker getQuestTracker();
 
-  /**
-   * Returns the physics engine.
-   *
-   * @return the physics system
-   */
   PhysicsSystem getPhysicsEngine();
 
-  /**
-   * Returns the script engine (GraalVM Polyglot context).
-   *
-   * @return the script engine context
-   */
+  PhysicsManager getPhysicsManager();
+
   Context getScriptEngine();
 
-  // ========== Actions ==========
-
-  /**
-   * Executes a JavaScript script.
-   *
-   * @param script the script to execute
-   * @return the result of the script execution
-   */
   Object execute(String script);
 
   /** Quits the application. */

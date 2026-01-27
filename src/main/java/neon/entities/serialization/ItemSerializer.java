@@ -23,12 +23,11 @@ import java.awt.Rectangle;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import neon.core.Engine;
 import neon.entities.Armor;
 import neon.entities.Container;
 import neon.entities.Door;
-import neon.entities.EntityFactory;
 import neon.entities.Item;
+import neon.entities.ItemFactory;
 import neon.entities.Weapon;
 import neon.entities.components.Enchantment;
 import neon.entities.components.Lock;
@@ -36,6 +35,7 @@ import neon.entities.components.Portal;
 import neon.entities.components.Trap;
 import neon.magic.SpellFactory;
 import neon.resources.RItem;
+import neon.resources.ResourceManager;
 
 /**
  * This class takes care of (de)serialization of {@code Item}s.
@@ -43,7 +43,15 @@ import neon.resources.RItem;
  * @author mdriesen
  */
 public class ItemSerializer {
-  private static final long serialVersionUID = 2138679015831709732L;
+  private final ResourceManager resourceManager;
+  private final ItemFactory itemFactory;
+  private final SpellFactory spellFactory;
+
+  public ItemSerializer(ResourceManager resourceManager) {
+    this.resourceManager = resourceManager;
+    itemFactory = new ItemFactory(resourceManager);
+    spellFactory = new SpellFactory(resourceManager);
+  }
 
   public Item deserialize(DataInput input) throws IOException {
     // item aanmaken
@@ -51,28 +59,28 @@ public class ItemSerializer {
     long uid = input.readLong();
     int x = input.readInt();
     int y = input.readInt();
-    Item item = EntityFactory.getItem(id, x, y, uid);
+    Item item = itemFactory.getItem(id, x, y, uid);
     item.setOwner(input.readLong());
 
     if (input.readBoolean()) {
       readEnchantment(input, item, uid);
     }
 
-    if (item instanceof Door) {
-      Door door = (Door) item;
-      door.setSign(input.readUTF());
-      readPortal(input, door.portal);
-      readLock(input, door.lock);
-      readTrap(input, door.trap);
-    } else if (item instanceof Container) {
-      Container container = (Container) item;
-      readLock(input, container.lock);
-      readTrap(input, container.trap);
-      readContents(input, container);
-    } else if (item instanceof Armor) {
-      ((Armor) item).setState(input.readInt());
-    } else if (item instanceof Weapon) {
-      ((Weapon) item).setState(input.readInt());
+    switch (item) {
+      case Door door -> {
+        door.setSign(input.readUTF());
+        readPortal(input, door.portal);
+        readLock(input, door.lock);
+        readTrap(input, door.trap);
+      }
+      case Container container -> {
+        readLock(input, container.lock);
+        readTrap(input, container.trap);
+        readContents(input, container);
+      }
+      case Armor armor -> armor.setState(input.readInt());
+      case Weapon weapon -> weapon.setState(input.readInt());
+      default -> {}
     }
 
     return item;
@@ -94,21 +102,21 @@ public class ItemSerializer {
       output.writeBoolean(false);
     }
 
-    if (item instanceof Door) {
-      Door door = (Door) item;
-      output.writeUTF(door.toString());
-      writePortal(output, door.portal);
-      writeLock(output, door.lock);
-      writeTrap(output, door.trap);
-    } else if (item instanceof Container) {
-      Container container = (Container) item;
-      writeLock(output, container.lock);
-      writeTrap(output, container.trap);
-      writeContents(output, container);
-    } else if (item instanceof Armor) {
-      output.writeInt(((Armor) item).getState());
-    } else if (item instanceof Weapon) {
-      output.writeInt(((Weapon) item).getState());
+    switch (item) {
+      case Door door -> {
+        output.writeUTF(door.toString());
+        writePortal(output, door.portal);
+        writeLock(output, door.lock);
+        writeTrap(output, door.trap);
+      }
+      case Container container -> {
+        writeLock(output, container.lock);
+        writeTrap(output, container.trap);
+        writeContents(output, container);
+      }
+      case Armor armor -> output.writeInt(armor.getState());
+      case Weapon weapon -> output.writeInt(weapon.getState());
+      default -> {}
     }
   }
 
@@ -116,7 +124,7 @@ public class ItemSerializer {
     String id = input.readUTF();
     int mana = input.readInt();
     float modifier = input.readFloat();
-    Enchantment enchantment = new Enchantment(SpellFactory.getSpell(id), mana, uid);
+    Enchantment enchantment = new Enchantment(spellFactory.getSpell(id), mana, uid);
     enchantment.setModifier(modifier);
     item.setMagicComponent(enchantment);
   }
@@ -183,7 +191,7 @@ public class ItemSerializer {
     lock.setState(input.readInt());
     String id = input.readUTF();
     if (!id.isEmpty()) {
-      lock.setKey((RItem) Engine.getResources().getResource(id));
+      lock.setKey((RItem) resourceManager.getResource(id));
     }
   }
 

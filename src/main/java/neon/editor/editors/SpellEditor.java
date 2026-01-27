@@ -22,22 +22,27 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.editor.Editor;
+import neon.editor.DataStore;
 import neon.editor.NeonFormat;
 import neon.editor.help.HelpLabels;
 import neon.magic.Effect;
 import neon.resources.RSpell;
 
 public class SpellEditor extends ObjectEditor implements ActionListener {
-  private JTextField nameField;
-  private JFormattedTextField areaField, rangeField, sizeField, durationField;
-  private JComboBox<Effect> effectBox;
-  private JTextArea scriptArea;
-  private RSpell data;
+  private final JTextField nameField;
+  private final JFormattedTextField areaField;
+  private final JFormattedTextField rangeField;
+  private final JFormattedTextField sizeField;
+  private final JFormattedTextField durationField;
+  private final JComboBox<Effect> effectBox;
+  private final JTextArea scriptArea;
+  private final RSpell data;
+  private final DataStore dataStore;
 
-  public SpellEditor(JFrame parent, RSpell data) {
+  public SpellEditor(JFrame parent, RSpell data, DataStore dataStore) {
     super(parent, "Spell: " + data.id);
     this.data = data;
+    this.dataStore = dataStore;
 
     JPanel props = new JPanel();
     GroupLayout layout = new GroupLayout(props);
@@ -167,7 +172,7 @@ public class SpellEditor extends ObjectEditor implements ActionListener {
     data.effect = effectBox.getItemAt(effectBox.getSelectedIndex());
     data.duration = Integer.parseInt(durationField.getText());
     data.script = scriptArea.getText();
-    data.setPath(Editor.getStore().getActive().get("id"));
+    data.setPath(dataStore.getActive().get("id"));
   }
 
   public void actionPerformed(ActionEvent e) {

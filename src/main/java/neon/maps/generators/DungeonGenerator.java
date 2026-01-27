@@ -18,26 +18,20 @@
 
 package neon.maps.generators;
 
-import static neon.maps.generators.RoomGenerator.newExposed;
-
 import java.awt.*;
-import java.awt.geom.*;
 import java.util.*;
+import neon.core.GameStores;
+import neon.entities.*;
 import neon.entities.Container;
-import neon.entities.Creature;
-import neon.entities.Door;
-import neon.entities.EntityFactory;
-import neon.entities.Item;
+import neon.entities.CreatureFactory;
+import neon.entities.ItemFactory;
 import neon.entities.property.Habitat;
 import neon.maps.*;
 import neon.maps.Region.Modifier;
 import neon.maps.services.EntityStore;
 import neon.maps.services.QuestProvider;
 import neon.maps.services.ResourceProvider;
-import neon.resources.RCreature;
-import neon.resources.RItem;
-import neon.resources.RTerrain;
-import neon.resources.RZoneTheme;
+import neon.resources.*;
 import neon.util.Dice;
 
 /**
@@ -56,17 +50,14 @@ public class DungeonGenerator {
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
   private final QuestProvider questProvider;
-
+  private final ItemFactory itemFactory;
+  private final CreatureFactory creatureFactory;
+  private final GameStores gameStores;
   // random sources
   private final MapUtils mapUtils;
   private final Dice dice;
 
-  // helper generators
-  private final BlocksGenerator blocksGenerator;
-  private final ComplexGenerator complexGenerator;
-  private final CaveGenerator caveGenerator;
-  private final MazeGenerator mazeGenerator;
-  private final FeatureGenerator featureGenerator;
+  private final DungeonTerrainGenerator dungeonTerrainGenerator;
 
   // things
   private int[][] tiles; // information about the type of terrain
@@ -80,12 +71,8 @@ public class DungeonGenerator {
    * @param resourceProvider the resource provider service
    * @param questProvider the quest provider service
    */
-  public DungeonGenerator(
-      RZoneTheme theme,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
-      QuestProvider questProvider) {
-    this(theme, entityStore, resourceProvider, questProvider, new MapUtils(), new Dice());
+  public DungeonGenerator(RZoneTheme theme, QuestProvider questProvider, GameStores gameStores) {
+    this(theme, questProvider, gameStores, new MapUtils(), new Dice());
   }
 
   /**
@@ -100,23 +87,21 @@ public class DungeonGenerator {
    */
   public DungeonGenerator(
       RZoneTheme theme,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
       QuestProvider questProvider,
+      GameStores gameStores,
       MapUtils mapUtils,
       Dice dice) {
     this.theme = theme;
+    this.gameStores = gameStores;
     this.zone = null;
-    this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
+    this.entityStore = gameStores.getStore();
+    this.resourceProvider = gameStores.getResources();
     this.questProvider = questProvider;
     this.mapUtils = mapUtils;
     this.dice = dice;
-    this.blocksGenerator = new BlocksGenerator(mapUtils);
-    this.complexGenerator = new ComplexGenerator(mapUtils);
-    this.caveGenerator = new CaveGenerator(dice);
-    this.mazeGenerator = new MazeGenerator(dice);
-    this.featureGenerator = new FeatureGenerator(mapUtils);
+    dungeonTerrainGenerator = new DungeonTerrainGenerator(mapUtils, dice);
+    this.itemFactory = new ItemFactory(gameStores.getResources());
+    this.creatureFactory = new CreatureFactory(gameStores.getResources(), gameStores.getStore());
   }
 
   /**
@@ -127,12 +112,8 @@ public class DungeonGenerator {
    * @param resourceProvider the resource provider service
    * @param questProvider the quest provider service
    */
-  public DungeonGenerator(
-      Zone zone,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
-      QuestProvider questProvider) {
-    this(zone, entityStore, resourceProvider, questProvider, new MapUtils(), new Dice());
+  public DungeonGenerator(Zone zone, QuestProvider questProvider, GameStores gameStores) {
+    this(zone, questProvider, gameStores, new MapUtils(), new Dice());
   }
 
   /**
@@ -147,24 +128,19 @@ public class DungeonGenerator {
    * @param dice the Dice instance for random operations
    */
   public DungeonGenerator(
-      Zone zone,
-      EntityStore entityStore,
-      ResourceProvider resourceProvider,
-      QuestProvider questProvider,
-      MapUtils mapUtils,
-      Dice dice) {
+      Zone zone, QuestProvider questProvider, GameStores gameStores, MapUtils mapUtils, Dice dice) {
     this.zone = zone;
     this.theme = zone.getTheme();
-    this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
+    this.entityStore = gameStores.getStore();
+    this.resourceProvider = gameStores.getResources();
     this.questProvider = questProvider;
+    this.gameStores = gameStores;
     this.mapUtils = mapUtils;
     this.dice = dice;
-    this.blocksGenerator = new BlocksGenerator(mapUtils);
-    this.complexGenerator = new ComplexGenerator(mapUtils);
-    this.caveGenerator = new CaveGenerator(dice);
-    this.mazeGenerator = new MazeGenerator(dice);
-    this.featureGenerator = new FeatureGenerator(mapUtils);
+    dungeonTerrainGenerator = new DungeonTerrainGenerator(mapUtils, dice);
+    this.itemFactory = new ItemFactory(gameStores.getResources());
+    // CreatureFactory needs GameContext too, create minimal wrapper
+    this.creatureFactory = new CreatureFactory(gameStores.getResources(), gameStores.getStore());
   }
 
   /**
@@ -178,8 +154,9 @@ public class DungeonGenerator {
     Dungeon map = (Dungeon) atlas.getMap(zone.getMap());
 
     // generate terrain
-    generateTiles();
-
+    var rv = dungeonTerrainGenerator.generateTilesOnly(theme);
+    tiles = rv.tiles();
+    terrain = rv.terrain();
     // width and height of generated zone
     int width = tiles.length;
     int height = tiles[0].length;
@@ -200,7 +177,7 @@ public class DungeonGenerator {
     int destMap = previous.getMap();
     int destZone = previous.getIndex();
     String doorType = theme.doors.split(",")[0];
-    Door tdoor = (Door) EntityFactory.getItem(doorType, p.x, p.y, entityStore.createNewEntityUID());
+    Door tdoor = (Door) itemFactory.getItem(doorType, p.x, p.y, entityStore.createNewEntityUID());
     entityStore.addEntity(tdoor);
     tiles[p.x][p.y] = MapUtils.DOOR;
     tdoor.portal.setDestination(destPoint, destZone, destMap);
@@ -223,7 +200,7 @@ public class DungeonGenerator {
 
           Door toDoor =
               (Door)
-                  EntityFactory.getItem(
+                  itemFactory.getItem(
                       theme.doors.split(",")[0], pos.x, pos.y, entityStore.createNewEntityUID());
           entityStore.addEntity(toDoor);
           tiles[pos.x][pos.y] = MapUtils.DOOR;
@@ -244,7 +221,7 @@ public class DungeonGenerator {
 
                 Door toDoor =
                     (Door)
-                        EntityFactory.getItem(
+                        itemFactory.getItem(
                             theme.doors.split(",")[0],
                             pos.x,
                             pos.y,
@@ -274,12 +251,12 @@ public class DungeonGenerator {
         p1.y = dice.rollDice(1, height, -1);
       } while (tiles[p1.x][p1.y] != MapUtils.FLOOR);
       if (resourceProvider.getResource(object) instanceof RItem) {
-        Item item = EntityFactory.getItem(object, p1.x, p1.y, entityStore.createNewEntityUID());
+        Item item = itemFactory.getItem(object, p1.x, p1.y, entityStore.createNewEntityUID());
         entityStore.addEntity(item);
         zone.addItem(item);
       } else if (resourceProvider.getResource(object) instanceof RCreature) {
         Creature creature =
-            EntityFactory.getCreature(object, p1.x, p1.y, entityStore.createNewEntityUID());
+            creatureFactory.getCreature(object, p1.x, p1.y, entityStore.createNewEntityUID());
         entityStore.addEntity(creature);
         zone.addCreature(creature);
       }
@@ -287,168 +264,6 @@ public class DungeonGenerator {
   }
 
   /** Generates a single zone from a given theme. */
-  public String[][] generateTiles() {
-    // width and height of dungeon
-    int width = mapUtils.random(theme.min, theme.max);
-    int height = mapUtils.random(theme.min, theme.max);
-
-    // base terrain without features
-    tiles = generateBaseTiles(theme.type, width, height);
-    terrain = makeTerrain(tiles, theme.floor.split(","));
-
-    // scale factor for generating features, creatures and items
-    double ratio = (width * height) / Math.pow(MapUtils.average(theme.min, theme.max), 2);
-
-    // features
-    generateFeatures(theme.features, ratio);
-
-    // creatures
-    for (String creature : theme.creatures.keySet()) {
-      for (int i = (int) (dice.rollDice("1d" + theme.creatures.get(creature)) * ratio);
-          i > 0;
-          i--) {
-        Point p = new Point(0, 0);
-        do {
-          p.x = dice.rollDice(1, width, -1);
-          p.y = dice.rollDice(1, height, -1);
-        } while (tiles[p.x][p.y] != MapUtils.FLOOR);
-
-        terrain[p.x][p.y] = terrain[p.x][p.y] + ";c:" + creature;
-      }
-    }
-
-    // items
-    for (String item : theme.items.keySet()) {
-      for (int i = (int) (dice.rollDice("1d" + theme.items.get(item)) * ratio); i > 0; i--) {
-        Point p = new Point(0, 0);
-        do {
-          p.x = dice.rollDice(1, width, -1);
-          p.y = dice.rollDice(1, height, -1);
-        } while (tiles[p.x][p.y] != MapUtils.FLOOR);
-
-        terrain[p.x][p.y] = terrain[p.x][p.y] + ";i:" + item;
-      }
-    }
-
-    return terrain;
-  }
-
-  /**
-   * Generates base tiles for a dungeon of the given type. Package-private for testing.
-   *
-   * @param type dungeon type (cave, pits, maze, mine, bsp, packed, or default/sparse)
-   * @param width dungeon width
-   * @param height dungeon height
-   * @return 2D array of tile types
-   */
-  int[][] generateBaseTiles(String type, int width, int height) {
-    int[][] tiles = new int[width][height];
-    switch (type) {
-      case "cave":
-        tiles = makeTiles(mazeGenerator.generateSquashedMaze(width, height, 3), width, height);
-        break;
-      case "pits":
-        tiles = caveGenerator.generateOpenCave(width, height, 3);
-        break;
-      case "maze":
-        tiles = makeTiles(mazeGenerator.generateMaze(width, height, 3, 50), width, height);
-        break;
-      case "mine":
-        Area mine = mazeGenerator.generateSquashedMaze(width, height, 12);
-        mine.add(mazeGenerator.generateMaze(width, height, 12, 40));
-        tiles = makeTiles(mine, width, height);
-        break;
-      case "bsp":
-        tiles = complexGenerator.generateBSPDungeon(width, height, 5, 8);
-        break;
-      case "packed":
-        tiles = complexGenerator.generatePackedDungeon(width, height, 10, 4, 7);
-        break;
-      default:
-        tiles = complexGenerator.generateSparseDungeon(width, height, 5, 5, 15);
-        break;
-    }
-
-    return tiles;
-  }
-
-  private void generateFeatures(Collection<RZoneTheme.Feature> features, double ratio) {
-    int width = terrain.length;
-    int height = terrain[0].length;
-    for (RZoneTheme.Feature feature : features) {
-      int s = feature.s;
-      String t = feature.t;
-      int n = feature.n * 100;
-      if (n > 100) {
-        n = mapUtils.random(0, (int) (n * ratio / 100));
-      } else {
-        n = (mapUtils.random(0, (int) (n * ratio)) > 50) ? 1 : 0;
-      }
-
-      if (feature.value.equals("lake")) { // large patch that just overwrites everything
-        int size = 100 / s;
-        ArrayList<Rectangle> lakes =
-            blocksGenerator.createSparseRectangles(
-                width, height, width / size, height / size, 2, n);
-        for (Rectangle r : lakes) { // place lake
-          featureGenerator.generateLake(terrain, t, r);
-        }
-      } else if (feature.value.equals("patch")) { // patch that only overwrites floor tiles
-        // place patches
-        ArrayList<Rectangle> patches =
-            blocksGenerator.createSparseRectangles(width, height, s, s, 2, n);
-        for (Rectangle r : patches) {
-          Polygon patch = mapUtils.randomPolygon(r, 16);
-          for (int x = r.x; x < r.x + r.width; x++) {
-            for (int y = r.y; y < r.y + r.height; y++) {
-              if (patch.contains(x, y) && tiles[x][y] == MapUtils.FLOOR) {
-                terrain[x][y] = t;
-              }
-            }
-          }
-        }
-      } else if (feature.value.equals("chunk")) { // patch that only overwrites wall tiles
-        ArrayList<Rectangle> chunks =
-            blocksGenerator.createSparseRectangles(width, height, s, s, 2, n);
-        for (Rectangle chunk : chunks) {
-          for (int x = chunk.x; x < chunk.x + chunk.width; x++) {
-            for (int y = chunk.y; y < chunk.y + chunk.height; y++) {
-              if (tiles[x][y] == MapUtils.WALL
-                  || tiles[x][y] == MapUtils.WALL_ROOM
-                  || tiles[x][y] == MapUtils.CORNER
-                  || tiles[x][y] == MapUtils.ENTRY) {
-                terrain[x][y] = t;
-              }
-            }
-          }
-        }
-      } else if (feature.value.equals("stain")) { // patch that only overwrites exposed wall tiles
-        ArrayList<Rectangle> stains =
-            blocksGenerator.createSparseRectangles(width, height, s, s, 2, n);
-        for (Rectangle stain : stains) {
-          for (int x = stain.x; x < stain.x + stain.width; x++) {
-            for (int y = stain.y; y < stain.y + stain.height; y++) {
-              if ((tiles[x][y] == MapUtils.WALL
-                      || tiles[x][y] == MapUtils.WALL_ROOM
-                      || tiles[x][y] == MapUtils.CORNER
-                      || tiles[x][y] == MapUtils.ENTRY)
-                  && exposed(tiles, x, y)) {
-                terrain[x][y] = t;
-              }
-            }
-          }
-        }
-      } else if (feature.value.equals("river")) {
-        while (n-- > 0) { // apparently first >, then --
-          featureGenerator.generateRiver(terrain, tiles, t, s);
-        }
-      }
-    }
-  }
-
-  private static boolean exposed(int[][] tiles, int x, int y) {
-    return newExposed(tiles, x, y);
-  }
 
   // to convert a string[][] into regions, items and creatures
   private void generateEngineContent(int width, int height) {
@@ -495,7 +310,7 @@ public class DungeonGenerator {
   }
 
   private void addDoor(String terrain, String id, int x, int y, int layer) {
-    Door door = (Door) EntityFactory.getItem(id, x, y, entityStore.createNewEntityUID());
+    Door door = (Door) itemFactory.getItem(id, x, y, entityStore.createNewEntityUID());
     entityStore.addEntity(door);
     if (tiles[x][y] == MapUtils.DOOR_LOCKED) {
       door.lock.setLockDC(10);
@@ -510,7 +325,7 @@ public class DungeonGenerator {
 
   private void addCreature(String description, int x, int y) {
     String id = description.replace("c:", "");
-    Creature creature = EntityFactory.getCreature(id, x, y, entityStore.createNewEntityUID());
+    Creature creature = creatureFactory.getCreature(id, x, y, entityStore.createNewEntityUID());
     // no land creatures in water
     Rectangle bounds = creature.getShapeComponent();
     Modifier modifier = zone.getRegion(bounds.getLocation()).getMovMod();
@@ -524,51 +339,15 @@ public class DungeonGenerator {
 
   private void addItem(String description, int x, int y) {
     String id = description.replace("i:", "");
-    Item item = EntityFactory.getItem(id, x, y, entityStore.createNewEntityUID());
+    Item item = itemFactory.getItem(id, x, y, entityStore.createNewEntityUID());
     entityStore.addEntity(item);
     if (item instanceof Container) {
       for (String s : ((RItem.Container) item.resource).contents) {
-        Item i = EntityFactory.getItem(s, entityStore.createNewEntityUID());
+        Item i = itemFactory.getItem(s, entityStore.createNewEntityUID());
         ((Container) item).addItem(i.getUID());
         entityStore.addEntity(i);
       }
     }
     zone.addItem(item);
-  }
-
-  private static int[][] makeTiles(Area area, int width, int height) {
-    int[][] tiles = new int[width][height];
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        if (area.contains(i, j)) {
-          tiles[i][j] = MapUtils.FLOOR;
-        } else {
-          tiles[i][j] = MapUtils.WALL;
-        }
-      }
-    }
-    return tiles;
-  }
-
-  private String[][] makeTerrain(int[][] tiles, String[] floors) {
-    String terrain[][] = new String[tiles.length][tiles[0].length];
-
-    for (int x = 0; x < tiles.length; x++) {
-      for (int y = 0; y < tiles[0].length; y++) {
-        int f = mapUtils.random(0, floors.length - 1);
-
-        switch (tiles[x][y]) {
-          case MapUtils.CORRIDOR:
-          case MapUtils.FLOOR:
-          case MapUtils.DOOR:
-          case MapUtils.DOOR_CLOSED:
-          case MapUtils.DOOR_LOCKED:
-            terrain[x][y] = floors[f];
-            break;
-        }
-      }
-    }
-
-    return terrain;
   }
 }

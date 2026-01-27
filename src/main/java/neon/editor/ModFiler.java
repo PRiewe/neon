@@ -22,9 +22,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import lombok.extern.slf4j.Slf4j;
 import neon.editor.resources.*;
 import neon.maps.model.DungeonModel;
 import neon.maps.model.WorldModel;
@@ -46,23 +48,68 @@ import neon.resources.quest.RQuest;
 import neon.systems.files.FileSystem;
 import neon.systems.files.JacksonMapper;
 import neon.systems.files.StringTranslator;
-import neon.systems.files.XMLTranslator;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
+@Slf4j
 public class ModFiler {
-  private FileSystem files;
-  private DataStore store;
-  private Editor editor;
-  private JFrame frame;
+  private final FileSystem files;
+  private final DataStore dataStore;
+  private final Editor editor;
+  private final JFrame frame;
 
-  public ModFiler(JFrame frame, FileSystem files, DataStore store, Editor editor) {
+  public ModFiler(JFrame frame, FileSystem files, DataStore dataStore, Editor editor) {
     this.frame = frame;
     this.files = files;
-    this.store = store;
+    this.dataStore = dataStore;
     this.editor = editor;
+  }
+
+  /**
+   * Bridge method for loading XML files as JDOM Documents without using XMLTranslator.
+   *
+   * @param path the path components to the XML file
+   * @return JDOM Document, or null if file doesn't exist
+   */
+  private Document loadAsDocument(String... path) {
+    try {
+      java.io.InputStream stream = files.getStream(path);
+      if (stream == null) {
+        return null;
+      }
+      org.jdom2.input.SAXBuilder builder = new org.jdom2.input.SAXBuilder();
+      Document doc = builder.build(stream);
+      stream.close();
+      return doc;
+    } catch (Exception e) {
+      log.error("Failed to load XML as Document: {}", java.util.Arrays.toString(path), e);
+      return null;
+    }
+  }
+
+  /**
+   * Saves a JDOM Document to the file system without using XMLTranslator.
+   *
+   * @param doc the JDOM Document to save
+   * @param path the path components
+   */
+  private void saveDocument(Document doc, String... path) {
+    try {
+      org.jdom2.output.XMLOutputter outputter = new org.jdom2.output.XMLOutputter();
+      outputter.setFormat(org.jdom2.output.Format.getPrettyFormat());
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      outputter.output(doc, out);
+
+      // Write to file using FileSystem
+      String fullPath = files.getFullPath(String.join(File.separator, path));
+      java.io.FileOutputStream fileOut = new java.io.FileOutputStream(fullPath);
+      out.writeTo(fileOut);
+      fileOut.close();
+    } catch (Exception e) {
+      log.error("Failed to save Document: {}", java.util.Arrays.toString(path), e);
+    }
   }
 
   void loadMod() {
@@ -84,27 +131,30 @@ public class ModFiler {
         files.removePath(path);
       } else {
         if (isExtension(path)) { // if extension: load all masters
-          Document doc = files.getFile(new XMLTranslator(), path, "main.xml");
-          for (Object master : doc.getRootElement().getChildren("master")) {
-            String id = ((Element) master).getText();
-            Document ini = new Document();
-            try { // check in neon.ini.xml which mods exist
-              FileInputStream in = new FileInputStream("neon.ini.xml");
-              ini = new SAXBuilder().build(in);
-              in.close();
-            } catch (JDOMException e) {
-            }
+          Document doc = loadAsDocument(path, "main.xml");
+          if (doc != null) {
+            for (Object master : doc.getRootElement().getChildren("master")) {
+              String id = ((Element) master).getText();
+              Document ini = new Document();
+              try { // check in neon.ini.xml which mods exist
+                FileInputStream in = new FileInputStream("neon.ini.xml");
+                ini = new SAXBuilder().build(in);
+                in.close();
+              } catch (JDOMException e) {
+                log.error("Error reading", e);
+              }
 
-            // check if there is a mod with the correct id
-            for (Element mod : ini.getRootElement().getChild("files").getChildren()) {
-              if (!mod.getText().equals(path)) { // make sure current mod is not loaded again
-                System.out.println(mod.getText() + ", " + path);
-                files.mount(mod.getText());
-                Document d = files.getFile(new XMLTranslator(), mod.getText(), "main.xml");
-                if (d.getRootElement().getAttributeValue("id").equals(id)) {
-                  store.loadData(mod.getText(), false, false);
-                } else {
-                  files.removePath(mod.getText());
+              // check if there is a mod with the correct id
+              for (Element mod : ini.getRootElement().getChild("files").getChildren()) {
+                if (!mod.getText().equals(path)) { // make sure current mod is not loaded again
+                  System.out.println(mod.getText() + ", " + path);
+                  files.mount(mod.getText());
+                  Document d = loadAsDocument(mod.getText(), "main.xml");
+                  if (d != null && d.getRootElement().getAttributeValue("id").equals(id)) {
+                    dataStore.loadData(mod.getText(), false, false);
+                  } else {
+                    files.removePath(mod.getText());
+                  }
                 }
               }
             }
@@ -112,67 +162,81 @@ public class ModFiler {
         }
 
         frame.setTitle("Neon Editor: " + path);
-        store.loadData(path, active, isExtension(path));
-        editor.mapEditor.loadMaps(Editor.resources.getResources(RMap.class), path);
+        dataStore.loadData(path, active, isExtension(path));
+        editor.mapEditor.loadMaps(dataStore.getResourceManager().getResources(RMap.class), path);
         editor.enableEditing(file.isDirectory());
         frame.pack();
       }
     } catch (IOException e1) {
+      log.error("File is not a mod", e1);
       JOptionPane.showMessageDialog(frame, "Selected file is not a valid mod.");
     }
   }
 
   public void save() {
-    JacksonXmlBuilder builder = new JacksonXmlBuilder(store);
-    RMod active = store.getActive();
-    saveFile(new Document(store.getActive().getMainElement()), "main.xml");
-    saveFile(new Document(store.getActive().getCCElement()), "cc.xml");
+    JacksonXmlBuilder builder = new JacksonXmlBuilder(dataStore);
+    RMod active = dataStore.getActive();
+    saveFile(new Document(dataStore.getActive().getMainElement()), "main.xml");
+    saveFile(new Document(dataStore.getActive().getCCElement()), "cc.xml");
     saveFile(
-        builder.getResourceDoc(Editor.resources.getResources(RItem.class), "items", active),
+        builder.getResourceDoc(
+            dataStore.getResourceManager().getResources(RItem.class), "items", active),
         "objects",
         "items.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RFaction.class), "factions", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RFaction.class), "factions", active),
         "factions.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RRecipe.class), "recipes", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RRecipe.class), "recipes", active),
         "objects",
         "alchemy.xml");
     saveFile(builder.getEventsDoc(), "events.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RPerson.class), "people", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RPerson.class), "people", active),
         "objects",
         "npc.xml");
     saveFile(
-        builder.getResourceDoc(Editor.resources.getResources(RCreature.class), "monsters", active),
+        builder.getResourceDoc(
+            dataStore.getResourceManager().getResources(RCreature.class), "monsters", active),
         "objects",
         "monsters.xml");
     saveFile(
-        builder.getResourceDoc(Editor.resources.getResources(RSpell.class), "spells", active),
+        builder.getResourceDoc(
+            dataStore.getResourceManager().getResources(RSpell.class), "spells", active),
         "spells.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RTerrain.class), "terrain", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RTerrain.class), "terrain", active),
         "terrain.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RCraft.class), "items", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RCraft.class), "items", active),
         "objects",
         "crafting.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RSign.class), "signs", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RSign.class), "signs", active),
         "signs.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RTattoo.class), "tattoos", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RTattoo.class), "tattoos", active),
         "tattoos.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RZoneTheme.class), "themes", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RZoneTheme.class), "themes", active),
         "themes",
         "zones.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RDungeonTheme.class), "themes", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RDungeonTheme.class), "themes", active),
         "themes",
         "dungeons.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RRegionTheme.class), "themes", active),
+        builder.getListDoc(
+            dataStore.getResourceManager().getResources(RRegionTheme.class), "themes", active),
         "themes",
         "regions.xml");
     saveMaps();
@@ -183,16 +247,16 @@ public class ModFiler {
   /**
    * Saves all maps using Jackson XML serialization.
    *
-   * <p>NOTE (Phase 6 - Partial Migration): Maps use Jackson via toWorldModel()/toDungeonModel()
-   * (migrated in Phase 2D). Other resources still use toElement() bridge and XMLTranslator. Full
-   * migration of resource saving to Jackson deferred to Phase 7.
+   * <p>NOTE: Maps use Jackson via toWorldModel()/toDungeonModel(). Other resources still use
+   * toElement() bridge with JDOM. XMLTranslator has been eliminated. Full migration of resource
+   * saving to Jackson deferred to future phase.
    */
   private void saveMaps() {
     // Delete maps that no longer exist
-    for (String name : files.listFiles(store.getActive().getPath()[0], "maps")) {
+    for (String name : files.listFiles(dataStore.getActive().getPath()[0], "maps")) {
       String map =
           name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 for ".xml"
-      if (Editor.resources.getResource(map, "maps") == null) {
+      if (dataStore.getResourceManager().getResource(map, "maps") == null) {
         files.delete(name);
       }
     }
@@ -210,7 +274,7 @@ public class ModFiler {
           out = mapper.toXml(model);
         }
         // Convert ByteArrayOutputStream to String for saveFile
-        String xml = out.toString("UTF-8");
+        String xml = out.toString(StandardCharsets.UTF_8);
         saveFile(xml, "maps", map.id + ".xml");
       } catch (Exception e) {
         System.err.println("Failed to save map: " + map.id);
@@ -220,27 +284,36 @@ public class ModFiler {
   }
 
   private void saveQuests() {
-    for (String name : files.listFiles(store.getActive().getPath()[0], "quests")) {
+    JacksonMapper mapper = new JacksonMapper();
+    for (String name : files.listFiles(dataStore.getActive().getPath()[0], "quests")) {
       String quest =
           name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 for ".xml"
-      if (Editor.resources.getResource(quest, "quest") == null) {
+      if (dataStore.getResourceManager().getResource(quest, "quest") == null) {
         files.delete(name);
       }
     }
-    for (RQuest quest : Editor.resources.getResources(RQuest.class)) {
-      saveFile(new Document(quest.toElement()), "quests", quest.id + ".xml");
+    for (RQuest quest : dataStore.getResourceManager().getResources(RQuest.class)) {
+      try {
+        // Serialize quest with Jackson
+        ByteArrayOutputStream out = mapper.toXml(quest);
+        String xml = out.toString(StandardCharsets.UTF_8);
+        saveFile(xml, "quests", quest.id + ".xml");
+      } catch (Exception e) {
+        System.err.println("Failed to save quest: " + quest.id);
+        e.printStackTrace();
+      }
     }
   }
 
   private void saveScripts() {
-    for (String name : files.listFiles(store.getActive().getPath()[0], "scripts")) {
+    for (String name : files.listFiles(dataStore.getActive().getPath()[0], "scripts")) {
       String script =
           name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 3); // -3 for ".js"
-      if (!store.getScripts().containsKey(script)) {
+      if (!dataStore.getScripts().containsKey(script)) {
         files.delete(name);
       }
     }
-    for (RScript script : store.getScripts().values()) {
+    for (RScript script : dataStore.getScripts().values()) {
       saveFile(script.script, "scripts", script.id + ".js");
     }
   }
@@ -248,25 +321,25 @@ public class ModFiler {
   private void saveFile(String text, String... file) {
     String[] fullPath = new String[file.length + 1];
     System.arraycopy(file, 0, fullPath, 1, file.length);
-    fullPath[0] = store.getActive().getPath()[0];
+    fullPath[0] = dataStore.getActive().getPath()[0];
     files.saveFile(text, new StringTranslator(), fullPath);
   }
 
   private void saveFile(Document doc, String... file) {
     String[] fullPath = new String[file.length + 1];
     System.arraycopy(file, 0, fullPath, 1, file.length);
-    fullPath[0] = store.getActive().getPath()[0];
-    files.saveFile(doc, new XMLTranslator(), fullPath);
+    fullPath[0] = dataStore.getActive().getPath()[0];
+    saveDocument(doc, fullPath);
   }
 
   private boolean isExtension(String path) {
-    Document doc = files.getFile(new XMLTranslator(), path, "main.xml");
-    return doc.getRootElement().getName().equals("extension");
+    Document doc = loadAsDocument(path, "main.xml");
+    return doc != null && doc.getRootElement().getName().equals("extension");
   }
 
   private boolean isMod(String path) {
     try { // main.xml must exist and be valid xml
-      return files.getFile(new XMLTranslator(), path, "main.xml") != null;
+      return loadAsDocument(path, "main.xml") != null;
     } catch (NullPointerException e) {
       return false;
     }

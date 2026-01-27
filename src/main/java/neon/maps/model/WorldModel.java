@@ -45,27 +45,20 @@ public class WorldModel {
   public List<CreaturePlacement> creatures = new ArrayList<>();
 
   @JacksonXmlElementWrapper(localName = "items")
-  @JacksonXmlProperty(localName = "items")
-  public ItemsWrapper items = new ItemsWrapper();
+  @JacksonXmlProperty(localName = "item")
+  public List<ItemPlacement> items = new ArrayList<>();
+
+  @JacksonXmlElementWrapper(localName = "doors")
+  @JacksonXmlProperty(localName = "door")
+  public List<DoorPlacement> doors = new ArrayList<>();
+
+  @JacksonXmlElementWrapper(localName = "containers")
+  @JacksonXmlProperty(localName = "container")
+  public List<ContainerPlacement> containers = new ArrayList<>();
 
   @JacksonXmlElementWrapper(localName = "regions")
   @JacksonXmlProperty(localName = "region")
   public List<RegionData> regions = new ArrayList<>();
-
-  /** Wrapper for all item types (items, doors, containers) */
-  public static class ItemsWrapper {
-    @JacksonXmlElementWrapper(useWrapping = false)
-    @JacksonXmlProperty(localName = "item")
-    public List<ItemPlacement> items = new ArrayList<>();
-
-    @JacksonXmlElementWrapper(useWrapping = false)
-    @JacksonXmlProperty(localName = "door")
-    public List<DoorPlacement> doors = new ArrayList<>();
-
-    @JacksonXmlElementWrapper(useWrapping = false)
-    @JacksonXmlProperty(localName = "container")
-    public List<ContainerPlacement> containers = new ArrayList<>();
-  }
 
   /** Map header with name and UID */
   public static class Header implements Serializable {

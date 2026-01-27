@@ -32,6 +32,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Player;
 import neon.entities.components.HealthComponent;
@@ -61,30 +62,38 @@ import net.engio.mbassy.bus.MBassador;
  * on the preconditions defined in quests.
  */
 public class DialogState extends State implements KeyListener {
-  private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+  private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
-  private JPanel panel, conversation;
+  private final JPanel panel;
+  private final JPanel conversation;
   private Creature target;
-  private JTextPane text = new JTextPane();
-  private JList<Topic> subjects;
-  private JList<String> services;
+  private final JTextPane text = new JTextPane();
+  private final JList<Topic> subjects;
+  private final JList<String> services;
   private JList<?> list;
-  private JScrollPane left;
-  private HTMLEditorKit kit = new HTMLEditorKit();
-  private HTMLDocument doc;
-  private String big, small;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JScrollPane left;
+  private final HTMLEditorKit kit = new HTMLEditorKit();
+  private final HTMLDocument doc;
+  private final String big;
+  private final String small;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private Topic topic;
   private final GameContext context;
+  private final GameStores gameStores;
 
   public DialogState(
-      State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
+      State parent,
+      MBassador<EventObject> bus,
+      UserInterface ui,
+      GameContext context,
+      GameStores gameStores) {
     super(parent);
     this.bus = bus;
     this.ui = ui;
     this.context = context;
-    CClient ini = (CClient) context.getResources().getResource("client", "config");
+    this.gameStores = gameStores;
+    CClient ini = (CClient) gameStores.getResources().getResource("client", "config");
     big = ini.getSmall();
     small = ini.getBig();
     panel = new JPanel(new BorderLayout());
@@ -206,29 +215,32 @@ public class DialogState extends State implements KeyListener {
         } else {
           String value = list.getSelectedValue().toString();
           if (value.equals("travel")) {
-            new TravelDialog(ui, bus, context).show(context.getPlayer(), target);
+            new TravelDialog(ui, bus, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("training")) {
-            new TrainingDialog(ui, bus, context).show(context.getPlayer(), target);
+            new TrainingDialog(ui, bus, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("spells")) {
-            new SpellTradeDialog(ui, big, small).show(context.getPlayer(), target);
+            new SpellTradeDialog(ui, big, small).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("trade")) {
-            new TradeDialog(ui, big, small, context).show(context.getPlayer(), target);
+            new TradeDialog(ui, big, small, context, gameStores)
+                .show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("spell maker")) {
-            new SpellMakerDialog(ui).show(context.getPlayer(), target);
+            new SpellMakerDialog(ui).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("potion maker")) {
-            new PotionDialog(ui, small, context).show(context.getPlayer(), target);
+            new PotionDialog(ui, small, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("healer")) {
             heal();
           } else if (value.equals("charge")) {
-            new ChargeDialog(ui, context).show(context.getPlayer());
+            new ChargeDialog(ui, context, gameStores).show(gameStores.getStore().getPlayer());
           } else if (value.equals("craft")) {
-            new CrafterDialog(ui, small, bus, context).show(context.getPlayer(), target);
+            new CrafterDialog(ui, small, bus, context, gameStores)
+                .show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("enchant")) {
-            new EnchantDialog(ui, context).show(context.getPlayer(), target);
+            new EnchantDialog(ui, context, gameStores)
+                .show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("repair")) {
-            new RepairDialog(ui, context).show(context.getPlayer(), target);
+            new RepairDialog(ui, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else if (value.equals("tattoos")) {
-            new TattooDialog(ui, small, context).show(context.getPlayer(), target);
+            new TattooDialog(ui, small, gameStores).show(gameStores.getStore().getPlayer(), target);
           } else {
             System.out.println("not implemented");
           }
@@ -240,7 +252,7 @@ public class DialogState extends State implements KeyListener {
   }
 
   private void heal() {
-    Player player = context.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     HealthComponent health = player.getHealthComponent();
     health.heal(health.getHealth() - health.getBaseHealth());
     MagicUtils.cure(player, SpellType.CURSE);
@@ -305,7 +317,7 @@ public class DialogState extends State implements KeyListener {
 
   private boolean hasService(String name, String id) {
     try {
-      RPerson person = (RPerson) context.getResources().getResource(name);
+      RPerson person = (RPerson) gameStores.getResources().getResource(name);
       for (RPerson.Service service : person.services) {
         if (service.id.equals(id)) {
           return true;
@@ -317,7 +329,7 @@ public class DialogState extends State implements KeyListener {
   }
 
   private static class AutoScroller implements Runnable {
-    private JScrollBar bar;
+    private final JScrollBar bar;
 
     public AutoScroller(JScrollBar bar) {
       this.bar = bar;

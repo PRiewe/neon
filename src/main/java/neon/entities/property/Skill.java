@@ -74,11 +74,11 @@ public enum Skill {
   public final Attribute stat;
   public final float increase;
 
-  private Skill(float increase) {
+  Skill(float increase) {
     this(Attribute.NONE, increase);
   }
 
-  private Skill(Attribute stat, float increase) {
+  Skill(Attribute stat, float increase) {
     this.increase = increase;
     this.stat = stat;
   }

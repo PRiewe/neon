@@ -246,6 +246,6 @@ public class RRegionTheme extends RData {
     TERRACE,
     RIDGES,
     CHAOTIC,
-    BEACH;
+    BEACH
   }
 }

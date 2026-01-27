@@ -19,34 +19,15 @@
 package neon.maps;
 
 import java.awt.Point;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import neon.core.*;
-import neon.entities.Container;
-import neon.entities.Creature;
-import neon.entities.Door;
-import neon.entities.EntityFactory;
-import neon.entities.Item;
-import neon.entities.UIDStore;
+import neon.entities.*;
 import neon.entities.components.Enchantment;
 import neon.entities.components.Lock;
 import neon.maps.model.DungeonModel;
 import neon.maps.model.WorldModel;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineResourceProvider;
-import neon.maps.services.EntityStore;
-import neon.maps.services.ResourceProvider;
-import neon.resources.RDungeonTheme;
-import neon.resources.RItem;
-import neon.resources.RRegionTheme;
-import neon.resources.RSpell;
-import neon.resources.RTerrain;
-import neon.resources.RZoneTheme;
+import neon.resources.*;
 import neon.systems.files.FileSystem;
 import neon.systems.files.JacksonMapper;
-import neon.systems.files.XMLTranslator;
-import org.jdom2.*;
-import org.jdom2.output.XMLOutputter;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -57,40 +38,37 @@ import org.jetbrains.annotations.NotNull;
  * @author mdriesen
  */
 public class MapLoader {
-  private final EntityStore entityStore;
-  private final ResourceProvider resourceProvider;
   private final MapUtils mapUtils;
+  private final UIDStore uidStore;
+  private final ResourceManager resourceManager;
+  private final FileSystem fileSystem;
+  private final ZoneFactory zoneFactory;
 
-  /**
-   * Creates a MapLoader with dependency injection.
-   *
-   * @param entityStore the entity store service
-   * @param resourceProvider the resource provider service
-   */
-  public MapLoader(EntityStore entityStore, ResourceProvider resourceProvider) {
-    this(entityStore, resourceProvider, new MapUtils());
+  /** Creates a MapLoader with dependency injection. */
+  public MapLoader(
+      FileSystem fileSystem,
+      UIDStore uidStore,
+      ResourceManager resourceManager,
+      ZoneFactory zoneFactory) {
+    this(fileSystem, uidStore, resourceManager, new MapUtils(), zoneFactory);
   }
 
   /**
    * Creates a MapLoader with dependency injection and custom random source.
    *
-   * @param entityStore the entity store service
-   * @param resourceProvider the resource provider service
    * @param mapUtils the MapUtils instance for random operations
    */
-  public MapLoader(EntityStore entityStore, ResourceProvider resourceProvider, MapUtils mapUtils) {
-    this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
+  public MapLoader(
+      FileSystem fileSystem,
+      UIDStore uidStore,
+      ResourceManager resourceManager,
+      MapUtils mapUtils,
+      ZoneFactory zoneFactory) {
+    this.fileSystem = fileSystem;
+    this.uidStore = uidStore;
+    this.resourceManager = resourceManager;
     this.mapUtils = mapUtils;
-  }
-
-  /**
-   * Creates a MapLoader using Engine singletons (for backward compatibility).
-   *
-   * @return a new MapLoader instance
-   */
-  private static MapLoader createDefault() {
-    return new MapLoader(new EngineEntityStore(), new EngineResourceProvider());
+    this.zoneFactory = zoneFactory;
   }
 
   /**
@@ -98,84 +76,32 @@ public class MapLoader {
    *
    * @param path the pathname of a map file
    * @param uid the unique identifier of this map
-   * @param files the file system
    * @return the <code>Map</code> described by the map file
    */
-  public Map load(@NotNull String[] path, int uid, FileSystem files) {
-    // For now, use JDOM to determine type, then build models
-    // In the future, FileSystem can provide InputStream directly
+  public Map load(@NotNull String[] path, int uid) {
+    // Load with Jackson directly - use MapHeaderModel to detect type efficiently
+    JacksonMapper mapper = new JacksonMapper();
+    neon.maps.model.MapHeaderModel header =
+        fileSystem.getFile(mapper, neon.maps.model.MapHeaderModel.class, path);
 
-    Document doc = files.getFile(new XMLTranslator(), path);
-    Element root = doc.getRootElement();
-
-    if (root.getName().equals("world")) {
-
-      return loadWorld(root, uid);
-    } else {
-      return loadDungeon(root, uid);
-    }
-  }
-
-  /**
-   * Loads a dungeon behind a themed door.
-   *
-   * @param theme
-   * @return
-   */
-  /**
-   * Loads a dungeon with a theme (static wrapper for backward compatibility).
-   *
-   * @param theme the theme ID
-   * @return a new Dungeon
-   * @deprecated Use instance method {@link #loadThemedDungeon(String, String, int)} instead
-   */
-  @Deprecated
-  public static Dungeon loadDungeon(String theme) {
-    MapLoader loader = createDefault();
-    return loader.loadThemedDungeon(theme, theme, loader.entityStore.createNewMapUID());
-  }
-
-  private World loadWorld(Element root, int uid) {
+    // Try loading as WorldModel first - if it succeeds, it's a world map
     try {
-      // Convert JDOM Element to XML string
-      XMLOutputter outputter = new XMLOutputter();
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      outputter.output(root, out);
-
-      // Parse with Jackson
-      JacksonMapper mapper = new JacksonMapper();
-      ByteArrayInputStream input = new ByteArrayInputStream(out.toByteArray());
-      WorldModel model = mapper.fromXml(input, WorldModel.class);
-
-      // Build World from model
-      return buildWorldFromModel(model, uid);
+      WorldModel worldModel = fileSystem.getFile(mapper, WorldModel.class, path);
+      if (worldModel != null && worldModel.header != null) {
+        return buildWorldFromModel(worldModel, uid);
+      }
     } catch (Exception e) {
-      throw new RuntimeException("Failed to load world map", e);
+      // Not a world map, try dungeon
     }
+
+    // Load as DungeonModel
+    DungeonModel dungeonModel = fileSystem.getFile(mapper, DungeonModel.class, path);
+    return buildDungeonFromModel(dungeonModel, uid);
   }
 
-  private Dungeon loadDungeon(Element root, int uid) {
-    try {
-      // Convert JDOM Element to XML string
-      XMLOutputter outputter = new XMLOutputter();
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      outputter.output(root, out);
-
-      // Parse with Jackson
-      JacksonMapper mapper = new JacksonMapper();
-      ByteArrayInputStream input = new ByteArrayInputStream(out.toByteArray());
-      DungeonModel model = mapper.fromXml(input, DungeonModel.class);
-
-      // Build Dungeon from model
-      return buildDungeonFromModel(model, uid);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to load dungeon map", e);
-    }
-  }
-
-  private Dungeon loadThemedDungeon(String name, String dungeon, int uid) {
-    Dungeon map = new Dungeon(name, uid);
-    RDungeonTheme theme = (RDungeonTheme) resourceProvider.getResource(dungeon, "theme");
+  public Dungeon loadThemedDungeon(String name, String dungeonTheme, int uid) {
+    Dungeon map = new Dungeon(name, uid, zoneFactory);
+    RDungeonTheme theme = (RDungeonTheme) resourceManager.getResource(dungeonTheme, "theme");
 
     int minZ = theme.min;
     int maxZ = theme.max;
@@ -187,7 +113,7 @@ public class MapLoader {
     while (z > -1) {
       int t = mapUtils.random(0, types.length - 1);
       zones[z] = 1;
-      RZoneTheme rzt = (RZoneTheme) resourceProvider.getResource(types[t], "theme");
+      RZoneTheme rzt = (RZoneTheme) resourceManager.getResource(types[t], "theme");
       map.addZone(z, "zone " + z, rzt);
       z--;
     }
@@ -211,9 +137,10 @@ public class MapLoader {
    * @return the constructed World
    */
   private World buildWorldFromModel(WorldModel model, int uid) {
-    World world = new World(model.header.name, uid);
+    World world = new World(model.header.name, uid, zoneFactory);
     Zone zone = world.getZone(0); // outdoor maps have only zone 0
-
+    ItemFactory itemFactory = new ItemFactory(resourceManager);
+    CreatureFactory creatureFactory = new CreatureFactory(resourceManager, uidStore);
     // Add regions
     for (WorldModel.RegionData regionData : model.regions) {
       Region region = buildRegionFromModel(regionData);
@@ -223,32 +150,32 @@ public class MapLoader {
     // Add creatures
     for (WorldModel.CreaturePlacement cp : model.creatures) {
       long creatureUID = UIDStore.getObjectUID(uid, cp.uid);
-      Creature creature = EntityFactory.getCreature(cp.id, cp.x, cp.y, creatureUID);
-      entityStore.addEntity(creature);
+      Creature creature = creatureFactory.getCreature(cp.id, cp.x, cp.y, creatureUID);
+      uidStore.addEntity(creature);
       zone.addCreature(creature);
     }
 
     // Add items (simple items)
-    for (WorldModel.ItemPlacement ip : model.items.items) {
+    for (WorldModel.ItemPlacement ip : model.items) {
       long itemUID = UIDStore.getObjectUID(uid, ip.uid);
-      Item item = EntityFactory.getItem(ip.id, ip.x, ip.y, itemUID);
-      entityStore.addEntity(item);
+      Item item = itemFactory.getItem(ip.id, ip.x, ip.y, itemUID);
+      uidStore.addEntity(item);
       zone.addItem(item);
     }
 
     // Add doors
-    for (WorldModel.DoorPlacement dp : model.items.doors) {
+    for (WorldModel.DoorPlacement dp : model.doors) {
       long doorUID = UIDStore.getObjectUID(uid, dp.uid);
-      Door door = buildDoorFromModel(dp, uid, doorUID);
-      entityStore.addEntity(door);
+      Door door = buildDoorFromModel(dp, uid, doorUID, itemFactory);
+      uidStore.addEntity(door);
       zone.addItem(door);
     }
 
     // Add containers
-    for (WorldModel.ContainerPlacement cp : model.items.containers) {
+    for (WorldModel.ContainerPlacement cp : model.containers) {
       long containerUID = UIDStore.getObjectUID(uid, cp.uid);
-      Container container = buildContainerFromModel(cp, uid, containerUID);
-      entityStore.addEntity(container);
+      Container container = buildContainerFromModel(cp, uid, containerUID, itemFactory);
+      uidStore.addEntity(container);
       zone.addItem(container);
     }
 
@@ -267,8 +194,9 @@ public class MapLoader {
     if (model.header.theme != null) {
       return loadThemedDungeon(model.header.name, model.header.theme, uid);
     }
-
-    Dungeon dungeon = new Dungeon(model.header.name, uid);
+    ItemFactory itemFactory = new ItemFactory(resourceManager);
+    CreatureFactory creatureFactory = new CreatureFactory(resourceManager, uidStore);
+    Dungeon dungeon = new Dungeon(model.header.name, uid, zoneFactory);
 
     for (DungeonModel.Level levelData : model.levels) {
       int level = levelData.l;
@@ -276,7 +204,7 @@ public class MapLoader {
 
       if (levelData.theme != null) {
         // Themed zone - add theme reference
-        RZoneTheme theme = (RZoneTheme) resourceProvider.getResource(levelData.theme, "theme");
+        RZoneTheme theme = (RZoneTheme) resourceManager.getResource(levelData.theme, "theme");
         dungeon.addZone(level, name, theme);
 
         if (levelData.out != null) {
@@ -298,32 +226,32 @@ public class MapLoader {
         // Add creatures
         for (WorldModel.CreaturePlacement cp : levelData.creatures) {
           long creatureUID = UIDStore.getObjectUID(uid, cp.uid);
-          Creature creature = EntityFactory.getCreature(cp.id, cp.x, cp.y, creatureUID);
-          entityStore.addEntity(creature);
+          Creature creature = creatureFactory.getCreature(cp.id, cp.x, cp.y, creatureUID);
+          uidStore.addEntity(creature);
           zone.addCreature(creature);
         }
 
         // Add items
-        for (WorldModel.ItemPlacement ip : levelData.items.items) {
+        for (WorldModel.ItemPlacement ip : levelData.items) {
           long itemUID = UIDStore.getObjectUID(uid, ip.uid);
-          Item item = EntityFactory.getItem(ip.id, ip.x, ip.y, itemUID);
-          entityStore.addEntity(item);
+          Item item = itemFactory.getItem(ip.id, ip.x, ip.y, itemUID);
+          uidStore.addEntity(item);
           zone.addItem(item);
         }
 
         // Add doors
-        for (WorldModel.DoorPlacement dp : levelData.items.doors) {
+        for (WorldModel.DoorPlacement dp : levelData.doors) {
           long doorUID = UIDStore.getObjectUID(uid, dp.uid);
-          Door door = buildDoorFromModel(dp, uid, doorUID);
-          entityStore.addEntity(door);
+          Door door = buildDoorFromModel(dp, uid, doorUID, itemFactory);
+          uidStore.addEntity(door);
           zone.addItem(door);
         }
 
         // Add containers
-        for (WorldModel.ContainerPlacement cp : levelData.items.containers) {
+        for (WorldModel.ContainerPlacement cp : levelData.containers) {
           long containerUID = UIDStore.getObjectUID(uid, cp.uid);
-          Container container = buildContainerFromModel(cp, uid, containerUID);
-          entityStore.addEntity(container);
+          Container container = buildContainerFromModel(cp, uid, containerUID, itemFactory);
+          uidStore.addEntity(container);
           zone.addItem(container);
         }
       }
@@ -339,8 +267,8 @@ public class MapLoader {
    * @return the constructed Region
    */
   private Region buildRegionFromModel(WorldModel.RegionData regionData) {
-    RTerrain terrain = (RTerrain) resourceProvider.getResource(regionData.text, "terrain");
-    RRegionTheme theme = (RRegionTheme) resourceProvider.getResource(regionData.random, "theme");
+    RTerrain terrain = (RTerrain) resourceManager.getResource(regionData.text, "terrain");
+    RRegionTheme theme = (RRegionTheme) resourceManager.getResource(regionData.random, "theme");
 
     Region region =
         new Region(
@@ -370,8 +298,9 @@ public class MapLoader {
    * @param doorUID the door entity UID
    * @return the constructed Door
    */
-  private Door buildDoorFromModel(WorldModel.DoorPlacement doorData, int mapUID, long doorUID) {
-    Door door = (Door) EntityFactory.getItem(doorData.id, doorData.x, doorData.y, doorUID);
+  private Door buildDoorFromModel(
+      WorldModel.DoorPlacement doorData, int mapUID, long doorUID, ItemFactory itemFactory) {
+    Door door = (Door) itemFactory.getItem(doorData.id, doorData.x, doorData.y, doorUID);
 
     // Lock
     if (doorData.lock != null) {
@@ -380,7 +309,7 @@ public class MapLoader {
 
     // Key
     if (doorData.key != null) {
-      RItem key = (RItem) resourceProvider.getResource(doorData.key);
+      RItem key = (RItem) resourceManager.getResource(doorData.key);
       door.lock.setKey(key);
     }
 
@@ -405,7 +334,7 @@ public class MapLoader {
     // Spell
     if (doorData.spell != null) {
       RSpell.Enchantment enchantment =
-          (RSpell.Enchantment) resourceProvider.getResource(doorData.spell, "magic");
+          (RSpell.Enchantment) resourceManager.getResource(doorData.spell, "magic");
       door.setMagicComponent(new Enchantment(enchantment, 0, door.getUID()));
     }
 
@@ -443,10 +372,13 @@ public class MapLoader {
    * @return the constructed Container
    */
   private Container buildContainerFromModel(
-      WorldModel.ContainerPlacement containerData, int mapUID, long containerUID) {
+      WorldModel.ContainerPlacement containerData,
+      int mapUID,
+      long containerUID,
+      ItemFactory itemFactory) {
     Container container =
         (Container)
-            EntityFactory.getItem(containerData.id, containerData.x, containerData.y, containerUID);
+            itemFactory.getItem(containerData.id, containerData.x, containerData.y, containerUID);
 
     // Lock
     if (containerData.lock != null) {
@@ -456,7 +388,7 @@ public class MapLoader {
 
     // Key
     if (containerData.key != null) {
-      RItem key = (RItem) resourceProvider.getResource(containerData.key);
+      RItem key = (RItem) resourceManager.getResource(containerData.key);
       container.lock.setKey(key);
     }
 
@@ -468,7 +400,7 @@ public class MapLoader {
     // Spell
     if (containerData.spell != null) {
       RSpell.Enchantment enchantment =
-          (RSpell.Enchantment) resourceProvider.getResource(containerData.spell, "magic");
+          (RSpell.Enchantment) resourceManager.getResource(containerData.spell, "magic");
       container.setMagicComponent(new Enchantment(enchantment, 0, container.getUID()));
     }
 
@@ -476,202 +408,18 @@ public class MapLoader {
     if (!containerData.contents.isEmpty()) {
       for (WorldModel.ContainerPlacement.ContainerItem contentData : containerData.contents) {
         long contentUID = UIDStore.getObjectUID(mapUID, contentData.uid);
-        entityStore.addEntity(EntityFactory.getItem(contentData.id, contentUID));
+        uidStore.addEntity(itemFactory.getItem(contentData.id, contentUID));
         container.addItem(contentUID);
       }
     } else {
       // Default items from resource definition
       for (String itemId : ((RItem.Container) container.resource).contents) {
-        Item item = EntityFactory.getItem(itemId, entityStore.createNewEntityUID());
-        entityStore.addEntity(item);
+        Item item = itemFactory.getItem(itemId, uidStore.createNewEntityUID());
+        uidStore.addEntity(item);
         container.addItem(item.getUID());
       }
     }
 
     return container;
-  }
-
-  private void loadZone(Element root, Map map, int l, int uid) {
-    for (Element region : root.getChild("regions").getChildren()) { // load regions
-      map.getZone(l).addRegion(loadRegion(region));
-    }
-    if (root.getChild("creatures") != null) { // load creatures
-      for (Element c : root.getChild("creatures").getChildren()) {
-        String species = c.getAttributeValue("id");
-        int x = Integer.parseInt(c.getAttributeValue("x"));
-        int y = Integer.parseInt(c.getAttributeValue("y"));
-        long creatureUID = UIDStore.getObjectUID(uid, Integer.parseInt(c.getAttributeValue("uid")));
-        Creature creature = EntityFactory.getCreature(species, x, y, creatureUID);
-        entityStore.addEntity(creature);
-        map.getZone(l).addCreature(creature);
-      }
-    }
-    if (root.getChild("items") != null) { // load items
-      for (Element i : root.getChild("items").getChildren()) {
-        long itemUID = UIDStore.getObjectUID(uid, Integer.parseInt(i.getAttributeValue("uid")));
-        String id = i.getAttributeValue("id");
-        int x = Integer.parseInt(i.getAttributeValue("x"));
-        int y = Integer.parseInt(i.getAttributeValue("y"));
-        Item item = null;
-        if (i.getName().equals("container")) {
-          item = loadContainer(i, id, x, y, itemUID, uid); // because containers are complicated
-        } else if (i.getName().equals("door")) {
-          item = loadDoor(i, id, x, y, itemUID, uid); // because doors are complicated too
-        } else {
-          item = EntityFactory.getItem(id, x, y, itemUID);
-        }
-        map.getZone(l).addItem(item);
-        entityStore.addEntity(item);
-      }
-    }
-  }
-
-  /*
-   * this is going to get messy, with a whole if-then-else heap
-   */
-  private Door loadDoor(Element door, String id, int x, int y, long itemUID, int mapUID) {
-    Door d = (Door) EntityFactory.getItem(id, x, y, itemUID);
-
-    // lock difficulty
-    int lock = 0;
-    if (door.getAttribute("lock") != null) {
-      lock = Integer.parseInt(door.getAttributeValue("lock"));
-      d.lock.setLockDC(lock);
-    }
-    // key
-    if (door.getAttribute("key") != null) {
-      RItem key = (RItem) resourceProvider.getResource(door.getAttributeValue("key"));
-      d.lock.setKey(key);
-    }
-    // state of the door (open, closed or locked)
-    if (door.getAttributeValue("state").equals("locked")) {
-      if (lock > 0) {
-        d.lock.setState(Lock.LOCKED);
-      } else { // if there's no lock, change state to closed
-        d.lock.setState(Lock.CLOSED);
-      }
-    } else if (door.getAttributeValue("state").equals("closed")) {
-      d.lock.setState(Lock.CLOSED);
-    }
-
-    // trap
-    int trap = 0;
-    if (door.getAttribute("trap") != null) {
-      trap = Integer.parseInt(door.getAttributeValue("trap"));
-      d.trap.setTrapDC(trap);
-    }
-    // spell
-    if (door.getAttribute("spell") != null) {
-      String spell = door.getAttributeValue("spell");
-      RSpell.Enchantment enchantment =
-          (RSpell.Enchantment) resourceProvider.getResource(spell, "magic");
-      d.setMagicComponent(new Enchantment(enchantment, 0, d.getUID()));
-    }
-
-    // destination of the door
-    Element dest = door.getChild("dest");
-    Point destPos = null;
-    int destLevel = 0;
-    int destMapUID = 0;
-    String theme = null;
-    String sign = null;
-    if (door.getChild("dest") != null) {
-      int destX = -1;
-      int destY = -1;
-      if (dest.getAttribute("x") != null) {
-        destX = Integer.parseInt(dest.getAttributeValue("x"));
-      }
-      if (dest.getAttribute("y") != null) {
-        destY = Integer.parseInt(dest.getAttributeValue("y"));
-      }
-      if (destX > -1 && destY > -1) {
-        destPos = new Point(destX, destY);
-      }
-      if (dest.getAttributeValue("z") != null) {
-        destLevel = Integer.parseInt(dest.getAttributeValue("z"));
-      }
-      if (dest.getAttributeValue("map") != null) {
-        destMapUID = (mapUID & 0xFFFF0000) + Integer.parseInt(dest.getAttributeValue("map"));
-      }
-      theme = dest.getAttributeValue("theme");
-      sign = dest.getAttributeValue("sign");
-    }
-
-    if (dest != null) {
-      d.portal.setDestination(destPos, destLevel, destMapUID);
-    }
-    d.portal.setDestTheme(theme);
-    d.setSign(sign);
-    return d;
-  }
-
-  private Container loadContainer(
-      Element container, String id, int x, int y, long itemUID, int mapUID) {
-    Container cont = (Container) EntityFactory.getItem(id, x, y, itemUID);
-
-    // lock difficulty
-    if (container.getAttribute("lock") != null) {
-      int lock = Integer.parseInt(container.getAttributeValue("lock"));
-      cont.lock.setLockDC(lock);
-      cont.lock.setState(Lock.LOCKED);
-    }
-    // key
-    RItem key = null;
-    if (container.getAttribute("key") != null) {
-      key = (RItem) resourceProvider.getResource(container.getAttributeValue("key"));
-      cont.lock.setKey(key);
-    }
-
-    // trap
-    int trap = 0;
-    if (container.getAttribute("trap") != null) {
-      trap = Integer.parseInt(container.getAttributeValue("trap"));
-      cont.trap.setTrapDC(trap);
-    }
-    // spell
-    if (container.getAttribute("spell") != null) {
-      String spell = container.getAttributeValue("spell");
-      RSpell.Enchantment enchantment =
-          (RSpell.Enchantment) resourceProvider.getResource(spell, "magic");
-      cont.setMagicComponent(new Enchantment(enchantment, 0, cont.getUID()));
-    }
-
-    if (!container.getChildren("item").isEmpty()) { // if items in map file
-      for (Element e : container.getChildren("item")) {
-        long contentUID =
-            UIDStore.getObjectUID(mapUID, Integer.parseInt(e.getAttributeValue("uid")));
-        entityStore.addEntity(EntityFactory.getItem(e.getAttributeValue("id"), contentUID));
-        cont.addItem(contentUID);
-      }
-    } else { // otherwise default items
-      for (String s : ((RItem.Container) cont.resource).contents) {
-        Item i = EntityFactory.getItem(s, entityStore.createNewEntityUID());
-        entityStore.addEntity(i);
-        cont.addItem(i.getUID());
-      }
-    }
-
-    return cont;
-  }
-
-  private Region loadRegion(Element element) {
-    int x = Integer.parseInt(element.getAttributeValue("x"));
-    int y = Integer.parseInt(element.getAttributeValue("y"));
-    int w = Integer.parseInt(element.getAttributeValue("w"));
-    int h = Integer.parseInt(element.getAttributeValue("h"));
-    byte order = Byte.parseByte(element.getAttributeValue("l"));
-
-    String text = element.getAttributeValue("text");
-    RRegionTheme theme =
-        (RRegionTheme) resourceProvider.getResource(element.getAttributeValue("random"), "theme");
-
-    RTerrain rt = (RTerrain) resourceProvider.getResource(text, "terrain");
-    Region r = new Region(text, x, y, w, h, theme, order, rt);
-    r.setLabel(element.getAttributeValue("label"));
-    for (Element e : element.getChildren("script")) {
-      r.addScript(e.getAttributeValue("id"), false);
-    }
-
-    return r;
   }
 }

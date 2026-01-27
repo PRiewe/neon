@@ -19,6 +19,8 @@
 package neon.entities;
 
 import java.util.*;
+import lombok.Getter;
+import lombok.Setter;
 import neon.ai.AI;
 import neon.entities.components.*;
 import neon.entities.property.*;
@@ -35,17 +37,37 @@ public class Creature extends Entity {
   // components
   public final FactionComponent social;
   public final Stats stats;
-  public final RCreature species;
   public AI brain;
 
-  // miscellaneous
-  protected Gender gender;
-  protected String name;
+  @Getter @Setter public RCreature species;
+  @Getter @Setter private Gender gender;
 
+  /**
+   * -- GETTER --
+   *
+   * <p>-- SETTER -- Sets the name of this creature.
+   *
+   * @return this creature's name
+   * @param name the new name
+   */
+  @Setter @Getter protected String name;
+
+  /**
+   * -- GETTER --
+   *
+   * @return this creature's list of skills
+   */
   // lists
-  protected EnumMap<Skill, Float> skills;
+  @Getter protected EnumMap<Skill, Float> skills;
+
   protected ArrayList<Spell> spells; // active spells
-  protected Set<Condition> conditions;
+
+  /**
+   * -- GETTER --
+   *
+   * @return all conditions this creature has
+   */
+  @Getter protected Set<Condition> conditions;
 
   // character attributes
   private int date = 0; // time of death
@@ -132,13 +154,6 @@ public class Creature extends Entity {
   }
 
   /**
-   * @return all conditions this creature has
-   */
-  public Set<Condition> getConditions() {
-    return conditions;
-  }
-
-  /**
    * Checks whether this creature has a condition.
    *
    * @param c the condition to check
@@ -221,15 +236,6 @@ public class Creature extends Entity {
     skills.put(skill, Math.min(species.skills.get(skill), skills.get(skill) + value));
   }
 
-  /**
-   * Sets the name of this creature.
-   *
-   * @param name the new name
-   */
-  public void setName(String name) {
-    this.name = name;
-  }
-
   /*
    * all getters here
    *
@@ -250,22 +256,8 @@ public class Creature extends Entity {
   /**
    * @return this creature's name
    */
-  public String getName() {
-    return name;
-  }
-
-  /**
-   * @return this creature's name
-   */
   public String toString() {
     return name;
-  }
-
-  /**
-   * @return this creature's gender
-   */
-  public Gender getGender() {
-    return gender;
   }
 
   /**
@@ -278,13 +270,6 @@ public class Creature extends Entity {
     } else {
       return skills.get(skill).intValue();
     }
-  }
-
-  /**
-   * @return this creature's list of skills
-   */
-  public EnumMap<Skill, Float> getSkills() {
-    return skills;
   }
 
   public boolean hasDialog() {

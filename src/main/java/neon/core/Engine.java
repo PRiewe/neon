@@ -18,6 +18,7 @@
 
 package neon.core;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.EventObject;
 import javax.script.*;
@@ -29,7 +30,9 @@ import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.MagicHandler;
 import neon.entities.Player;
 import neon.entities.UIDStore;
-import neon.maps.Atlas;
+import neon.maps.AtlasPosition;
+import neon.maps.services.EnginePhysicsManager;
+import neon.maps.services.PhysicsManager;
 import neon.narrative.EventAdapter;
 import neon.narrative.QuestTracker;
 import neon.resources.ResourceManager;
@@ -61,13 +64,14 @@ public class Engine implements Runnable {
   private static org.graalvm.polyglot.Engine polyengine;
   private static FileSystem files; // virtual file system
   private static PhysicsSystem physics; // the physics engine
+  private static PhysicsManager physicsManager;
   private static QuestTracker quests;
   private static MBassador<EventObject> bus; // event bus
   private static ResourceManager resources;
 
-  private TaskQueue queue;
-  private Configuration config;
-
+  private static TaskQueue queue;
+  private final Configuration config;
+  private static GameStores gameStores;
   // set externally
   private static Game game;
 
@@ -97,25 +101,29 @@ public class Engine implements Runnable {
             .build();
 
     files = new FileSystem();
+    resources = new ResourceManager();
+    UIDStore uidStore = new UIDStore(files.getFullPath("uidstore"));
+    gameStores = new DefaultGameStores(resources, files, uidStore);
     physics = new PhysicsSystem();
+    physicsManager = new EnginePhysicsManager(physics);
     queue = new TaskQueue();
 
     // create a resourcemanager to keep track of all the resources
-    resources = new ResourceManager();
+
     // we use an IniBuilder to add all resources to the manager
     new IniBuilder("neon.ini.xml", files, queue).build(resources);
 
     // set up remaining engine components
-    quests = new QuestTracker();
+    quests = new QuestTracker(gameStores);
     config = new Configuration(resources);
 
     // Initialize the GameContext with all engine systems
-    context.setResources(resources);
+
     context.setQuestTracker(quests);
     context.setPhysicsEngine(physics);
     context.setScriptEngine(engine);
     context.setBus(bus);
-    context.setFileSystem(files);
+
     context.setQueue(queue);
     context.setEngine(this);
   }
@@ -124,13 +132,13 @@ public class Engine implements Runnable {
   public void run() {
     EventAdapter adapter = new EventAdapter(quests);
     bus.subscribe(queue);
-    bus.subscribe(new CombatHandler());
-    bus.subscribe(new DeathHandler());
-    bus.subscribe(new InventoryHandler());
+    bus.subscribe(new CombatHandler(gameStores));
+    bus.subscribe(new DeathHandler(gameStores.getResources()));
+    bus.subscribe(new InventoryHandler(gameStores.getStore()));
     bus.subscribe(adapter);
     bus.subscribe(quests);
-    bus.subscribe(new GameLoader(context, config));
-    bus.subscribe(new GameSaver(queue));
+    bus.subscribe(new GameLoader(context, gameStores, config));
+    bus.subscribe(new GameSaver(queue, gameStores));
   }
 
   /**
@@ -172,8 +180,8 @@ public class Engine implements Runnable {
    */
   @Deprecated
   public static Player getPlayer() {
-    if (game != null) {
-      return game.getPlayer();
+    if (gameStores != null) {
+      return gameStores.getStore().getPlayer();
     } else return null;
   }
 
@@ -195,6 +203,11 @@ public class Engine implements Runnable {
     return game.getTimer();
   }
 
+  @Deprecated
+  public static TaskQueue getTaskQueue() {
+    return queue;
+  }
+
   /**
    * @return the virtual filesystem of the engine
    */
@@ -212,6 +225,11 @@ public class Engine implements Runnable {
     return physics;
   }
 
+  @Deprecated
+  public static PhysicsManager getPhysicsManager() {
+    return physicsManager;
+  }
+
   /**
    * @return the script engine
    * @deprecated Use {@link GameContext#getScriptEngine()} instead
@@ -221,31 +239,9 @@ public class Engine implements Runnable {
     return engine;
   }
 
-  /**
-   * @return the entity store
-   * @deprecated Use {@link GameContext#getStore()} instead
-   */
   @Deprecated
-  public static UIDStore getStore() {
-    return game.getStore();
-  }
-
-  /**
-   * @return the resource manager
-   * @deprecated Use {@link GameContext#getResources()} instead
-   */
-  @Deprecated
-  public static ResourceManager getResources() {
-    return resources;
-  }
-
-  /**
-   * @return the atlas
-   * @deprecated Use {@link GameContext#getAtlas()} instead
-   */
-  @Deprecated
-  public static Atlas getAtlas() {
-    return game.getAtlas();
+  public static AtlasPosition getAtlasPosition() {
+    return game.getAtlasPosition();
   }
 
   public TaskQueue getQueue() {
@@ -262,14 +258,8 @@ public class Engine implements Runnable {
     return context;
   }
 
-  /**
-   * Returns the static GameContext instance. This is a transitional method to allow gradual
-   * migration from static accessors.
-   *
-   * @return the game context
-   */
-  public static GameContext getStaticContext() {
-    return context;
+  public GameStores getGameStores() {
+    return gameStores;
   }
 
   /** Starts a new game. */
@@ -279,10 +269,10 @@ public class Engine implements Runnable {
     context.setGame(game);
 
     // set up missing systems
-    bus.subscribe(new MagicHandler(queue, game));
+    bus.subscribe(new MagicHandler(queue, gameStores, context));
 
     // register player
-    Player player = game.getPlayer();
+    Player player = gameStores.getStore().getPlayer();
     engine.getBindings("js").putMember("journal", player.getJournal());
     engine.getBindings("js").putMember("player", player);
     engine.getBindings("js").putMember("PC", player);

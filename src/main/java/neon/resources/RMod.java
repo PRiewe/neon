@@ -35,8 +35,8 @@ public class RMod extends Resource {
   public ArrayList<String> ccItems = new ArrayList<String>();
   public ArrayList<String> ccRaces = new ArrayList<String>();
   public ArrayList<String> ccSpells = new ArrayList<String>();
-  private HashMap<String, String> info = new HashMap<String, String>();
-  private ArrayList<String[]> maps = new ArrayList<String[]>();
+  private final HashMap<String, String> info = new HashMap<String, String>();
+  private final ArrayList<String[]> maps = new ArrayList<String[]>();
 
   /** Jackson model for main.xml */
   @JacksonXmlRootElement

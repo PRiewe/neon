@@ -15,7 +15,7 @@ import neon.resources.RRegionTheme;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
 import neon.util.Dice;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -106,23 +106,23 @@ class WildernessGeneratorIntegrationTest {
 
   // ==================== Helper Methods ====================
 
-  private WildernessGenerator createGeneratorForTerrainOnly(
+  private WildernessTerrainGenerator createGeneratorForTerrainOnly(
       WildernessScenario scenario, int width, int height) {
     String[][] terrain = new String[height + 2][width + 2];
     MapUtils mapUtils = MapUtils.withSeed(scenario.seed());
     Dice dice = Dice.withSeed(scenario.seed());
-    return new WildernessGenerator(terrain, null, null, mapUtils, dice);
+    return new WildernessTerrainGenerator(mapUtils, dice);
   }
 
   // ==================== LAYER 1: Lightweight Terrain Generation Tests ====================
 
   @ParameterizedTest(name = "generateTerrain with XML theme: {0}")
   @MethodSource("wildernessThemeProvider")
-  void generateTerrain_withXmlTheme_generatesValidTerrain(WildernessScenario scenario) {
+  void generateTerrainOnlyTerrain_withXmlTheme_generatesValidTerrain(WildernessScenario scenario) {
     // Given
     int width = 50;
     int height = 50;
-    WildernessGenerator generator = createGeneratorForTerrainOnly(scenario, width, height);
+    var generator = createGeneratorForTerrainOnly(scenario, width, height);
 
     // When - Note: WildernessGenerator doesn't have a public generateTerrain() method
     // We'll test through the generate() method in the full context tests
@@ -134,7 +134,7 @@ class WildernessGeneratorIntegrationTest {
 
   @ParameterizedTest(name = "determinism test for theme: {0}")
   @MethodSource("wildernessThemeProviderSingleSeed")
-  void generateTerrain_isDeterministic(WildernessScenario scenario) {
+  void generateTerrainOnlyTerrain_isDeterministic(WildernessScenario scenario) {
     // Given
     int width = 30;
     int height = 30;
@@ -142,8 +142,8 @@ class WildernessGeneratorIntegrationTest {
     // When: generate twice with same seed
     // Note: Since generateTerrain is private, we can't test it directly
     // Determinism will be tested in the full context tests
-    WildernessGenerator generator1 = createGeneratorForTerrainOnly(scenario, width, height);
-    WildernessGenerator generator2 = createGeneratorForTerrainOnly(scenario, width, height);
+    var generator1 = createGeneratorForTerrainOnly(scenario, width, height);
+    var generator2 = createGeneratorForTerrainOnly(scenario, width, height);
 
     // Then: verify both generators created successfully
     assertNotNull(generator1, "First generator should be created");
@@ -154,7 +154,7 @@ class WildernessGeneratorIntegrationTest {
 
   @Nested
   class GenerateWithFullContextTests {
-    private MVStore testDb;
+    private MapStore testDb;
     private Atlas testAtlas;
     private EntityStore entityStore;
 
@@ -164,7 +164,7 @@ class WildernessGeneratorIntegrationTest {
       TestEngineContext.initialize(testDb);
       TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
       testAtlas = TestEngineContext.getTestAtlas();
-      entityStore = TestEngineContext.getTestEntityStore();
+      entityStore = TestEngineContext.getTestStore();
     }
 
     @AfterEach
@@ -182,17 +182,11 @@ class WildernessGeneratorIntegrationTest {
       // Use grass as default floor when theme doesn't specify one
       String floor = scenario.theme().floor != null ? scenario.theme().floor : "grass";
       Region region = new Region(floor, 0, 0, 50, 50, null, 0, null);
-
-      WildernessGenerator generator =
-          new WildernessGenerator(
-              zone,
-              entityStore,
-              TestEngineContext.getTestResourceProvider(),
-              MapUtils.withSeed(scenario.seed()),
-              Dice.withSeed(scenario.seed()));
-
+      WildernessTerrainGenerator geberat =
+          new WildernessTerrainGenerator(
+              MapUtils.withSeed(scenario.seed()), Dice.withSeed(scenario.seed()));
       // When
-      generator.generate(region, scenario.theme());
+      geberat.generateTerrainOnly(region.getBounds(), scenario.theme(), region.getTextureType());
 
       // Then
       assertNotNull(zone, "Zone should exist");
@@ -218,17 +212,12 @@ class WildernessGeneratorIntegrationTest {
       // Use grass as default floor when theme doesn't specify one
       String floor = scenario.theme().floor != null ? scenario.theme().floor : "grass";
       Region region = new Region(floor, 0, 0, 100, 100, null, 0, null);
-
-      WildernessGenerator generator =
-          new WildernessGenerator(
-              zone,
-              entityStore,
-              TestEngineContext.getTestResourceProvider(),
-              MapUtils.withSeed(scenario.seed()),
-              Dice.withSeed(scenario.seed()));
+      var generator =
+          new WildernessTerrainGenerator(
+              MapUtils.withSeed(scenario.seed()), Dice.withSeed(scenario.seed()));
 
       // When
-      generator.generate(region, scenario.theme());
+      generator.generateTerrainOnly(region.getBounds(), scenario.theme(), region.getTextureType());
 
       // Then
       // Note: Actual creature spawning depends on dice rolls and may be 0
@@ -255,16 +244,12 @@ class WildernessGeneratorIntegrationTest {
       String floor = scenario.theme().floor != null ? scenario.theme().floor : "grass";
       Region region = new Region(floor, 0, 0, 80, 80, null, 0, null);
 
-      WildernessGenerator generator =
-          new WildernessGenerator(
-              zone,
-              entityStore,
-              TestEngineContext.getTestResourceProvider(),
-              MapUtils.withSeed(scenario.seed()),
-              Dice.withSeed(scenario.seed()));
+      var generator =
+          new WildernessTerrainGenerator(
+              MapUtils.withSeed(scenario.seed()), Dice.withSeed(scenario.seed()));
 
       // When
-      generator.generate(region, scenario.theme());
+      generator.generateTerrainOnly(region.getBounds(), scenario.theme(), region.getTextureType());
 
       // Then
       assertNotNull(zone, "Zone should exist");
@@ -281,31 +266,25 @@ class WildernessGeneratorIntegrationTest {
       String floor = scenario.theme().floor != null ? scenario.theme().floor : "grass";
       Region region1 = new Region(floor, 0, 0, 40, 40, null, 0, null);
 
-      WildernessGenerator generator1 =
-          new WildernessGenerator(
-              zone1,
-              entityStore,
-              TestEngineContext.getTestResourceProvider(),
-              MapUtils.withSeed(scenario.seed()),
-              Dice.withSeed(scenario.seed()));
+      var generator =
+          new WildernessTerrainGenerator(
+              MapUtils.withSeed(scenario.seed()), Dice.withSeed(scenario.seed()));
 
-      // When - Generate first
-      generator1.generate(region1, scenario.theme());
+      // When
+      generator.generateTerrainOnly(
+          region1.getBounds(), scenario.theme(), region1.getTextureType());
 
       // Given - Second generation with same seed
       Zone zone2 = TestEngineContext.getTestZoneFactory().createZone("wilderness_det_test2", 5, 0);
       Region region2 = new Region(floor, 0, 0, 40, 40, null, 0, null);
 
-      WildernessGenerator generator2 =
-          new WildernessGenerator(
-              zone2,
-              entityStore,
-              TestEngineContext.getTestResourceProvider(),
-              MapUtils.withSeed(scenario.seed()),
-              Dice.withSeed(scenario.seed()));
+      WildernessTerrainGenerator generator2 =
+          new WildernessTerrainGenerator(
+              MapUtils.withSeed(scenario.seed()), Dice.withSeed(scenario.seed()));
 
       // When - Generate second
-      generator2.generate(region2, scenario.theme());
+      generator2.generateTerrainOnly(
+          region2.getBounds(), scenario.theme(), region2.getTextureType());
 
       // Then - Both zones should exist
       assertNotNull(zone1, "First zone should exist");

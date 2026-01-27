@@ -25,27 +25,31 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.*;
 import javax.swing.border.*;
-import neon.core.GameContext;
+import neon.core.GameStores;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.Creature;
-import neon.entities.EntityFactory;
 import neon.entities.Item;
+import neon.entities.ItemFactory;
 import neon.entities.Player;
 import neon.resources.RRecipe;
 import neon.ui.UserInterface;
 
 public class PotionDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<RRecipe> potions;
-  private String coin;
-  private UserInterface ui;
-  private final GameContext context;
+  private final JList<RRecipe> potions;
+  private final String coin;
+  private final UserInterface ui;
+  private final GameStores gameStores;
+  private final ItemFactory itemFactory;
+  private final InventoryHandler inventoryHandler;
 
-  public PotionDialog(UserInterface ui, String coin, GameContext context) {
+  public PotionDialog(UserInterface ui, String coin, GameStores gameStores) {
     this.ui = ui;
     this.coin = coin;
-    this.context = context;
+    this.gameStores = gameStores;
+    inventoryHandler = new InventoryHandler(gameStores.getStore());
+    itemFactory = new ItemFactory(gameStores.getResources());
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -112,11 +116,11 @@ public class PotionDialog implements KeyListener {
           if (player.getInventoryComponent().getMoney() >= potion.cost) {
             for (String item : potion.ingredients) {
               long uid = removeItem(player, item);
-              context.getStore().removeEntity(uid);
+              gameStores.getStore().removeEntity(uid);
             }
             Item item =
-                EntityFactory.getItem(potion.toString(), context.getStore().createNewEntityUID());
-            context.getStore().addEntity(item);
+                itemFactory.getItem(potion.toString(), gameStores.getStore().createNewEntityUID());
+            gameStores.getStore().addEntity(item);
             player.getInventoryComponent().addItem(item.getUID());
             player.getInventoryComponent().addMoney(-potion.cost);
             initPotions();
@@ -133,7 +137,7 @@ public class PotionDialog implements KeyListener {
 
   private void initPotions() {
     DefaultListModel<RRecipe> model = new DefaultListModel<RRecipe>();
-    for (RRecipe recipe : context.getResources().getResources(RRecipe.class)) {
+    for (RRecipe recipe : gameStores.getResources().getResources(RRecipe.class)) {
       boolean ok = true;
       for (String item : recipe.ingredients) {
         if (!hasItem(player, item)) {
@@ -149,7 +153,7 @@ public class PotionDialog implements KeyListener {
   }
 
   private class PotionCellRenderer implements ListCellRenderer<RRecipe> {
-    private UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    private final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
     /**
      * Returns this renderer with the right properties (color, font, background color).
@@ -186,7 +190,7 @@ public class PotionDialog implements KeyListener {
 
   private boolean hasItem(Creature creature, String item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (context.getStore().getEntity(uid).getID().equals(item)) {
+      if (gameStores.getStore().getEntity(uid).getID().equals(item)) {
         return true;
       }
     }
@@ -195,9 +199,9 @@ public class PotionDialog implements KeyListener {
 
   private long removeItem(Creature creature, String id) {
     for (long uid : creature.getInventoryComponent()) {
-      Item item = (Item) context.getStore().getEntity(uid);
+      Item item = (Item) gameStores.getStore().getEntity(uid);
       if (item.getID().equals(id)) {
-        InventoryHandler.removeItem(creature, uid);
+        inventoryHandler.removeItem(creature, uid);
         return uid;
       }
     }

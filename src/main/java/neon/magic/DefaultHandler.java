@@ -64,7 +64,7 @@ public class DefaultHandler implements EffectHandler {
       case CHARM:
         target.brain.charm((Creature) spell.getCaster(), (int) spell.getMagnitude());
         break;
-        //		case SCRIPTED: neon.core.Engine.execute(spell.getScript()); break;
+      //		case SCRIPTED: neon.core.Engine.execute(spell.getScript()); break;
       default:
         System.out.println("not implemented: " + spell.getEffect());
         break;

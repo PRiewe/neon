@@ -41,12 +41,14 @@ import neon.resources.*;
 import neon.resources.quest.RQuest;
 
 public class ResourceTreeListener implements MouseListener {
-  private JTree tree;
-  private JFrame frame;
+  private final JTree tree;
+  private final JFrame frame;
+  private final DataStore dataStore;
 
-  public ResourceTreeListener(JTree resourceTree, JFrame parent) {
+  public ResourceTreeListener(JTree resourceTree, JFrame parent, DataStore dataStore) {
     tree = resourceTree;
     frame = parent;
+    this.dataStore = dataStore;
   }
 
   protected JTree getTree() {
@@ -56,52 +58,52 @@ public class ResourceTreeListener implements MouseListener {
   protected void launchEditor(ResourceNode node) {
     switch (node.getType()) {
       case CRAFT:
-        new CraftingEditor(frame, (RCraft) node.getResource()).show();
+        new CraftingEditor(frame, (RCraft) node.getResource(), dataStore).show();
         break;
       case FACTION:
-        new FactionEditor(frame, (RFaction) node.getResource()).show();
+        new FactionEditor(frame, (RFaction) node.getResource(), dataStore).show();
         break;
       case DUNGEON:
-        new DungeonThemeEditor(frame, (RDungeonTheme) node.getResource()).show();
+        new DungeonThemeEditor(frame, (RDungeonTheme) node.getResource(), dataStore).show();
         break;
       case ZONE:
-        new ZoneThemeEditor(frame, (RZoneTheme) node.getResource()).show();
+        new ZoneThemeEditor(frame, (RZoneTheme) node.getResource(), dataStore).show();
         break;
       case REGION:
-        new RegionThemeEditor(frame, (RRegionTheme) node.getResource()).show();
+        new RegionThemeEditor(frame, (RRegionTheme) node.getResource(), dataStore).show();
         break;
       case QUEST:
-        new QuestEditor(frame, (RQuest) node.getResource()).show();
+        new QuestEditor(frame, (RQuest) node.getResource(), dataStore).show();
         break;
       case CURSE:
-        new AfflictionEditor(frame, (RSpell) node.getResource()).show();
+        new AfflictionEditor(frame, (RSpell) node.getResource(), dataStore).show();
         break;
       case DISEASE:
-        new AfflictionEditor(frame, (RSpell) node.getResource()).show();
+        new AfflictionEditor(frame, (RSpell) node.getResource(), dataStore).show();
         break;
       case ENCHANTMENT:
-        new EnchantmentEditor(frame, (RSpell.Enchantment) node.getResource()).show();
+        new EnchantmentEditor(frame, (RSpell.Enchantment) node.getResource(), dataStore).show();
         break;
       case LEVEL_SPELL:
-        new LevelSpellEditor(frame, (LSpell) node.getResource()).show();
+        new LevelSpellEditor(frame, (LSpell) node.getResource(), dataStore).show();
         break;
       case POISON:
-        new PoisonEditor(frame, (RSpell) node.getResource()).show();
+        new PoisonEditor(frame, (RSpell) node.getResource(), dataStore).show();
         break;
       case POWER:
-        new PowerEditor(frame, (RSpell.Power) node.getResource()).show();
+        new PowerEditor(frame, (RSpell.Power) node.getResource(), dataStore).show();
         break;
       case SIGN:
-        new SignEditor(frame, (RSign) node.getResource()).show();
+        new SignEditor(frame, (RSign) node.getResource(), dataStore).show();
         break;
       case RECIPE:
-        new AlchemyEditor(frame, (RRecipe) node.getResource()).show();
+        new AlchemyEditor(frame, (RRecipe) node.getResource(), dataStore).show();
         break;
       case TATTOO:
-        new TattooEditor(frame, (RTattoo) node.getResource()).show();
+        new TattooEditor(frame, (RTattoo) node.getResource(), dataStore).show();
         break;
       default:
-        new SpellEditor(frame, (RSpell) node.getResource()).show();
+        new SpellEditor(frame, (RSpell) node.getResource(), dataStore).show();
         break;
     }
   }
@@ -129,16 +131,16 @@ public class ResourceTreeListener implements MouseListener {
       tree.setSelectionRow(tree.getRowForLocation(e.getX(), e.getY()));
       ResourceNode node = (ResourceNode) tree.getLastSelectedPathComponent();
       if (tree.getSelectionPath() != null && node.getLevel() == 2) {
-        menu.add(new ResourceAction("Delete resource", node.getType(), this));
-        menu.add(new ResourceAction("Edit resource", node.getType(), this));
+        menu.add(new ResourceAction("Delete resource", node.getType(), this, dataStore));
+        menu.add(new ResourceAction("Edit resource", node.getType(), this, dataStore));
         menu.add(
             new ResourceAction(
-                "New " + node.getType().toString().toLowerCase(), node.getType(), this));
+                "New " + node.getType().toString().toLowerCase(), node.getType(), this, dataStore));
         menu.show(e.getComponent(), e.getX(), e.getY());
       } else if (tree.getSelectionPath() != null && node.getLevel() == 1) {
         menu.add(
             new ResourceAction(
-                "New " + node.getType().toString().toLowerCase(), node.getType(), this));
+                "New " + node.getType().toString().toLowerCase(), node.getType(), this, dataStore));
         menu.show(e.getComponent(), e.getX(), e.getY());
       }
     }
