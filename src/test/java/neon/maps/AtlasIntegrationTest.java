@@ -93,7 +93,7 @@ class AtlasIntegrationTest {
     Collection<Region> zone1Regions = zone1.getRegions();
     Collection<Region> zone2Regions = zone2.getRegions();
 
-    assertFalse(zone1Regions.equals(zone2Regions));
+    assertNotEquals(zone1Regions, zone2Regions);
   }
 
   @Test

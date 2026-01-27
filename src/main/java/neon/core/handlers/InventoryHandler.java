@@ -138,7 +138,7 @@ public class InventoryHandler {
           break;
       }
       if (c.getMagicComponent().getSpell() != null) {
-        MagicUtils.equip(creature, (Clothing) item);
+        MagicUtils.equip(creature, c);
       }
     } else if (item instanceof Weapon) {
       Weapon weapon = (Weapon) Engine.getStore().getEntity((inventory.get(Slot.WEAPON)));
@@ -196,7 +196,7 @@ public class InventoryHandler {
         inventory.remove(c.getSlot());
       }
       if (c.getMagicComponent().getSpell() != null) {
-        MagicUtils.unequip(creature, (Clothing) item);
+        MagicUtils.unequip(creature, c);
       }
     } else if (item instanceof Weapon) {
       if (((Weapon) item).getWeaponType() == WeaponType.THROWN

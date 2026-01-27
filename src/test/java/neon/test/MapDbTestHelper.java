@@ -14,22 +14,7 @@ import org.h2.mvstore.MVStore;
 public class MapDbTestHelper {
 
   /** Represents a test database with its associated file path (if file-backed). */
-  public static class TestDatabase {
-    private final MVStore db;
-    private final Path filePath;
-
-    public TestDatabase(MVStore db, Path filePath) {
-      this.db = db;
-      this.filePath = filePath;
-    }
-
-    public MVStore getDb() {
-      return db;
-    }
-
-    public Path getFilePath() {
-      return filePath;
-    }
+  public record TestDatabase(MVStore db, Path filePath) {
 
     public boolean isFileBacked() {
       return filePath != null;
