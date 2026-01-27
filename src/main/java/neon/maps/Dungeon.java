@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collection;
+import lombok.Getter;
+import lombok.Setter;
 import neon.resources.RZoneTheme;
 import neon.util.Graph;
 
@@ -31,7 +33,7 @@ import neon.util.Graph;
  * @author mdriesen
  */
 public class Dungeon implements Map {
-  private String name;
+  @Getter @Setter private String name;
   private int uid;
   private Graph<Zone> zones = new Graph<Zone>();
 
@@ -54,14 +56,6 @@ public class Dungeon implements Map {
 
   public int getUID() {
     return uid;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   /** Adds an empty zone to this dungeon. */
