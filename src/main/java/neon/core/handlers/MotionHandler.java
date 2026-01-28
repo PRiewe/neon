@@ -51,7 +51,6 @@ public class MotionHandler {
 
   public MotionHandler(GameContext gameContext) {
     this.gameContext = gameContext;
-
   }
 
   /**

@@ -1,5 +1,6 @@
 package neon.test;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import lombok.Getter;
@@ -96,7 +97,7 @@ public class TestEngineContext {
     testQuestTracker = new QuestTracker(gameStore, gameServices);
     TaskQueue taskQueue = new TaskQueue(gameServices.scriptEngine());
     testZoneActivator = new ZoneActivator(physicsSystem, gameStore);
-    testUiEngineContext = new DefaultUIEngineContext(gameStore,testQuestTracker, taskQueue);
+    testUiEngineContext = new DefaultUIEngineContext(gameStore, testQuestTracker, taskQueue);
     testUiEngineContext.setGameServices(gameServices);
     // Create ZoneFactory for tests
     testZoneFactory = testUiEngineContext.getZoneFactory();
@@ -104,10 +105,17 @@ public class TestEngineContext {
     MapLoader testMapLoader = new MapLoader(testUiEngineContext);
     // Create test Atlas with dependency injection (doesn't need Engine.game)
     testAtlas =
-            new Atlas(
-                    gameStore, db, testQuestTracker, testZoneActivator, testMapLoader, testUiEngineContext);
+        new Atlas(
+            gameStore,
+            testDb,
+            testQuestTracker,
+            testZoneActivator,
+            testZoneFactory,
+            testMapLoader,
+            testUiEngineContext);
     testGame = new Game(gameStore, testUiEngineContext, testAtlas);
     testUiEngineContext.setGame(testGame);
+    gameStore.getUidStore().initialize(testUiEngineContext);
     setStaticField(Engine.class, "resources", testResources);
     setStaticField(Engine.class, "game", testGame);
     setStaticField(Engine.class, "gameEngineState", testUiEngineContext);
@@ -126,7 +134,8 @@ public class TestEngineContext {
   public static void reset() {
     try {
       if (testStore != null) {
-        testStore.close();
+        gameStore.close();
+        new File(gameStore.getUidStoreFileName()).delete();
       }
       if (testAtlas != null) {
         testAtlas.close();
@@ -136,6 +145,7 @@ public class TestEngineContext {
       }
       if (testZoneFactory != null) {
         testZoneFactory.close();
+        new File(testUiEngineContext.getZoneMapStoreFileName()).delete();
       }
       gameStore.close();
       setStaticField(Engine.class, "resources", null);

@@ -23,6 +23,7 @@ import org.jdom2.input.SAXBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -33,6 +34,7 @@ import org.junit.jupiter.params.provider.MethodSource;
  * loaded from the sampleMod1 test resources. This provides coverage for all theme types and
  * configurations defined in the XML files.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DungeonGeneratorXmlIntegrationTest {
 
   // ==================== Configuration ====================
@@ -61,8 +63,8 @@ class DungeonGeneratorXmlIntegrationTest {
 
   @AfterEach
   void tearDown() {
-    TestEngineContext.reset();
     MapDbTestHelper.cleanup(testDb);
+    TestEngineContext.reset();
   }
 
   @BeforeAll

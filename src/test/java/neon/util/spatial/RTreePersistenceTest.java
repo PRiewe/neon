@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import neon.maps.mvstore.MVUtils;
@@ -27,8 +28,8 @@ class RTreePersistenceTest {
   private MapStore testDb;
 
   @BeforeEach
-  void setUp() {
-    testDb = MapDbTestHelper.createInMemoryDB();
+  void setUp() throws IOException {
+    testDb = MapDbTestHelper.createTempFileDb();
   }
 
   @AfterEach
@@ -77,7 +78,7 @@ class RTreePersistenceTest {
     RTree<TestItem> tree2 =
         new RTree<>(10, 2, testDb, "persistent-tree", TestItemDatatype.INSTANCE);
 
-    assertEquals(20, tree2.size());
+    assertEquals(tree1.size(), tree2.size());
 
     // Verify spatial queries work on reconstructed tree
     ArrayList<TestItem> found = tree2.getElements(new Rectangle(0, 0, 50, 50));

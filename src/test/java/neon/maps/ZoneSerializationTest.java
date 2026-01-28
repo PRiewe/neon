@@ -29,7 +29,7 @@ class ZoneSerializationTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    testDb = MapDbTestHelper.createInMemoryDB();
+    testDb = MapDbTestHelper.createTempFileDb();
 
     TestEngineContext.initialize(testDb);
     mapTestFixtures =

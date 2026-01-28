@@ -19,7 +19,6 @@
 package neon.maps;
 
 import java.awt.Point;
-import lombok.Setter;
 import neon.core.*;
 import neon.entities.*;
 import neon.entities.components.Enchantment;
@@ -64,7 +63,6 @@ public class MapLoader {
     this.mapUtils = mapUtils;
     this.gameContext = gameContext;
     this.entityFactory = new EntityFactory(gameContext);
-
   }
 
   /**
@@ -97,7 +95,8 @@ public class MapLoader {
   }
 
   private World loadWorld(Element root, int uid) {
-    World world = new World(root.getChild("header").getChildText("name"), uid, gameContext.getZoneFactory());
+    World world =
+        new World(root.getChild("header").getChildText("name"), uid, gameContext.getZoneFactory());
 
     loadZone(root, world, 0, uid); // outdoor has only 1 zone, namely 0
     return world;
@@ -109,7 +108,9 @@ public class MapLoader {
       return loadThemedDungeon(name, root.getChild("header").getAttributeValue("theme"), uid);
     }
 
-    Dungeon map = new Dungeon(root.getChild("header").getChildText("name"), uid, gameContext.getZoneFactory());
+    Dungeon map =
+        new Dungeon(
+            root.getChild("header").getChildText("name"), uid, gameContext.getZoneFactory());
 
     for (Element l : root.getChildren("level")) {
       int level = Integer.parseInt(l.getAttributeValue("l"));
