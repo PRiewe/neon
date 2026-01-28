@@ -2,7 +2,6 @@ package neon.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import lombok.Getter;
 import neon.core.*;
 import neon.core.event.TaskQueue;
@@ -116,14 +115,6 @@ public class TestEngineContext {
     testGame = new Game(gameStore, testUiEngineContext, testAtlas);
     testUiEngineContext.setGame(testGame);
     gameStore.getUidStore().initialize(testUiEngineContext);
-    setStaticField(Engine.class, "resources", testResources);
-    setStaticField(Engine.class, "game", testGame);
-    setStaticField(Engine.class, "gameEngineState", testUiEngineContext);
-    // Create stub FileSystem
-    setStaticField(Engine.class, "files", new StubFileSystem());
-
-    // Create stub PhysicsSystem
-    setStaticField(Engine.class, "physics", physicsSystem);
   }
 
   /**
@@ -148,11 +139,6 @@ public class TestEngineContext {
         new File(testUiEngineContext.getZoneMapStoreFileName()).delete();
       }
       gameStore.close();
-      setStaticField(Engine.class, "resources", null);
-      setStaticField(Engine.class, "game", null);
-      setStaticField(Engine.class, "files", null);
-      setStaticField(Engine.class, "physics", null);
-      setStaticField(Engine.class, "gameEngineState", null);
       testResources = null;
       testGame = null;
       testStore = null;
@@ -177,14 +163,6 @@ public class TestEngineContext {
         new IniBuilder(
             configFilename, getStubFileSystem(), new TaskQueue(Engine.createScriptEngine()));
     iniBuilder.build(getTestResources());
-  }
-
-  /** Sets a static field using reflection. */
-  private static void setStaticField(Class<?> clazz, String fieldName, Object value)
-      throws Exception {
-    Field field = clazz.getDeclaredField(fieldName);
-    field.setAccessible(true);
-    field.set(null, value);
   }
 
   public static EntityStore getTestEntityStore() {
