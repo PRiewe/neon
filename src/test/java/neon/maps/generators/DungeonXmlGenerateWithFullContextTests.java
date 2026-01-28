@@ -3,17 +3,27 @@ package neon.maps.generators;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
 import neon.entities.Door;
 import neon.entities.Entity;
 import neon.maps.*;
 import neon.maps.services.EntityStore;
 import neon.maps.services.QuestProvider;
+import neon.resources.RDungeonTheme;
+import neon.resources.RZoneTheme;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
 import neon.util.Dice;
 import neon.util.mapstorage.MapStore;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -21,7 +31,12 @@ import org.junit.jupiter.params.provider.MethodSource;
  * test class for integration tests that require full Engine context. These tests verify the
  * generate(Door, Zone, Atlas) method which creates actual entities.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DungeonXmlGenerateWithFullContextTests {
+  // ==================== Static Theme Data ====================
+  private static java.util.Map<String, RDungeonTheme> dungeonThemes;
+  private static Map<String, RZoneTheme> zoneThemes;
+  private static final String THEMES_PATH = "src/test/resources/sampleMod1/themes/";
 
   private MapStore testDb;
   private Atlas testAtlas;
@@ -32,8 +47,6 @@ class DungeonXmlGenerateWithFullContextTests {
   @BeforeEach
   void setUp() throws Exception {
     // Clean up any stale test files
-    new File("test-store.dat").delete();
-    new File("testfile3.dat").delete();
 
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
@@ -51,9 +64,83 @@ class DungeonXmlGenerateWithFullContextTests {
 
   @AfterEach
   void tearDown() {
+    MapDbTestHelper.cleanup(testDb);
     TestEngineContext.reset();
-    new File("test-store.dat").delete();
-    new File("testfile3.dat").delete();
+  }
+
+  @BeforeAll
+  static void loadThemes() throws Exception {
+    dungeonThemes = loadDungeonThemes();
+    zoneThemes = loadZoneThemes();
+  }
+
+  private static Map<String, RDungeonTheme> loadDungeonThemes() throws Exception {
+    Map<String, RDungeonTheme> themes = new HashMap<>();
+    SAXBuilder builder = new SAXBuilder();
+    Document doc = builder.build(new File(THEMES_PATH + "dungeons.xml"));
+    for (Element element : doc.getRootElement().getChildren("dungeon")) {
+      RDungeonTheme theme = new RDungeonTheme(element);
+      themes.put(theme.id, theme);
+    }
+    return themes;
+  }
+
+  private static Map<String, RZoneTheme> loadZoneThemes() throws Exception {
+    Map<String, RZoneTheme> themes = new HashMap<>();
+    SAXBuilder builder = new SAXBuilder();
+    Document doc = builder.build(new File(THEMES_PATH + "zones.xml"));
+    for (Element element : doc.getRootElement().getChildren("zone")) {
+      RZoneTheme theme = new RZoneTheme(element);
+      themes.put(theme.id, theme);
+    }
+    return themes;
+  }
+
+  // ==================== Scenario Records ====================
+
+  /**
+   * Test scenario for zone theme generation from XML.
+   *
+   * @param zoneId the zone theme ID
+   * @param theme the loaded RZoneTheme
+   * @param seed deterministic seed for generation
+   */
+  record ZoneThemeScenario(String zoneId, RZoneTheme theme, long seed) {
+    @Override
+    public String toString() {
+      return String.format("zone=%s, type=%s", zoneId, theme.type);
+    }
+  }
+
+  // ==================== Scenario Providers ====================
+
+  static Stream<ZoneThemeScenario> zoneThemeScenarios() {
+    return zoneThemes.entrySet().stream()
+        .map(
+            entry ->
+                new ZoneThemeScenario(
+                    entry.getKey(),
+                    entry.getValue(),
+                    Math.abs(entry.getKey().hashCode()) + 1L // deterministic seed per zone
+                    ));
+  }
+
+  static Stream<ZoneThemeScenario> zoneThemeScenariosWithEntities() {
+    // Filter to themes with enough entities to reliably place (sum of counts >= 15)
+    // Lower thresholds can still fail due to random dice rolls (1dN for each entity type)
+    return zoneThemes.entrySet().stream()
+        .filter(
+            entry -> {
+              int creatureSum =
+                  entry.getValue().creatures.values().stream().mapToInt(Integer::intValue).sum();
+              int itemSum =
+                  entry.getValue().items.values().stream().mapToInt(Integer::intValue).sum();
+              return creatureSum >= 15 || itemSum >= 15;
+            })
+        .map(
+            entry ->
+                new ZoneThemeScenario(
+                    entry.getKey(), entry.getValue(), Math.abs(entry.getKey().hashCode()) + 1L));
   }
 
   /** QuestProvider that returns no quest objects. */
@@ -67,9 +154,9 @@ class DungeonXmlGenerateWithFullContextTests {
   // ==================== Tests Using generate() ====================
 
   @ParameterizedTest(name = "generate() with XML theme: {0}")
-  @MethodSource("neon.maps.generators.DungeonGeneratorXmlIntegrationTest#zoneThemeScenarios")
-  void generate_withXmlZoneTheme_createsZoneWithRegions(
-      DungeonGeneratorXmlIntegrationTest.ZoneThemeScenario scenario) throws Exception {
+  @MethodSource("zoneThemeScenarios")
+  void generate_withXmlZoneTheme_createsZoneWithRegions(ZoneThemeScenario scenario)
+      throws Exception {
     // Given: Set up dungeon structure
     int mapUID = entityStore.createNewMapUID();
     Dungeon dungeon = new Dungeon("test-dungeon-" + scenario.zoneId(), mapUID, zoneFactory);
@@ -106,9 +193,8 @@ class DungeonXmlGenerateWithFullContextTests {
   }
 
   @ParameterizedTest(name = "generate() door linking: {0}")
-  @MethodSource("neon.maps.generators.DungeonGeneratorXmlIntegrationTest#zoneThemeScenarios")
-  void generate_withXmlZoneTheme_linksDoorsCorrectly(
-      DungeonGeneratorXmlIntegrationTest.ZoneThemeScenario scenario) throws Exception {
+  @MethodSource("zoneThemeScenarios")
+  void generate_withXmlZoneTheme_linksDoorsCorrectly(ZoneThemeScenario scenario) throws Exception {
     // Given
     int mapUID = entityStore.createNewMapUID();
     Dungeon dungeon = new Dungeon("test-dungeon-" + scenario.zoneId(), mapUID, zoneFactory);

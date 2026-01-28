@@ -147,6 +147,7 @@ public class GameLoader {
               atlasMapStore,
               gameContext.getQuestTracker(),
               new ZoneActivator(gameContext.getPhysicsEngine(), gameContext),
+              gameContext.getZoneFactory(),
               new MapLoader(new MapUtils(), gameContext),
               gameContext);
       engine.startGame(new Game(gameStore, gameContext, atlas));
@@ -319,6 +320,7 @@ public class GameLoader {
             atlasMapStore,
             gameContext.getQuestTracker(),
             new ZoneActivator(gameContext.getPhysicsEngine(), gameContext),
+            gameContext.getZoneFactory(),
             new MapLoader(new MapUtils(), gameContext),
             gameContext);
     engine.startGame(new Game(gameStore, gameContext, atlas));

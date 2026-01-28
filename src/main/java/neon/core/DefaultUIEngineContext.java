@@ -19,6 +19,7 @@
 package neon.core;
 
 import java.util.EventObject;
+import lombok.Getter;
 import lombok.Setter;
 import neon.core.event.TaskQueue;
 import neon.core.event.TaskSubmission;
@@ -60,15 +61,17 @@ public class DefaultUIEngineContext implements GameContext {
   private final ZoneFactory zoneFactory;
   // Game-level state (set when a game starts)
   @Setter private Game game;
+  @Getter private final String zoneMapStoreFileName;
 
-  public DefaultUIEngineContext(GameStore gameStore, QuestTracker questTracker, TaskQueue taskQueue) {
-      this.gameStore = gameStore;
-      this.questTracker = questTracker;
+  public DefaultUIEngineContext(
+      GameStore gameStore, QuestTracker questTracker, TaskQueue taskQueue) {
+    this.gameStore = gameStore;
+    this.questTracker = questTracker;
     this.taskQueue = taskQueue;
-    MapStore zoneMapStore =
-            new MapStoreMVStoreAdapter(MVStore.open(gameStore.getFileSystem().getFullPath("zomes")));
-    zoneFactory = new ZoneFactory(zoneMapStore,gameStore.getUidStore(),gameStore.getResourceManager());
-
+    zoneMapStoreFileName = gameStore.getFileSystem().getFullPath("zomes");
+    MapStore zoneMapStore = new MapStoreMVStoreAdapter(MVStore.open(zoneMapStoreFileName));
+    zoneFactory =
+        new ZoneFactory(zoneMapStore, gameStore.getUidStore(), gameStore.getResourceManager());
   }
 
   @Override

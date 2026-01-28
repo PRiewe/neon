@@ -45,7 +45,7 @@ public class TeleportHandler {
   public final GameContext gameContext;
   public final MapLoader mapLoader;
 
-    public TeleportHandler(GameContext gameContext) {
+  public TeleportHandler(GameContext gameContext) {
     this.gameContext = gameContext;
 
     this.mapLoader = new MapLoader(gameContext);

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import neon.util.mapstorage.MapStore;
 import neon.util.mapstorage.MapStoreMVStoreAdapter;
+import neon.util.mapstorage.MemoryMapStoreFactory;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -46,7 +47,13 @@ public class MapDbTestHelper {
    * @return an in-memory DB instance
    */
   public static MapStore createInMemoryDB() {
-    return new MapStoreMVStoreAdapter(MVStore.open(null));
+    return new MemoryMapStoreFactory();
+  }
+
+  public static MapStore createTempFileDb() throws IOException {
+    Path tempFile = Files.createTempFile("neon-test-db-", ".dat");
+    MapStore db = new MapStoreMVStoreAdapter(MVStore.open(tempFile.toString()));
+    return db;
   }
 
   /**
@@ -86,6 +93,11 @@ public class MapDbTestHelper {
    */
   public static void cleanup(MapStore db) {
     if (db != null && !db.isClosed()) {
+      for (String name : db.getMapNames()) {
+        var map = db.openMap(name);
+        map.clear();
+      }
+      db.commit();
       db.close();
     }
   }

@@ -65,6 +65,7 @@ public class Atlas implements Closeable, MapAtlas {
       MapStore atlasStore,
       QuestProvider questProvider,
       ZoneActivator zoneActivator,
+      ZoneFactory zoneFactory,
       MapLoader mapLoader,
       GameContext gameContext) {
     this.gameStore = gameStore;
@@ -72,8 +73,7 @@ public class Atlas implements Closeable, MapAtlas {
     this.zoneActivator = zoneActivator;
     this.atlasMapStore = atlasStore;
     this.mapLoader = mapLoader;
-    zoneFactory =
-        new ZoneFactory(atlasStore, gameContext.getStore(), gameContext.getResourceManageer());
+    this.zoneFactory = zoneFactory;
     worldDataType = new WorldDataType(zoneFactory);
     dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
     mapDataType = new MapDataType(worldDataType, dungeonDataType);
@@ -89,6 +89,7 @@ public class Atlas implements Closeable, MapAtlas {
   }
 
   public void setCurrentMap(Map map) {
+    putMapIfNeeded(map);
     currentMap = map.getUID();
   }
 

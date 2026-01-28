@@ -35,7 +35,7 @@ import org.h2.mvstore.WriteBuffer;
  *
  * @author mdriesen
  */
-public class EntityFactory {
+public class EntitySerializerFactory {
   private static final int ITEM_TYPE = 1;
   private static final int CREATURE_TYPE = 2;
 
@@ -48,7 +48,7 @@ public class EntityFactory {
    * @param gameContext the game context for AI initialization (can be null for write-only
    *     operations)
    */
-  public EntityFactory(GameContext gameContext) {
+  public EntitySerializerFactory(GameContext gameContext) {
     this.itemSerializer = new ItemSerializer(gameContext);
     this.creatureSerializer = new CreatureSerializer(gameContext);
   }

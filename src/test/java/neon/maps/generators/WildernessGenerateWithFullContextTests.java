@@ -7,11 +7,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-import neon.maps.Atlas;
 import neon.maps.MapUtils;
 import neon.maps.Region;
 import neon.maps.Zone;
-import neon.maps.services.EntityStore;
 import neon.resources.RRegionTheme;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
@@ -28,17 +26,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class WildernessGenerateWithFullContextTests {
   private MapStore testDb;
-  private Atlas testAtlas;
-  private EntityStore entityStore;
   private static Map<String, RRegionTheme> wildernessThemes;
 
   @BeforeEach
   void setUp() throws Exception {
-    testDb = MapDbTestHelper.createInMemoryDB();
+    testDb = MapDbTestHelper.createTempFileDb();
     TestEngineContext.initialize(testDb);
     TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
-    testAtlas = TestEngineContext.getTestAtlas();
-    entityStore = TestEngineContext.getTestEntityStore();
   }
 
   @AfterEach

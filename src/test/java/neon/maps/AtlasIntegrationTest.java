@@ -25,7 +25,7 @@ class AtlasIntegrationTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    testDb = MapDbTestHelper.createInMemoryDB();
+    testDb = MapDbTestHelper.createTempFileDb();
     TestEngineContext.initialize(testDb);
     ZoneActivator zoneActivator =
         new ZoneActivator(
@@ -37,6 +37,7 @@ class AtlasIntegrationTest {
             testDb,
             TestEngineContext.getTestQuestTracker(),
             zoneActivator,
+            TestEngineContext.getTestZoneFactory(),
             new MapLoader(TestEngineContext.getTestUiEngineContext()),
             TestEngineContext.getTestUiEngineContext());
     mapTestFixtures =

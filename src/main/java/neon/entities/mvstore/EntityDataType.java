@@ -20,7 +20,7 @@ package neon.entities.mvstore;
 
 import java.nio.ByteBuffer;
 import neon.entities.Entity;
-import neon.entities.serialization.EntityFactory;
+import neon.entities.serialization.EntitySerializerFactory;
 import org.h2.mvstore.WriteBuffer;
 import org.h2.mvstore.type.BasicDataType;
 
@@ -31,10 +31,10 @@ import org.h2.mvstore.type.BasicDataType;
  * @author mdriesen
  */
 public class EntityDataType extends BasicDataType<Entity> {
-  private final EntityFactory entityFactory;
+  private final EntitySerializerFactory entitySerializerFactory;
 
-  public EntityDataType(EntityFactory entityFactory) {
-    this.entityFactory = entityFactory;
+  public EntityDataType(EntitySerializerFactory entitySerializerFactory) {
+    this.entitySerializerFactory = entitySerializerFactory;
   }
 
   @Override
@@ -45,12 +45,12 @@ public class EntityDataType extends BasicDataType<Entity> {
 
   @Override
   public void write(WriteBuffer buff, Entity obj) {
-    entityFactory.writeEntityToWriteBuffer(buff, obj);
+    entitySerializerFactory.writeEntityToWriteBuffer(buff, obj);
   }
 
   @Override
   public Entity read(ByteBuffer buff) {
-    return entityFactory.readEntityFromByteBuffer(buff);
+    return entitySerializerFactory.readEntityFromByteBuffer(buff);
   }
 
   @Override

@@ -43,7 +43,7 @@ class TownGenerateWithFullContextTests {
 
   @BeforeEach
   void setUp() throws Exception {
-    testDb = MapDbTestHelper.createInMemoryDB();
+    testDb = MapDbTestHelper.createTempFileDb();
     TestEngineContext.initialize(testDb);
     TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
     testAtlas = TestEngineContext.getTestAtlas();

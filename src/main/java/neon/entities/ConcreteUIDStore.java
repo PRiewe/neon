@@ -24,10 +24,12 @@ import java.io.*;
 import java.util.Map;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import neon.core.GameContext;
 import neon.entities.mvstore.EntityDataType;
 import neon.entities.mvstore.LongDataType;
 import neon.entities.mvstore.ModDataType;
 import neon.entities.mvstore.ShortDataType;
+import neon.entities.serialization.EntitySerializerFactory;
 import neon.maps.services.EntityStore;
 import neon.util.mapstorage.MapStore;
 import neon.util.mapstorage.MapStoreMVStoreAdapter;
@@ -62,6 +64,18 @@ public class ConcreteUIDStore extends UIDStore implements Closeable, EntityStore
     // Maps will be opened after DataTypes are set via setDataTypes()
   }
 
+  public void initialize(GameContext gameContext) {
+    EntitySerializerFactory entitySerializerFactory = new EntitySerializerFactory(gameContext);
+    EntityDataType entityDataType = new EntityDataType(entitySerializerFactory);
+    ModDataType modDataType = new ModDataType();
+    initialize(entityDataType, modDataType);
+  }
+
+  public void initialize(EntityDataType entityDataType, ModDataType modDataType) {
+    this.objects = uidDb.openMap("object", LongDataType.INSTANCE, entityDataType);
+    this.mods = uidDb.openMap("mods", ShortDataType.INSTANCE, modDataType);
+  }
+
   /**
    * Sets the DataTypes for entity and mod serialization and opens the maps. This must be called
    * after construction to initialize the UIDStore.
@@ -69,10 +83,7 @@ public class ConcreteUIDStore extends UIDStore implements Closeable, EntityStore
    * @param entityDataType the DataType for entity serialization
    * @param modDataType the DataType for mod serialization
    */
-  public void setDataTypes(EntityDataType entityDataType, ModDataType modDataType) {
-    this.objects = uidDb.openMap("object", LongDataType.INSTANCE, entityDataType);
-    this.mods = uidDb.openMap("mods", ShortDataType.INSTANCE, modDataType);
-  }
+  public void setDataTypes(EntityDataType entityDataType, ModDataType modDataType) {}
 
   /**
    * @return the jdbm3 cache used by this UIDStore

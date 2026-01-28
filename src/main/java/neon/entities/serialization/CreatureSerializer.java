@@ -23,7 +23,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import neon.ai.AIFactory;
-import neon.core.Engine;
 import neon.core.GameContext;
 import neon.entities.*;
 import neon.entities.components.HealthComponent;
@@ -133,7 +132,7 @@ public class CreatureSerializer {
   private Creature getCreature(String id, int x, int y, long uid, String species) {
     Creature creature;
 
-    RCreature rc = (RCreature) Engine.getResources().getResource(species);
+    RCreature rc = (RCreature) gameContext.getResources().getResource(species);
     creature =
         switch (rc.type) {
           case construct -> new Construct(id, uid, rc);

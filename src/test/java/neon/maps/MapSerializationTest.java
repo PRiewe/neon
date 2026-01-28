@@ -31,7 +31,7 @@ class MapSerializationTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    testDb = MapDbTestHelper.createInMemoryDB();
+    testDb = MapDbTestHelper.createTempFileDb();
     TestEngineContext.initialize(testDb);
     zoneFactory = TestEngineContext.getTestZoneFactory();
     worldDataType = new WorldDataType(zoneFactory);
