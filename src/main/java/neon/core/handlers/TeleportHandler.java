@@ -20,7 +20,6 @@ package neon.core.handlers;
 
 import java.awt.Rectangle;
 import javax.swing.SwingConstants;
-import neon.core.Engine;
 import neon.core.GameContext;
 import neon.core.event.MessageEvent;
 import neon.entities.Creature;
@@ -44,10 +43,11 @@ public class TeleportHandler {
   public static final byte HABITAT = 6;
   public final GameContext gameContext;
   public final MapLoader mapLoader;
+  public final MotionHandler motionHandler;
 
   public TeleportHandler(GameContext gameContext) {
     this.gameContext = gameContext;
-
+    this.motionHandler = new MotionHandler(gameContext);
     this.mapLoader = new MapLoader(gameContext);
   }
 
@@ -87,7 +87,7 @@ public class TeleportHandler {
 
       gameContext.getAtlas().enterZone(door, previous);
 
-      MotionHandler.walk(creature, door.portal.getDestPos());
+      motionHandler.walk(creature, door.portal.getDestPos());
       // check if there is a door at the destination, if so, unlock and open this door
       Rectangle bounds = creature.getShapeComponent();
       for (long uid : gameContext.getAtlas().getCurrentZone().getItems(bounds)) {
@@ -99,7 +99,7 @@ public class TeleportHandler {
 
       // if there is a sign on the door, show it now
       if (door.hasSign()) {
-        Engine.post(new MessageEvent(door, door.toString(), 3, SwingConstants.BOTTOM));
+        gameContext.post(new MessageEvent(door, door.toString(), 3, SwingConstants.BOTTOM));
       }
       return OK;
     }

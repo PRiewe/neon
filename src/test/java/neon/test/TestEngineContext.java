@@ -80,6 +80,15 @@ public class TestEngineContext {
     // Create test UIDStore
     testStore = gameStore.getStore();
     // Create test Game using new DI constructor
+
+    // Create stub PhysicsManager and ZoneActivator
+    PhysicsSystem physicsSystem = new PhysicsSystem();
+    GameServices gameServices = new GameServices(physicsSystem, Engine.createScriptEngine());
+
+    testQuestTracker = new QuestTracker(gameStore, gameServices);
+    TaskQueue taskQueue = new TaskQueue(gameServices.scriptEngine());
+    testZoneActivator = new ZoneActivator(physicsSystem, gameStore);
+    testUiEngineContext = new DefaultUIEngineContext(gameStore, testQuestTracker, taskQueue);
     Player stubPlayer =
         new Player(
             new RCreature("test"),
@@ -87,17 +96,8 @@ public class TestEngineContext {
             Gender.MALE,
             Player.Specialisation.combat,
             "Warrior",
-            testStore);
-
-    // Create stub PhysicsManager and ZoneActivator
-    PhysicsSystem physicsSystem = new PhysicsSystem();
-    GameServices gameServices = new GameServices(physicsSystem, Engine.createScriptEngine());
-
+            testUiEngineContext);
     gameStore.setPlayer(stubPlayer);
-    testQuestTracker = new QuestTracker(gameStore, gameServices);
-    TaskQueue taskQueue = new TaskQueue(gameServices.scriptEngine());
-    testZoneActivator = new ZoneActivator(physicsSystem, gameStore);
-    testUiEngineContext = new DefaultUIEngineContext(gameStore, testQuestTracker, taskQueue);
     testUiEngineContext.setGameServices(gameServices);
     // Create ZoneFactory for tests
     testZoneFactory = testUiEngineContext.getZoneFactory();

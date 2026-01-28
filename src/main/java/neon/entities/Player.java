@@ -22,6 +22,7 @@ import java.util.EnumMap;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.Getter;
 import lombok.Setter;
+import neon.core.GameContext;
 import neon.core.handlers.SkillHandler;
 import neon.entities.components.Inventory;
 import neon.entities.components.Lock;
@@ -39,23 +40,18 @@ import neon.resources.RWeapon.WeaponType;
 public class Player extends Hominid {
   public static final Player PLACEHOLDER =
       new Player(
-          new RCreature("test"),
-          "TestPlayer",
-          Gender.MALE,
-          Specialisation.combat,
-          "Warrior",
-          new MemoryUIDStore());
+          new RCreature("test"), "TestPlayer", Gender.MALE, Specialisation.combat, "Warrior", null);
   private final int baseLevel;
   private final Journal journal = new Journal();
   private final Specialisation spec;
   private final String profession;
   private final EnumMap<Skill, Float> mods;
   private boolean sneak = false;
-  private final UIDStore uidStore;
+  private final GameContext uidStore;
 
   @Setter @Getter private String sign;
   @Getter private Creature mount;
-
+  private final SkillHandler skillHandler;
   private final AtomicReference<Zone> currentZone = new AtomicReference<>();
   private final AtomicReference<Map> currentMap = new AtomicReference<>();
 
@@ -65,7 +61,7 @@ public class Player extends Hominid {
       Gender gender,
       Specialisation spec,
       String profession,
-      UIDStore gameStores) {
+      GameContext gameStores) {
     super(species.id, 0, species);
     this.uidStore = gameStores;
     components.putInstance(RenderComponent.class, new PlayerRenderComponent(this));
@@ -78,6 +74,7 @@ public class Player extends Hominid {
     for (Skill skill : Skill.values()) {
       mods.put(skill, 0f);
     }
+    skillHandler = new SkillHandler(gameStores);
   }
 
   @Override
@@ -89,7 +86,7 @@ public class Player extends Hominid {
    * allerlei actions die de player kan ondernemen en niet in een aparte handler staan
    */
   public boolean pickLock(Lock lock) {
-    return SkillHandler.check(this, Skill.LOCKPICKING) > lock.getLockDC();
+    return skillHandler.check(this, Skill.LOCKPICKING) > lock.getLockDC();
   }
 
   public void setSneaking(boolean sneaking) {
@@ -105,15 +102,15 @@ public class Player extends Hominid {
     String damage;
 
     if (inventory.hasEquiped(Slot.WEAPON)) {
-      Weapon weapon = (Weapon) uidStore.getEntity(inventory.get(Slot.WEAPON));
+      Weapon weapon = (Weapon) uidStore.getStore().getEntity(inventory.get(Slot.WEAPON));
       damage = weapon.getDamage();
       if (weapon.getWeaponType().equals(WeaponType.BOW)
           || weapon.getWeaponType().equals(WeaponType.CROSSBOW)) {
-        Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
+        Weapon ammo = (Weapon) uidStore.getStore().getEntity(inventory.get(Slot.AMMO));
         damage += " : " + ammo.getDamage();
       }
     } else if (inventory.hasEquiped(Slot.AMMO)) {
-      Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
+      Weapon ammo = (Weapon) uidStore.getStore().getEntity(inventory.get(Slot.AMMO));
       damage = ammo.getDamage();
     } else {
       damage = species.av;

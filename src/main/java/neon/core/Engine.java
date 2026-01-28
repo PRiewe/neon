@@ -140,7 +140,7 @@ public class Engine implements Runnable {
    *
    * @param message
    */
-  public static void post(EventObject message) {
+  private static void post(EventObject message) {
     bus.publishAsync(message);
   }
 

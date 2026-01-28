@@ -55,6 +55,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
   private final GameContext context;
   private final MagicHandler magicHandler;
   private final InventoryHandler inventoryHandler;
+  private final SkillHandler skillHandler;
 
   public InventoryState(
       State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
@@ -64,6 +65,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     this.context = context;
     magicHandler = new MagicHandler(context);
     inventoryHandler = new InventoryHandler(context);
+    skillHandler = new SkillHandler(context);
     panel = new JPanel(new BorderLayout());
 
     // info
@@ -133,7 +135,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
       inventoryHandler.removeItem(player, item.getUID());
       initList();
       HealthComponent health = player.getHealthComponent();
-      health.heal(SkillHandler.check(player, Skill.MEDICAL) / 5f);
+      health.heal(skillHandler.check(player, Skill.MEDICAL) / 5f);
     } else if (!player.getInventoryComponent().hasEquiped(item.getUID())) {
       inventoryHandler.equip(item, player);
     } else {

@@ -72,7 +72,7 @@ public class JournalState extends State implements FocusListener {
     this.ui = ui;
     this.context = context;
     main = new JPanel(new BorderLayout());
-    this.combatUtils = new CombatUtils(context.getStore());
+    this.combatUtils = new CombatUtils(context);
     this.inventoryHandler = new InventoryHandler(context);
     // cardlayout om verschillende panels weer te geven.
     layout = new CardLayout();

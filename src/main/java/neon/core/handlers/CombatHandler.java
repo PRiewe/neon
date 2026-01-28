@@ -20,7 +20,6 @@ package neon.core.handlers;
 
 import java.awt.Rectangle;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.Engine;
 import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
@@ -54,7 +53,7 @@ public class CombatHandler {
 
   public CombatHandler(GameContext context) {
     this.context = context;
-    combatUtils = new CombatUtils(context.getStore());
+    combatUtils = new CombatUtils(context);
     inventoryHandler = new InventoryHandler(context);
   }
 
@@ -68,7 +67,7 @@ public class CombatHandler {
             case CombatEvent.FLING -> fling(ce.getAttacker(), ce.getDefender());
             default -> fight(ce.getAttacker(), ce.getDefender());
           };
-      Engine.post(new CombatEvent(ce.getAttacker(), ce.getDefender(), result));
+      context.post(new CombatEvent(ce.getAttacker(), ce.getDefender(), result));
     }
   }
 
@@ -158,7 +157,7 @@ public class CombatHandler {
         // cast enchanted weapon spell
         if (weapon != null && weapon.getMagicComponent().getSpell() != null) {
           Rectangle bounds = defender.getShapeComponent();
-          Engine.post(new MagicEvent.ItemOnPoint(this, attacker, weapon, bounds.getLocation()));
+          context.post(new MagicEvent.ItemOnPoint(this, attacker, weapon, bounds.getLocation()));
         }
 
         // determine messages

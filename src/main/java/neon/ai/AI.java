@@ -69,7 +69,7 @@ public abstract class AI implements Serializable {
     this.creature = creature;
     this.gameContext = gameContext;
     this.motionHandler = new MotionHandler(gameContext);
-    this.combatUtils = new CombatUtils(gameContext.getStore());
+    this.combatUtils = new CombatUtils(gameContext);
     this.pathFinder = new PathFinder(gameContext);
     this.inventoryHandler = new InventoryHandler(gameContext);
   }

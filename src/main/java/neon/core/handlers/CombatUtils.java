@@ -19,6 +19,7 @@
 package neon.core.handlers;
 
 import java.io.Serializable;
+import neon.core.GameContext;
 import neon.entities.*;
 import neon.entities.components.Inventory;
 import neon.entities.property.Skill;
@@ -29,10 +30,12 @@ import neon.util.Dice;
 
 public class CombatUtils implements Serializable {
 
-  private final UIDStore uidStore;
+  private final GameContext uidStore;
+  private final SkillHandler skillHandler;
 
-  public CombatUtils(UIDStore uidStore) {
+  public CombatUtils(GameContext uidStore) {
     this.uidStore = uidStore;
+    this.skillHandler = new SkillHandler(uidStore);
   }
 
   /**
@@ -43,12 +46,12 @@ public class CombatUtils implements Serializable {
    */
   protected int attack(Creature creature) {
     return switch (getWeaponType(creature)) {
-      case BLADE_ONE, BLADE_TWO -> SkillHandler.check(creature, Skill.BLADE);
-      case BLUNT_ONE, BLUNT_TWO -> SkillHandler.check(creature, Skill.BLUNT);
-      case AXE_ONE, AXE_TWO -> SkillHandler.check(creature, Skill.AXE);
-      case SPEAR -> SkillHandler.check(creature, Skill.SPEAR);
-      case BOW, CROSSBOW, THROWN -> SkillHandler.check(creature, Skill.ARCHERY);
-      default -> SkillHandler.check(creature, Skill.UNARMED);
+      case BLADE_ONE, BLADE_TWO -> skillHandler.check(creature, Skill.BLADE);
+      case BLUNT_ONE, BLUNT_TWO -> skillHandler.check(creature, Skill.BLUNT);
+      case AXE_ONE, AXE_TWO -> skillHandler.check(creature, Skill.AXE);
+      case SPEAR -> skillHandler.check(creature, Skill.SPEAR);
+      case BOW, CROSSBOW, THROWN -> skillHandler.check(creature, Skill.ARCHERY);
+      default -> skillHandler.check(creature, Skill.UNARMED);
     };
   }
 
@@ -62,15 +65,15 @@ public class CombatUtils implements Serializable {
 
     int damage;
     if (inventory.hasEquiped(Slot.WEAPON)) {
-      Weapon weapon = (Weapon) uidStore.getEntity(inventory.get(Slot.WEAPON));
+      Weapon weapon = (Weapon) uidStore.getStore().getEntity(inventory.get(Slot.WEAPON));
       damage = Dice.roll(weapon.getDamage());
       if (weapon.getWeaponType().equals(WeaponType.BOW)
           || weapon.getWeaponType().equals(WeaponType.CROSSBOW)) {
-        Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
+        Weapon ammo = (Weapon) uidStore.getStore().getEntity(inventory.get(Slot.AMMO));
         damage = (damage + Dice.roll(ammo.getDamage())) / 2;
       }
     } else if (inventory.hasEquiped(Slot.AMMO)) {
-      Weapon ammo = (Weapon) uidStore.getEntity(inventory.get(Slot.AMMO));
+      Weapon ammo = (Weapon) uidStore.getStore().getEntity(inventory.get(Slot.AMMO));
       damage = Dice.roll(ammo.getDamage());
     } else {
       damage = Dice.roll(creature.species.av);
@@ -95,7 +98,8 @@ public class CombatUtils implements Serializable {
   protected int block(Creature creature) {
     if (creature.getInventoryComponent().hasEquiped(Slot.SHIELD)) {
       float mod = 1f;
-      Armor armor = (Armor) uidStore.getEntity(creature.getInventoryComponent().get(Slot.SHIELD));
+      Armor armor =
+          (Armor) uidStore.getStore().getEntity(creature.getInventoryComponent().get(Slot.SHIELD));
       switch (((RClothing) (armor.resource)).kind) {
         case LIGHT -> mod = creature.getSkill(Skill.LIGHT_ARMOR) / 20f;
         case MEDIUM -> mod = creature.getSkill(Skill.MEDIUM_ARMOR) / 20f;
@@ -103,7 +107,7 @@ public class CombatUtils implements Serializable {
         default -> {}
       }
 
-      return (int) (SkillHandler.check(creature, Skill.BLOCK) * mod);
+      return (int) (skillHandler.check(creature, Skill.BLOCK) * mod);
     } else {
       return 0;
     }
@@ -115,7 +119,7 @@ public class CombatUtils implements Serializable {
    * @return a dodge skill check
    */
   protected int dodge(Creature creature) {
-    return SkillHandler.check(creature, Skill.DODGING);
+    return skillHandler.check(creature, Skill.DODGING);
   }
 
   /**
@@ -126,7 +130,7 @@ public class CombatUtils implements Serializable {
   public int getDV(Creature creature) {
     float AR = creature.species.dv;
     for (Slot s : creature.getInventoryComponent().slots()) {
-      Entity item = uidStore.getEntity(creature.getInventoryComponent().get(s));
+      Entity item = uidStore.getStore().getEntity(creature.getInventoryComponent().get(s));
       if (item instanceof Armor) {
         Armor c = (Armor) item;
         int mod = 0;
@@ -149,10 +153,10 @@ public class CombatUtils implements Serializable {
   public WeaponType getWeaponType(Creature creature) {
     Inventory inventory = creature.getInventoryComponent();
     if (inventory.hasEquiped(Slot.WEAPON)) {
-      Weapon weapon = (Weapon) uidStore.getEntity(inventory.get(Slot.WEAPON));
+      Weapon weapon = (Weapon) uidStore.getStore().getEntity(inventory.get(Slot.WEAPON));
       return (weapon.getWeaponType());
     } else if (inventory.hasEquiped(Slot.AMMO)
-        && ((Weapon) uidStore.getEntity(inventory.get(Slot.AMMO))).getWeaponType()
+        && ((Weapon) uidStore.getStore().getEntity(inventory.get(Slot.AMMO))).getWeaponType()
             == WeaponType.THROWN) {
       return WeaponType.THROWN;
     } else {

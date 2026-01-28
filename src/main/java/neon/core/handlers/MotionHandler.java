@@ -48,9 +48,11 @@ public class MotionHandler {
   public static final byte NULL = 5;
   public static final byte HABITAT = 6;
   public final GameContext gameContext;
+  private final SkillHandler skillHandler;
 
   public MotionHandler(GameContext gameContext) {
     this.gameContext = gameContext;
+    this.skillHandler = new SkillHandler(gameContext);
   }
 
   /**
@@ -120,7 +122,7 @@ public class MotionHandler {
   private byte swim(Creature swimmer, Point p) {
     if (swimmer.species.habitat == Habitat.WATER) {
       return OK;
-    } else if (SkillHandler.check(swimmer, Skill.SWIMMING) > 20) {
+    } else if (skillHandler.check(swimmer, Skill.SWIMMING) > 20) {
       Rectangle bounds = swimmer.getShapeComponent();
       bounds.setLocation(p.x, p.y);
       return OK;
@@ -135,11 +137,11 @@ public class MotionHandler {
    *
    * @param tile
    */
-  private static byte climb(Creature climber, Point p) {
+  private byte climb(Creature climber, Point p) {
     if (climber.species.habitat == Habitat.WATER) {
       return HABITAT;
     }
-    if (SkillHandler.check(climber, Skill.CLIMBING) > 25) {
+    if (skillHandler.check(climber, Skill.CLIMBING) > 25) {
       Rectangle bounds = climber.getShapeComponent();
       bounds.setLocation(p.x, p.y);
       return OK;
@@ -148,7 +150,7 @@ public class MotionHandler {
     }
   }
 
-  static byte walk(Creature walker, Point p) {
+  byte walk(Creature walker, Point p) {
     Rectangle bounds = walker.getShapeComponent();
     if (walker.species.habitat == Habitat.WATER) {
       return HABITAT;

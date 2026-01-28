@@ -54,14 +54,18 @@ public class MagicHandler {
   public static final int SILENCED = 8; // caster silenced
   public static final int INTERVAL = 9; // power interval niet gedaan
 
+  private final MagicUtils magicUtils;
   private final CombatUtils combatUtils;
   private final InventoryHandler inventoryHandler;
+  private final SkillHandler skillHandler;
   private final GameContext gameContext;
 
   public MagicHandler(GameContext gameContext) {
     this.gameContext = gameContext;
-    this.combatUtils = new CombatUtils(gameContext.getStore());
+    this.combatUtils = new CombatUtils(gameContext);
+    this.magicUtils = new MagicUtils(gameContext);
     this.inventoryHandler = new InventoryHandler(gameContext);
+    this.skillHandler = new SkillHandler(gameContext);
   }
 
   /**
@@ -145,7 +149,7 @@ public class MagicHandler {
           // spell level te hoog
           gameContext.post(new MagicEvent.Result(this, caster, LEVEL));
         } else if (!formula.effect.equals(Effect.SCRIPTED)
-            && MagicUtils.check(caster, formula) < 20 + penalty) {
+            && magicUtils.check(caster, formula) < 20 + penalty) {
           // skill check gefaald
           gameContext.post(new MagicEvent.Result(this, caster, SKILL));
         } else if (caster.getMagicComponent().getMana() < MagicUtils.getMana(formula)) {
@@ -310,7 +314,7 @@ public class MagicHandler {
         if (caster.getSkill(spell.effect.getSchool()) < MagicUtils.getLevel(spell)) {
           gameContext.post(new MagicEvent.Result(this, caster, LEVEL));
         } else if (!spell.effect.equals(Effect.SCRIPTED)
-            && MagicUtils.check(caster, spell) < 20 + penalty) {
+            && magicUtils.check(caster, spell) < 20 + penalty) {
           gameContext.post(new MagicEvent.Result(this, caster, SKILL));
         } else if (caster.getMagicComponent().getMana() < MagicUtils.getMana(spell)) {
           gameContext.post(new MagicEvent.Result(this, caster, MANA));
@@ -391,7 +395,7 @@ public class MagicHandler {
    */
   public void eat(Creature eater, Item.Food food) {
     Enchantment enchantment = food.getMagicComponent();
-    int check = Math.max(1, SkillHandler.check(eater, Skill.ALCHEMY) / 10);
+    int check = Math.max(1, skillHandler.check(eater, Skill.ALCHEMY) / 10);
     RSpell spell =
         new RSpell(
             "",

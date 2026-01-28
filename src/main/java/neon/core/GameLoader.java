@@ -69,6 +69,7 @@ public class GameLoader {
   private final MapLoader mapLoader;
   private final SpellFactory spellFactory;
   private final InventoryHandler inventoryHandler;
+  private final SkillHandler skillHandler;
 
   public GameLoader(
       Configuration config,
@@ -82,6 +83,7 @@ public class GameLoader {
     this.gameContext = gameContext;
     this.entityFactory = new EntityFactory(gameContext);
     this.inventoryHandler = new InventoryHandler(gameContext);
+    this.skillHandler = new SkillHandler(gameContext);
     this.config = config;
     this.engine = engine;
     queue = taskQueue;
@@ -98,7 +100,7 @@ public class GameLoader {
       case LOAD:
         loadGame(le.getSaveName());
         // indicate that loading is complete
-        Engine.post(new LoadEvent(this));
+        gameContext.post(new LoadEvent(this));
         break;
       case NEW:
         try {
@@ -107,7 +109,7 @@ public class GameLoader {
           log.error("Fatal", re);
         }
         // indicate that loading is complete
-        Engine.post(new LoadEvent(this));
+        gameContext.post(new LoadEvent(this));
         break;
       default:
         break;
@@ -139,7 +141,7 @@ public class GameLoader {
       ItemFactory itemFactory = new ItemFactory(gameContext.getResourceManageer());
       RCreature species =
           new RCreature(((RCreature) gameStore.getResourceManager().getResource(race)).toElement());
-      Player player = new Player(species, name, gender, spec, profession, gameStore.getUidStore());
+      Player player = new Player(species, name, gender, spec, profession, gameContext);
       player.species.text = "@";
       MapStore atlasMapStore =
           new MapStoreMVStoreAdapter(MVStore.open(gameStore.getFileSystem().getFullPath("atlas")));
@@ -158,7 +160,7 @@ public class GameLoader {
       gameStore.setPlayer(player);
       setSign(player, sign);
       for (Skill skill : Skill.values()) {
-        SkillHandler.checkFeat(skill, player);
+        skillHandler.checkFeat(skill, player);
       }
 
       // initialize maps
@@ -315,7 +317,7 @@ public class GameLoader {
             Gender.valueOf(playerData.getAttributeValue("gender").toUpperCase()),
             Player.Specialisation.valueOf(playerData.getAttributeValue("spec")),
             playerData.getAttributeValue("prof"),
-            gameStore.getUidStore());
+            gameContext);
     MapStore atlasMapStore =
         new MapStoreMVStoreAdapter(MVStore.open(gameStore.getFileSystem().getFullPath("atlas")));
 
