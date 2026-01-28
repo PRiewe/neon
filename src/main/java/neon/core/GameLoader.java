@@ -100,7 +100,7 @@ public class GameLoader {
       case LOAD:
         loadGame(le.getSaveName());
         // indicate that loading is complete
-        gameContext.post(new LoadEvent(this));
+        gameContext.post(new LoadEvent(this)).now();
         break;
       case NEW:
         try {
@@ -109,7 +109,7 @@ public class GameLoader {
           log.error("Fatal", re);
         }
         // indicate that loading is complete
-        gameContext.post(new LoadEvent(this));
+        gameContext.post(new LoadEvent(this)).now();
         break;
       default:
         break;

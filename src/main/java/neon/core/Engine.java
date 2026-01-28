@@ -120,8 +120,9 @@ public class Engine implements Runnable {
     bus.subscribe(new InventoryHandler(gameEngineState));
     bus.subscribe(adapter);
     bus.subscribe(quests);
-    bus.subscribe(
-        new GameLoader(config, gameStore, gameServices, taskQueue, this, gameEngineState));
+    GameLoader loader =
+        new GameLoader(config, gameStore, gameServices, taskQueue, this, gameEngineState);
+    bus.subscribe(loader);
     bus.subscribe(new GameSaver(taskQueue, gameEngineState));
   }
 

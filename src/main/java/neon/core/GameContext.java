@@ -25,6 +25,7 @@ import neon.maps.ZoneFactory;
 import neon.narrative.QuestTracker;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
+import net.engio.mbassy.bus.publication.SyncAsyncPostCommand;
 
 /**
  * Interface providing access to game services and state. This interface abstracts away the static
@@ -57,7 +58,7 @@ public interface GameContext extends UIStorage {
    *
    * @param event the event to post
    */
-  void post(EventObject event);
+  SyncAsyncPostCommand<EventObject> post(EventObject event);
 
   PhysicsSystem getPhysicsEngine();
 

@@ -1,6 +1,6 @@
 package neon.core.event;
 
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ConcurrentArrayListMultimap;
 import com.google.common.collect.Multimap;
 import neon.util.fsm.Action;
 
@@ -9,8 +9,8 @@ public class TaskSubmission {
   protected final Multimap<Integer, TaskQueue.RepeatEntry> repeat;
 
   public TaskSubmission() {
-    tasks = ArrayListMultimap.create();
-    repeat = ArrayListMultimap.create();
+    tasks = new ConcurrentArrayListMultimap<>();
+    repeat = new ConcurrentArrayListMultimap<>();
   }
 
   public void add(String description, Action task) {

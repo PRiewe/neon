@@ -21,6 +21,7 @@ package neon.core;
 import java.util.EventObject;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.event.TaskQueue;
 import neon.core.event.TaskSubmission;
 import neon.entities.Player;
@@ -36,6 +37,7 @@ import neon.systems.timing.Timer;
 import neon.util.mapstorage.MapStore;
 import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import net.engio.mbassy.bus.MBassador;
+import net.engio.mbassy.bus.publication.SyncAsyncPostCommand;
 import org.h2.mvstore.MVStore;
 
 /**
@@ -48,6 +50,7 @@ import org.h2.mvstore.MVStore;
  *
  * @author mdriesen
  */
+@Slf4j
 public class DefaultUIEngineContext implements GameContext {
 
   // Engine-level systems (set during engine initialization)
@@ -139,8 +142,8 @@ public class DefaultUIEngineContext implements GameContext {
    * @param event the event to post
    */
   @Override
-  public void post(EventObject event) {
-    bus.post(event);
+  public SyncAsyncPostCommand<EventObject> post(EventObject event) {
+    return bus.post(event);
   }
 
   @Override
