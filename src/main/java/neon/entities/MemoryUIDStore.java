@@ -10,6 +10,11 @@ public class MemoryUIDStore extends UIDStore {
   }
 
   @Override
+  public boolean isModUIDLoaded(String name) {
+    return false;
+  }
+
+  @Override
   public void commit() {
     // noop
   }

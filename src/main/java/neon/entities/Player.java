@@ -74,7 +74,7 @@ public class Player extends Hominid {
     this.spec = spec;
     this.profession = profession;
     baseLevel = getLevel();
-    mods = new EnumMap<Skill, Float>(Skill.class);
+    mods = new EnumMap<>(Skill.class);
     for (Skill skill : Skill.values()) {
       mods.put(skill, 0f);
     }
@@ -241,8 +241,9 @@ public class Player extends Hominid {
   }
 
   public void trainSkill(Skill skill, float mod) {
-    mods.put(skill, mods.get(skill) + mod);
-    skills.put(skill, skills.get(skill) + mod);
+
+    mods.put(skill, mods.getOrDefault(skill, 0.0f) + mod);
+    skills.put(skill, skills.getOrDefault(skill, 0.0f) + mod);
   }
 
   @Override

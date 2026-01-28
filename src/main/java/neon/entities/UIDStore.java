@@ -161,5 +161,7 @@ public abstract class UIDStore implements EntityStore, Closeable {
     return uid;
   }
 
+  public abstract boolean isModUIDLoaded(String name);
+
   public abstract void commit();
 }

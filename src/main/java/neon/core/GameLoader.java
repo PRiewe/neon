@@ -150,7 +150,10 @@ public class GameLoader {
               gameContext.getZoneFactory(),
               new MapLoader(new MapUtils(), gameContext),
               gameContext);
+
       engine.startGame(new Game(gameStore, gameContext, atlas));
+      gameStore.getUidStore().initialize(gameContext);
+      gameStore.setPlayer(player);
       setSign(player, sign);
       for (Skill skill : Skill.values()) {
         SkillHandler.checkFeat(skill, player);
@@ -323,6 +326,7 @@ public class GameLoader {
             gameContext.getZoneFactory(),
             new MapLoader(new MapUtils(), gameContext),
             gameContext);
+    gameStore.setPlayer(player);
     engine.startGame(new Game(gameStore, gameContext, atlas));
     Rectangle bounds = player.getShapeComponent();
     bounds.setLocation(
@@ -380,8 +384,8 @@ public class GameLoader {
   private void initMaps() {
     // put mods and maps in uidstore
     for (RMod mod : gameStore.getResources().getResources(RMod.class)) {
-      if (gameStore.getUidStore().getModUID(mod.id) == 0) {
-        gameStore.getUidStore().addMod(mod.id);
+      if (!gameStore.getStore().isModUIDLoaded(mod.id)) {
+        gameStore.getStore().addMod(mod.id);
       }
       for (String[] path : mod.getMaps())
         try { // maps are in twowaymap, and are therefore not stored in cache
@@ -391,7 +395,7 @@ public class GameLoader {
           int uid = UIDStore.getMapUID(gameStore.getUidStore().getModUID(path[0]), mapUID);
           gameStore.getUidStore().addMap(uid, path);
         } catch (Exception e) {
-          log.info("Map error in mod {}", path[0]);
+          log.info("Map error in mod {}", path[0], e);
         }
     }
   }
