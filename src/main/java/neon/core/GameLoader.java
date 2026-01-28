@@ -264,7 +264,7 @@ public class GameLoader {
       String description = event.getAttributeValue("desc");
       if (event.getAttribute("script") != null) {
         String script = event.getAttributeValue("script");
-        queue.add(description, new ScriptAction(script));
+        queue.add(description, new ScriptAction(script, gameContext.getScriptEngine()));
       }
     }
 
@@ -299,7 +299,7 @@ public class GameLoader {
                     .getEntity(Long.parseLong(event.getAttributeValue("target")));
           }
           Spell spell = new Spell(target, caster, effect, magnitude, script, type);
-          queue.add(new MagicTask(spell, stop), start, stop, period);
+          queue.add(new MagicTask(spell, stop, gameContext), start, stop, period);
           break;
       }
     }

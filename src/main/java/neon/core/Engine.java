@@ -155,7 +155,7 @@ public class Engine implements Runnable {
    * @deprecated Use {@link GameContext#execute(String)} instead
    */
   @Deprecated
-  public static Object execute(String script) {
+  private static Object execute(String script) {
     return scriptEngine.execute(script);
   }
 
@@ -167,14 +167,14 @@ public class Engine implements Runnable {
    * @deprecated Use {@link GameContext#getPlayer()} instead
    */
   @Deprecated
-  public static Player getPlayer() {
+  private static Player getPlayer() {
     if (gameStore != null) {
       return gameStore.getPlayer();
     } else return null;
   }
 
   @Deprecated
-  public static Atlas getAtlas() {
+  private static Atlas getAtlas() {
     if (gameEngineState != null) {
       return gameEngineState.getAtlas();
     } else return null;
@@ -185,7 +185,7 @@ public class Engine implements Runnable {
    * @deprecated Use {@link GameContext#getQuestTracker()} instead
    */
   @Deprecated
-  public static QuestTracker getQuestTracker() {
+  private static QuestTracker getQuestTracker() {
     return gameEngineState.getQuestTracker();
   }
 
@@ -194,7 +194,7 @@ public class Engine implements Runnable {
    * @deprecated Use {@link GameContext#getTimer()} instead
    */
   @Deprecated
-  public static Timer getTimer() {
+  private static Timer getTimer() {
     return game.getTimer();
   }
 
@@ -202,7 +202,7 @@ public class Engine implements Runnable {
    * @return the virtual filesystem of the engine
    */
   @Deprecated
-  public static FileSystem getFileSystem() {
+  private static FileSystem getFileSystem() {
     // Note: FileSystem is not part of GameContext as it's an engine-internal system
     return gameStore.getFileSystem();
   }

@@ -46,6 +46,6 @@ public class ScriptInterface {
   }
 
   public Entity getPlayer() {
-    return Engine.getPlayer();
+    return gameContext.getPlayer();
   }
 }

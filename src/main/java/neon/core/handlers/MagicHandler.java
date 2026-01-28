@@ -365,7 +365,7 @@ public class MagicHandler {
     if (formula.duration > 0) {
       target.addActiveSpell(spell);
       int time = gameContext.getTimer().getTime();
-      MagicTask task = new MagicTask(spell, time + formula.duration);
+      MagicTask task = new MagicTask(spell, time + formula.duration, gameContext);
       gameContext.getTaskSubmissionQueue().add(task, time, 1, time + formula.duration);
     }
 

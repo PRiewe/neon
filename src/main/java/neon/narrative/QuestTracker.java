@@ -39,10 +39,12 @@ public class QuestTracker implements QuestProvider {
   private final HashMap<String, Quest> temp = new HashMap<>();
   private final GameStore gameStore;
   private final GameServices gameServices;
+  private final QuestUtils questUtils;
 
   public QuestTracker(GameStore gameStore, GameServices gameServices) {
     this.gameStore = gameStore;
     this.gameServices = gameServices;
+    this.questUtils = new QuestUtils(gameServices);
   }
 
   /**
@@ -129,12 +131,12 @@ public class QuestTracker implements QuestProvider {
   private Collection<Quest> getQuests(Creature speaker) {
     ArrayList<Quest> list = new ArrayList<Quest>();
     for (Quest quest : quests.values()) {
-      if (QuestUtils.checkQuest(quest.template)) {
+      if (questUtils.checkQuest(quest.template)) {
         list.add(quest);
       }
     }
     for (Quest quest : temp.values()) {
-      if (QuestUtils.checkQuest(quest.template)) {
+      if (questUtils.checkQuest(quest.template)) {
         list.add(quest);
       }
     }
