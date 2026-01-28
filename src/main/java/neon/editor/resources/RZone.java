@@ -20,10 +20,12 @@ package neon.editor.resources;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import neon.editor.Editor;
+import java.util.Arrays;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import neon.resources.RData;
-import neon.resources.RPerson;
 import neon.resources.RZoneTheme;
+import neon.resources.ResourceManager;
 import neon.ui.graphics.Renderable;
 import neon.ui.graphics.Scene;
 import org.jdom2.Element;
@@ -42,13 +44,15 @@ import org.jdom2.Element;
  * 	6. outdoor map display
  * 	7. dungeon map display
  */
+@Slf4j
 public class RZone extends RData {
   public RMap map;
   public RZoneTheme theme;
   private Scene scene;
+  private final List<String> outs = new ArrayList<>();
 
   // zone loaded as element from file
-  public RZone(Element properties, RMap map, String... path) {
+  RZone(ResourceManager rm, Element properties, RMap map, String... path) {
     // messy trick because id is final.
     super(
         (map.isDungeon()
@@ -57,8 +61,12 @@ public class RZone extends RData {
         path);
     this.map = map;
     name = id;
-    theme =
-        (RZoneTheme) Editor.resources.getResource(properties.getAttributeValue("theme"), "theme");
+    theme = (RZoneTheme) rm.getResource(properties.getAttributeValue("theme"), "theme");
+    String out = properties.getAttributeValue("out");
+    if (out != null) {
+      outs.addAll(Arrays.asList(out.split(",")));
+    }
+    scene = new Scene();
   }
 
   // new zone with theme
@@ -67,6 +75,7 @@ public class RZone extends RData {
     name = id;
     this.map = map;
     this.theme = theme;
+    scene = new Scene();
   }
 
   // new zone with renderables
@@ -98,27 +107,30 @@ public class RZone extends RData {
     return region;
   }
 
-  public ArrayList<Integer> load(Element zone) {
+  public ArrayList<Integer> load(RZoneFactory rf, Element zone) {
     ArrayList<Integer> uids = new ArrayList<Integer>();
     scene = new Scene();
     try { // creatures
       for (Element creature : zone.getChild("creatures").getChildren()) {
-        Instance r = getInstance(creature, this);
+        Instance r = rf.getInstance(creature, this);
         scene.addElement(r, r.getBounds(), r.z);
         uids.add(Integer.parseInt(creature.getAttributeValue("uid")));
       }
     } catch (NullPointerException e) {
+      log.warn("No creatures found in zone {}", zone);
     } // if map contains no creatures
     try { // regions
-      for (Element region : zone.getChild("regions").getChildren()) {
-        Instance r = new IRegion(region);
+      var regionList = zone.getChild("regions").getChildren();
+      for (Element region : regionList) {
+        Instance r = new IRegion(rf.dataStore(), region);
         scene.addElement(r, r.getBounds(), r.z);
       }
     } catch (NullPointerException e) {
+      log.warn("No regions found in zone {}", zone);
     } // if map contains no regions
     try { // items
       for (Element item : zone.getChild("items").getChildren()) {
-        Instance r = getInstance(item, this);
+        Instance r = rf.getInstance(item, this);
         scene.addElement(r, r.getBounds(), r.z);
         uids.add(Integer.parseInt(item.getAttributeValue("uid")));
         if (item.getName().equals("container")) { // add container items to uids
@@ -128,25 +140,21 @@ public class RZone extends RData {
         }
       }
     } catch (NullPointerException e) {
+      log.warn("No items found in zone {}", zone);
     } // if map contains no items
     return uids;
-  }
-
-  public static Instance getInstance(Element e, RZone zone) {
-    if (Editor.resources.getResource(e.getAttributeValue("id")) instanceof RPerson) {
-      return new IPerson(e);
-    } else if (e.getName().equals("door")) {
-      return new IDoor(e, zone);
-    } else if (e.getName().equals("container")) {
-      return new IContainer(e);
-    } else {
-      return new IObject(e);
-    }
   }
 
   public Element toElement() {
     Element level = new Element("level");
     level.setAttribute("name", name);
+    if (this.theme != null) {
+      level.setAttribute("theme", theme.id);
+    }
+    if (!this.outs.isEmpty()) {
+      String outValue = String.join(",", this.outs);
+      level.setAttribute("out", outValue);
+    }
     Element creatures = new Element("creatures");
     Element items = new Element("items");
     Element regions = new Element("regions");
@@ -154,19 +162,21 @@ public class RZone extends RData {
       Instance i = (Instance) r;
       Element element = i.toElement();
       element.detach();
-      if (element.getName().equals("region")) {
-        regions.addContent(element);
-      } else if (element.getName().equals("creature")) {
-        creatures.addContent(element);
-      } else if (element.getName().equals("item")
-          || element.getName().equals("door")
-          || element.getName().equals("container")) {
-        items.addContent(element);
+      switch (element.getName()) {
+        case "region" -> regions.addContent(element);
+        case "creature" -> creatures.addContent(element);
+        case "item", "door", "container" -> items.addContent(element);
       }
     }
-    level.addContent(creatures);
-    level.addContent(items);
-    level.addContent(regions);
+    if (!creatures.getChildren().isEmpty()) {
+      level.addContent(creatures);
+    }
+    if (!items.getChildren().isEmpty()) {
+      level.addContent(items);
+    }
+    if (!regions.getChildren().isEmpty()) {
+      level.addContent(regions);
+    }
     return level;
   }
 }

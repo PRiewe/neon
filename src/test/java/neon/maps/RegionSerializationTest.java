@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
 import java.io.*;
+import java.nio.ByteBuffer;
+import neon.maps.mvstore.RegionDataType;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
+import org.h2.mvstore.WriteBuffer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,12 +23,18 @@ import org.junit.jupiter.api.Test;
  */
 class RegionSerializationTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
+  private RegionDataType regionDataType;
+  MapTestFixtures mapTestFixtures;
 
   @BeforeEach
   void setUp() throws Exception {
-    testDb = MapDbTestHelper.createInMemoryDB();
+    testDb = MapDbTestHelper.createTempFileDb();
     TestEngineContext.initialize(testDb);
+    regionDataType = new RegionDataType(TestEngineContext.getTestResources());
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
   }
 
   @AfterEach
@@ -37,7 +46,7 @@ class RegionSerializationTest {
   @Test
   void testBasicRegionRoundTrip() throws Exception {
     // Create a basic region
-    Region original = MapTestFixtures.createTestRegion(10, 20, 30, 40);
+    Region original = mapTestFixtures.createTestRegion(10, 20, 30, 40);
 
     // Serialize and deserialize
     Region deserialized = serializeAndDeserialize(original);
@@ -49,7 +58,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionWithLabel() throws Exception {
-    Region original = MapTestFixtures.createTestRegion("region-1", 5, 10, 15, 20, 0);
+    Region original = mapTestFixtures.createTestRegion("region-1", 5, 10, 15, 20, 0);
     original.setLabel("Test Label");
 
     Region deserialized = serializeAndDeserialize(original);
@@ -59,7 +68,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionWithNullLabel() throws Exception {
-    Region original = MapTestFixtures.createTestRegion(0, 0, 10, 10);
+    Region original = mapTestFixtures.createTestRegion(0, 0, 10, 10);
     // Label is null by default
 
     Region deserialized = serializeAndDeserialize(original);
@@ -69,7 +78,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionWithScripts() throws Exception {
-    Region original = MapTestFixtures.createTestRegion(0, 0, 50, 50);
+    Region original = mapTestFixtures.createTestRegion(0, 0, 50, 50);
     original.addScript("script1.js", false);
     original.addScript("script2.js", false);
     original.addScript("script3.js", false);
@@ -84,7 +93,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionWithEmptyScripts() throws Exception {
-    Region original = MapTestFixtures.createTestRegion(0, 0, 25, 25);
+    Region original = mapTestFixtures.createTestRegion(0, 0, 25, 25);
     // No scripts added
 
     Region deserialized = serializeAndDeserialize(original);
@@ -96,7 +105,7 @@ class RegionSerializationTest {
   @Test
   void testRegionDifferentZOrders() throws Exception {
     for (int z = 0; z < 5; z++) {
-      Region original = MapTestFixtures.createTestRegion("region-z" + z, 0, 0, 10, 10, z);
+      Region original = mapTestFixtures.createTestRegion("region-z" + z, 0, 0, 10, 10, z);
 
       Region deserialized = serializeAndDeserialize(original);
 
@@ -107,7 +116,7 @@ class RegionSerializationTest {
   @Test
   void testRegionBoundaryValues() throws Exception {
     // Test with large coordinates and dimensions
-    Region original = MapTestFixtures.createTestRegion(1000, 2000, 500, 750);
+    Region original = mapTestFixtures.createTestRegion(1000, 2000, 500, 750);
 
     Region deserialized = serializeAndDeserialize(original);
 
@@ -121,7 +130,7 @@ class RegionSerializationTest {
   @Test
   void testRegionWithZeroSize() throws Exception {
     // Edge case: 0-sized region
-    Region original = MapTestFixtures.createTestRegion(10, 10, 0, 0);
+    Region original = mapTestFixtures.createTestRegion(10, 10, 0, 0);
 
     Region deserialized = serializeAndDeserialize(original);
 
@@ -132,8 +141,8 @@ class RegionSerializationTest {
   @Test
   void testMultipleRegionsIndependence() throws Exception {
     // Ensure multiple serializations don't interfere
-    Region region1 = MapTestFixtures.createTestRegion("r1", 0, 0, 10, 10, 0);
-    Region region2 = MapTestFixtures.createTestRegion("r2", 20, 20, 30, 30, 1);
+    Region region1 = mapTestFixtures.createTestRegion("r1", 0, 0, 10, 10, 0);
+    Region region2 = mapTestFixtures.createTestRegion("r2", 20, 20, 30, 30, 1);
     region1.setLabel("Region One");
     region2.setLabel("Region Two");
 
@@ -148,7 +157,7 @@ class RegionSerializationTest {
 
   @Test
   void testRegionSerializationPerformance() throws Exception {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 100, 100);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 100, 100);
     region.setLabel("Performance Test Region");
     region.addScript("test1.js", false);
     region.addScript("test2.js", false);
@@ -176,7 +185,7 @@ class RegionSerializationTest {
 
     long startTime = System.nanoTime();
     for (int i = 0; i < regionCount; i++) {
-      Region region = MapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
+      Region region = mapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
       serializeAndDeserialize(region);
     }
     long endTime = System.nanoTime();
@@ -190,20 +199,13 @@ class RegionSerializationTest {
   }
 
   /** Helper method to serialize and deserialize a region. */
-  private static Region serializeAndDeserialize(Region original)
+  private Region serializeAndDeserialize(Region original)
       throws IOException, ClassNotFoundException {
-    // Serialize
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(baos);
-    original.writeExternal(oos);
-    oos.flush();
+    WriteBuffer writeBuffer = new WriteBuffer();
+    regionDataType.write(writeBuffer, original);
 
-    // Deserialize
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    ObjectInputStream ois = new ObjectInputStream(bais);
-    Region deserialized = new Region();
-    deserialized.readExternal(ois);
-
-    return deserialized;
+    byte[] serialized = writeBuffer.getBuffer().array();
+    ByteBuffer readBuffer = ByteBuffer.wrap(serialized);
+    return regionDataType.read(readBuffer);
   }
 }

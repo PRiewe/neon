@@ -42,7 +42,7 @@ class RNode<E> {
   }
 
   protected Rectangle getBox() {
-    return (Rectangle) box;
+    return box;
   }
 
   protected RNode<E>[] getNodes() {

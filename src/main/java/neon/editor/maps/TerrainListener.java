@@ -22,13 +22,15 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import lombok.extern.slf4j.Slf4j;
 import neon.editor.*;
 import neon.editor.editors.TerrainEditor;
 import neon.resources.RTerrain;
 
+@Slf4j
 public class TerrainListener implements ListSelectionListener, MouseListener {
-  private MapEditor editor;
-  private JList<RTerrain> list;
+  private final MapEditor editor;
+  private final JList<RTerrain> list;
 
   public TerrainListener(MapEditor editor, JList<RTerrain> list) {
     this.editor = editor;
@@ -79,12 +81,11 @@ public class TerrainListener implements ListSelectionListener, MouseListener {
       DefaultListModel<RTerrain> model = (DefaultListModel<RTerrain>) list.getModel();
       if (e.getActionCommand().equals("New terrain type")) {
         String s =
-            (String)
-                JOptionPane.showInputDialog(
-                    neon.editor.Editor.getFrame(),
-                    "New terrain name:",
-                    "New terrain",
-                    JOptionPane.QUESTION_MESSAGE);
+            JOptionPane.showInputDialog(
+                Editor.getFrame(),
+                "New terrain name:",
+                "New terrain",
+                JOptionPane.QUESTION_MESSAGE);
         if ((s != null) && (s.length() > 0)) {
           RTerrain type = new RTerrain(s, Editor.getStore().getActive().get("id"));
           model.addElement(type);
@@ -99,6 +100,7 @@ public class TerrainListener implements ListSelectionListener, MouseListener {
             model.removeElement(list.getSelectedValue());
           }
         } catch (ArrayIndexOutOfBoundsException a) {
+          log.error("actionPerformed", a);
         }
       }
     }

@@ -23,7 +23,7 @@ import neon.systems.files.StringTranslator;
 
 public class RText extends Resource {
   private String text;
-  private FileSystem files;
+  private final FileSystem files;
 
   public RText(String id, FileSystem files, String... path) {
     super(id, path);

@@ -18,6 +18,7 @@
 
 package neon.editor.services;
 
+import java.util.Vector;
 import neon.editor.Editor;
 import neon.maps.services.ResourceProvider;
 import neon.resources.Resource;
@@ -37,5 +38,10 @@ public class EditorResourceProvider implements ResourceProvider {
   @Override
   public Resource getResource(String id, String type) {
     return Editor.resources.getResource(id, type);
+  }
+
+  @Override
+  public <T extends Resource> Vector<T> getResources(Class<T> rRecipeClass) {
+    return Editor.resources.getResources(rRecipeClass);
   }
 }

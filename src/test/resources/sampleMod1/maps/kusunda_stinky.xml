@@ -4,7 +4,6 @@
     <name>the Stinky Sailor</name>
   </header>
   <level name="basement" l="0">
-    <creatures />
     <items>
       <door x="5" y="5" state="closed" id="door" uid="5">
         <dest x="5" y="5" z="1" sign="entry" />
@@ -16,7 +15,6 @@
     </regions>
   </level>
   <level name="entry" l="1">
-    <creatures />
     <items>
       <door x="3" y="0" state="locked" lock="1" id="door" uid="0">
         <dest x="34028" y="15175" map="1" />
@@ -35,7 +33,6 @@
     </regions>
   </level>
   <level name="upstairs" l="2">
-    <creatures />
     <items>
       <door x="5" y="1" state="closed" id="door" uid="3">
         <dest x="5" y="1" z="1" sign="entry" />

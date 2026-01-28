@@ -19,10 +19,10 @@
 package neon.editor.resources;
 
 import java.util.ArrayList;
-import neon.editor.Editor;
 import neon.resources.RData;
 import neon.resources.RItem;
 import neon.resources.RSpell;
+import neon.resources.ResourceManager;
 import org.jdom2.Element;
 
 public class IContainer extends IObject {
@@ -36,21 +36,19 @@ public class IContainer extends IObject {
     super(resource, x, y, z, uid);
   }
 
-  public IContainer(Element properties) {
-    super(properties);
+  public IContainer(ResourceManager rm, Element properties) {
+    super(rm, properties);
     for (Element e : properties.getChildren("item")) {
-      RItem ri = (RItem) Editor.resources.getResource(e.getAttributeValue("id"));
+      RItem ri = (RItem) rm.getResource(e.getAttributeValue("id"));
       contents.add(new IObject(ri, 0, 0, 0, Integer.parseInt(e.getAttributeValue("uid"))));
     }
     if (properties.getAttribute("lock") != null) {
       lock = Integer.parseInt(properties.getAttributeValue("lock"));
-      key = (RItem) Editor.resources.getResource(properties.getAttributeValue("key"));
+      key = (RItem) rm.getResource(properties.getAttributeValue("key"));
     }
     if (properties.getAttribute("trap") != null) {
       trap = Integer.parseInt(properties.getAttributeValue("trap"));
-      spell =
-          (RSpell.Enchantment)
-              Editor.resources.getResource(properties.getAttributeValue("spell"), "magic");
+      spell = (RSpell.Enchantment) rm.getResource(properties.getAttributeValue("spell"), "magic");
     }
   }
 

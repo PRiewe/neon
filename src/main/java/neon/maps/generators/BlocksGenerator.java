@@ -198,20 +198,7 @@ public class BlocksGenerator {
     }
   }
 
-  private static class BSPGenerator {
-    private final int w;
-    private final int h;
-    private final int minW;
-    private final int maxW;
-    private final MapUtils mapUtils;
-
-    private BSPGenerator(int w, int h, int minW, int maxW, MapUtils mapUtils) {
-      this.w = w;
-      this.h = h;
-      this.minW = minW;
-      this.maxW = maxW;
-      this.mapUtils = mapUtils;
-    }
+  private record BSPGenerator(int w, int h, int minW, int maxW, MapUtils mapUtils) {
 
     private ArrayList<Rectangle> generate() {
       ArrayList<Rectangle> buffer = new ArrayList<Rectangle>();

@@ -32,13 +32,15 @@ import neon.resources.RWeapon.WeaponType;
 import neon.util.ColorFactory;
 
 public class WeaponEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JFormattedTextField costField, weightField, charField;
-  private JComboBox<String> colorBox;
-  private JComboBox<String> spellBox;
-  private JComboBox<WeaponType> typeBox;
-  private JTextField damageField;
-  private RWeapon data;
+  private final JTextField nameField;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final JComboBox<String> spellBox;
+  private final JComboBox<WeaponType> typeBox;
+  private final JTextField damageField;
+  private final RWeapon data;
 
   public WeaponEditor(JFrame parent, RWeapon data) {
     super(parent, "Weapon Editor: " + data.id);

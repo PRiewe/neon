@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Configuration;
+import neon.core.GameContext;
 import neon.core.event.TurnEvent;
 import neon.core.event.UpdateEvent;
 import neon.entities.Creature;
@@ -33,10 +34,6 @@ import neon.maps.*;
 import neon.maps.Region.Modifier;
 import neon.maps.generators.TownGenerator;
 import neon.maps.generators.WildernessGenerator;
-import neon.maps.services.EntityStore;
-import neon.maps.services.GameContextEntityStore;
-import neon.maps.services.GameContextResourceProvider;
-import neon.maps.services.ResourceProvider;
 import neon.resources.CServer;
 import neon.resources.RRegionTheme;
 import neon.ui.GamePanel;
@@ -47,17 +44,16 @@ import net.engio.mbassy.listener.References;
 @Listener(references = References.Strong) // strong, om gc te vermijden
 @Slf4j
 public class TurnHandler {
-  private GamePanel panel;
+  private final GamePanel panel;
   private Generator generator;
-  private int range;
-  private final EntityStore entityStore;
-  private final ResourceProvider resourceProvider;
+  private final int range;
+  private final GameContext gameContext;
+  private final InventoryHandler inventoryHandler;
 
-  public TurnHandler(GamePanel panel) {
+  public TurnHandler(GamePanel panel, GameContext gameContext) {
     this.panel = panel;
-    this.entityStore = new GameContextEntityStore(panel.getContext());
-    this.resourceProvider = new GameContextResourceProvider(panel.getContext());
-
+    this.gameContext = gameContext;
+    this.inventoryHandler = new InventoryHandler(gameContext);
     CServer ini = (CServer) panel.getContext().getResources().getResource("ini", "config");
     range = ini.getAIRange();
   }
@@ -148,14 +144,14 @@ public class TurnHandler {
           RRegionTheme theme = r.getTheme();
           r.fix(); // vanaf hier wordt theme null
           if (theme.id.startsWith("town")) {
-            new TownGenerator(zone, entityStore, resourceProvider)
+            new TownGenerator(zone, gameContext)
                 .generate(r.getX(), r.getY(), r.getWidth(), r.getHeight(), theme, r.getZ());
           } else {
-            new WildernessGenerator(zone, entityStore, resourceProvider).generate(r, theme);
+            new WildernessGenerator(zone, gameContext).generate(r, theme);
           }
         }
       }
-    } while (fixed == false);
+    } while (!fixed);
 
     return generated;
   }
@@ -163,13 +159,13 @@ public class TurnHandler {
   /*
    * @return	a creature's speed
    */
-  private static int getSpeed(Creature creature) {
+  private int getSpeed(Creature creature) {
     int penalty = 3;
-    if (InventoryHandler.getWeight(creature) > 9 * creature.species.str) {
+    if (inventoryHandler.getWeight(creature) > 9 * creature.species.str) {
       return 0;
-    } else if (InventoryHandler.getWeight(creature) > 6 * creature.species.str) {
+    } else if (inventoryHandler.getWeight(creature) > 6 * creature.species.str) {
       penalty = 1;
-    } else if (InventoryHandler.getWeight(creature) > 3 * creature.species.str) {
+    } else if (inventoryHandler.getWeight(creature) > 3 * creature.species.str) {
       penalty = 2;
     }
     return (creature.getStatsComponent().getSpd()) * penalty / 3;

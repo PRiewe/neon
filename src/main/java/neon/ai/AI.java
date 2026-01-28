@@ -22,7 +22,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.HashMap;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.core.handlers.*;
@@ -50,6 +50,11 @@ public abstract class AI implements Serializable {
   protected byte confidence;
   protected Creature creature;
   protected HashMap<Long, Integer> dispositions = new HashMap<Long, Integer>();
+  protected final GameContext gameContext;
+  protected final MotionHandler motionHandler;
+  protected final CombatUtils combatUtils;
+  protected final PathFinder pathFinder;
+  protected final InventoryHandler inventoryHandler;
 
   /**
    * Initializes a new AI.
@@ -58,10 +63,15 @@ public abstract class AI implements Serializable {
    * @param aggression
    * @param confidence
    */
-  public AI(Creature creature, byte aggression, byte confidence) {
+  public AI(Creature creature, byte aggression, byte confidence, GameContext gameContext) {
     this.aggression = aggression;
     this.confidence = confidence;
     this.creature = creature;
+    this.gameContext = gameContext;
+    this.motionHandler = new MotionHandler(gameContext);
+    this.combatUtils = new CombatUtils(gameContext);
+    this.pathFinder = new PathFinder(gameContext);
+    this.inventoryHandler = new InventoryHandler(gameContext);
   }
 
   /** Lets the creature with this AI act. */
@@ -74,7 +84,7 @@ public abstract class AI implements Serializable {
     if (creature.hasCondition(Condition.CALM)) {
       return false;
     } else {
-      return aggression > getDisposition(Engine.getPlayer());
+      return aggression > getDisposition(gameContext.getPlayer());
     }
   }
 
@@ -173,29 +183,29 @@ public abstract class AI implements Serializable {
   protected boolean heal() {
     // first check potions and scrolls?
     for (long uid : creature.getInventoryComponent()) {
-      Item item = (Item) Engine.getStore().getEntity(uid);
+      Item item = (Item) gameContext.getStore().getEntity(uid);
       if (item instanceof Item.Scroll || item instanceof Item.Potion) {
         RSpell formula = item.getMagicComponent().getSpell();
 
         if (formula.effect.equals(Effect.RESTORE_HEALTH) && formula.range == 0) {
-          Engine.post(new MagicEvent.ItemOnSelf(this, creature, item));
-          InventoryHandler.removeItem(creature, item.getUID());
+          gameContext.post(new MagicEvent.ItemOnSelf(this, creature, item));
+          inventoryHandler.removeItem(creature, item.getUID());
           return true;
         }
       }
     }
-    int time = Engine.getTimer().getTime();
+    int time = gameContext.getTimer().getTime();
     for (RSpell.Power power : creature.getMagicComponent().getPowers()) {
       if (power.effect.equals(Effect.RESTORE_HEALTH)
           && power.range == 0
           && creature.getMagicComponent().canUse(power, time)) {
-        Engine.post(new MagicEvent.OnSelf(this, creature, power));
+        gameContext.post(new MagicEvent.OnSelf(this, creature, power));
         return true;
       }
     }
     for (RSpell spell : creature.getMagicComponent().getSpells()) {
       if (spell.effect.equals(Effect.RESTORE_HEALTH) && spell.range == 0) {
-        Engine.post(new MagicEvent.OnSelf(this, creature, spell));
+        gameContext.post(new MagicEvent.OnSelf(this, creature, spell));
         return true;
       }
     }
@@ -214,10 +224,7 @@ public abstract class AI implements Serializable {
       return true;
     } else if (creature.hasCondition(Condition.PARALYZED) && cure(Effect.CURE_PARALYZATION)) {
       return true;
-    } else if (creature.hasCondition(Condition.BLIND) && cure(Effect.CURE_BLINDNESS)) {
-      return true;
-    }
-    return false;
+    } else return creature.hasCondition(Condition.BLIND) && cure(Effect.CURE_BLINDNESS);
   }
 
   /*
@@ -226,28 +233,28 @@ public abstract class AI implements Serializable {
   private boolean cure(Effect effect) {
     // first check potions and scrolls?
     for (long uid : creature.getInventoryComponent()) {
-      Item item = (Item) Engine.getStore().getEntity(uid);
+      Item item = (Item) gameContext.getStore().getEntity(uid);
       if (item instanceof Item.Scroll || item instanceof Item.Potion) {
         RSpell formula = item.getMagicComponent().getSpell();
         if (formula.effect.equals(effect) && formula.range == 0) {
-          Engine.post(new MagicEvent.ItemOnSelf(this, creature, item));
-          InventoryHandler.removeItem(creature, item.getUID());
+          gameContext.post(new MagicEvent.ItemOnSelf(this, creature, item));
+          inventoryHandler.removeItem(creature, item.getUID());
           return true;
         }
       }
     }
-    int time = Engine.getTimer().getTime();
+    int time = gameContext.getTimer().getTime();
     for (RSpell.Power power : creature.getMagicComponent().getPowers()) {
       if (power.effect.equals(effect)
           && power.range == 0
           && creature.getMagicComponent().canUse(power, time)) {
-        Engine.post(new MagicEvent.OnSelf(this, creature, power));
+        gameContext.post(new MagicEvent.OnSelf(this, creature, power));
         return true;
       }
     }
     for (RSpell spell : creature.getMagicComponent().getSpells()) {
       if (spell.effect.equals(effect) && spell.range == 0) {
-        Engine.post(new MagicEvent.OnSelf(this, creature, spell));
+        gameContext.post(new MagicEvent.OnSelf(this, creature, spell));
         return true;
       }
     }
@@ -259,26 +266,26 @@ public abstract class AI implements Serializable {
    */
   private boolean equip(Slot slot) {
     for (long uid : creature.getInventoryComponent()) {
-      Item item = (Item) Engine.getStore().getEntity(uid);
+      Item item = (Item) gameContext.getStore().getEntity(uid);
       if (item instanceof Weapon && slot.equals(((Weapon) item).getSlot())) {
         WeaponType type = ((Weapon) item).getWeaponType();
-        InventoryHandler.equip(item, creature);
+        inventoryHandler.equip(item, creature);
         if ((type.equals(WeaponType.BOW) || type.equals(WeaponType.CROSSBOW))
             && !equip(Slot.AMMO)) {
           continue;
         } else if (type.equals(WeaponType.ARROW)
-            && !CombatUtils.getWeaponType(creature).equals(WeaponType.BOW)) {
+            && !combatUtils.getWeaponType(creature).equals(WeaponType.BOW)) {
           continue;
         } else if (type.equals(WeaponType.BOLT)
-            && !CombatUtils.getWeaponType(creature).equals(WeaponType.CROSSBOW)) {
+            && !combatUtils.getWeaponType(creature).equals(WeaponType.CROSSBOW)) {
           continue;
         }
         return true;
       } else if (item instanceof Clothing && slot.equals(((Clothing) item).getSlot())) {
-        InventoryHandler.equip(item, creature);
+        inventoryHandler.equip(item, creature);
         return true;
       } else if (item instanceof Item.Scroll && slot.equals(Slot.MAGIC)) {
-        InventoryHandler.equip(item, creature);
+        inventoryHandler.equip(item, creature);
         return true;
       }
     }
@@ -306,8 +313,8 @@ public abstract class AI implements Serializable {
     }
     Point p = new Point(cBounds.x + dx, cBounds.y + dy);
 
-    if (Engine.getAtlas().getCurrentZone().getCreature(p) == null) {
-      byte result = MotionHandler.move(creature, p);
+    if (gameContext.getAtlas().getCurrentZone().getCreature(p) == null) {
+      byte result = motionHandler.move(creature, p);
       if (result == MotionHandler.BLOCKED) {
         // try a random direction once (or multiple times?)
         wander();
@@ -322,9 +329,9 @@ public abstract class AI implements Serializable {
 
   private boolean open(Point p) {
     Door door = null;
-    for (long uid : Engine.getAtlas().getCurrentZone().getItems(p)) {
-      if (Engine.getStore().getEntity(uid) instanceof Door) {
-        door = (Door) Engine.getStore().getEntity(uid);
+    for (long uid : gameContext.getAtlas().getCurrentZone().getItems(p)) {
+      if (gameContext.getStore().getEntity(uid) instanceof Door) {
+        door = (Door) gameContext.getStore().getEntity(uid);
       }
     }
     if (door != null) {
@@ -351,7 +358,7 @@ public abstract class AI implements Serializable {
     hunt(prey);
     // if too far from home, return
     if (home.distance(bounds.getLocation()) > range) {
-      MotionHandler.move(creature, bounds.getLocation());
+      motionHandler.move(creature, bounds.getLocation());
     }
   }
 
@@ -367,7 +374,7 @@ public abstract class AI implements Serializable {
     // if too far from home, return
     double newDistance = home.distance(bounds.getLocation());
     if (newDistance > range && newDistance > oldDistance) {
-      MotionHandler.move(creature, bounds.getLocation());
+      motionHandler.move(creature, bounds.getLocation());
     }
   }
 
@@ -376,15 +383,15 @@ public abstract class AI implements Serializable {
    */
   protected void wander() {
     Rectangle cBounds = creature.getShapeComponent();
-    Rectangle pBounds = Engine.getPlayer().getShapeComponent();
+    Rectangle pBounds = gameContext.getPlayer().getShapeComponent();
 
     int dx = 1 - (int) (Math.random() * 3);
     int dy = 1 - (int) (Math.random() * 3);
     Point p = new Point(cBounds.x + dx, cBounds.y + dy);
     Point player = pBounds.getLocation();
 
-    if (Engine.getAtlas().getCurrentZone().getCreature(p) == null && !player.equals(p)) {
-      MotionHandler.move(creature, p);
+    if (gameContext.getAtlas().getCurrentZone().getCreature(p) == null && !player.equals(p)) {
+      motionHandler.move(creature, p);
     }
   }
 
@@ -392,13 +399,13 @@ public abstract class AI implements Serializable {
    * wander(point): walk to a specific point
    */
   protected void wander(Point destination) {
-    Rectangle pBounds = Engine.getPlayer().getShapeComponent();
+    Rectangle pBounds = gameContext.getPlayer().getShapeComponent();
     Rectangle cBounds = creature.getShapeComponent();
 
     Point player = pBounds.getLocation();
-    Point next = PathFinder.findPath(creature, cBounds.getLocation(), destination)[0];
-    if (Engine.getAtlas().getCurrentZone().getCreature(next) == null && !player.equals(next)) {
-      MotionHandler.move(creature, next);
+    Point next = pathFinder.findPath(creature, cBounds.getLocation(), destination)[0];
+    if (gameContext.getAtlas().getCurrentZone().getCreature(next) == null && !player.equals(next)) {
+      motionHandler.move(creature, next);
     }
   }
 
@@ -411,14 +418,14 @@ public abstract class AI implements Serializable {
     Rectangle preyPos = prey.getShapeComponent();
 
     if (dice == 1) {
-      int time = Engine.getTimer().getTime();
+      int time = gameContext.getTimer().getTime();
       for (RSpell.Power power : creature.getMagicComponent().getPowers()) {
         if (power.effect.getSchool().equals(Skill.DESTRUCTION)
             && creature.getMagicComponent().canUse(power, time)
             && power.range >= Point.distance(creaturePos.x, creaturePos.y, preyPos.x, preyPos.y)) {
           creature.getMagicComponent().equipSpell(power);
           Rectangle bounds = prey.getShapeComponent();
-          Engine.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
+          gameContext.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
           return; // abort hunt as soon as a spell is cast
         }
       }
@@ -427,7 +434,7 @@ public abstract class AI implements Serializable {
             && spell.range >= Point.distance(creaturePos.x, creaturePos.y, preyPos.x, preyPos.y)) {
           creature.getMagicComponent().equipSpell(spell);
           Rectangle bounds = prey.getShapeComponent();
-          Engine.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
+          gameContext.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
           return; // abort hunt as soon as a spell is cast
         }
       }
@@ -452,22 +459,22 @@ public abstract class AI implements Serializable {
     } else { // if creature is smarter, try A*
       Rectangle cBounds = creature.getShapeComponent();
       Rectangle pBounds = prey.getShapeComponent();
-      p = PathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
+      p = pathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
     }
 
     if (p.distance(preyPos.x, preyPos.y) < 1) {
       long uid = creature.getInventoryComponent().get(Slot.WEAPON);
-      Weapon weapon = (Weapon) Engine.getStore().getEntity(uid);
+      Weapon weapon = (Weapon) gameContext.getStore().getEntity(uid);
       if (creature.getInventoryComponent().hasEquiped(Slot.WEAPON) && weapon.isRanged()) {
-        if (!(CombatUtils.getWeaponType(creature).equals(WeaponType.THROWN) || equip(Slot.AMMO))) {
-          InventoryHandler.unequip(weapon.getUID(), creature);
+        if (!(combatUtils.getWeaponType(creature).equals(WeaponType.THROWN) || equip(Slot.AMMO))) {
+          inventoryHandler.unequip(weapon.getUID(), creature);
         }
       } else if (!creature.getInventoryComponent().hasEquiped(Slot.WEAPON)) {
         equip(Slot.WEAPON);
       }
-      Engine.post(new CombatEvent(creature, prey));
-    } else if (Engine.getAtlas().getCurrentZone().getCreature(p) == null) {
-      if (MotionHandler.move(creature, p) == MotionHandler.DOOR) {
+      gameContext.post(new CombatEvent(creature, prey));
+    } else if (gameContext.getAtlas().getCurrentZone().getCreature(p) == null) {
+      if (motionHandler.move(creature, p) == MotionHandler.DOOR) {
         open(p); // open door if necessary
       }
     } else { // if another creature is in the way
@@ -477,7 +484,7 @@ public abstract class AI implements Serializable {
 
   private boolean hasItem(Creature creature, RItem item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (Engine.getStore().getEntity(uid).getID().equals(item.id)) {
+      if (gameContext.getStore().getEntity(uid).getID().equals(item.id)) {
         return true;
       }
     }

@@ -28,8 +28,8 @@ public class RMod extends Resource {
   public ArrayList<String> ccItems = new ArrayList<String>();
   public ArrayList<String> ccRaces = new ArrayList<String>();
   public ArrayList<String> ccSpells = new ArrayList<String>();
-  private HashMap<String, String> info = new HashMap<String, String>();
-  private ArrayList<String[]> maps = new ArrayList<String[]>();
+  private final HashMap<String, String> info = new HashMap<String, String>();
+  private final ArrayList<String[]> maps = new ArrayList<String[]>();
 
   public RMod(Element main, Element cc, String... path) {
     super(main.getAttributeValue("id"), path);
@@ -78,7 +78,7 @@ public class RMod extends Resource {
       Element currency = new Element("currency");
       currency.setAttribute("big", info.get("big"));
       currency.setAttribute("small", info.get("small"));
-      main.addContent("currency");
+      main.addContent(currency);
     }
     return main;
   }
@@ -87,7 +87,7 @@ public class RMod extends Resource {
    * @return the root element of the cc.xml file for this mod.
    */
   public Element getCCElement() {
-    Element cc = new Element("cc");
+    Element cc = new Element("root");
     for (String item : ccItems) {
       cc.addContent(new Element("item").setText(item));
     }

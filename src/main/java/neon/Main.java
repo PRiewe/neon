@@ -47,7 +47,7 @@ public class Main {
 
     // create engine and ui
     Engine engine = new Engine(sPort);
-    GameContext context = engine.getContext();
+    GameContext context = engine.getGameEngineState();
     Client client = new Client(cPort, version, context);
 
     // custom look and feels are sometimes stricter than normal ones, apparently

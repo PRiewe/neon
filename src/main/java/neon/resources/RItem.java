@@ -20,6 +20,7 @@ package neon.resources;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -39,11 +40,11 @@ public class RItem extends RData implements Serializable {
     light,
     potion,
     scroll,
-    weapon;
+    weapon
   }
 
-  private static XMLOutputter outputter = new XMLOutputter();
-  private static SAXBuilder builder = new SAXBuilder();
+  private static final XMLOutputter outputter = new XMLOutputter();
+  private static final SAXBuilder builder = new SAXBuilder();
 
   public int cost;
   public float weight;
@@ -66,7 +67,7 @@ public class RItem extends RData implements Serializable {
       spell = item.getAttributeValue("spell");
     }
     if (item.getChild("svg") != null) {
-      svg = outputter.outputString((Element) item.getChild("svg").getChildren().get(0));
+      svg = outputter.outputString(item.getChild("svg").getChildren().get(0));
     }
   }
 
@@ -77,12 +78,13 @@ public class RItem extends RData implements Serializable {
 
   public Element toElement() {
     Element item = new Element(type.toString());
-    item.setAttribute("id", id);
+    item = super.appendToElement(item);
     if (svg != null) {
       try {
         Element graphics = new Element("svg");
-        ByteArrayInputStream stream = new ByteArrayInputStream(svg.getBytes("UTF-8"));
-        Element shape = (Element) builder.build(stream).getRootElement().detach();
+        ByteArrayInputStream stream =
+            new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8));
+        Element shape = builder.build(stream).getRootElement().detach();
         graphics.addContent(shape);
         item.addContent(graphics);
       } catch (Exception e) {
@@ -169,6 +171,17 @@ public class RItem extends RData implements Serializable {
       for (Element item : container.getChildren("item")) {
         contents.add(item.getText());
       }
+    }
+
+    public Element toElement() {
+      Element container = super.toElement();
+      for (var item : contents) {
+        Element itemElm = new Element("item");
+        itemElm.setText(item);
+        container.addContent(itemElm);
+      }
+
+      return container;
     }
   }
 

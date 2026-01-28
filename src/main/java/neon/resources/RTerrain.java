@@ -53,13 +53,13 @@ public class RTerrain extends RData {
     terrain.setAttribute("char", text);
     terrain.setAttribute("color", color);
     if (modifier != Modifier.NONE) {
-      terrain.setAttribute("mod", modifier.toString());
+      terrain.setAttribute("mod", modifier.toString().toLowerCase());
     }
     if (description != null && !description.isEmpty()) {
       terrain.setText(description);
     }
     if (type != Subtype.NONE) {
-      terrain.setAttribute("sub", type.toString());
+      terrain.setAttribute("sub", type.toString().toLowerCase());
     }
     return terrain;
   }

@@ -19,7 +19,10 @@
 package neon.util.fsm;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A simple finite state machine supporting nested states.
@@ -28,9 +31,9 @@ import java.util.concurrent.ConcurrentSkipListSet;
  */
 public class FiniteStateMachine extends State {
   // String in hashmap is eventID + current state, then eventIDs can be reused
-  private final HashMap<String, Transition> transitions = new HashMap<>();
-  private final HashMap<String, Object> variables = new HashMap<>();
-  private final List<State> starts = new ArrayList<>(); // list of all start states
+  private final ConcurrentMap<String, Transition> transitions = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, Object> variables = new ConcurrentHashMap<>();
+  private final List<State> starts = new CopyOnWriteArrayList<>(); // list of all start states
   private ConcurrentSkipListSet<State> currents; // list of all current states
 
   public FiniteStateMachine() {
@@ -43,6 +46,7 @@ public class FiniteStateMachine extends State {
 
   public void start(TransitionEvent e) {
     currents = new ConcurrentSkipListSet<>(new StateComparator());
+
     for (State state : starts) {
       if (state.parent.equals(this) || starts.contains(state.parent)) {
         currents.add(state);
@@ -55,6 +59,7 @@ public class FiniteStateMachine extends State {
     for (State current : currents) {
       current.exit(e);
     }
+    currents.clear();
   }
 
   public void transition(TransitionEvent event) {
@@ -145,6 +150,7 @@ public class FiniteStateMachine extends State {
         for (State other : currents) {
           if (other.parent == next) {
             check = false;
+            break;
           }
         }
 

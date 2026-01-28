@@ -18,7 +18,7 @@
 
 package neon.magic;
 
-import neon.core.Engine;
+import neon.maps.services.ResourceProvider;
 import neon.resources.LSpell;
 import neon.resources.RSpell;
 import neon.util.Dice;
@@ -29,18 +29,23 @@ import neon.util.Dice;
  * @author mdriesen
  */
 public class SpellFactory {
+  private final ResourceProvider resourceProvider;
+
+  public SpellFactory(ResourceProvider resourceProvider) {
+    this.resourceProvider = resourceProvider;
+  }
+
   /**
    * Returns the spell with the given id.
    *
    * @param id the id of the requested spell
    * @return the spell with the given id
    */
-  public static RSpell getSpell(String id) {
-    if (Engine.getResources().getResource(id, "magic") instanceof LSpell) {
-      LSpell ls = (LSpell) Engine.getResources().getResource(id, "magic");
+  public RSpell getSpell(String id) {
+    if (resourceProvider.getResource(id, "magic") instanceof LSpell ls) {
       return getSpell(ls.spells.keySet().toArray()[Dice.roll(1, ls.spells.size(), -1)].toString());
     } else {
-      return (RSpell) Engine.getResources().getResource(id, "magic");
+      return (RSpell) resourceProvider.getResource(id, "magic");
     }
   }
 
@@ -50,9 +55,9 @@ public class SpellFactory {
    * @param id the id of the requested enchantment
    * @return the enchantment with the given id
    */
-  public static RSpell.Enchantment getEnchantment(String id) {
-    if (Engine.getResources().getResource(id, "magic") instanceof RSpell.Enchantment) {
-      return (RSpell.Enchantment) Engine.getResources().getResource(id, "magic");
+  public RSpell.Enchantment getEnchantment(String id) {
+    if (resourceProvider.getResource(id, "magic") instanceof RSpell.Enchantment) {
+      return (RSpell.Enchantment) resourceProvider.getResource(id, "magic");
     } else {
       throw new IllegalArgumentException("The given id (" + id + ") is not an enchantment.");
     }

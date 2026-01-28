@@ -21,7 +21,7 @@ package neon.narrative;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.resources.RCreature;
 import neon.resources.RItem;
 import neon.util.Dice;
@@ -29,9 +29,11 @@ import org.jdom2.Element;
 
 public class Resolver {
   QuestTracker tracker;
+  private final GameContext gameContext;
 
-  public Resolver(QuestTracker tracker) {
+  public Resolver(QuestTracker tracker, GameContext gameContext) {
     this.tracker = tracker;
+    this.gameContext = gameContext;
   }
 
   /**
@@ -62,7 +64,7 @@ public class Resolver {
   }
 
   private void addItem(Element var, List<String> strings) {
-    Collection<RItem> items = Engine.getResources().getResources(RItem.class);
+    Collection<RItem> items = gameContext.getResources().getResources(RItem.class);
     if (var.getAttributeValue("type") != null) {
       for (RItem item : items) {
         if (item.type.name().equals(var.getAttributeValue("type"))) {
@@ -76,13 +78,13 @@ public class Resolver {
       String[] things = var.getAttributeValue("id").split(",");
       String item = things[Dice.roll(1, things.length, -1)];
       strings.add("$" + var.getTextTrim() + "$");
-      strings.add(item.toString());
+      strings.add(item);
       tracker.addObject(item);
     } else {
       String item = items.toArray()[Dice.roll(1, items.size(), -1)].toString();
       strings.add("$" + var.getTextTrim() + "$");
-      strings.add(item.toString());
-      tracker.addObject(item.toString());
+      strings.add(item);
+      tracker.addObject(item);
     }
   }
 
@@ -95,7 +97,7 @@ public class Resolver {
   }
 
   private void addCreature(Element var, List<String> strings) {
-    List<RCreature> creatures = Engine.getResources().getResources(RCreature.class);
+    List<RCreature> creatures = gameContext.getResources().getResources(RCreature.class);
     String creature = creatures.get(Dice.roll(1, creatures.size(), -1)).toString();
     strings.add("$" + var.getTextTrim() + "$");
     strings.add(creature);

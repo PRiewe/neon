@@ -18,12 +18,16 @@
 
 package neon.maps;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.nio.ByteBuffer;
 import java.util.Collection;
+import lombok.Getter;
+import lombok.Setter;
+import neon.maps.mvstore.MVUtils;
+import neon.maps.mvstore.ZoneType;
 import neon.resources.RZoneTheme;
 import neon.util.Graph;
+import org.h2.mvstore.WriteBuffer;
+import org.h2.mvstore.type.BasicDataType;
 
 /**
  * A dungeon. It can contain several interconnected zones.
@@ -31,9 +35,10 @@ import neon.util.Graph;
  * @author mdriesen
  */
 public class Dungeon implements Map {
-  private String name;
-  private int uid;
-  private Graph<Zone> zones = new Graph<Zone>();
+  @Setter @Getter private String name;
+  private final int uid;
+  private final Graph<Zone> zones;
+  private final ZoneFactory zoneFactory;
 
   /**
    * Initialize a dungeon.
@@ -41,37 +46,33 @@ public class Dungeon implements Map {
    * @param name the name of this dungeon
    * @param uid the unique identifier of this dungeon
    */
-  public Dungeon(String name, int uid) {
-    this.name = name;
-    this.uid = uid;
+  public Dungeon(String name, int uid, ZoneFactory zoneFactory) {
+    this(name, uid, new Graph<>(), zoneFactory);
   }
 
-  public Dungeon() {}
+  private Dungeon(String name, int uid, Graph<Zone> zones, ZoneFactory zoneFactory) {
+    this.name = name;
+    this.uid = uid;
+    this.zones = zones;
+    this.zoneFactory = zoneFactory;
+  }
 
   public Zone getZone(int i) {
-    return zones.getNode(i);
+    return zones.getNodeContent(i);
   }
 
   public int getUID() {
     return uid;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
   /** Adds an empty zone to this dungeon. */
   public void addZone(int zone, String name) {
-    zones.addNode(zone, new Zone(name, uid, zone));
+    zones.addNode(zone, zoneFactory.createZone(name, uid, zone));
   }
 
   /** Adds an empty zone to this dungeon. */
   public void addZone(int zone, String name, RZoneTheme theme) {
-    zones.addNode(zone, new Zone(name, uid, theme, zone));
+    zones.addNode(zone, zoneFactory.createZoneWithTheme(name, uid, zone, theme));
   }
 
   public Collection<Zone> getZones() {
@@ -79,7 +80,7 @@ public class Dungeon implements Map {
   }
 
   public String getZoneName(int zone) {
-    return zones.getNode(zone).getName();
+    return zones.getNodeContent(zone).getName();
   }
 
   /**
@@ -100,16 +101,71 @@ public class Dungeon implements Map {
     return zones.getConnections(from);
   }
 
-  @SuppressWarnings("unchecked")
-  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    name = in.readUTF();
-    uid = in.readInt();
-    zones = (Graph<Zone>) in.readObject();
-  }
+  public static class DungeonDataType extends BasicDataType<Dungeon> {
 
-  public void writeExternal(ObjectOutput out) throws IOException {
-    out.writeUTF(name);
-    out.writeInt(uid);
-    out.writeObject(zones);
+    private final ZoneFactory zoneFactory;
+    private final ZoneType zoneDataType;
+
+    public DungeonDataType(ZoneFactory zoneFactory) {
+      this.zoneFactory = zoneFactory;
+      zoneDataType = new ZoneType(zoneFactory);
+    }
+
+    @Override
+    public int getMemory(Dungeon obj) {
+      return obj.name.length() + 16 * obj.zones.getNodes().size();
+    }
+
+    @Override
+    public void write(WriteBuffer buff, Dungeon obj) {
+      MVUtils.writeString(buff, obj.name);
+      buff.putInt(obj.uid);
+      int graphSize = obj.zones.getGraphContent().size();
+      buff.putInt(graphSize);
+
+      for (var entry : obj.zones.getGraphContent()) {
+        buff.putInt(entry.getKey());
+        var node = entry.getValue();
+        zoneDataType.write(buff, node.getContent());
+
+        var conns = node.getConnections();
+        buff.putInt(conns.size());
+        for (Integer conn : conns) {
+          buff.putInt(conn);
+        }
+      }
+    }
+
+    @Override
+    public Dungeon read(ByteBuffer buff) {
+      String name = MVUtils.readString(buff);
+
+      int uid = buff.getInt();
+      Graph<Zone> zones = new Graph<>();
+      int graphSize = buff.getInt();
+      for (int i = 0; i < graphSize; i++) {
+        int index = buff.getInt();
+        Zone zone = zoneDataType.read(buff);
+        zones.addNode(index, zone);
+        Graph.Node<Zone> node = zones.getNode(index);
+        int numConnections = buff.getInt();
+        for (int j = 0; j < numConnections; j++) {
+          int connection = buff.getInt();
+          node.addConnection(connection);
+        }
+      }
+      return new Dungeon(name, uid, zones, zoneFactory);
+    }
+
+    /**
+     * Create storage object of array type to hold values
+     *
+     * @param size number of values to hold
+     * @return storage object
+     */
+    @Override
+    public Dungeon[] createStorage(int size) {
+      return new Dungeon[size];
+    }
   }
 }

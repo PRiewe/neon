@@ -30,12 +30,16 @@ import neon.resources.RItem.Type;
 import neon.util.ColorFactory;
 
 public class ItemEditor extends ObjectEditor {
-  private JTextField nameField;
-  private JTextArea svgArea;
-  private JComboBox<String> colorBox;
-  private JCheckBox aidBox, topBox, svgBox;
-  private JFormattedTextField costField, weightField, charField;
-  private RItem data;
+  private final JTextField nameField;
+  private final JTextArea svgArea;
+  private final JComboBox<String> colorBox;
+  private final JCheckBox aidBox;
+  private final JCheckBox topBox;
+  private final JCheckBox svgBox;
+  private final JFormattedTextField costField;
+  private final JFormattedTextField weightField;
+  private final JFormattedTextField charField;
+  private final RItem data;
 
   public ItemEditor(JFrame parent, RItem data) {
     super(parent, "Item Editor: " + data.id);

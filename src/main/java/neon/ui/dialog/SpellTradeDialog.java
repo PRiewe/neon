@@ -32,14 +32,15 @@ import neon.resources.RSpell;
 import neon.ui.UserInterface;
 
 public class SpellTradeDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<RSpell> buy;
+  private final JList<RSpell> buy;
   private Creature trader;
-  private JLabel info;
-  private JPanel panel;
-  private String big, small;
-  private UserInterface ui;
+  private final JLabel info;
+  private final JPanel panel;
+  private final String big;
+  private final String small;
+  private final UserInterface ui;
 
   /**
    * Initializes a new spell trading dialog box.
@@ -162,7 +163,7 @@ public class SpellTradeDialog implements KeyListener {
   }
 
   private class SpellCellRenderer implements ListCellRenderer<RSpell> {
-    private UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    private final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
     public Component getListCellRendererComponent(
         JList<? extends RSpell> list,

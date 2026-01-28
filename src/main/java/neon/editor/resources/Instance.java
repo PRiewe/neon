@@ -23,6 +23,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
+import lombok.Getter;
+import lombok.Setter;
 import neon.editor.maps.MapEditor;
 import neon.resources.RData;
 import neon.ui.graphics.Renderable;
@@ -31,13 +33,17 @@ import neon.util.TextureFactory;
 import org.jdom2.Element;
 
 public abstract class Instance implements Renderable {
-  private static AlphaComposite alphaOn =
+  private static final AlphaComposite alphaOn =
       AlphaComposite.getInstance(AlphaComposite.SRC_OVER).derive(0.5f);
-  private static AlphaComposite alphaOff = AlphaComposite.getInstance(AlphaComposite.SRC);
+  private static final AlphaComposite alphaOff = AlphaComposite.getInstance(AlphaComposite.SRC);
 
-  public int x, y, z, width, height;
+  @Getter @Setter public int x;
+  @Getter @Setter public int y;
+  @Getter @Setter public int z;
+  public int width;
+  public int height;
   public RData resource;
-  public boolean isCut = false;
+  @Setter public boolean isCut = false;
 
   public Instance(RData resource, int x, int y, int z, int w, int h) {
     this.resource = resource;
@@ -60,34 +66,6 @@ public abstract class Instance implements Renderable {
     if (properties.getAttribute("l") != null) {
       z = Byte.parseByte(properties.getAttributeValue("l"));
     }
-  }
-
-  public void setCut(boolean isCut) {
-    this.isCut = isCut;
-  }
-
-  public int getZ() {
-    return z;
-  }
-
-  public int getX() {
-    return x;
-  }
-
-  public int getY() {
-    return y;
-  }
-
-  public void setX(int x) {
-    this.x = x;
-  }
-
-  public void setY(int y) {
-    this.y = y;
-  }
-
-  public void setZ(int z) {
-    this.z = z;
   }
 
   public Rectangle getBounds() {

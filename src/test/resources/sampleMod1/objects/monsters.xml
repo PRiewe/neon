@@ -3,7 +3,9 @@
   <humanoid id="dwarf" hit="1d8+2" size="small" speed="9" color="gray" char="@" mana="1">
     <stats str="13" dex="11" con="14" int="10" wis="9" cha="6" />
     <av>1d3</av>
-    <skills axe="10" />
+    <skills>
+      <skill id="axe" rank="10" />
+    </skills>
   </humanoid>
   <humanoid id="light elf" hit="1d8" size="medium" speed="10" mana="2" color="paleGreen" char="@">
     <stats str="13" dex="13" con="10" int="10" wis="9" cha="5" />

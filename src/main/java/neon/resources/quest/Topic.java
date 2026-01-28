@@ -104,6 +104,11 @@ public class Topic {
       ae.setText(answer);
       topic.addContent(ae);
     }
+    if (phrase != null) {
+      Element pe = new Element("phrase");
+      pe.setText(phrase);
+      topic.addContent(pe);
+    }
     if (action != null) {
       Element ae = new Element("action");
       ae.setText(action);

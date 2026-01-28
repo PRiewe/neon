@@ -21,5 +21,5 @@ package neon.entities.property;
 public enum Gender {
   MALE,
   FEMALE,
-  OTHER;
+  OTHER
 }

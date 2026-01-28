@@ -32,12 +32,14 @@ import org.jdom2.Element;
 
 @SuppressWarnings("serial")
 public class ObjectTransferHandler extends TransferHandler {
-  private RZone zone;
-  private EditablePane pane;
+  private final RZone zone;
+  private final EditablePane pane;
+  private final DataStore dataStore;
 
-  public ObjectTransferHandler(RZone zone, EditablePane pane) {
+  public ObjectTransferHandler(DataStore dataStore, RZone zone, EditablePane pane) {
     this.zone = zone;
     this.pane = pane;
+    this.dataStore = dataStore;
   }
 
   public boolean canImport(TransferHandler.TransferSupport ts) {
@@ -49,9 +51,8 @@ public class ObjectTransferHandler extends TransferHandler {
       String id = ts.getTransferable().getTransferData(DataFlavor.stringFlavor).toString();
       String type = "item";
 
-      if (Editor.resources.getResource(id) instanceof RItem) {
+      if (Editor.resources.getResource(id) instanceof RItem item) {
         System.out.println(id);
-        RItem item = (RItem) Editor.resources.getResource(id);
         if (item instanceof RItem.Door) {
           type = "door";
         } else if (item.type == Type.container) {
@@ -73,7 +74,7 @@ public class ObjectTransferHandler extends TransferHandler {
       e.setAttribute("id", id);
       e.setAttribute("uid", Integer.toString(zone.map.createUID(e)));
 
-      Instance instance = RZone.getInstance(e, zone);
+      Instance instance = dataStore.getRZoneFactory().getInstance(e, zone);
       zone.getScene().addElement(instance, instance.getBounds(), instance.z);
 
       UndoAction undo = new UndoAction.Drop(instance, zone.getScene());

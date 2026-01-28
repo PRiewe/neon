@@ -19,14 +19,16 @@
 package neon.core.event;
 
 import java.util.EventObject;
-import neon.core.Engine;
+import neon.core.ScriptEngine;
 import neon.util.fsm.Action;
 
 public class ScriptAction implements Action {
-  private String script;
+  private final String script;
+  private final ScriptEngine scriptEngine;
 
-  public ScriptAction(String script) {
+  public ScriptAction(String script, ScriptEngine scriptEngine) {
     this.script = script;
+    this.scriptEngine = scriptEngine;
   }
 
   public String getScript() {
@@ -34,6 +36,6 @@ public class ScriptAction implements Action {
   }
 
   public void run(EventObject e) {
-    Engine.execute(script);
+    scriptEngine.execute(script);
   }
 }

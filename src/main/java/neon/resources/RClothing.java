@@ -28,7 +28,7 @@ public class RClothing extends RItem implements Serializable {
     LIGHT,
     MEDIUM,
     HEAVY,
-    NONE;
+    NONE
   }
 
   // general properties
@@ -73,7 +73,7 @@ public class RClothing extends RItem implements Serializable {
   public Element toElement() {
     Element clothing = super.toElement();
     Element stats = new Element("stats");
-    stats.setAttribute("slot", slot.toString());
+    stats.setAttribute("slot", slot.toString().toLowerCase());
     if (type == Type.armor) {
       stats.setAttribute("class", kind.toString());
       stats.setAttribute("ar", Integer.toString(rating));

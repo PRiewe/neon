@@ -31,9 +31,9 @@ import neon.util.TextureFactory;
  */
 public class DefaultRenderable implements Renderable {
   public int z;
-  private Rectangle bounds;
-  private String text;
-  private Color color;
+  private final Rectangle bounds;
+  private final String text;
+  private final Color color;
 
   /**
    * Initializes this DefaultRenderable with the given parameters.

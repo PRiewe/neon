@@ -29,10 +29,10 @@ import neon.resources.RTerrain;
 import neon.util.ColorFactory;
 
 public class TerrainEditor extends ObjectEditor {
-  private JFormattedTextField charField;
-  private JComboBox<String> colorBox;
-  private JComboBox<Modifier> modBox;
-  private RTerrain data;
+  private final JFormattedTextField charField;
+  private final JComboBox<String> colorBox;
+  private final JComboBox<Modifier> modBox;
+  private final RTerrain data;
 
   public TerrainEditor(JFrame parent, RTerrain data) {
     super(parent, "Terrain Editor: " + data.id);

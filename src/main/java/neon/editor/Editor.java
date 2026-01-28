@@ -23,11 +23,13 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.jar.JarFile;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.tree.*;
+import lombok.Getter;
 import neon.editor.help.HelpLabels;
 import neon.editor.maps.*;
 import neon.editor.resources.*;
@@ -41,19 +43,31 @@ public class Editor implements Runnable, ActionListener {
   public static JCheckBoxMenuItem tShow, tEdit, oShow, oEdit;
   public static FileSystem files;
   public static final ResourceManager resources = new ResourceManager();
-  private static JFrame frame;
-  private static DataStore store;
+  @Getter private static JFrame frame;
+  @Getter private static DataStore store;
   private static JPanel toolPanel;
   private static StatusBar status;
 
   protected MapEditor mapEditor;
-  private JTabbedPane mapTabbedPane;
-  private JMenuBar menuBar;
-  private JMenuItem pack, unpack, newMain, newExt, load, save, export, calculate;
-  private JMenu make, edit, tools;
-  private JPanel terrainPanel, objectPanel, resourcePanel;
-  private JTree objectTree, resourceTree;
-  private ModFiler filer;
+  private final JTabbedPane mapTabbedPane;
+  private final JMenuBar menuBar;
+  private final JMenuItem pack;
+  private final JMenuItem unpack;
+  private final JMenuItem newMain;
+  private final JMenuItem newExt;
+  private final JMenuItem load;
+  private final JMenuItem save;
+  private final JMenuItem export;
+  private final JMenuItem calculate;
+  private final JMenu make;
+  private final JMenu edit;
+  private final JMenu tools;
+  private final JPanel terrainPanel;
+  private final JPanel objectPanel;
+  private final JPanel resourcePanel;
+  private final JTree objectTree;
+  private final JTree resourceTree;
+  private final ModFiler filer;
   private JList<RTerrain> terrainList;
   private DefaultListModel<RTerrain> terrainListModel;
   private InfoEditor infoEditor;
@@ -83,7 +97,7 @@ public class Editor implements Runnable, ActionListener {
 
     // stuff
     files = new FileSystem();
-    store = new DataStore();
+    store = new DataStore(resources, files);
 
     // menu bar
     menuBar = new JMenuBar();
@@ -203,7 +217,7 @@ public class Editor implements Runnable, ActionListener {
     // panels with maps
     mapTabbedPane = new JTabbedPane();
     JPanel mapPanel = new JPanel(new BorderLayout());
-    mapEditor = new MapEditor(mapTabbedPane, mapPanel);
+    mapEditor = new MapEditor(mapTabbedPane, mapPanel, store);
 
     // panel with objects and terrain
     JTabbedPane editPanel = new JTabbedPane();
@@ -241,14 +255,6 @@ public class Editor implements Runnable, ActionListener {
     frame.setVisible(true);
   }
 
-  public static DataStore getStore() {
-    return store;
-  }
-
-  public static JFrame getFrame() {
-    return frame;
-  }
-
   private void createMain() {
     JFileChooser chooser = new JFileChooser(new File("neon.ini.xml"));
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -279,7 +285,7 @@ public class Editor implements Runnable, ActionListener {
 
       // load ensures that all resources etc. are initialized
       store.loadData(path, true, false);
-      mapEditor.loadMaps(resources.getResources(RMap.class), path);
+      mapEditor.loadMaps(resources.getResources(RMap.class), path, mapEditor.getMapTree(), store);
     } catch (IOException e) {
       JOptionPane.showMessageDialog(frame, "Invalid mod directory: " + file + ".");
     }
@@ -499,41 +505,18 @@ public class Editor implements Runnable, ActionListener {
         levelItemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LEVEL_ITEM));
       } else {
         switch (ri.type) {
-          case armor:
-            armorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ARMOR));
-            break;
-          case book:
-            bookNode.add(new ObjectNode(ri, ObjectNode.ObjectType.BOOK));
-            break;
-          case clothing:
-            clothingNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CLOTHING));
-            break;
-          case coin:
-            coinNode.add(new ObjectNode(ri, ObjectNode.ObjectType.MONEY));
-            break;
-          case container:
-            containerNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CONTAINER));
-            break;
-          case door:
-            doorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.DOOR));
-            break;
-          case food:
-            foodNode.add(new ObjectNode(ri, ObjectNode.ObjectType.FOOD));
-            break;
-          case light:
-            lightNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LIGHT));
-            break;
-          case potion:
-            potionNode.add(new ObjectNode(ri, ObjectNode.ObjectType.POTION));
-            break;
-          case scroll:
-            scrollNode.add(new ObjectNode(ri, ObjectNode.ObjectType.SCROLL));
-            break;
-          case weapon:
-            weaponNode.add(new ObjectNode(ri, ObjectNode.ObjectType.WEAPON));
-            break;
-          default:
-            itemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ITEM));
+          case armor -> armorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ARMOR));
+          case book -> bookNode.add(new ObjectNode(ri, ObjectNode.ObjectType.BOOK));
+          case clothing -> clothingNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CLOTHING));
+          case coin -> coinNode.add(new ObjectNode(ri, ObjectNode.ObjectType.MONEY));
+          case container -> containerNode.add(new ObjectNode(ri, ObjectNode.ObjectType.CONTAINER));
+          case door -> doorNode.add(new ObjectNode(ri, ObjectNode.ObjectType.DOOR));
+          case food -> foodNode.add(new ObjectNode(ri, ObjectNode.ObjectType.FOOD));
+          case light -> lightNode.add(new ObjectNode(ri, ObjectNode.ObjectType.LIGHT));
+          case potion -> potionNode.add(new ObjectNode(ri, ObjectNode.ObjectType.POTION));
+          case scroll -> scrollNode.add(new ObjectNode(ri, ObjectNode.ObjectType.SCROLL));
+          case weapon -> weaponNode.add(new ObjectNode(ri, ObjectNode.ObjectType.WEAPON));
+          default -> itemNode.add(new ObjectNode(ri, ObjectNode.ObjectType.ITEM));
         }
       }
     }
@@ -558,75 +541,71 @@ public class Editor implements Runnable, ActionListener {
   }
 
   public void actionPerformed(ActionEvent e) {
-    if (e.getActionCommand().equals("save")) {
-      filer.save();
-    } else if (e.getActionCommand().equals("load")) {
-      filer.loadMod();
-    } else if (e.getActionCommand().equals("quit")) {
-      System.exit(0);
-    } else if (e.getActionCommand().equals("newMain")) {
-      createMain();
-    } else if (e.getActionCommand().equals("newExt")) {
-      createExtension();
-    } else if (e.getActionCommand().equals("script")) {
-      if (scriptEditor == null) {
-        scriptEditor = new ScriptEditor(frame);
+    switch (e.getActionCommand()) {
+      case "save" -> ModFiler.save(store, files);
+      case "load" -> filer.loadMod();
+      case "quit" -> System.exit(0);
+      case "newMain" -> createMain();
+      case "newExt" -> createExtension();
+      case "script" -> {
+        if (scriptEditor == null) {
+          scriptEditor = new ScriptEditor(frame);
+        }
+        scriptEditor.show();
       }
-      scriptEditor.show();
-    } else if (e.getActionCommand().equals("cc")) {
-      if (ccEditor == null) {
-        ccEditor = new CCEditor(frame);
+      case "cc" -> {
+        if (ccEditor == null) {
+          ccEditor = new CCEditor(frame);
+        }
+        ccEditor.show();
       }
-      ccEditor.show();
-    } else if (e.getActionCommand().equals("game")) {
-      if (infoEditor == null) {
-        infoEditor = new InfoEditor(frame);
+      case "game" -> {
+        if (infoEditor == null) {
+          infoEditor = new InfoEditor(frame);
+        }
+        infoEditor.show();
       }
-      infoEditor.show();
-    } else if (e.getActionCommand().equals("events")) {
-      if (eventEditor == null) {
-        eventEditor = new EventEditor(frame);
+      case "events" -> {
+        if (eventEditor == null) {
+          eventEditor = new EventEditor(frame);
+        }
+        eventEditor.show();
       }
-      eventEditor.show();
-    } else if (e.getActionCommand().equals("pack")) {
-      if (JOptionPane.showConfirmDialog(
-              frame,
-              "Do you wish to save the current data and pack it?",
-              "Pack mod",
-              JOptionPane.YES_NO_OPTION)
-          == 0) {
-        pack();
+      case "pack" -> {
+        if (JOptionPane.showConfirmDialog(
+                frame,
+                "Do you wish to save the current data and pack it?",
+                "Pack mod",
+                JOptionPane.YES_NO_OPTION)
+            == 0) {
+          pack();
+        }
       }
-    } else if (e.getActionCommand().equals("unpack")) {
-      unpack();
-    } else if (e.getActionCommand().equals("svg")) {
-      if ((EditablePane) mapTabbedPane.getSelectedComponent() != null) {
-        ZoneTreeNode node = ((EditablePane) mapTabbedPane.getSelectedComponent()).getNode();
-        SVGExporter.exportToSVG(node, files, store);
+      case "unpack" -> unpack();
+      case "svg" -> {
+        if (mapTabbedPane.getSelectedComponent() != null) {
+          ZoneTreeNode node = ((EditablePane) mapTabbedPane.getSelectedComponent()).getNode();
+          SVGExporter.exportToSVG(node, files, store);
+        }
       }
-    } else if (e.getActionCommand().equals("calculate")) {
-      new ChallengeCalculator().show();
-    } else if (e.getActionCommand().equals("scripting")) {
-      showHelp("scripting.html", "Scripting guide");
-    } else if (e.getActionCommand().equals("intro")) {
-      showHelp("intro.html", "Getting started");
-    } else if (e.getActionCommand().equals("mapping")) {
-      showHelp("maps.html", "Map editing");
-    } else if (e.getActionCommand().equals("resources")) {
-      showHelp("resources.html", "Resource editing");
+      case "calculate" -> new ChallengeCalculator().show();
+      case "scripting" -> showHelp("scripting.html", "Scripting guide");
+      case "intro" -> showHelp("intro.html", "Getting started");
+      case "mapping" -> showHelp("maps.html", "Map editing");
+      case "resources" -> showHelp("resources.html", "Resource editing");
     }
   }
 
   private void showHelp(String file, String title) {
     InputStream input = HelpLabels.class.getResourceAsStream(file);
-    Scanner scanner = new Scanner(input, "UTF-8");
+    Scanner scanner = new Scanner(input, StandardCharsets.UTF_8);
     String text = scanner.useDelimiter("\\A").next();
     scanner.close();
     new HelpWindow(frame).show(title, text);
   }
 
   private void pack() {
-    filer.save();
+    ModFiler.save(store, files);
     try {
       JarFile jar = FileUtils.pack(store.getActive().getPath()[0], store.getActive().get("id"));
       System.out.println("attributes: " + jar.getManifest().getMainAttributes());

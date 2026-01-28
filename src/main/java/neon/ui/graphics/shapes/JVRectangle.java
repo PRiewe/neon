@@ -23,7 +23,7 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 
 public class JVRectangle extends JVShape {
-  private Rectangle bounds;
+  private final Rectangle bounds;
 
   public JVRectangle(Paint paint, Rectangle bounds) {
     this.paint = paint;

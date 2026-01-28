@@ -19,7 +19,7 @@
 package neon.core.event;
 
 import java.util.EventObject;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.entities.Creature;
 import neon.magic.Effect;
 import neon.magic.MagicUtils;
@@ -27,12 +27,14 @@ import neon.magic.Spell;
 import neon.util.fsm.Action;
 
 public class MagicTask implements Action {
-  private Spell spell;
-  private int stop;
+  private final Spell spell;
+  private final int stop;
+  private final GameContext gameContext;
 
-  public MagicTask(Spell spell, int stop) {
+  public MagicTask(Spell spell, int stop, GameContext gameContext) {
     this.spell = spell;
     this.stop = stop;
+    this.gameContext = gameContext;
   }
 
   public Spell getSpell() {
@@ -42,7 +44,7 @@ public class MagicTask implements Action {
   public void run(EventObject e) {
     Creature target = (Creature) spell.getTarget();
     if (target.getActiveSpells().contains(spell)) {
-      if (stop == Engine.getTimer().getTime()) {
+      if (stop == gameContext.getTimer().getTime()) {
         MagicUtils.removeSpell(target, spell);
       } else if (spell.getEffect().getDuration() == Effect.REPEAT) {
         spell.getHandler().repeatEffect(spell);

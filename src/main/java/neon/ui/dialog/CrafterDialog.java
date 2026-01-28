@@ -39,19 +39,23 @@ import neon.ui.UserInterface;
 import net.engio.mbassy.bus.MBassador;
 
 public class CrafterDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<RCraft> items;
-  private JPanel panel;
-  private String coin;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JList<RCraft> items;
+  private final JPanel panel;
+  private final String coin;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
+  private final EntityFactory entityFactory;
+  private final InventoryHandler inventoryHandler;
 
   public CrafterDialog(
       UserInterface ui, String coin, MBassador<EventObject> bus, GameContext context) {
     this.ui = ui;
     this.context = context;
+    this.entityFactory = new EntityFactory(context);
+    this.inventoryHandler = new InventoryHandler(context);
     JFrame parent = ui.getWindow();
     this.coin = coin;
     this.bus = bus;
@@ -120,11 +124,11 @@ public class CrafterDialog implements KeyListener {
           RCraft craft = items.getSelectedValue();
           if (player.getInventoryComponent().getMoney() >= craft.cost) {
             Collection<Long> removed =
-                InventoryHandler.removeItems(player, craft.raw, craft.amount);
+                inventoryHandler.removeItems(player, craft.raw, craft.amount);
             for (long uid : removed) { // remove used items
               bus.publishAsync(new StoreEvent(this, uid));
             }
-            Item item = EntityFactory.getItem(craft.name, context.getStore().createNewEntityUID());
+            Item item = entityFactory.getItem(craft.name, context.getStore().createNewEntityUID());
             bus.publishAsync(new StoreEvent(this, item));
             player.getInventoryComponent().addItem(item.getUID());
             player.getInventoryComponent().addMoney(-craft.cost);
@@ -143,7 +147,7 @@ public class CrafterDialog implements KeyListener {
   private void initItems() {
     DefaultListModel<RCraft> model = new DefaultListModel<RCraft>();
     for (RCraft thing : context.getResources().getResources(RCraft.class)) {
-      if (InventoryHandler.getAmount(player, thing.raw) >= thing.amount) {
+      if (inventoryHandler.getAmount(player, thing.raw) >= thing.amount) {
         model.addElement(thing);
       }
     }
@@ -152,7 +156,7 @@ public class CrafterDialog implements KeyListener {
   }
 
   private class CraftCellRenderer implements ListCellRenderer<RCraft> {
-    private UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    private final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
     /**
      * Returns this renderer with the right properties (color, font, background color).

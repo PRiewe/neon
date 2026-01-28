@@ -50,15 +50,16 @@ import net.engio.mbassy.bus.MBassador;
  * @author mdriesen
  */
 public class AimState extends State implements KeyListener {
-  private Point target;
+  private final Point target;
   private Player player;
   private DefaultRenderable cursor;
   private Popup popup;
   private GamePanel panel;
-  private CClient keys;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final CClient keys;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
+  private final CombatUtils combatUtils;
 
   /** Constructs a new AimModule. */
   public AimState(State state, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
@@ -68,6 +69,7 @@ public class AimState extends State implements KeyListener {
     this.context = context;
     keys = (CClient) context.getResources().getResource("client", "config");
     target = new Point();
+    combatUtils = new CombatUtils(context);
   }
 
   @Override
@@ -151,7 +153,7 @@ public class AimState extends State implements KeyListener {
             && ammo.getWeaponType() == WeaponType.THROWN) {
           shoot(ammo, victim);
           bus.publishAsync(new CombatEvent(CombatEvent.FLING, player, victim));
-        } else if (CombatUtils.getWeaponType(player) == WeaponType.BOW) {
+        } else if (combatUtils.getWeaponType(player) == WeaponType.BOW) {
           if (player.getInventoryComponent().hasEquiped(Slot.AMMO)
               && ammo.getWeaponType() == WeaponType.ARROW) {
             shoot(ammo, victim);
@@ -159,7 +161,7 @@ public class AimState extends State implements KeyListener {
           } else {
             ui.showMessage("No arrows equiped!", 1);
           }
-        } else if (CombatUtils.getWeaponType(player) == WeaponType.CROSSBOW) {
+        } else if (combatUtils.getWeaponType(player) == WeaponType.CROSSBOW) {
           if (player.getInventoryComponent().hasEquiped(Slot.AMMO)
               && ammo.getWeaponType() == WeaponType.BOLT) {
             bus.publishAsync(new CombatEvent(CombatEvent.SHOOT, player, victim));
@@ -242,7 +244,7 @@ public class AimState extends State implements KeyListener {
       }
       Creature creature = context.getAtlas().getCurrentZone().getCreature(target);
       if (creature != null) {
-        actors = ", " + creature.toString();
+        actors = ", " + creature;
       }
       popup = ui.showPopup(zone.getRegion(target) + items + actors);
     } else {

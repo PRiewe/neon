@@ -24,38 +24,36 @@ import lombok.Getter;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
-import neon.systems.files.FileSystem;
 import neon.systems.timing.Timer;
 
 @Getter
 public class Game implements Closeable {
-  private final UIDStore store;
-  private final Player player;
   private final Timer timer = new Timer();
+  private final GameStore gameStore;
+  private final GameContext gameContext;
   private final Atlas atlas;
 
-  public Game(Player player, FileSystem files) {
-    store = new UIDStore(files.getFullPath("uidstore"));
-    atlas = new Atlas(files, files.getFullPath("atlas"));
-    this.player = player;
+  public Game(GameStore gameStore, GameContext gameContext, Atlas atlas) {
+    this.gameStore = gameStore;
+    this.gameContext = gameContext;
+    this.atlas = atlas;
   }
 
-  /**
-   * Constructor with dependency injection for testing.
-   *
-   * @param player the player
-   * @param atlas the atlas
-   * @param store the UID store
-   */
-  public Game(Player player, Atlas atlas, UIDStore store) {
-    this.player = player;
-    this.atlas = atlas;
-    this.store = store;
+  public Player getPlayer() {
+    return gameStore.getPlayer();
+  }
+
+  public UIDStore getStore() {
+    return gameStore.getUidStore();
+  }
+
+  public Atlas getAtlas() {
+    return atlas;
   }
 
   @Override
   public void close() throws IOException {
-    store.close();
-    atlas.close();
+    gameStore.close();
+    getGameContext().getAtlas().close();
   }
 }

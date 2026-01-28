@@ -40,9 +40,10 @@ public class BumpState extends State implements KeyListener {
   private Creature creature;
   private Popup popup;
   private GamePanel panel;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
+  private final MotionHandler motionHandler;
 
   public BumpState(
       State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
@@ -50,6 +51,7 @@ public class BumpState extends State implements KeyListener {
     this.bus = bus;
     this.ui = ui;
     this.context = context;
+    this.motionHandler = new MotionHandler(context);
   }
 
   @Override
@@ -126,7 +128,7 @@ public class BumpState extends State implements KeyListener {
     Rectangle pBounds = player.getShapeComponent();
     Rectangle cBounds = creature.getShapeComponent();
 
-    if (MotionHandler.move(player, cBounds.x, cBounds.y) == MotionHandler.OK) {
+    if (motionHandler.move(player, cBounds.x, cBounds.y) == MotionHandler.OK) {
       cBounds.setLocation(pBounds.x, pBounds.y);
     }
   }

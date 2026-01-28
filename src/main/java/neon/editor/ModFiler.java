@@ -24,6 +24,7 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import lombok.extern.slf4j.Slf4j;
 import neon.editor.resources.*;
 import neon.resources.RCraft;
 import neon.resources.RCreature;
@@ -48,11 +49,12 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
+@Slf4j
 public class ModFiler {
-  private FileSystem files;
-  private DataStore store;
-  private Editor editor;
-  private JFrame frame;
+  private final FileSystem files;
+  private final DataStore store;
+  private final Editor editor;
+  private final JFrame frame;
 
   public ModFiler(JFrame frame, FileSystem files, DataStore store, Editor editor) {
     this.frame = frame;
@@ -89,6 +91,7 @@ public class ModFiler {
               ini = new SAXBuilder().build(in);
               in.close();
             } catch (JDOMException e) {
+              log.error("load", e);
             }
 
             // check if there is a mod with the correct id
@@ -107,10 +110,14 @@ public class ModFiler {
           }
         }
 
-        frame.setTitle("Neon Editor: " + path);
         store.loadData(path, active, isExtension(path));
-        editor.mapEditor.loadMaps(Editor.resources.getResources(RMap.class), path);
+        editor.mapEditor.loadMaps(
+            store.getResourceManager().getResources(RMap.class),
+            path,
+            editor.mapEditor.getMapTree(),
+            store);
         editor.enableEditing(file.isDirectory());
+        frame.setTitle("Neon Editor: " + path);
         frame.pack();
       }
     } catch (IOException e1) {
@@ -118,92 +125,129 @@ public class ModFiler {
     }
   }
 
-  public void save() {
+  public static void save(DataStore store, FileSystem files) {
     XMLBuilder builder = new XMLBuilder(store);
     RMod active = store.getActive();
-    saveFile(new Document(store.getActive().getMainElement()), "main.xml");
-    saveFile(new Document(store.getActive().getCCElement()), "cc.xml");
+    saveFile(store, files, new Document(store.getActive().getMainElement()), "main.xml");
+    saveFile(store, files, new Document(store.getActive().getCCElement()), "cc.xml");
     saveFile(
-        builder.getResourceDoc(Editor.resources.getResources(RItem.class), "items", active),
+        store,
+        files,
+        builder.getResourceDoc(
+            store.getResourceManager().getResources(RItem.class), "items", active),
         "objects",
         "items.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RFaction.class), "factions", active),
+        store,
+        files,
+        builder.getListDoc(
+            store.getResourceManager().getResources(RFaction.class), "factions", active),
         "factions.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RRecipe.class), "recipes", active),
+        store,
+        files,
+        builder.getListDoc(
+            store.getResourceManager().getResources(RRecipe.class), "recipes", active),
         "objects",
         "alchemy.xml");
-    saveFile(builder.getEventsDoc(), "events.xml");
+    saveFile(store, files, builder.getEventsDoc(), "events.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RPerson.class), "people", active),
+        store,
+        files,
+        builder.getListDoc(
+            store.getResourceManager().getResources(RPerson.class), "people", active),
         "objects",
         "npc.xml");
     saveFile(
-        builder.getResourceDoc(Editor.resources.getResources(RCreature.class), "monsters", active),
+        store,
+        files,
+        builder.getResourceDoc(
+            store.getResourceManager().getResources(RCreature.class), "monsters", active),
         "objects",
         "monsters.xml");
     saveFile(
-        builder.getResourceDoc(Editor.resources.getResources(RSpell.class), "spells", active),
+        store,
+        files,
+        builder.getResourceDoc(
+            store.getResourceManager().getResources(RSpell.class), "spells", active),
         "spells.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RTerrain.class), "terrain", active),
+        store,
+        files,
+        builder.getListDoc(
+            store.getResourceManager().getResources(RTerrain.class), "terrain", active),
         "terrain.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RCraft.class), "items", active),
+        store,
+        files,
+        builder.getListDoc(store.getResourceManager().getResources(RCraft.class), "items", active),
         "objects",
         "crafting.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RSign.class), "signs", active),
+        store,
+        files,
+        builder.getListDoc(store.getResourceManager().getResources(RSign.class), "signs", active),
         "signs.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RTattoo.class), "tattoos", active),
+        store,
+        files,
+        builder.getListDoc(
+            store.getResourceManager().getResources(RTattoo.class), "tattoos", active),
         "tattoos.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RZoneTheme.class), "themes", active),
+        store,
+        files,
+        builder.getListDoc(
+            store.getResourceManager().getResources(RZoneTheme.class), "themes", active),
         "themes",
         "zones.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RDungeonTheme.class), "themes", active),
+        store,
+        files,
+        builder.getListDoc(
+            store.getResourceManager().getResources(RDungeonTheme.class), "themes", active),
         "themes",
         "dungeons.xml");
     saveFile(
-        builder.getListDoc(Editor.resources.getResources(RRegionTheme.class), "themes", active),
+        store,
+        files,
+        builder.getListDoc(
+            store.getResourceManager().getResources(RRegionTheme.class), "themes", active),
         "themes",
         "regions.xml");
-    saveMaps();
-    saveQuests();
-    saveScripts();
+    saveMaps(store, files);
+    saveQuests(store, files);
+    saveScripts(store, files);
   }
 
-  private void saveMaps() {
+  private static void saveMaps(DataStore store, FileSystem files) {
     for (String name : files.listFiles(store.getActive().getPath()[0], "maps")) {
       String map =
           name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 for ".xml"
-      if (Editor.resources.getResource(map, "maps") == null) {
+      if (store.getResourceManager().getResource(map, "maps") == null) {
         files.delete(name);
       }
     }
-    for (RMap map : editor.mapEditor.getActiveMaps()) {
+    for (RMap map : store.getActiveMaps()) {
       Document doc = new Document().setRootElement(map.toElement());
-      saveFile(doc, "maps", map.id + ".xml");
+      saveFile(store, files, doc, "maps", map.id + ".xml");
     }
   }
 
-  private void saveQuests() {
+  private static void saveQuests(DataStore store, FileSystem files) {
     for (String name : files.listFiles(store.getActive().getPath()[0], "quests")) {
       String quest =
           name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 4); // -4 for ".xml"
-      if (Editor.resources.getResource(quest, "quest") == null) {
+      if (store.getResourceManager().getResource(quest, "quest") == null) {
         files.delete(name);
       }
     }
-    for (RQuest quest : Editor.resources.getResources(RQuest.class)) {
-      saveFile(new Document(quest.toElement()), "quests", quest.id + ".xml");
+    for (RQuest quest : store.getResourceManager().getResources(RQuest.class)) {
+      saveFile(store, files, new Document(quest.toElement()), "quests", quest.id + ".xml");
     }
   }
 
-  private void saveScripts() {
+  private static void saveScripts(DataStore store, FileSystem files) {
     for (String name : files.listFiles(store.getActive().getPath()[0], "scripts")) {
       String script =
           name.substring(name.lastIndexOf(File.separator) + 1, name.length() - 3); // -3 for ".js"
@@ -212,18 +256,18 @@ public class ModFiler {
       }
     }
     for (RScript script : store.getScripts().values()) {
-      saveFile(script.script, "scripts", script.id + ".js");
+      saveFile(store, files, script.script, "scripts", script.id + ".js");
     }
   }
 
-  private void saveFile(String text, String... file) {
+  private static void saveFile(DataStore store, FileSystem files, String text, String... file) {
     String[] fullPath = new String[file.length + 1];
     System.arraycopy(file, 0, fullPath, 1, file.length);
     fullPath[0] = store.getActive().getPath()[0];
     files.saveFile(text, new StringTranslator(), fullPath);
   }
 
-  private void saveFile(Document doc, String... file) {
+  private static void saveFile(DataStore store, FileSystem files, Document doc, String... file) {
     String[] fullPath = new String[file.length + 1];
     System.arraycopy(file, 0, fullPath, 1, file.length);
     fullPath[0] = store.getActive().getPath()[0];

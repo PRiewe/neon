@@ -35,17 +35,21 @@ import neon.resources.RRecipe;
 import neon.ui.UserInterface;
 
 public class PotionDialog implements KeyListener {
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
-  private JList<RRecipe> potions;
-  private String coin;
-  private UserInterface ui;
+  private final JList<RRecipe> potions;
+  private final String coin;
+  private final UserInterface ui;
   private final GameContext context;
+  private final EntityFactory entityFactory;
+  private final InventoryHandler inventoryHandler;
 
   public PotionDialog(UserInterface ui, String coin, GameContext context) {
     this.ui = ui;
     this.coin = coin;
     this.context = context;
+    this.entityFactory = new EntityFactory(context);
+    this.inventoryHandler = new InventoryHandler(context);
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -115,7 +119,7 @@ public class PotionDialog implements KeyListener {
               context.getStore().removeEntity(uid);
             }
             Item item =
-                EntityFactory.getItem(potion.toString(), context.getStore().createNewEntityUID());
+                entityFactory.getItem(potion.toString(), context.getStore().createNewEntityUID());
             context.getStore().addEntity(item);
             player.getInventoryComponent().addItem(item.getUID());
             player.getInventoryComponent().addMoney(-potion.cost);
@@ -149,7 +153,7 @@ public class PotionDialog implements KeyListener {
   }
 
   private class PotionCellRenderer implements ListCellRenderer<RRecipe> {
-    private UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    private final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
     /**
      * Returns this renderer with the right properties (color, font, background color).
@@ -197,7 +201,7 @@ public class PotionDialog implements KeyListener {
     for (long uid : creature.getInventoryComponent()) {
       Item item = (Item) context.getStore().getEntity(uid);
       if (item.getID().equals(id)) {
-        InventoryHandler.removeItem(creature, uid);
+        inventoryHandler.removeItem(creature, uid);
         return uid;
       }
     }

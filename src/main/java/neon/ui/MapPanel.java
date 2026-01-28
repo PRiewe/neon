@@ -21,6 +21,7 @@ package neon.ui;
 import java.awt.*;
 import java.util.*;
 import javax.swing.JComponent;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.GameContext;
 import neon.maps.Region;
 import neon.maps.Zone;
@@ -32,11 +33,12 @@ import neon.ui.graphics.ZComparator;
  * @author mdriesen
  */
 @SuppressWarnings("serial")
+@Slf4j
 public class MapPanel extends JComponent {
-  private Zone zone;
+  private final Zone zone;
   private float zoom;
   private boolean fill;
-  private ZComparator comparator;
+  private final ZComparator comparator;
   private final GameContext context;
 
   /** Initializes this <code>MapPanel</code>. */
@@ -65,6 +67,7 @@ public class MapPanel extends JComponent {
       Rectangle bounds = context.getPlayer().getShapeComponent();
       g.drawString("x", (int) (zoom * (bounds.x + 0.5)), (int) (zoom * (bounds.y + 0.9)));
     } catch (NullPointerException e) {
+      log.error("paintComponent", e);
     }
   }
 

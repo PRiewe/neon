@@ -20,9 +20,11 @@ package neon.narrative;
 
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.Engine;
+import neon.core.GameServices;
+import neon.core.GameStore;
 import neon.core.event.TurnEvent;
 import neon.entities.Creature;
+import neon.maps.services.QuestProvider;
 import neon.resources.quest.Conversation;
 import neon.resources.quest.RQuest;
 import neon.resources.quest.Topic;
@@ -30,13 +32,20 @@ import neon.util.fsm.TransitionEvent;
 import net.engio.mbassy.listener.Handler;
 
 @Slf4j
-public class QuestTracker {
+public class QuestTracker implements QuestProvider {
   private final LinkedList<String> objects = new LinkedList<>();
   private final HashMap<String, Quest> quests = new HashMap<>();
   // temporary map for quests that have been loaded for the dialog module
   private final HashMap<String, Quest> temp = new HashMap<>();
+  private final GameStore gameStore;
+  private final GameServices gameServices;
+  private final QuestUtils questUtils;
 
-  public QuestTracker() {}
+  public QuestTracker(GameStore gameStore, GameServices gameServices) {
+    this.gameStore = gameStore;
+    this.gameServices = gameServices;
+    this.questUtils = new QuestUtils(gameServices);
+  }
 
   /**
    * Return all dialog topics for the given creature. The caller of this method should take care to
@@ -80,11 +89,11 @@ public class QuestTracker {
     //			objects.putAll(temp.get(topic.quest).getObjects());
     //		}
     for (Map.Entry<String, Object> entry : objects.entrySet()) {
-      Engine.getScriptEngine().getBindings("js").putMember(entry.getKey(), entry.getValue());
+      gameServices.scriptEngine().getBindings().putMember(entry.getKey(), entry.getValue());
     }
 
     if (topic.action != null) {
-      Engine.execute(topic.action);
+      gameServices.scriptEngine().execute(topic.action);
     }
   }
 
@@ -98,7 +107,7 @@ public class QuestTracker {
       Quest quest = temp.remove(id);
       quests.put(id, quest);
     } else if (!quests.containsKey(id)) {
-      RQuest quest = (RQuest) Engine.getResources().getResource(id, "quest");
+      RQuest quest = (RQuest) gameStore.getResources().getResource(id, "quest");
       quests.put(id, new Quest(quest));
     }
   }
@@ -122,12 +131,12 @@ public class QuestTracker {
   private Collection<Quest> getQuests(Creature speaker) {
     ArrayList<Quest> list = new ArrayList<Quest>();
     for (Quest quest : quests.values()) {
-      if (QuestUtils.checkQuest(quest.template)) {
+      if (questUtils.checkQuest(quest.template)) {
         list.add(quest);
       }
     }
     for (Quest quest : temp.values()) {
-      if (QuestUtils.checkQuest(quest.template)) {
+      if (questUtils.checkQuest(quest.template)) {
         list.add(quest);
       }
     }
@@ -148,7 +157,7 @@ public class QuestTracker {
   public void start(TurnEvent te) {
     log.trace("start {}", te);
     if (te.isStart()) {
-      for (RQuest quest : Engine.getResources().getResources(RQuest.class)) {
+      for (RQuest quest : gameStore.getResourceManager().getResources(RQuest.class)) {
         if (quest.initial) {
           startQuest(quest.id);
         }

@@ -45,14 +45,17 @@ import net.engio.mbassy.bus.MBassador;
 
 public class InventoryState extends State implements KeyListener, MouseListener {
   private Player player;
-  private JList<Item> inventory;
-  private JLabel info;
-  private HashMap<String, Integer> listData;
-  private JPanel panel;
-  private DescriptionPanel description;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JList<Item> inventory;
+  private final JLabel info;
+  private final HashMap<String, Integer> listData;
+  private final JPanel panel;
+  private final DescriptionPanel description;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private final GameContext context;
+  private final MagicHandler magicHandler;
+  private final InventoryHandler inventoryHandler;
+  private final SkillHandler skillHandler;
 
   public InventoryState(
       State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
@@ -60,6 +63,9 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     this.bus = bus;
     this.ui = ui;
     this.context = context;
+    magicHandler = new MagicHandler(context);
+    inventoryHandler = new InventoryHandler(context);
+    skillHandler = new SkillHandler(context);
     panel = new JPanel(new BorderLayout());
 
     // info
@@ -111,8 +117,8 @@ public class InventoryState extends State implements KeyListener, MouseListener 
   private void use(Item item) {
     //		System.out.println(item.getClass());
     if (item instanceof Item.Potion) {
-      InventoryHandler.removeItem(player, item.getUID());
-      MagicHandler.drink(player, (Item.Potion) item);
+      inventoryHandler.removeItem(player, item.getUID());
+      magicHandler.drink(player, (Item.Potion) item);
       initList();
     } else if (item instanceof Item.Book && !(item instanceof Item.Scroll)) {
       RText text =
@@ -122,18 +128,18 @@ public class InventoryState extends State implements KeyListener, MouseListener 
                   .getResource(((RItem.Text) item.resource).content + ".html", "text");
       new BookDialog(ui.getWindow()).show(item.toString(), text.getText());
     } else if (item instanceof Item.Food) {
-      InventoryHandler.removeItem(player, item.getUID());
-      MagicHandler.eat(player, (Item.Food) item);
+      inventoryHandler.removeItem(player, item.getUID());
+      magicHandler.eat(player, (Item.Food) item);
       initList();
     } else if (item instanceof Item.Aid) {
-      InventoryHandler.removeItem(player, item.getUID());
+      inventoryHandler.removeItem(player, item.getUID());
       initList();
       HealthComponent health = player.getHealthComponent();
-      health.heal(SkillHandler.check(player, Skill.MEDICAL) / 5f);
+      health.heal(skillHandler.check(player, Skill.MEDICAL) / 5f);
     } else if (!player.getInventoryComponent().hasEquiped(item.getUID())) {
-      InventoryHandler.equip(item, player);
+      inventoryHandler.equip(item, player);
     } else {
-      InventoryHandler.unequip(item.getUID(), player);
+      inventoryHandler.unequip(item.getUID(), player);
     }
     inventory.repaint();
   }
@@ -154,7 +160,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
 
     info.setText(
         "Weight: "
-            + InventoryHandler.getWeight(player)
+            + inventoryHandler.getWeight(player)
             + " kg. Money: "
             + moneyString(player.getInventoryComponent().getMoney())
             + ".");
@@ -200,7 +206,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
       case KeyEvent.VK_SPACE:
         if (inventory.getSelectedValue() != null) {
           Item item = inventory.getSelectedValue();
-          InventoryHandler.removeItem(player, item.getUID());
+          inventoryHandler.removeItem(player, item.getUID());
           Rectangle pBounds = player.getShapeComponent();
           Rectangle iBounds = item.getShapeComponent();
           iBounds.setLocation(pBounds.x, pBounds.y);

@@ -36,7 +36,7 @@ public enum Ability {
 
   public String text;
 
-  private Ability(String text) {
+  Ability(String text) {
     this.text = text;
   }
 }

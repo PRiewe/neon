@@ -18,6 +18,7 @@
 
 package neon.maps.services;
 
+import java.util.Vector;
 import neon.resources.Resource;
 
 /**
@@ -43,4 +44,6 @@ public interface ResourceProvider {
    * @return the resource with the given ID and type
    */
   Resource getResource(String id, String type);
+
+  <T extends Resource> Vector<T> getResources(Class<T> rRecipeClass);
 }

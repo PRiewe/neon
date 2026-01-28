@@ -19,13 +19,16 @@
 package neon.systems.physics;
 
 import java.awt.Rectangle;
+import neon.entities.components.PhysicsComponent;
+import neon.maps.Region;
+import neon.maps.services.PhysicsManager;
 import net.phys2d.math.Vector2f;
 import net.phys2d.raw.*;
 import net.phys2d.raw.shapes.Box;
 import net.phys2d.raw.strategies.QuadSpaceStrategy;
 
-public class PhysicsSystem {
-  private World world;
+public class PhysicsSystem implements PhysicsManager {
+  private final World world;
 
   public PhysicsSystem() {
     world = new World(new Vector2f(0, 0), 1, new QuadSpaceStrategy(50, 15));
@@ -33,6 +36,28 @@ public class PhysicsSystem {
 
   public void clear() {
     world.clear();
+  }
+
+  /**
+   * Registers a region with the physics system.
+   *
+   * @param region the region to register
+   * @param bounds the bounding rectangle of the region
+   * @param fixed whether the region is fixed in place
+   */
+  @Override
+  public void register(Region region, Rectangle bounds, boolean fixed) {
+    this.register((Object) region, bounds, fixed);
+  }
+
+  /**
+   * Registers a physics component with the physics system.
+   *
+   * @param component the physics component to register
+   */
+  @Override
+  public void register(PhysicsComponent component) {
+    this.register(component.getTheBody());
   }
 
   public void register(Body body) {

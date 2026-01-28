@@ -41,17 +41,21 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
   private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
   private static final Color line = defaults.getColor("List.foreground");
 
-  private JDialog frame;
+  private final JDialog frame;
   private Player player;
   private Creature trader;
-  private JList<Item> sellList, buyList;
-  private JScrollPane sScroll, bScroll;
-  private JLabel info;
-  private JPanel panel;
-  private DescriptionPanel description;
-  private String big, small;
-  private UserInterface ui;
+  private final JList<Item> sellList;
+  private final JList<Item> buyList;
+  private final JScrollPane sScroll;
+  private final JScrollPane bScroll;
+  private final JLabel info;
+  private final JPanel panel;
+  private final DescriptionPanel description;
+  private final String big;
+  private final String small;
+  private final UserInterface ui;
   private final GameContext context;
+  private final InventoryHandler inventoryHandler;
 
   /**
    * @param big name of major denominations (euro, dollar)
@@ -62,7 +66,7 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
     this.small = small;
     this.ui = ui;
     this.context = context;
-
+    this.inventoryHandler = new InventoryHandler(context);
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -207,14 +211,14 @@ public class TradeDialog implements KeyListener, ListSelectionListener {
     if (price > player.getInventoryComponent().getMoney()) {
       ui.showMessage("Not enough money to buy this item.", 2);
     } else {
-      InventoryHandler.removeItem(trader, item.getUID());
+      inventoryHandler.removeItem(trader, item.getUID());
       player.getInventoryComponent().addItem(item.getUID());
       player.getInventoryComponent().addMoney(-price);
     }
   }
 
   private void sell(Item item) {
-    InventoryHandler.removeItem(player, item.getUID());
+    inventoryHandler.removeItem(player, item.getUID());
     trader.getInventoryComponent().addItem(item.getUID());
     player.getInventoryComponent().addMoney(item.resource.cost);
   }

@@ -18,6 +18,7 @@
 
 package neon.entities;
 
+import lombok.Setter;
 import neon.entities.components.DoorRenderComponent;
 import neon.entities.components.Lock;
 import neon.entities.components.Portal;
@@ -29,7 +30,8 @@ public class Door extends Item {
   public final Lock lock;
   public final Trap trap;
   public final Portal portal;
-  private String sign;
+
+  @Setter private String sign;
 
   public Door(long uid, RItem resource) {
     super(uid, resource);
@@ -37,15 +39,6 @@ public class Door extends Item {
     trap = new Trap(uid);
     portal = new Portal(uid);
     components.putInstance(RenderComponent.class, new DoorRenderComponent(this));
-  }
-
-  /**
-   * Sets the door sign.
-   *
-   * @param sign
-   */
-  public void setSign(String sign) {
-    this.sign = sign;
   }
 
   public boolean hasSign() {

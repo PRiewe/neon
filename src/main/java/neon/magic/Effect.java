@@ -177,6 +177,6 @@ public enum Effect {
 
   @Override
   public String toString() {
-    return name;
+    return name.toLowerCase();
   }
 }

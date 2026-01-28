@@ -18,19 +18,26 @@
 
 package neon.narrative;
 
-import neon.core.Engine;
+import neon.core.GameServices;
 import neon.resources.quest.RQuest;
 import neon.resources.quest.Topic;
 
 public class QuestUtils {
+
+  private final GameServices scriptEngine;
+
+  public QuestUtils(GameServices scriptEngine) {
+    this.scriptEngine = scriptEngine;
+  }
+
   /**
    * Checks whether the conditions for the given topic are fulfilled.
    *
    * @param topic
    */
-  protected static boolean checkTopic(Topic topic) {
+  protected boolean checkTopic(Topic topic) {
     String pre = topic.condition;
-    return (pre == null) || (Engine.execute(pre).equals(true));
+    return (pre == null) || (scriptEngine.scriptEngine().execute(pre).equals(true));
   }
 
   /**
@@ -38,13 +45,13 @@ public class QuestUtils {
    *
    * @param quest
    */
-  protected static boolean checkQuest(RQuest quest) {
+  protected boolean checkQuest(RQuest quest) {
     if (quest.getConditions().isEmpty()) {
       return true; // geen voorwaardes
     } else {
       boolean custom = true;
       for (String condition : quest.getConditions()) {
-        custom = custom && Engine.execute(condition).equals(true);
+        custom = custom && scriptEngine.scriptEngine().execute(condition).equals(true);
       }
       return custom;
     }

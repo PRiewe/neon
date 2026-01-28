@@ -25,31 +25,36 @@ import java.text.NumberFormat;
 import java.util.Enumeration;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import neon.editor.DataStore;
 import neon.editor.Editor;
 import neon.editor.resources.IRegion;
 import neon.editor.resources.Instance;
 import neon.editor.resources.RZone;
-import neon.editor.services.EditorResourceProvider;
-import neon.maps.generators.WildernessGenerator;
+import neon.maps.generators.WildernessTerrainGenerator;
 import neon.resources.RRegionTheme;
 import neon.resources.RScript;
 import neon.resources.RTerrain;
 import org.jdom2.Element;
 
 public class RegionInstanceEditor implements ActionListener, MouseListener {
-  private IRegion region;
-  private JDialog frame;
-  private JTextField labelField;
-  private JFormattedTextField xField, yField, wField, hField;
-  private JComboBox<RRegionTheme> themeBox;
-  private JComboBox<RTerrain> terrainBox;
-  private JList<RScript> scriptList;
-  private DefaultListModel<RScript> scriptListModel;
-  private RZone zone;
-  private JSpinner zSpinner;
+  private final IRegion region;
+  private final JDialog frame;
+  private final JTextField labelField;
+  private final JFormattedTextField xField;
+  private final JFormattedTextField yField;
+  private final JFormattedTextField wField;
+  private final JFormattedTextField hField;
+  private final JComboBox<RRegionTheme> themeBox;
+  private final JComboBox<RTerrain> terrainBox;
+  private final JList<RScript> scriptList;
+  private final DefaultListModel<RScript> scriptListModel;
+  private final RZone zone;
+  private final JSpinner zSpinner;
+  private final DataStore dataStore;
 
-  public RegionInstanceEditor(IRegion r, JFrame parent, ZoneTreeNode zone) {
+  public RegionInstanceEditor(DataStore dataStore, IRegion r, JFrame parent, ZoneTreeNode zone) {
     this.zone = zone.getZone();
+    this.dataStore = dataStore;
     region = r;
     frame = new JDialog(parent, "Region instance editor: " + region.resource.id);
     JPanel content = new JPanel(new BorderLayout());
@@ -244,8 +249,8 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
           }
         }
         String[][] content =
-            new WildernessGenerator(terrain, null, new EditorResourceProvider())
-                .generate(region.getBounds(), region.theme, region.resource.id);
+            new WildernessTerrainGenerator(dataStore)
+                .generate(region.getBounds(), region.theme, region.resource.id, terrain);
         makeContent(content);
       }
       themeBox.setSelectedItem(null);
@@ -317,7 +322,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
     for (int x = 0; x < region.width; x++) {
       for (int y = 0; y < region.height; y++) {
         if (tiles[y + 1][x + 1] != null) {
-          String data[] = tiles[y + 1][x + 1].split(";");
+          String[] data = tiles[y + 1][x + 1].split(";");
           for (String entry : data) {
             if (entry.startsWith("i:")) {
               String id = entry.replace("i:", "");
@@ -326,7 +331,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
               e.setAttribute("y", Integer.toString(y + region.y));
               e.setAttribute("id", id);
               e.setAttribute("uid", Integer.toString(zone.map.createUID(e)));
-              Instance instance = RZone.getInstance(e, zone);
+              Instance instance = dataStore.getRZoneFactory().getInstance(e, zone);
               zone.getScene().addElement(instance, instance.getBounds(), instance.z);
             } else if (entry.startsWith("c:")) {
             } else if (!entry.isEmpty()) {
@@ -337,7 +342,7 @@ public class RegionInstanceEditor implements ActionListener, MouseListener {
               element.setAttribute("w", "1");
               element.setAttribute("h", "1");
               element.setAttribute("l", Integer.toString(region.z + 1));
-              Instance instance = new IRegion(element);
+              Instance instance = new IRegion(dataStore, element);
               zone.getScene()
                   .addElement(
                       instance, new Rectangle(x + region.x, y + region.y, 1, 1), region.z + 1);

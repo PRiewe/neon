@@ -6,7 +6,7 @@ import java.awt.Rectangle;
 import neon.resources.RTerrain;
 import neon.test.MapDbTestHelper;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,12 +18,16 @@ import org.junit.jupiter.api.Test;
  */
 class RegionIntegrationTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
+  private MapTestFixtures mapTestFixtures;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
   }
 
   @AfterEach
@@ -34,7 +38,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionDimensions() {
-    Region region = MapTestFixtures.createTestRegion(100, 200, 50, 75);
+    Region region = mapTestFixtures.createTestRegion(100, 200, 50, 75);
 
     assertEquals(50, region.getWidth());
     assertEquals(75, region.getHeight());
@@ -44,9 +48,9 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionPositioning() {
-    Region region1 = MapTestFixtures.createTestRegion("r1", 10, 20, 30, 40, 0);
-    Region region2 = MapTestFixtures.createTestRegion("r2", 50, 60, 30, 40, 1);
-    Region region3 = MapTestFixtures.createTestRegion("r3", 90, 100, 30, 40, 2);
+    Region region1 = mapTestFixtures.createTestRegion("r1", 10, 20, 30, 40, 0);
+    Region region2 = mapTestFixtures.createTestRegion("r2", 50, 60, 30, 40, 1);
+    Region region3 = mapTestFixtures.createTestRegion("r3", 90, 100, 30, 40, 2);
 
     assertEquals(0, region1.getZ());
     assertEquals(1, region2.getZ());
@@ -59,7 +63,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionBounds() {
-    Region region = MapTestFixtures.createTestRegion(10, 20, 50, 75);
+    Region region = mapTestFixtures.createTestRegion(10, 20, 50, 75);
 
     Rectangle bounds = region.getBounds();
     assertEquals(10, bounds.x);
@@ -82,7 +86,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionScriptManagement() {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 50, 50);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 50, 50);
 
     // Add scripts
     region.addScript("init.js", false);
@@ -104,7 +108,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionLabelManagement() {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 50, 50);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 50, 50);
 
     assertNull(region.getLabel());
 
@@ -120,7 +124,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionToString() {
-    Region region = MapTestFixtures.createTestRegion("test-region-1", 10, 20, 30, 40, 0);
+    Region region = mapTestFixtures.createTestRegion("test-region-1", 10, 20, 30, 40, 0);
 
     // toString may throw NPE if terrain description is null in stub implementation
     // Just verify the object exists
@@ -129,7 +133,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionThemeRetrieval() {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 50, 50);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 50, 50);
 
     // Theme is set via constructor with RRegionTheme, which stub returns null
     // This tests that getTheme() doesn't throw
@@ -138,7 +142,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionMovementModifier() {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 50, 50);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 50, 50);
 
     // Movement modifier depends on terrain
     assertDoesNotThrow(
@@ -150,7 +154,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionActiveState() {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 50, 50);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 50, 50);
 
     // Active state depends on scripts
     assertDoesNotThrow(
@@ -167,7 +171,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionColor() {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 50, 50);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 50, 50);
 
     // Color comes from terrain
     assertDoesNotThrow(
@@ -179,7 +183,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionTextureType() {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 50, 50);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 50, 50);
 
     // Texture type comes from terrain
     assertDoesNotThrow(
@@ -191,16 +195,16 @@ class RegionIntegrationTest {
 
   @Test
   void testMultipleRegionsWithDifferentProperties() {
-    Region region1 = MapTestFixtures.createTestRegion("r1", 0, 0, 50, 50, 0);
+    Region region1 = mapTestFixtures.createTestRegion("r1", 0, 0, 50, 50, 0);
     region1.setLabel("Forest");
     region1.addScript("forest.js", false);
 
-    Region region2 = MapTestFixtures.createTestRegion("r2", 60, 60, 30, 30, 1);
+    Region region2 = mapTestFixtures.createTestRegion("r2", 60, 60, 30, 30, 1);
     region2.setLabel("Mountain");
     region2.addScript("mountain.js", false);
     region2.addScript("weather.js", false);
 
-    Region region3 = MapTestFixtures.createTestRegion("r3", 100, 100, 75, 75, 0);
+    Region region3 = mapTestFixtures.createTestRegion("r3", 100, 100, 75, 75, 0);
     region3.setLabel("Desert");
 
     // Verify independence
@@ -217,24 +221,24 @@ class RegionIntegrationTest {
   @Test
   void testRegionBoundaryConditions() {
     // Test with zero dimensions
-    Region zeroSize = MapTestFixtures.createTestRegion(0, 0, 0, 0);
+    Region zeroSize = mapTestFixtures.createTestRegion(0, 0, 0, 0);
     assertEquals(0, zeroSize.getWidth());
     assertEquals(0, zeroSize.getHeight());
 
     // Test with large dimensions
-    Region large = MapTestFixtures.createTestRegion(0, 0, 10000, 10000);
+    Region large = mapTestFixtures.createTestRegion(0, 0, 10000, 10000);
     assertEquals(10000, large.getWidth());
     assertEquals(10000, large.getHeight());
 
     // Test with negative positions (valid in some coordinate systems)
-    Region negative = MapTestFixtures.createTestRegion(-100, -100, 50, 50);
+    Region negative = mapTestFixtures.createTestRegion(-100, -100, 50, 50);
     assertEquals(-100, negative.getX());
     assertEquals(-100, negative.getY());
   }
 
   @Test
   void testRegionScriptPersistence() {
-    Region region = MapTestFixtures.createTestRegion("scripted", 0, 0, 50, 50, 0);
+    Region region = mapTestFixtures.createTestRegion("scripted", 0, 0, 50, 50, 0);
 
     // Add multiple scripts
     for (int i = 0; i < 10; i++) {
@@ -257,7 +261,7 @@ class RegionIntegrationTest {
 
   @Test
   void testRegionZOrderModification() {
-    Region region = MapTestFixtures.createTestRegion("layered", 0, 0, 50, 50, 0);
+    Region region = mapTestFixtures.createTestRegion("layered", 0, 0, 50, 50, 0);
 
     assertEquals(0, region.getZ());
 

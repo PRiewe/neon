@@ -24,10 +24,15 @@ import org.jdom2.Element;
 public class RRecipe extends RData {
   public Vector<String> ingredients = new Vector<String>();
   public int cost = 10;
+  public String out;
 
   public RRecipe(Element properties, String... path) {
     super(properties.getAttributeValue("id"), path);
-    name = properties.getChild("out").getText();
+    name = properties.getAttributeValue("name");
+    out = properties.getChild("out").getText();
+    if (name == null) {
+      name = properties.getChild("out").getText();
+    }
     if (properties.getAttribute("cost") != null) {
       cost = Integer.parseInt(properties.getAttributeValue("cost"));
     }
@@ -47,10 +52,11 @@ public class RRecipe extends RData {
 
   public Element toElement() {
     Element recipe = new Element("recipe");
+    recipe = super.appendToElement(recipe);
     if (cost != 10) {
       recipe.setAttribute("cost", Integer.toString(cost));
     }
-    recipe.addContent(new Element("out").setText(name));
+    recipe.addContent(new Element("out").setText(out));
     for (String item : ingredients) {
       recipe.addContent(new Element("in").setText(item));
     }

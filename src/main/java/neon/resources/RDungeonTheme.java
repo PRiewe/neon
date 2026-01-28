@@ -38,7 +38,7 @@ public class RDungeonTheme extends RData {
 
   public Element toElement() {
     Element theme = new Element("dungeon");
-    theme.setAttribute("id", id);
+    theme = super.appendToElement(theme);
     theme.setAttribute("min", Integer.toString(min));
     theme.setAttribute("max", Integer.toString(max));
     theme.setAttribute("b", Integer.toString(branching));

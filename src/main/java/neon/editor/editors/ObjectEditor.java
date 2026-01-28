@@ -87,7 +87,7 @@ public abstract class ObjectEditor {
   }
 
   protected static class ColorListener implements ActionListener {
-    private JComboBox<String> box;
+    private final JComboBox<String> box;
 
     public ColorListener(JComboBox<String> box) {
       this.box = box;

@@ -62,6 +62,22 @@ public abstract class RData extends Resource implements Serializable {
    */
   public abstract Element toElement();
 
+  protected Element appendToElement(Element base) {
+    if (this.id != null) {
+      base.setAttribute("id", this.id);
+    }
+    if (name != null) {
+      base.setAttribute("name", name);
+    }
+    //    if(text != null) {
+    //      base.setAttribute("text",this.text);
+    //    }
+    //    if(color != null) {
+    //      base.setAttribute("color",this.color);
+    //    }
+    return base;
+  }
+
   @Override
   public void load() {} // RData has nothing to load beyond what is in the constructor
 

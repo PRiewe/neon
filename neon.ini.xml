@@ -1,8 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <root>
-    <files/>
-    <log/>
-    <threads generate="on"/>
-    <ai>2</ai>
-    <log>FINER</log>
-    <lang>en</lang>
+  <files>
+    <file>src/test/resources/sampleMod1</file>
+  </files>
+  <log>finest</log>
+  <threads generate="on" />
+  <ai>10</ai>
+  <lang>en</lang>
+  <keys>qwerty</keys>
 </root>

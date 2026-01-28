@@ -25,7 +25,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Queue;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.property.Skill;
@@ -36,8 +36,13 @@ public class PathFinder {
   private static HashMap<Point, Integer> evaluated;
   private static Point to;
   private static Creature mover;
+  private final GameContext gameContext;
 
-  public static Point[] findPath(Creature creature, Point origin, Point destination) {
+  public PathFinder(GameContext gameContext) {
+    this.gameContext = gameContext;
+  }
+
+  public Point[] findPath(Creature creature, Point origin, Point destination) {
     // points
     Point from = origin;
     to = destination;
@@ -63,7 +68,7 @@ public class PathFinder {
           links.put(to, next);
           next = null;
           break;
-        } else if (Engine.getAtlas().getCurrentZone().getRegion(neighbour).getMovMod()
+        } else if (gameContext.getAtlas().getCurrentZone().getRegion(neighbour).getMovMod()
             == Region.Modifier.BLOCK) {
           continue; // if terrain is blocked, skip to next point
         }
@@ -103,7 +108,7 @@ public class PathFinder {
     return path.toArray(new Point[path.size()]);
   }
 
-  private static Point[] neighbours(Point current) {
+  private Point[] neighbours(Point current) {
     Point[] neighbours = new Point[8];
     neighbours[0] = new Point(current.x - 1, current.y);
     neighbours[1] = new Point(current.x + 1, current.y);
@@ -119,13 +124,13 @@ public class PathFinder {
   /*
    * manhattan distance between points
    */
-  private static int manhattan(Point one, Point two) {
+  private int manhattan(Point one, Point two) {
     return Math.abs(one.x - two.x) + Math.abs(one.y - two.y);
   }
 
-  private static int terrainPenalty(Point neighbour) {
+  private int terrainPenalty(Point neighbour) {
     // better modifiers?
-    switch (Engine.getAtlas().getCurrentZone().getRegion(neighbour).getMovMod()) {
+    switch (gameContext.getAtlas().getCurrentZone().getRegion(neighbour).getMovMod()) {
       case SWIM:
         return (100 - mover.getSkill(Skill.SWIMMING)) / 5;
       case CLIMB:
@@ -135,10 +140,9 @@ public class PathFinder {
     }
   }
 
-  private static int doorPenalty(Point neighbour) {
-    for (long uid : Engine.getAtlas().getCurrentZone().getItems(neighbour)) {
-      if (Engine.getStore().getEntity(uid) instanceof Door) {
-        Door door = (Door) Engine.getStore().getEntity(uid);
+  private int doorPenalty(Point neighbour) {
+    for (long uid : gameContext.getAtlas().getCurrentZone().getItems(neighbour)) {
+      if (gameContext.getStore().getEntity(uid) instanceof Door door) {
         if (door.lock.isLocked()) {
           RItem key = door.lock.getKey();
           if (key != null && hasItem(mover, key)) {
@@ -155,15 +159,15 @@ public class PathFinder {
   }
 
   @SuppressWarnings("serial")
-  private static class NodeComparator implements Comparator<Point>, Serializable {
+  private class NodeComparator implements Comparator<Point>, Serializable {
     public int compare(Point one, Point two) {
       return (evaluated.get(one) + manhattan(one, to)) - (evaluated.get(two) + manhattan(two, to));
     }
   }
 
-  private static boolean hasItem(Creature creature, RItem item) {
+  private boolean hasItem(Creature creature, RItem item) {
     for (long uid : creature.getInventoryComponent()) {
-      if (Engine.getStore().getEntity(uid).getID().equals(item.id)) {
+      if (gameContext.getStore().getEntity(uid).getID().equals(item.id)) {
         return true;
       }
     }

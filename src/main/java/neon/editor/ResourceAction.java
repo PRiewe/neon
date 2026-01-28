@@ -44,17 +44,16 @@ import neon.resources.quest.RQuest;
 
 @SuppressWarnings("serial")
 public class ResourceAction extends AbstractAction {
-  private ResourceType type;
-  private JTree tree;
-  private DefaultTreeModel model;
-  private ResourceTreeListener listener;
+  private final ResourceType type;
+  private final JTree tree;
+  private final DefaultTreeModel model;
+  private final ResourceTreeListener listener;
 
   public ResourceAction(String name, ResourceType type, ResourceTreeListener listener) {
     super(name);
     this.type = type;
     this.listener = listener;
     tree = listener.getTree();
-    ;
     model = (DefaultTreeModel) tree.getModel();
   }
 
@@ -85,7 +84,7 @@ public class ResourceAction extends AbstractAction {
                           0);
               if (potion != null) {
                 object = new RRecipe(props.getID(), potion, mod);
-                Editor.resources.addResource((RRecipe) object, "magic");
+                Editor.resources.addResource(object, "magic");
               }
             } else {
               JOptionPane.showMessageDialog(Editor.getFrame(), "No potions defined!");
@@ -106,7 +105,7 @@ public class ResourceAction extends AbstractAction {
                           0);
               if (craft != null) {
                 object = new RCraft(props.getID(), craft, mod);
-                Editor.resources.addResource((RCraft) object);
+                Editor.resources.addResource(object);
               }
             } else {
               JOptionPane.showMessageDialog(Editor.getFrame(), "No items defined!");

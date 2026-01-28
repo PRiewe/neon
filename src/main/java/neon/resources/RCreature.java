@@ -31,7 +31,7 @@ public class RCreature extends RData {
     small,
     medium,
     large,
-    huge;
+    huge
   }
 
   public enum Type {
@@ -42,37 +42,39 @@ public class RCreature extends RData {
     goblin,
     humanoid,
     monster,
-    player;
+    player
   }
 
   public enum AIType {
     wander,
     guard,
-    schedule;
+    schedule
   }
 
+  public static final AIType defaultAiType = AIType.guard;
+  public static final int defaultAiRange = 10;
   public final EnumMap<Skill, Float> skills;
   public final ArrayList<Subtype> subtypes;
   public String hit, av;
   public int speed, mana, dv;
   public float str, dex, con, iq, wis, cha;
-  public AIType aiType = AIType.guard; // default
-  public int aiRange = 10, aiConf = 0, aiAggr = 0;
+  public AIType aiType = defaultAiType; // default
+  public int aiRange = defaultAiRange, aiConf = 0, aiAggr = 0;
   public Size size = Size.medium; // default
   public Type type = Type.animal; // default
   public Habitat habitat = Habitat.LAND; // default
 
   public RCreature(String id, String... path) {
     super(id, path);
-    subtypes = new ArrayList<Subtype>();
-    skills = new EnumMap<Skill, Float>(Skill.class);
+    subtypes = new ArrayList<>();
+    skills = new EnumMap<>(Skill.class);
     hit = "1d1";
     av = "1d1";
   }
 
   public RCreature(Element properties, String... path) {
     super(properties, path);
-    subtypes = new ArrayList<Subtype>();
+    subtypes = new ArrayList<>();
     skills = initSkills(properties.getChild("skills"));
 
     color = properties.getAttributeValue("color");
@@ -82,6 +84,11 @@ public class RCreature extends RData {
 
     size = Size.valueOf(properties.getAttributeValue("size"));
     type = Type.valueOf(properties.getName());
+    var subElements = properties.getChildren("sub");
+    for (var s : subElements) {
+      Subtype subtype = Subtype.valueOf(s.getText().toUpperCase());
+      subtypes.add(subtype);
+    }
 
     str = Integer.parseInt(properties.getChild("stats").getAttributeValue("str"));
     con = Integer.parseInt(properties.getChild("stats").getAttributeValue("con"));
@@ -125,11 +132,11 @@ public class RCreature extends RData {
 
   private static EnumMap<Skill, Float> initSkills(Element skills) {
     EnumMap<Skill, Float> list = new EnumMap<Skill, Float>(Skill.class);
-    for (Skill skill : Skill.values()) {
-      if (skills != null && skills.getAttribute(skill.toString().toLowerCase()) != null) {
-        list.put(skill, Float.parseFloat(skills.getAttributeValue(skill.toString().toLowerCase())));
-      } else {
-        list.put(skill, 0f);
+    if (skills != null) {
+      for (Element skill : skills.getChildren()) {
+        list.put(
+            Skill.valueOf(skill.getAttributeValue("id").toUpperCase()),
+            Float.parseFloat(skill.getAttributeValue("rank")));
       }
     }
     return list;
@@ -138,24 +145,36 @@ public class RCreature extends RData {
   @Override
   public Element toElement() {
     Element creature = new Element(type.toString());
-
-    creature.setAttribute("id", id);
+    creature = super.appendToElement(creature);
     creature.setAttribute("size", size.toString());
     creature.setAttribute("char", text);
-    creature.setAttribute("color", color);
     creature.setAttribute("hit", hit);
     creature.setAttribute("speed", Integer.toString(speed));
 
+    if (!skills.isEmpty()) {
+      Element skillList = new Element("skills");
+      for (var skillEntry : skills.entrySet()) {
+        Element skill = new Element("skill");
+        skill.setAttribute("id", skillEntry.getKey().name().toLowerCase());
+        skill.setAttribute("rank", skillEntry.getValue().toString());
+        skillList.addContent(skill);
+      }
+      creature.addContent(skillList);
+    }
     if (mana > 0) {
       creature.setAttribute("mana", Integer.toString(mana));
-    }
-    if (name != null && !name.isEmpty()) {
-      creature.setAttribute("name", name);
     }
     if (habitat != Habitat.LAND) {
       creature.setAttribute("habitat", habitat.name());
     }
-
+    if (color != null) {
+      creature.setAttribute("color", color);
+    }
+    for (var subType : subtypes) {
+      Element subElm = new Element("sub");
+      subElm.setText(subType.name().toLowerCase());
+      creature.addContent(subElm);
+    }
     Element stats = new Element("stats");
     stats.setAttribute("str", Integer.toString((int) str));
     stats.setAttribute("con", Integer.toString((int) con));
@@ -177,20 +196,22 @@ public class RCreature extends RData {
     }
 
     if (aiAggr > 0 || aiConf > 0 || aiRange > 0 || aiType != null) {
-      Element ai = new Element("ai");
-      if (aiType != null) {
-        ai.setText(aiType.toString());
+      if (!(aiRange == defaultAiRange && aiType == defaultAiType && aiAggr == 0 && aiConf == 0)) {
+        Element ai = new Element("ai");
+        if (aiType != null) {
+          ai.setText(aiType.toString());
+        }
+        if (aiAggr > 0) {
+          ai.setAttribute("a", Integer.toString(aiAggr));
+        }
+        if (aiConf > 0) {
+          ai.setAttribute("c", Integer.toString(aiConf));
+        }
+        if (aiRange > 0 && aiRange != defaultAiRange) {
+          ai.setAttribute("r", Integer.toString(aiRange));
+        }
+        creature.addContent(ai);
       }
-      if (aiAggr > 0) {
-        ai.setAttribute("a", Integer.toString(aiAggr));
-      }
-      if (aiConf > 0) {
-        ai.setAttribute("c", Integer.toString(aiConf));
-      }
-      if (aiRange > 0) {
-        ai.setAttribute("r", Integer.toString(aiRange));
-      }
-      creature.addContent(ai);
     }
 
     return creature;

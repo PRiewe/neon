@@ -32,15 +32,6 @@
  *   <li>{@link neon.maps.services.QuestProvider} - Quest tracking
  * </ul>
  *
- * <h2>Adapter Implementations:</h2>
- *
- * <ul>
- *   <li>{@link neon.maps.services.EngineEntityStore} - Delegates to Engine singleton
- *   <li>{@link neon.maps.services.EngineResourceProvider} - Delegates to Engine singleton
- *   <li>{@link neon.maps.services.EnginePhysicsManager} - Delegates to Engine singleton
- *   <li>{@link neon.maps.services.EngineQuestProvider} - Delegates to Engine singleton
- * </ul>
- *
  * @author mdriesen
  */
 package neon.maps.services;

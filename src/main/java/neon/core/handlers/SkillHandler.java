@@ -18,7 +18,7 @@
 
 package neon.core.handlers;
 
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.event.SkillEvent;
 import neon.entities.Creature;
 import neon.entities.Player;
@@ -35,7 +35,13 @@ import neon.util.Dice;
  * 	- 10 increases in dex or con => spd increase
  */
 public class SkillHandler {
-  public static int check(Creature creature, Skill skill) {
+  private final GameContext gameContext;
+
+  public SkillHandler(GameContext gameContext) {
+    this.gameContext = gameContext;
+  }
+
+  public int check(Creature creature, Skill skill) {
     int check = getStatValue(skill, creature) + Dice.roll(1, creature.getSkill(skill), 0);
     Characteristics characteristics = creature.getCharacteristicsComponent();
     switch (skill) { // bonuses
@@ -167,7 +173,7 @@ public class SkillHandler {
     return check;
   }
 
-  private static int getStatValue(Skill skill, Creature creature) {
+  private int getStatValue(Skill skill, Creature creature) {
     switch (skill.stat) {
       case STRENGTH:
         return creature.getStatsComponent().getStr();
@@ -186,14 +192,14 @@ public class SkillHandler {
     }
   }
 
-  private static void used(Skill skill, Player player) {
+  private void used(Skill skill, Player player) {
     int value = player.getSkill(skill);
     //		System.out.println("skill check: " + skill + ", " + player.getSkill(skill));
     // speed of learning skills depends on INT
     player.trainSkill(skill, skill.increase * (float) player.getStatsComponent().getInt() / 10);
 
     if (value < player.getSkill(skill)) { // skill has increased by 1
-      Engine.post(new SkillEvent(skill));
+      gameContext.post(new SkillEvent(skill));
       // check if a feat is unlocked
       checkFeat(skill, player);
 
@@ -225,32 +231,32 @@ public class SkillHandler {
           break;
       }
       if (stat < getStatValue(skill, player)) { // stat has increased by 1
-        Engine.post(new SkillEvent(skill, skill.stat));
+        gameContext.post(new SkillEvent(skill, skill.stat));
       }
       if (level < player.getLevel()) { // level has increased by 1
         HealthComponent health = player.getHealthComponent();
         health.addBaseHealth(Dice.roll(player.species.hit));
-        Engine.post(new SkillEvent(skill, true));
+        gameContext.post(new SkillEvent(skill, true));
       }
     }
   }
 
-  public static void checkFeat(Skill skill, Player player) {
+  public void checkFeat(Skill skill, Player player) {
     Characteristics characteristics = player.getCharacteristicsComponent();
     switch (skill) {
-      case ALCHEMY:
+      case ALCHEMY -> {
         if (player.getSkill(skill) >= 20 && !characteristics.hasFeat(Feat.BREW_POTION)) {
           characteristics.addFeat(Feat.BREW_POTION);
         }
-        break;
-      case ARCHERY:
+      }
+      case ARCHERY -> {
         if (player.getSkill(skill) >= 40
             && player.getSkill(Skill.RIDING) >= 40
             && !characteristics.hasFeat(Feat.MOUNTED_ARCHERY)) {
           characteristics.addFeat(Feat.MOUNTED_ARCHERY);
         }
-        break;
-      case ARMORER:
+      }
+      case ARMORER -> {
         if (player.getSkill(skill) >= 20 && !characteristics.hasFeat(Feat.FORGE_RING)) {
           characteristics.addFeat(Feat.FORGE_RING);
         }
@@ -259,20 +265,18 @@ public class SkillHandler {
             && !characteristics.hasFeat(Feat.CRAFT_MAGIC_ARMS_AND_ARMOR)) {
           characteristics.addFeat(Feat.CRAFT_MAGIC_ARMS_AND_ARMOR);
         }
-        break;
-      case AXE:
-      case BLUNT:
-      case BLADE:
+      }
+      case AXE, BLUNT, BLADE -> {
         if (player.getSkill(skill) >= 40 && !characteristics.hasFeat(Feat.TWO_WEAPON_FIGHTING)) {
           characteristics.addFeat(Feat.TWO_WEAPON_FIGHTING);
         }
-        break;
-      case DODGING:
+      }
+      case DODGING -> {
         if (player.getSkill(skill) >= 60 && !characteristics.hasFeat(Feat.SNATCH_ARROWS)) {
           characteristics.addFeat(Feat.SNATCH_ARROWS);
         }
-        break;
-      case ENCHANT:
+      }
+      case ENCHANT -> {
         if (player.getSkill(skill) >= 40 && !characteristics.hasFeat(Feat.SCRIBE_SCROLL)) {
           characteristics.addFeat(Feat.SCRIBE_SCROLL);
         }
@@ -284,8 +288,8 @@ public class SkillHandler {
             && !characteristics.hasFeat(Feat.CRAFT_MAGIC_ARMS_AND_ARMOR)) {
           characteristics.addFeat(Feat.CRAFT_MAGIC_ARMS_AND_ARMOR);
         }
-        break;
-      case RIDING:
+      }
+      case RIDING -> {
         if (player.getSkill(skill) >= 20 && !characteristics.hasFeat(Feat.MOUNTED_COMBAT)) {
           characteristics.addFeat(Feat.MOUNTED_COMBAT);
         }
@@ -294,9 +298,8 @@ public class SkillHandler {
             && !characteristics.hasFeat(Feat.MOUNTED_ARCHERY)) {
           characteristics.addFeat(Feat.MOUNTED_ARCHERY);
         }
-        break;
-      default:
-        break;
+      }
+      default -> {}
     }
   }
 }

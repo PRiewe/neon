@@ -1,13 +1,10 @@
 package neon.maps;
 
-import java.awt.Rectangle;
+import java.awt.*;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.Item;
-import neon.resources.RCreature;
-import neon.resources.RItem;
-import neon.resources.RTerrain;
-import neon.resources.RZoneTheme;
+import neon.resources.*;
 import neon.test.TestEngineContext;
 
 /**
@@ -17,6 +14,13 @@ import neon.test.TestEngineContext;
  * defaults for testing. This class is in the neon.maps package to access protected methods.
  */
 public class MapTestFixtures {
+  private final ResourceManager resourceManager;
+  private final ZoneFactory zoneFactory;
+
+  public MapTestFixtures(ResourceManager resourceManager, ZoneFactory zoneFactory) {
+    this.resourceManager = resourceManager;
+    this.zoneFactory = zoneFactory;
+  }
 
   /**
    * Creates a basic test region with default parameters.
@@ -27,7 +31,7 @@ public class MapTestFixtures {
    * @param height height
    * @return a new Region instance
    */
-  public static Region createTestRegion(int x, int y, int width, int height) {
+  public Region createTestRegion(int x, int y, int width, int height) {
     return createTestRegion("test-region", x, y, width, height, 0);
   }
 
@@ -42,9 +46,9 @@ public class MapTestFixtures {
    * @param zOrder z-order layer
    * @return a new Region instance
    */
-  public static Region createTestRegion(
-      String id, int x, int y, int width, int height, int zOrder) {
+  public Region createTestRegion(String id, int x, int y, int width, int height, int zOrder) {
     RTerrain terrain = new RTerrain("grass");
+    resourceManager.addResource(terrain, "terrain");
     return new Region(id, x, y, width, height, null, zOrder, terrain);
   }
 
@@ -58,9 +62,9 @@ public class MapTestFixtures {
    * @param terrainId terrain identifier
    * @return a new Region instance
    */
-  public static Region createTestRegionWithTerrain(
-      int x, int y, int width, int height, String terrainId) {
+  public Region createTestRegionWithTerrain(int x, int y, int width, int height, String terrainId) {
     RTerrain terrain = new RTerrain(terrainId);
+    resourceManager.addResource(terrain, "terrain");
     return new Region("test-region", x, y, width, height, null, 0, terrain);
   }
 
@@ -75,7 +79,7 @@ public class MapTestFixtures {
    * @param index zone index
    * @return a new Zone instance
    */
-  public static Zone createTestZone(String name, int mapUID, int index) {
+  public Zone createTestZone(String name, int mapUID, int index) {
     ZoneFactory factory = TestEngineContext.getTestZoneFactory();
     if (factory == null) {
       throw new IllegalStateException(
@@ -93,8 +97,7 @@ public class MapTestFixtures {
    * @param regions regions to add
    * @return a new Zone instance with regions
    */
-  public static Zone createTestZoneWithRegions(
-      String name, int mapUID, int index, Region... regions) {
+  public Zone createTestZoneWithRegions(String name, int mapUID, int index, Region... regions) {
     Zone zone = createTestZone(name, mapUID, index);
     for (Region region : regions) {
       zone.addRegion(region);
@@ -109,7 +112,7 @@ public class MapTestFixtures {
    * @param regionCount number of regions to create
    * @return a new Zone with regionCount regions
    */
-  public static Zone createLargeZone(int mapUID, int regionCount) {
+  public Zone createLargeZone(int mapUID, int regionCount) {
     Zone zone = createTestZone("large-zone", mapUID, 0);
 
     // Create a grid of regions
@@ -130,90 +133,14 @@ public class MapTestFixtures {
   }
 
   /**
-   * Creates an empty world map with the given parameters.
-   *
-   * @param name world name
-   * @param uid world UID
-   * @return a new World instance
-   */
-  public static World createEmptyWorld(String name, int uid) {
-    return new World(name, uid);
-  }
-
-  /**
-   * Creates an empty world map with default name.
-   *
-   * @param uid world UID
-   * @return a new World instance
-   */
-  public static World createEmptyWorld(int uid) {
-    return new World("test-world", uid);
-  }
-
-  /**
-   * Creates a world map with a single region.
-   *
-   * @param uid world UID
-   * @return a new World instance with one region
-   */
-  public static World createWorldWithSingleRegion(int uid) {
-    World world = new World("test-world", uid);
-    Region region = createTestRegion(0, 0, 100, 100);
-    world.getZone(0).addRegion(region);
-    return world;
-  }
-
-  /**
-   * Creates a world map with multiple regions.
-   *
-   * @param uid world UID
-   * @param regionCount number of regions to add
-   * @return a new World instance with regions
-   */
-  public static World createWorldWithRegions(int uid, int regionCount) {
-    World world = new World("test-world", uid);
-    Zone zone = world.getZone(0);
-
-    for (int i = 0; i < regionCount; i++) {
-      int x = (i % 10) * 10;
-      int y = (i / 10) * 10;
-      Region region = createTestRegion("region-" + i, x, y, 10, 10, 0);
-      zone.addRegion(region);
-    }
-
-    return world;
-  }
-
-  /**
-   * Creates an empty dungeon map.
-   *
-   * @param name dungeon name
-   * @param uid dungeon UID
-   * @return a new Dungeon instance
-   */
-  public static Dungeon createEmptyDungeon(String name, int uid) {
-    return new Dungeon(name, uid);
-  }
-
-  /**
-   * Creates an empty dungeon map with default name.
-   *
-   * @param uid dungeon UID
-   * @return a new Dungeon instance
-   */
-  public static Dungeon createEmptyDungeon(int uid) {
-    return new Dungeon("test-dungeon", uid);
-  }
-
-  /**
    * Creates a dungeon with a specified number of zones.
    *
    * @param uid dungeon UID
    * @param zoneCount number of zones to create
    * @return a new Dungeon instance with zones
    */
-  public static Dungeon createDungeonWithZones(int uid, int zoneCount) {
-    Dungeon dungeon = new Dungeon("test-dungeon", uid);
+  public Dungeon createDungeonWithZones(int uid, int zoneCount) {
+    Dungeon dungeon = new Dungeon("test-dungeon", uid, zoneFactory);
 
     for (int i = 0; i < zoneCount; i++) {
       dungeon.addZone(i, "zone-" + i);
@@ -233,7 +160,7 @@ public class MapTestFixtures {
    * @param zoneCount number of zones
    * @return a new Dungeon with zones connected in a chain (0->1->2->...)
    */
-  public static Dungeon createConnectedDungeon(int uid, int zoneCount) {
+  public Dungeon createConnectedDungeon(int uid, int zoneCount) {
     Dungeon dungeon = createDungeonWithZones(uid, zoneCount);
 
     // Connect zones in a linear chain
@@ -253,7 +180,7 @@ public class MapTestFixtures {
    * @param height height
    * @return a new Rectangle
    */
-  public static Rectangle createBounds(int x, int y, int width, int height) {
+  public Rectangle createBounds(int x, int y, int width, int height) {
     return new Rectangle(x, y, width, height);
   }
 
@@ -266,9 +193,10 @@ public class MapTestFixtures {
    * @param y y-coordinate
    * @return a new Creature instance
    */
-  public static Creature createTestCreature(String id, long uid, int x, int y) {
+  public Creature createTestCreature(String id, long uid, int x, int y) {
     RCreature species = new RCreature(id);
     Creature creature = new Creature(id, uid, species);
+    resourceManager.addResource(species);
     creature.getShapeComponent().setLocation(x, y);
     return creature;
   }
@@ -279,7 +207,7 @@ public class MapTestFixtures {
    * @param uid creature UID
    * @return a new Creature instance at position (0, 0)
    */
-  public static Creature createTestCreature(long uid) {
+  public Creature createTestCreature(long uid) {
     return createTestCreature("test-creature", uid, 0, 0);
   }
 
@@ -292,8 +220,9 @@ public class MapTestFixtures {
    * @param y y-coordinate
    * @return a new Item instance
    */
-  public static Item createTestItem(String id, long uid, int x, int y) {
+  public Item createTestItem(String id, long uid, int x, int y) {
     RItem resource = new RItem(id, RItem.Type.item);
+    resourceManager.addResource(resource);
     Item item = new Item(uid, resource);
     item.getShapeComponent().setLocation(x, y);
     return item;
@@ -305,7 +234,7 @@ public class MapTestFixtures {
    * @param uid item UID
    * @return a new Item instance at position (0, 0)
    */
-  public static Item createTestItem(long uid) {
+  public Item createTestItem(long uid) {
     return createTestItem("test-item", uid, 0, 0);
   }
 
@@ -318,8 +247,9 @@ public class MapTestFixtures {
    * @param y y-coordinate
    * @return a new Door instance
    */
-  public static Door createTestDoor(String id, long uid, int x, int y) {
+  public Door createTestDoor(String id, long uid, int x, int y) {
     RItem.Door resource = new RItem.Door(id, RItem.Type.door);
+    resourceManager.addResource(resource);
     Door door = new Door(uid, resource);
     door.getShapeComponent().setLocation(x, y);
     return door;
@@ -331,7 +261,7 @@ public class MapTestFixtures {
    * @param uid door UID
    * @return a new Door instance at position (0, 0)
    */
-  public static Door createTestDoor(long uid) {
+  public Door createTestDoor(long uid) {
     return createTestDoor("test_door", uid, 0, 0);
   }
 
@@ -345,7 +275,7 @@ public class MapTestFixtures {
    * @param destMap destination map UID
    * @return a new Door instance configured as a portal
    */
-  public static Door createTestPortalDoor(long uid, int x, int y, int destZone, int destMap) {
+  public Door createTestPortalDoor(long uid, int x, int y, int destZone, int destMap) {
     Door door = createTestDoor("test_door", uid, x, y);
     door.portal.setDestination(new java.awt.Point(0, 0), destZone, destMap);
     door.lock.open();
@@ -358,7 +288,7 @@ public class MapTestFixtures {
    * @param type dungeon type (cave, maze, bsp, etc.)
    * @return a configured RZoneTheme
    */
-  public static RZoneTheme createTestZoneTheme(String type) {
+  public RZoneTheme createTestZoneTheme(String type) {
     RZoneTheme theme = new RZoneTheme("test-theme");
     theme.type = type;
     theme.min = 25;
@@ -366,6 +296,7 @@ public class MapTestFixtures {
     theme.floor = "stone_floor";
     theme.walls = "stone_wall";
     theme.doors = "test_door";
+    resourceManager.addResource(theme, "theme");
     return theme;
   }
 
@@ -376,8 +307,9 @@ public class MapTestFixtures {
    * @param floors comma-separated floor terrain IDs
    * @return a configured RZoneTheme
    */
-  public static RZoneTheme createTestZoneTheme(String type, String floors) {
+  public RZoneTheme createTestZoneTheme(String type, String floors) {
     RZoneTheme theme = createTestZoneTheme(type);
+    resourceManager.addResource(theme, "theme");
     theme.floor = floors;
     return theme;
   }

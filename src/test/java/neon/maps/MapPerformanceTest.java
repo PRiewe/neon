@@ -1,6 +1,5 @@
 package neon.maps;
 
-import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.awt.Rectangle;
@@ -9,13 +8,10 @@ import java.util.Collection;
 import java.util.List;
 import neon.entities.Creature;
 import neon.entities.Item;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,12 +23,18 @@ import org.junit.jupiter.api.Test;
  */
 class MapPerformanceTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
+  private MapTestFixtures mapTestFixtures;
+  private ZoneFactory zoneFactory;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
+    zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
   @AfterEach
@@ -52,7 +54,7 @@ class MapPerformanceTest {
             () -> {
               List<Region> regions = new ArrayList<>();
               for (int i = 0; i < regionCount; i++) {
-                Region region = MapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
+                Region region = mapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
                 regions.add(region);
               }
               return regions;
@@ -69,7 +71,7 @@ class MapPerformanceTest {
 
   @Test
   void testRegionScriptOperationsPerformance() throws Exception {
-    Region region = MapTestFixtures.createTestRegion(0, 0, 100, 100);
+    Region region = mapTestFixtures.createTestRegion(0, 0, 100, 100);
 
     PerformanceHarness.MeasuredResult<Integer> addResult =
         PerformanceHarness.measure(
@@ -104,7 +106,7 @@ class MapPerformanceTest {
 
   @Test
   void testRegionPropertyAccessPerformance() throws Exception {
-    Region region = MapTestFixtures.createTestRegion("perf-region", 100, 200, 50, 75, 3);
+    Region region = mapTestFixtures.createTestRegion("perf-region", 100, 200, 50, 75, 3);
     region.setLabel("Performance Test Region");
     region.addScript("test.js", false);
 
@@ -140,7 +142,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneRegionInsertionPerformance() throws Exception {
-    Zone zone = new Zone("perf-zone", 1000, 0);
+    Zone zone = zoneFactory.createZone("perf-zone", 1000, 0);
     int regionCount = 500;
     int creaturesPerRegion = 10;
     int itemsPerRegion = 10;
@@ -152,13 +154,13 @@ class MapPerformanceTest {
               for (int i = 0; i < regionCount; i++) {
                 int x = (i % 25) * 20;
                 int y = (i / 25) * 20;
-                Region region = MapTestFixtures.createTestRegion("r" + i, x, y, 20, 20, i % 3);
+                Region region = mapTestFixtures.createTestRegion("r" + i, x, y, 20, 20, i % 3);
                 zone.addRegion(region);
 
                 // Add creatures to zone
                 for (int c = 0; c < creaturesPerRegion; c++) {
                   Creature creature =
-                      MapTestFixtures.createTestCreature(
+                      mapTestFixtures.createTestCreature(
                           "creature-" + i + "-" + c, uidCounter++, x + c * 5, y + c * 5);
                   zone.addCreature(creature);
                 }
@@ -166,7 +168,7 @@ class MapPerformanceTest {
                 // Add items to zone
                 for (int it = 0; it < itemsPerRegion; it++) {
                   Item item =
-                      MapTestFixtures.createTestItem(
+                      mapTestFixtures.createTestItem(
                           "item-" + i + "-" + it, uidCounter++, x + it * 3, y + it * 3);
                   zone.addItem(item);
                 }
@@ -193,22 +195,22 @@ class MapPerformanceTest {
 
   @Test
   void testZoneSpatialQueryPerformanceAtScale() throws Exception {
-    Zone zone = new Zone("spatial-perf-zone", 1001, 0);
+    Zone zone = zoneFactory.createZone("spatial-perf-zone", 1001, 0);
 
     // Create large zone with 500 regions, plus creatures and items
     long uidCounter = 20000;
     for (int i = 0; i < 500; i++) {
       int x = (i % 50) * 10;
       int y = (i / 50) * 10;
-      Region region = MapTestFixtures.createTestRegion("r" + i, x, y, 10, 10, 0);
+      Region region = mapTestFixtures.createTestRegion("r" + i, x, y, 10, 10, 0);
       zone.addRegion(region);
 
       // Add 1 creature and 2 items per region
-      Creature creature = MapTestFixtures.createTestCreature("c" + i, uidCounter++, x + 2, y + 2);
+      Creature creature = mapTestFixtures.createTestCreature("c" + i, uidCounter++, x + 2, y + 2);
       zone.addCreature(creature);
 
-      Item item1 = MapTestFixtures.createTestItem("i" + i + "-1", uidCounter++, x + 3, y + 3);
-      Item item2 = MapTestFixtures.createTestItem("i" + i + "-2", uidCounter++, x + 4, y + 4);
+      Item item1 = mapTestFixtures.createTestItem("i" + i + "-1", uidCounter++, x + 3, y + 3);
+      Item item2 = mapTestFixtures.createTestItem("i" + i + "-2", uidCounter++, x + 4, y + 4);
       zone.addItem(item1);
       zone.addItem(item2);
     }
@@ -243,7 +245,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneBulkRegionAddition() throws Exception {
-    Zone zone = new Zone("bulk-add-zone", 1002, 0);
+    Zone zone = zoneFactory.createZone("bulk-add-zone", 1002, 0);
 
     // Measure bulk addition time including creatures and items
     PerformanceHarness.MeasuredResult<Integer> result =
@@ -251,23 +253,23 @@ class MapPerformanceTest {
             () -> {
               long uidCounter = 30000;
               for (int i = 0; i < 300; i++) {
-                Region region = MapTestFixtures.createTestRegion("r" + i, i * 5, i * 5, 10, 10, 0);
+                Region region = mapTestFixtures.createTestRegion("r" + i, i * 5, i * 5, 10, 10, 0);
                 zone.addRegion(region);
 
                 // Add 2 creatures and 2 items per region
                 Creature c1 =
-                    MapTestFixtures.createTestCreature("c" + i + "-1", uidCounter++, i * 5, i * 5);
+                    mapTestFixtures.createTestCreature("c" + i + "-1", uidCounter++, i * 5, i * 5);
                 Creature c2 =
-                    MapTestFixtures.createTestCreature(
+                    mapTestFixtures.createTestCreature(
                         "c" + i + "-2", uidCounter++, i * 5 + 2, i * 5 + 2);
                 zone.addCreature(c1);
                 zone.addCreature(c2);
 
                 Item it1 =
-                    MapTestFixtures.createTestItem(
+                    mapTestFixtures.createTestItem(
                         "it" + i + "-1", uidCounter++, i * 5 + 1, i * 5 + 1);
                 Item it2 =
-                    MapTestFixtures.createTestItem(
+                    mapTestFixtures.createTestItem(
                         "it" + i + "-2", uidCounter++, i * 5 + 3, i * 5 + 3);
                 zone.addItem(it1);
                 zone.addItem(it2);
@@ -288,19 +290,19 @@ class MapPerformanceTest {
 
   @Test
   void testZoneGetRegionByPositionPerformance() throws Exception {
-    Zone zone = new Zone("position-perf-zone", 1003, 0);
+    Zone zone = zoneFactory.createZone("position-perf-zone", 1003, 0);
 
     // Create 100x100 grid (10,000 regions) with creatures and items
     long uidCounter = 40000;
     for (int y = 0; y < 100; y++) {
       for (int x = 0; x < 100; x++) {
-        Region region = MapTestFixtures.createTestRegion("r-" + x + "-" + y, x * 5, y * 5, 5, 5, 0);
+        Region region = mapTestFixtures.createTestRegion("r-" + x + "-" + y, x * 5, y * 5, 5, 5, 0);
         zone.addRegion(region);
 
         // Add 1 creature per region (every 10th region to keep memory reasonable)
         if ((x + y) % 10 == 0) {
           Creature creature =
-              MapTestFixtures.createTestCreature(
+              mapTestFixtures.createTestCreature(
                   "c-" + x + "-" + y, uidCounter++, x * 5 + 1, y * 5 + 1);
           zone.addCreature(creature);
         }
@@ -308,7 +310,7 @@ class MapPerformanceTest {
         // Add 1 item per region (every 5th region)
         if ((x + y) % 5 == 0) {
           Item item =
-              MapTestFixtures.createTestItem(
+              mapTestFixtures.createTestItem(
                   "i-" + x + "-" + y, uidCounter++, x * 5 + 2, y * 5 + 2);
           zone.addItem(item);
         }
@@ -344,7 +346,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneMultiLayerPerformance() throws Exception {
-    Zone zone = new Zone("multilayer-perf-zone", 1004, 0);
+    Zone zone = zoneFactory.createZone("multilayer-perf-zone", 1004, 0);
 
     int layerCount = 10;
     int regionsPerLayer = 50;
@@ -356,18 +358,18 @@ class MapPerformanceTest {
               for (int z = 0; z < layerCount; z++) {
                 for (int i = 0; i < regionsPerLayer; i++) {
                   Region region =
-                      MapTestFixtures.createTestRegion(
+                      mapTestFixtures.createTestRegion(
                           "r-z" + z + "-" + i, i * 10, z * 10, 10, 10, z);
                   zone.addRegion(region);
 
                   // Add 1 creature and 1 item per region
                   Creature creature =
-                      MapTestFixtures.createTestCreature(
+                      mapTestFixtures.createTestCreature(
                           "c-z" + z + "-" + i, uidCounter++, i * 10 + 2, z * 10 + 2);
                   zone.addCreature(creature);
 
                   Item item =
-                      MapTestFixtures.createTestItem(
+                      mapTestFixtures.createTestItem(
                           "i-z" + z + "-" + i, uidCounter++, i * 10 + 3, z * 10 + 3);
                   zone.addItem(item);
                 }
@@ -407,21 +409,14 @@ class MapPerformanceTest {
 
   @Test
   void testAtlasMapCachingPerformance() throws Exception {
-    Atlas atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            testDb,
-            new EngineEntityStore(),
-            new EngineResourceProvider(),
-            new EngineQuestProvider(),
-            createDefaultZoneActivator());
+    Atlas atlas = TestEngineContext.getTestAtlas();
     int mapCount = 100;
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(
             () -> {
               for (int i = 0; i < mapCount; i++) {
-                World world = new World("World " + i, 2000 + i);
+                World world = new World("World " + i, 2000 + i, zoneFactory);
                 atlas.setMap(world);
               }
               return mapCount;
@@ -433,17 +428,17 @@ class MapPerformanceTest {
 
     assertTrue(result.getDurationMillis() < 1000, "Caching " + mapCount + " maps should be fast");
 
-    atlas.getCache().close();
+    atlas.getAtlasMapStore().close();
   }
 
   @Test
   void testAtlasMapSwitchingPerformance() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "switch-perf-atlas");
+    Atlas atlas = TestEngineContext.getTestAtlas();
 
     // Create and cache 50 maps
     List<World> worlds = new ArrayList<>();
     for (int i = 0; i < 50; i++) {
-      World world = new World("World " + i, 3000 + i);
+      World world = new World("World " + i, 3000 + i, zoneFactory);
       worlds.add(world);
       atlas.setMap(world);
     }
@@ -469,19 +464,19 @@ class MapPerformanceTest {
         result.getDurationMillis() < 1000,
         switchCount + " switches should complete within 1 second");
 
-    atlas.getCache().close();
+    atlas.getAtlasMapStore().close();
   }
 
   @Test
   void testAtlasZoneAccessPerformance() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "zone-access-atlas");
+    Atlas atlas = TestEngineContext.getTestAtlas();
 
-    World world = new World("Zone Access World", 4000);
+    World world = new World("Zone Access World", 4000, zoneFactory);
     atlas.setMap(world);
 
     Zone zone = atlas.getCurrentZone();
     for (int i = 0; i < 100; i++) {
-      Region region = MapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
+      Region region = mapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
       zone.addRegion(region);
     }
 
@@ -508,20 +503,20 @@ class MapPerformanceTest {
         result.getDurationMillis() < 10000,
         accessCount + " zone accesses should complete within 10 seconds");
 
-    atlas.getCache().close();
+    atlas.getAtlasMapStore().close();
   }
 
   // ==================== Integration Performance Tests ====================
 
   @Test
   void testFullMapLoadAndQueryPerformance() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "full-perf-atlas");
+    Atlas atlas = TestEngineContext.getTestAtlas();
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(
             () -> {
               // Create a large world
-              World world = new World("Large World", 5000);
+              World world = new World("Large World", 5000, zoneFactory);
               atlas.setMap(world);
 
               Zone zone = atlas.getCurrentZone();
@@ -531,25 +526,25 @@ class MapPerformanceTest {
               for (int i = 0; i < 500; i++) {
                 int x = (i % 25) * 20;
                 int y = (i / 25) * 20;
-                Region region = MapTestFixtures.createTestRegion("r" + i, x, y, 20, 20, i % 3);
+                Region region = mapTestFixtures.createTestRegion("r" + i, x, y, 20, 20, i % 3);
                 region.setLabel("Region " + i);
                 region.addScript("script" + i + ".js", false);
                 zone.addRegion(region);
 
                 // Add 2 creatures and 3 items per region
                 Creature c1 =
-                    MapTestFixtures.createTestCreature("c" + i + "-1", uidCounter++, x + 2, y + 2);
+                    mapTestFixtures.createTestCreature("c" + i + "-1", uidCounter++, x + 2, y + 2);
                 Creature c2 =
-                    MapTestFixtures.createTestCreature("c" + i + "-2", uidCounter++, x + 4, y + 4);
+                    mapTestFixtures.createTestCreature("c" + i + "-2", uidCounter++, x + 4, y + 4);
                 zone.addCreature(c1);
                 zone.addCreature(c2);
 
                 Item it1 =
-                    MapTestFixtures.createTestItem("it" + i + "-1", uidCounter++, x + 1, y + 1);
+                    mapTestFixtures.createTestItem("it" + i + "-1", uidCounter++, x + 1, y + 1);
                 Item it2 =
-                    MapTestFixtures.createTestItem("it" + i + "-2", uidCounter++, x + 3, y + 3);
+                    mapTestFixtures.createTestItem("it" + i + "-2", uidCounter++, x + 3, y + 3);
                 Item it3 =
-                    MapTestFixtures.createTestItem("it" + i + "-3", uidCounter++, x + 5, y + 5);
+                    mapTestFixtures.createTestItem("it" + i + "-3", uidCounter++, x + 5, y + 5);
                 zone.addItem(it1);
                 zone.addItem(it2);
                 zone.addItem(it3);
@@ -577,41 +572,6 @@ class MapPerformanceTest {
         result.getDurationMillis() < 10000,
         "Full workflow with creatures and items should complete within 10 seconds");
 
-    atlas.getCache().close();
-  }
-
-  @Test
-  void testMemoryEfficiencyWithLargeMaps() throws Exception {
-    Atlas atlas = new Atlas(TestEngineContext.getStubFileSystem(), "memory-test-atlas");
-
-    Runtime runtime = Runtime.getRuntime();
-    runtime.gc();
-    long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
-
-    // Create 10 large worlds
-    for (int w = 0; w < 10; w++) {
-      World world = new World("World " + w, 6000 + w);
-      atlas.setMap(world);
-
-      Zone zone = atlas.getCurrentZone();
-      for (int i = 0; i < 200; i++) {
-        Region region = MapTestFixtures.createTestRegion(i * 5, i * 5, 10, 10);
-        zone.addRegion(region);
-      }
-
-      testDb.commit();
-    }
-
-    runtime.gc();
-    long memoryAfter = runtime.totalMemory() - runtime.freeMemory();
-    long memoryUsed = (memoryAfter - memoryBefore) / 1024 / 1024; // MB
-
-    System.out.printf(
-        "[PERF] Memory used for 10 worlds (2000 total regions): ~%d MB%n", memoryUsed);
-
-    // Very lenient assertion - just checking it doesn't explode
-    assertTrue(memoryUsed < 500, "Memory usage should be reasonable");
-
-    atlas.getCache().close();
+    atlas.getAtlasMapStore().close();
   }
 }

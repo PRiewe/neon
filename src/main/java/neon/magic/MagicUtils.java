@@ -18,6 +18,7 @@
 
 package neon.magic;
 
+import neon.core.GameContext;
 import neon.core.handlers.SkillHandler;
 import neon.entities.Clothing;
 import neon.entities.Creature;
@@ -25,6 +26,15 @@ import neon.entities.components.Enchantment;
 import neon.resources.RSpell;
 
 public class MagicUtils {
+
+  private final GameContext gameContext;
+  private final SkillHandler skillHandler;
+
+  public MagicUtils(GameContext gameContext) {
+    this.gameContext = gameContext;
+    this.skillHandler = new SkillHandler(gameContext);
+  }
+
   /**
    * This method returns a magic skill check, based on the type of spell.
    *
@@ -32,8 +42,8 @@ public class MagicUtils {
    * @param spell the spell to cast
    * @return a magic skill check
    */
-  public static int check(Creature creature, RSpell spell) {
-    return SkillHandler.check(creature, spell.effect.getSchool());
+  public int check(Creature creature, RSpell spell) {
+    return skillHandler.check(creature, spell.effect.getSchool());
   }
 
   /**

@@ -31,6 +31,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import lombok.extern.slf4j.Slf4j;
 import neon.core.GameContext;
 import neon.entities.Creature;
 import neon.entities.Player;
@@ -61,21 +62,24 @@ import org.jdom2.Element;
  * Class that shows a list of topics to talk about. The displayed list depends
  * on the preconditions defined in quests.
  */
+@Slf4j
 public class DialogState extends State implements KeyListener {
-  private static UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+  private static final UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
-  private JPanel panel, conversation;
+  private final JPanel panel;
+  private final JPanel conversation;
   private Creature target;
-  private JTextPane text = new JTextPane();
-  private JList<Topic> subjects;
-  private JList<String> services;
+  private final JTextPane text = new JTextPane();
+  private final JList<Topic> subjects;
+  private final JList<String> services;
   private JList<?> list;
-  private JScrollPane left;
-  private HTMLEditorKit kit = new HTMLEditorKit();
-  private HTMLDocument doc;
-  private String big, small;
-  private MBassador<EventObject> bus;
-  private UserInterface ui;
+  private final JScrollPane left;
+  private final HTMLEditorKit kit = new HTMLEditorKit();
+  private final HTMLDocument doc;
+  private final String big;
+  private final String small;
+  private final MBassador<EventObject> bus;
+  private final UserInterface ui;
   private Topic topic;
   private final GameContext context;
 
@@ -151,7 +155,7 @@ public class DialogState extends State implements KeyListener {
     }
     if (target != null) {
       left.setBorder(new TitledBorder(target.toString()));
-      context.getScriptEngine().getBindings("js").putMember("NPC", target);
+      context.getScriptEngine().getBindings().putMember("NPC", target);
       initDialog();
       initServices();
       ui.showPanel(panel);
@@ -313,12 +317,13 @@ public class DialogState extends State implements KeyListener {
         }
       }
     } catch (Exception e) {
+      log.error("hasService", e);
     }
     return false;
   }
 
   private static class AutoScroller implements Runnable {
-    private JScrollBar bar;
+    private final JScrollBar bar;
 
     public AutoScroller(JScrollBar bar) {
       this.bar = bar;

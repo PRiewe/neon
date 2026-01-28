@@ -43,14 +43,20 @@ import net.engio.mbassy.bus.MBassador;
 public class MoveState extends State implements KeyListener {
   private Player player;
   private GamePanel panel;
-  private CClient keys;
-  private MBassador<EventObject> bus;
+  private final CClient keys;
+  private final MBassador<EventObject> bus;
   private final GameContext context;
+  private final MotionHandler motionHandler;
+  private final TeleportHandler teleportHandler;
+  private final InventoryHandler inventoryHandler;
 
   public MoveState(State parent, MBassador<EventObject> bus, GameContext context) {
     super(parent, "move module");
     this.bus = bus;
     this.context = context;
+    this.motionHandler = new MotionHandler(context);
+    this.teleportHandler = new TeleportHandler(context);
+    this.inventoryHandler = new InventoryHandler(context);
     keys = (CClient) context.getResources().getResource("client", "config");
   }
 
@@ -81,7 +87,7 @@ public class MoveState extends State implements KeyListener {
         bus.publishAsync(new TransitionEvent("bump", "creature", other));
       }
     } else { // no one in the way, so move
-      if (MotionHandler.move(player, p) == MotionHandler.DOOR) {
+      if (motionHandler.move(player, p) == MotionHandler.DOOR) {
         for (long uid : context.getAtlas().getCurrentZone().getItems(p)) {
           if (context.getStore().getEntity(uid) instanceof Door) {
             bus.publishAsync(
@@ -108,8 +114,7 @@ public class MoveState extends State implements KeyListener {
 
     if (items.size() == 1) {
       Entity entity = context.getStore().getEntity(items.get(0));
-      if (entity instanceof Container) {
-        Container container = (Container) entity;
+      if (entity instanceof Container container) {
         if (container.lock.isLocked()) {
           if (container.lock.hasKey() && hasItem(player, container.lock.getKey())) {
             bus.publishAsync(new TransitionEvent("container", "holder", entity));
@@ -120,14 +125,14 @@ public class MoveState extends State implements KeyListener {
           bus.publishAsync(new TransitionEvent("container", "holder", entity));
         }
       } else if (entity instanceof Door) {
-        if (MotionHandler.teleport(player, (Door) entity) == MotionHandler.OK) {
+        if (teleportHandler.teleport(player, (Door) entity) == MotionHandler.OK) {
           bus.publishAsync(new TurnEvent(context.getTimer().addTick()));
         }
       } else if (entity instanceof Creature) {
         bus.publishAsync(new TransitionEvent("container", "holder", entity));
       } else {
         context.getAtlas().getCurrentZone().removeItem((Item) entity);
-        InventoryHandler.addItem(player, entity.getUID());
+        inventoryHandler.addItem(player, entity.getUID());
       }
     } else if (items.size() > 1) {
       bus.publishAsync(

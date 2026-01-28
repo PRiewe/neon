@@ -20,8 +20,11 @@ package neon.maps.generators;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import neon.core.GameContext;
 import neon.entities.Door;
 import neon.entities.EntityFactory;
+import neon.entities.ItemFactory;
+import neon.maps.MapUtils;
 import neon.maps.Region;
 import neon.maps.Zone;
 import neon.maps.services.EntityStore;
@@ -38,18 +41,29 @@ public class TownGenerator {
   private final Zone zone;
   private final EntityStore entityStore;
   private final ResourceProvider resourceProvider;
+  private final GameContext gameContext;
+  private final EntityFactory entityFactory;
+  private final MapUtils mapUtils;
+  private final ItemFactory itemFactory;
+
+  public TownGenerator(Zone zone, GameContext gameContext) {
+    this(zone, gameContext, new MapUtils());
+  }
 
   /**
    * Creates a town generator with dependency injection.
    *
    * @param zone the zone to generate
-   * @param entityStore the entity store service
-   * @param resourceProvider the resource provider service
    */
-  public TownGenerator(Zone zone, EntityStore entityStore, ResourceProvider resourceProvider) {
+  public TownGenerator(Zone zone, GameContext gameContext, MapUtils mapUtils) {
     this.zone = zone;
-    this.entityStore = entityStore;
-    this.resourceProvider = resourceProvider;
+    this.entityStore = gameContext.getStore();
+    this.resourceProvider = gameContext.getResources();
+    this.gameContext = gameContext;
+    this.entityFactory = new EntityFactory(gameContext);
+    this.mapUtils = mapUtils;
+
+    itemFactory = new ItemFactory(gameContext.getResourceManageer());
   }
 
   /**
@@ -96,7 +110,7 @@ public class TownGenerator {
     int x = 0, y = 0;
 
     y =
-        switch ((int) (Math.random() * 4)) {
+        switch ((int) (mapUtils.random(0, 4))) {
           case 0 -> {
             x = r.getX() + 1;
             yield r.getY();
@@ -117,7 +131,7 @@ public class TownGenerator {
         };
 
     long uid = entityStore.createNewEntityUID();
-    Door door = (Door) EntityFactory.getItem(theme.door, x, y, uid);
+    Door door = (Door) entityFactory.getItem(theme.door, x, y, uid);
     entityStore.addEntity(door);
     door.lock.close();
     zone.addItem(door);

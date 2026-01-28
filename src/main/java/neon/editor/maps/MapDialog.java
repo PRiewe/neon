@@ -124,10 +124,13 @@ public class MapDialog implements ActionListener {
   }
 
   public static class Properties {
-    private String name, path, terrain;
-    private boolean ok;
-    private boolean type;
-    private int width, height;
+    private final String name;
+    private final String path;
+    private final String terrain;
+    private final boolean ok;
+    private final boolean type;
+    private final int width;
+    private final int height;
 
     public Properties(
         boolean cancelled,

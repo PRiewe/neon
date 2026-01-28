@@ -27,5 +27,5 @@ public enum Habitat {
   AIR,
   LAND,
   WATER,
-  AMPHIBIAN;
+  AMPHIBIAN
 }

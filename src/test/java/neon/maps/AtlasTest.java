@@ -1,16 +1,12 @@
 package neon.maps;
 
-import static neon.maps.Atlas.createDefaultZoneActivator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
-import neon.maps.services.EngineEntityStore;
-import neon.maps.services.EngineQuestProvider;
-import neon.maps.services.EngineResourceProvider;
 import neon.test.MapDbTestHelper;
 import neon.test.PerformanceHarness;
 import neon.test.TestEngineContext;
-import org.h2.mvstore.MVStore;
+import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,21 +18,16 @@ import org.junit.jupiter.api.Test;
  */
 class AtlasTest {
 
-  private MVStore testDb;
+  private MapStore testDb;
   private Atlas atlas;
+  private ZoneFactory zoneFactory;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
-    atlas =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            testDb,
-            new EngineEntityStore(),
-            new EngineResourceProvider(),
-            new EngineQuestProvider(),
-            createDefaultZoneActivator());
+    atlas = TestEngineContext.getTestAtlas();
+    zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
   @AfterEach
@@ -50,12 +41,12 @@ class AtlasTest {
 
   @Test
   void testConstructorCreatesMapDb() {
-    assertNotNull(atlas.getCache());
+    assertNotNull(atlas.getAtlasMapStore());
   }
 
   @Test
   void testSetMapAddsToCache() {
-    World world = new World("Test World", 100);
+    World world = new World("Test World", 100, zoneFactory);
 
     atlas.setMap(world);
 
@@ -67,8 +58,8 @@ class AtlasTest {
 
   @Test
   void testGetCurrentMapReturnsSetMap() {
-    World world1 = new World("World 1", 101);
-    World world2 = new World("World 2", 102);
+    World world1 = new World("World 1", 101, zoneFactory);
+    World world2 = new World("World 2", 102, zoneFactory);
 
     atlas.setMap(world1);
     assertEquals(101, atlas.getCurrentMap().getUID());
@@ -79,7 +70,7 @@ class AtlasTest {
 
   @Test
   void testGetCurrentZoneReturnsCorrectZone() {
-    World world = new World("Test World", 103);
+    World world = new World("Test World", 103, TestEngineContext.getTestZoneFactory());
     atlas.setMap(world);
 
     Zone zone = atlas.getCurrentZone();
@@ -90,7 +81,7 @@ class AtlasTest {
 
   @Test
   void testGetCurrentZoneIndexDefaultsToZero() {
-    World world = new World("Test World", 104);
+    World world = new World("Test World", 104, TestEngineContext.getTestZoneFactory());
     atlas.setMap(world);
 
     assertEquals(0, atlas.getCurrentZoneIndex());
@@ -98,8 +89,8 @@ class AtlasTest {
 
   @Test
   void testMultipleMapsDoNotInterfere() {
-    World world1 = new World("World 1", 201);
-    World world2 = new World("World 2", 202);
+    World world1 = new World("World 1", 201, zoneFactory);
+    World world2 = new World("World 2", 202, zoneFactory);
 
     atlas.setMap(world1);
     atlas.setMap(world2);
@@ -117,7 +108,7 @@ class AtlasTest {
 
   @Test
   void testSetMapOnlyAddsToCacheOnce() {
-    World world = new World("Test World", 300);
+    World world = new World("Test World", 300, zoneFactory);
 
     atlas.setMap(world);
     atlas.setMap(world); // Second call should not duplicate
@@ -130,7 +121,7 @@ class AtlasTest {
   void testCacheWithMultipleMaps() {
     // Add multiple maps to cache
     for (int i = 0; i < 10; i++) {
-      World world = new World("World " + i, 400 + i);
+      World world = new World("World " + i, 400 + i, zoneFactory);
       atlas.setMap(world);
     }
 
@@ -138,7 +129,7 @@ class AtlasTest {
     assertEquals(409, atlas.getCurrentMap().getUID());
 
     // Switch between maps
-    World world5 = new World("World 5", 405);
+    World world5 = new World("World 5", 405, zoneFactory);
     atlas.setMap(world5);
     assertEquals(405, atlas.getCurrentMap().getUID());
   }
@@ -146,7 +137,7 @@ class AtlasTest {
   @Test
   void testWorldWithMultipleZones() {
     // Worlds only have one zone, but we can test zone access
-    World world = new World("Single Zone World", 500);
+    World world = new World("Single Zone World", 500, TestEngineContext.getTestZoneFactory());
     atlas.setMap(world);
 
     Zone zone = atlas.getCurrentZone();
@@ -166,7 +157,7 @@ class AtlasTest {
         PerformanceHarness.measure(
             () -> {
               for (int i = 0; i < mapCount; i++) {
-                World world = new World("World " + i, 700 + i);
+                World world = new World("World " + i, 700 + i, zoneFactory);
                 atlas.setMap(world);
               }
               return null;
@@ -185,7 +176,7 @@ class AtlasTest {
   void testCacheRetrievalPerformance() throws Exception {
     // Add maps to cache
     for (int i = 0; i < 20; i++) {
-      World world = new World("World " + i, 800 + i);
+      World world = new World("World " + i, 800 + i, zoneFactory);
       atlas.setMap(world);
     }
 
@@ -202,26 +193,9 @@ class AtlasTest {
   }
 
   @Test
-  void testMapDbPersistsAcrossAtlasInstances() throws IOException {
-    // Create first atlas and add map
-    Atlas atlas1 = new Atlas(TestEngineContext.getStubFileSystem(), "shared-cache");
-    World world = new World("Persistent World", 900);
-    atlas1.setMap(world);
-
-    // Create second atlas with same cache name
-    // Note: In the current implementation, Atlas always creates a new in-memory DB,
-    // so this test documents current behavior rather than testing persistence
-    // Atlas atlas2 = new Atlas( TestEngineContext.getStubFileSystem(), "shared-cache");
-
-    // atlas2 won't have the map because each Atlas creates its own in-memory DB
-    // This test documents the current behavior
-    //  assertNotNull(atlas2.getCache());
-  }
-
-  @Test
   void testEmptyAtlasState() {
     // Atlas starts with no current map
     // getCurrentMap() will return null if no map has been set
-    assertDoesNotThrow(() -> atlas.getCache());
+    assertDoesNotThrow(() -> atlas.getAtlasMapStore());
   }
 }

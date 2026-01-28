@@ -4,7 +4,6 @@
     <name>Ban Rajas</name>
   </header>
   <level name="lighthouse" l="0">
-    <creatures />
     <items>
       <door x="4" y="2" state="locked" lock="1" id="door" uid="0">
         <dest x="3160" y="13039" map="1" />

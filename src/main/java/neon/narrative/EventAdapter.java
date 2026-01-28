@@ -26,7 +26,7 @@ import net.engio.mbassy.listener.Handler;
 
 @Slf4j
 public class EventAdapter {
-  private QuestTracker tracker;
+  private final QuestTracker tracker;
 
   public EventAdapter(QuestTracker tracker) {
     this.tracker = tracker;

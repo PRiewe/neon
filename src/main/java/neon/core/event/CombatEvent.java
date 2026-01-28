@@ -32,8 +32,8 @@ public class CombatEvent extends EventObject {
   public static final int SHOOT = 1;
   public static final int FLING = 2;
 
-  private Creature attacker;
-  private Creature defender;
+  private final Creature attacker;
+  private final Creature defender;
   private int result = 0;
   private int type = 0;
 
