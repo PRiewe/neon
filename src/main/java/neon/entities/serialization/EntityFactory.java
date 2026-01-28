@@ -21,7 +21,6 @@ package neon.entities.serialization;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import neon.core.GameContext;
-import neon.core.GameStores;
 import neon.entities.Creature;
 import neon.entities.Entity;
 import neon.entities.Item;
@@ -46,13 +45,12 @@ public class EntityFactory {
   /**
    * Constructor for full functionality (used by Engine).
    *
-   * @param gameStores the game stores providing access to resources and entities
    * @param gameContext the game context for AI initialization (can be null for write-only
    *     operations)
    */
-  public EntityFactory(GameStores gameStores, GameContext gameContext) {
-    this.itemSerializer = new ItemSerializer(gameStores);
-    this.creatureSerializer = new CreatureSerializer(gameStores, gameContext);
+  public EntityFactory(GameContext gameContext) {
+    this.itemSerializer = new ItemSerializer(gameContext);
+    this.creatureSerializer = new CreatureSerializer(gameContext);
   }
 
   /**

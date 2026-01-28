@@ -18,22 +18,22 @@
 
 package neon.core.event;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.EventObject;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
+import neon.core.ScriptEngine;
 import neon.util.fsm.Action;
 import net.engio.mbassy.listener.Handler;
 
 @Slf4j
-public class TaskQueue {
-  private final Multimap<String, Action> tasks;
-  private final Multimap<Integer, RepeatEntry> repeat;
+public class TaskQueue extends TaskSubmission {
+  private final ScriptEngine scriptEngine;
 
-  public TaskQueue() {
-    tasks = ArrayListMultimap.create();
-    repeat = ArrayListMultimap.create();
+  public TaskQueue(ScriptEngine scriptEngine) {
+    super();
+    this.scriptEngine = scriptEngine;
   }
 
   @Handler
@@ -44,24 +44,6 @@ public class TaskQueue {
         task.run(e);
       }
     }
-  }
-
-  public void add(String description, Action task) {
-    tasks.put(description, task);
-  }
-
-  public void add(String script, Integer start, Integer period, Integer stop) {
-    RepeatEntry entry = new RepeatEntry(period, stop, script);
-    repeat.put(start, entry);
-  }
-
-  public void add(Action task, Integer start, Integer period, Integer stop) {
-    RepeatEntry entry = new RepeatEntry(period, stop, task);
-    repeat.put(start, entry);
-  }
-
-  public Multimap<String, Action> getTasks() {
-    return tasks;
   }
 
   public Multimap<Integer, RepeatEntry> getTimerTasks() {
@@ -88,38 +70,27 @@ public class TaskQueue {
     }
   }
 
+  public Multimap<String, Action> getTasks() {
+    return tasks;
+  }
+
+  @Getter
   public static class RepeatEntry {
     private Action task;
     private String script;
     private final int period;
     private final int stop;
 
-    private RepeatEntry(int period, int stop, String script) {
+    public RepeatEntry(int period, int stop, String script) {
       this.script = script;
       this.period = period;
       this.stop = stop;
     }
 
-    private RepeatEntry(int period, int stop, Action task) {
+    public RepeatEntry(int period, int stop, Action task) {
       this.task = task;
       this.period = period;
       this.stop = stop;
-    }
-
-    public Action getTask() {
-      return task;
-    }
-
-    public String getScript() {
-      return script;
-    }
-
-    public int getPeriod() {
-      return period;
-    }
-
-    public int getStop() {
-      return stop;
     }
   }
 }

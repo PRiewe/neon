@@ -20,16 +20,23 @@ package neon.core;
 
 import java.util.EventObject;
 import lombok.Setter;
+import neon.core.event.TaskQueue;
+import neon.core.event.TaskSubmission;
 import neon.entities.Player;
 import neon.entities.UIDStore;
 import neon.maps.Atlas;
+import neon.maps.ZoneFactory;
 import neon.maps.services.PhysicsManager;
 import neon.maps.services.ResourceProvider;
 import neon.narrative.QuestTracker;
+import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
+import neon.util.mapstorage.MapStore;
+import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import net.engio.mbassy.bus.MBassador;
+import org.h2.mvstore.MVStore;
 
 /**
  * Default implementation of {@link GameContext} that holds references to all game services and
@@ -44,18 +51,24 @@ import net.engio.mbassy.bus.MBassador;
 public class DefaultUIEngineContext implements GameContext {
 
   // Engine-level systems (set during engine initialization)
-  @Setter private GameStore gameStore;
+  private final GameStore gameStore;
   @Setter private GameServices gameServices;
   private final QuestTracker questTracker;
   @Setter private PhysicsManager physicsManager;
-
+  private final TaskQueue taskQueue;
   @Setter private MBassador<EventObject> bus;
-
+  private final ZoneFactory zoneFactory;
   // Game-level state (set when a game starts)
   @Setter private Game game;
 
-  public DefaultUIEngineContext(QuestTracker questTracker) {
-    this.questTracker = questTracker;
+  public DefaultUIEngineContext(GameStore gameStore, QuestTracker questTracker, TaskQueue taskQueue) {
+      this.gameStore = gameStore;
+      this.questTracker = questTracker;
+    this.taskQueue = taskQueue;
+    MapStore zoneMapStore =
+            new MapStoreMVStoreAdapter(MVStore.open(gameStore.getFileSystem().getFullPath("zomes")));
+    zoneFactory = new ZoneFactory(zoneMapStore,gameStore.getUidStore(),gameStore.getResourceManager());
+
   }
 
   @Override
@@ -79,8 +92,18 @@ public class DefaultUIEngineContext implements GameContext {
   }
 
   @Override
+  public TaskSubmission getTaskSubmissionQueue() {
+    return taskQueue;
+  }
+
+  @Override
   public ResourceProvider getResources() {
     return gameStore.getResources();
+  }
+
+  @Override
+  public ResourceManager getResourceManageer() {
+    return gameStore.getResourceManageer();
   }
 
   @Override
@@ -121,5 +144,10 @@ public class DefaultUIEngineContext implements GameContext {
   @Override
   public PhysicsSystem getPhysicsEngine() {
     return null;
+  }
+
+  @Override
+  public ZoneFactory getZoneFactory() {
+    return zoneFactory;
   }
 }

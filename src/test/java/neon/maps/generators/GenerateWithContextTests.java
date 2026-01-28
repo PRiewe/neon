@@ -45,9 +45,11 @@ class GenerateWithContextTests {
     TestEngineContext.initialize(testDb);
     testAtlas = TestEngineContext.getTestAtlas();
     zoneFactory = TestEngineContext.getTestZoneFactory();
-    entityStore = TestEngineContext.getTestEntityStore();
+    entityStore = TestEngineContext.getTestUiEngineContext().getStore();
     resourceManager = TestEngineContext.getTestResources();
-    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
   }
 
   @AfterEach
@@ -84,7 +86,7 @@ class GenerateWithContextTests {
     RZoneTheme theme = mapTestFixtures.createTestZoneTheme("cave");
 
     // Create dungeon and add zones using the Dungeon API
-    Dungeon dungeon = new Dungeon("test-dungeon", mapUID);
+    Dungeon dungeon = new Dungeon("test-dungeon", mapUID, zoneFactory);
     dungeon.addZone(0, "zone-0"); // Previous zone
     dungeon.addZone(1, "zone-1", theme); // Target zone with theme
 
@@ -143,7 +145,7 @@ class GenerateWithContextTests {
     RZoneTheme theme = mapTestFixtures.createTestZoneTheme("cave");
 
     // Create dungeon and add zones using the Dungeon API
-    Dungeon dungeon = new Dungeon("test-dungeon", mapUID);
+    Dungeon dungeon = new Dungeon("test-dungeon", mapUID, zoneFactory);
     dungeon.addZone(0, "zone-0"); // Previous zone
     dungeon.addZone(1, "zone-1", theme); // Target zone with theme
 
@@ -203,7 +205,7 @@ class GenerateWithContextTests {
     RZoneTheme theme = mapTestFixtures.createTestZoneTheme("cave");
 
     // Create dungeon and add zones using the Dungeon API
-    Dungeon dungeon = new Dungeon("test-dungeon", mapUID);
+    Dungeon dungeon = new Dungeon("test-dungeon", mapUID, zoneFactory);
     dungeon.addZone(0, "zone-0"); // Zone 0
     dungeon.addZone(1, "zone-1", theme); // Zone 1 (to be generated)
     dungeon.addZone(2, "zone-2"); // Zone 2 (connected to zone 1)
@@ -257,7 +259,7 @@ class GenerateWithContextTests {
     RZoneTheme theme = mapTestFixtures.createTestZoneTheme("cave");
 
     // Create dungeon and add zones using the Dungeon API
-    Dungeon dungeon = new Dungeon("test-dungeon", mapUID);
+    Dungeon dungeon = new Dungeon("test-dungeon", mapUID, zoneFactory);
     dungeon.addZone(0, "zone-0"); // Previous zone
     dungeon.addZone(1, "zone-1", theme); // Target zone with theme
 
@@ -336,7 +338,7 @@ class GenerateWithContextTests {
     RZoneTheme theme = mapTestFixtures.createTestZoneTheme("cave");
 
     // Create dungeon and add zones using the Dungeon API
-    Dungeon dungeon = new Dungeon("test-dungeon", mapUID);
+    Dungeon dungeon = new Dungeon("test-dungeon", mapUID, zoneFactory);
     dungeon.addZone(0, "zone-0"); // Previous zone
     dungeon.addZone(1, "zone-1", theme); // Target zone with theme
 
@@ -353,43 +355,6 @@ class GenerateWithContextTests {
         mapTestFixtures.createTestPortalDoor(entityStore.createNewEntityUID(), 25, 25, 1, 0);
     entityStore.addEntity(entryDoor);
     previousZone.addItem(entryDoor);
-
-    // Use quest provider that requests a creature
-    QuestProvider questProvider = new SingleItemQuestProvider("test_quest_creature");
-
-    // ResourceProvider that returns the creature resource
-    ResourceProvider resourceProvider =
-        new ResourceProvider() {
-          @Override
-          public Resource getResource(String id) {
-            if ("test_quest_creature".equals(id)) {
-              return new RCreature(id);
-            }
-            if (id != null && (id.contains("door") || id.startsWith("test_door"))) {
-              return new RItem.Door(id, RItem.Type.door);
-            }
-            // Terrain resources
-            if (id != null
-                && (id.contains("floor") || id.contains("wall") || id.contains("terrain"))) {
-              return new neon.resources.RTerrain(id);
-            }
-            // Default to terrain
-            return new neon.resources.RTerrain(id);
-          }
-
-          @Override
-          public Resource getResource(String id, String type) {
-            if ("terrain".equals(type)) {
-              return new neon.resources.RTerrain(id);
-            }
-            return getResource(id);
-          }
-
-          @Override
-          public <T extends Resource> Vector<T> getResources(Class<T> rRecipeClass) {
-            return null;
-          }
-        };
 
     DungeonGenerator generator =
         new DungeonGenerator(
@@ -422,7 +387,7 @@ class GenerateWithContextTests {
       int mapUID = entityStore.createNewMapUID();
 
       // Create dungeon and add zones using the Dungeon API
-      Dungeon dungeon = new Dungeon("test-dungeon", mapUID);
+      Dungeon dungeon = new Dungeon("test-dungeon", mapUID, zoneFactory);
       dungeon.addZone(0, "zone-0"); // Previous zone
       dungeon.addZone(1, "zone-1", theme); // Target zone with theme
 

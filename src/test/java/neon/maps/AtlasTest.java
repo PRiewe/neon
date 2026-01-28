@@ -20,7 +20,6 @@ class AtlasTest {
 
   private MapStore testDb;
   private Atlas atlas;
-  private AtlasPosition atlasPosition;
   private ZoneFactory zoneFactory;
 
   @BeforeEach
@@ -28,11 +27,6 @@ class AtlasTest {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
     atlas = TestEngineContext.getTestAtlas();
-    atlasPosition =
-        new AtlasPosition(
-            TestEngineContext.getGameStores(),
-            TestEngineContext.getQuestTracker(),
-            TestEngineContext.getTestContext().getPlayer());
     zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
@@ -47,7 +41,7 @@ class AtlasTest {
 
   @Test
   void testConstructorCreatesMapDb() {
-    assertNotNull(atlas.getCache());
+    assertNotNull(atlas.getAtlasMapStore());
   }
 
   @Test
@@ -128,7 +122,7 @@ class AtlasTest {
     // Add multiple maps to cache
     for (int i = 0; i < 10; i++) {
       World world = new World("World " + i, 400 + i, zoneFactory);
-      atlasPosition.setMap(world);
+      atlas.setMap(world);
     }
 
     // Verify last map is current
@@ -136,8 +130,8 @@ class AtlasTest {
 
     // Switch between maps
     World world5 = new World("World 5", 405, zoneFactory);
-    atlasPosition.setMap(world5);
-    assertEquals(405, atlasPosition.getCurrentMap().getUID());
+    atlas.setMap(world5);
+    assertEquals(405, atlas.getCurrentMap().getUID());
   }
 
   @Test
@@ -164,7 +158,7 @@ class AtlasTest {
             () -> {
               for (int i = 0; i < mapCount; i++) {
                 World world = new World("World " + i, 700 + i, zoneFactory);
-                atlasPosition.setMap(world);
+                atlas.setMap(world);
               }
               return null;
             });
@@ -183,7 +177,7 @@ class AtlasTest {
     // Add maps to cache
     for (int i = 0; i < 20; i++) {
       World world = new World("World " + i, 800 + i, zoneFactory);
-      atlasPosition.setMap(world);
+      atlas.setMap(world);
     }
 
     // Measure retrieval time
@@ -199,39 +193,9 @@ class AtlasTest {
   }
 
   @Test
-  void testMapDbPersistsAcrossAtlasInstances() throws IOException {
-    // Create first atlas and add map
-    Atlas atlas1 =
-        new Atlas(
-            TestEngineContext.getStubFileSystem(),
-            "shared-cache",
-            TestEngineContext.getTestEntityStore(),
-            TestEngineContext.getTestResources(),
-            TestEngineContext.getMapLoader());
-    AtlasPosition atlasPosition =
-        new AtlasPosition(
-            TestEngineContext.getGameStores(),
-            TestEngineContext.getQuestTracker(),
-            TestEngineContext.getTestContext().getPlayer());
-
-    World world = new World("Persistent World", 900, zoneFactory);
-
-    atlasPosition.setMap(world);
-
-    // Create second atlas with same cache name
-    // Note: In the current implementation, Atlas always creates a new in-memory DB,
-    // so this test documents current behavior rather than testing persistence
-    // Atlas atlas2 = new Atlas( TestEngineContext.getStubFileSystem(), "shared-cache");
-
-    // atlas2 won't have the map because each Atlas creates its own in-memory DB
-    // This test documents the current behavior
-    //  assertNotNull(atlas2.getCache());
-  }
-
-  @Test
   void testEmptyAtlasState() {
     // Atlas starts with no current map
     // getCurrentMap() will return null if no map has been set
-    assertDoesNotThrow(() -> atlas.getCache());
+    assertDoesNotThrow(() -> atlas.getAtlasMapStore());
   }
 }

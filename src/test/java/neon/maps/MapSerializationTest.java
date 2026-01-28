@@ -27,7 +27,8 @@ class MapSerializationTest {
   private ZoneFactory zoneFactory;
   private WorldDataType worldDataType;
   private Dungeon.DungeonDataType dungeonDataType;
-    private MapTestFixtures mapTestFixtures;
+  private MapTestFixtures mapTestFixtures;
+
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
@@ -35,7 +36,9 @@ class MapSerializationTest {
     zoneFactory = TestEngineContext.getTestZoneFactory();
     worldDataType = new WorldDataType(zoneFactory);
     dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
-      mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
   }
 
   @AfterEach
@@ -110,7 +113,7 @@ class MapSerializationTest {
 
   @Test
   void testEmptyDungeonRoundTrip() throws Exception {
-    Dungeon original = new Dungeon("Test Dungeon", 200);
+    Dungeon original = new Dungeon("Test Dungeon", 200, zoneFactory);
 
     Dungeon deserialized = serializeAndDeserializeDungeon(original);
 
@@ -120,7 +123,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonWithSingleZone() throws Exception {
-    Dungeon original = new Dungeon("Single Zone Dungeon", 201);
+    Dungeon original = new Dungeon("Single Zone Dungeon", 20, zoneFactory);
     original.addZone(0, "Level 1");
 
     // Add a region to the zone
@@ -138,7 +141,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonWithMultipleZones() throws Exception {
-    Dungeon original = new Dungeon("Multi-Level Dungeon", 202);
+    Dungeon original = new Dungeon("Multi-Level Dungeon", 202, zoneFactory);
 
     // Add 5 zones
     for (int i = 0; i < 5; i++) {
@@ -162,7 +165,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonZoneConnections() throws Exception {
-    Dungeon original = new Dungeon("Connected Dungeon", 203);
+    Dungeon original = new Dungeon("Connected Dungeon", 203, zoneFactory);
 
     // Create 3 zones connected in a chain
     for (int i = 0; i < 3; i++) {
@@ -189,7 +192,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonBidirectionalConnections() throws Exception {
-    Dungeon original = new Dungeon("Bidirectional Dungeon", 204);
+    Dungeon original = new Dungeon("Bidirectional Dungeon", 204, zoneFactory);
 
     original.addZone(0, "Hub");
     original.addZone(1, "North");
@@ -214,7 +217,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonWithComplexZones() throws Exception {
-    Dungeon original = new Dungeon("Complex Dungeon", 205);
+    Dungeon original = new Dungeon("Complex Dungeon", 205, zoneFactory);
 
     // Create 3 zones with different numbers of regions
     original.addZone(0, "Small");
@@ -249,7 +252,7 @@ class MapSerializationTest {
     int[] uids = {200, 500, 999, 54321};
 
     for (int uid : uids) {
-      Dungeon original = new Dungeon("Dungeon-" + uid, uid);
+      Dungeon original = new Dungeon("Dungeon-" + uid, uid, zoneFactory);
       original.addZone(0, "Level 1");
 
       Dungeon deserialized = serializeAndDeserializeDungeon(original);
@@ -287,7 +290,7 @@ class MapSerializationTest {
 
   @Test
   void testDungeonSerializationPerformance() throws Exception {
-    Dungeon dungeon = new Dungeon("Performance Dungeon", 400);
+    Dungeon dungeon = new Dungeon("Performance Dungeon", 400, zoneFactory);
 
     // Create 10 zones with 20 regions each
     for (int z = 0; z < 10; z++) {

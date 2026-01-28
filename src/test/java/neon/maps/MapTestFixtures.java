@@ -1,5 +1,6 @@
 package neon.maps;
 
+import java.awt.*;
 import neon.entities.Creature;
 import neon.entities.Door;
 import neon.entities.Item;
@@ -14,9 +15,11 @@ import neon.test.TestEngineContext;
  */
 public class MapTestFixtures {
   private final ResourceManager resourceManager;
+  private final ZoneFactory zoneFactory;
 
-  public MapTestFixtures(ResourceManager resourceManager) {
+  public MapTestFixtures(ResourceManager resourceManager, ZoneFactory zoneFactory) {
     this.resourceManager = resourceManager;
+    this.zoneFactory = zoneFactory;
   }
 
   /**
@@ -130,82 +133,6 @@ public class MapTestFixtures {
   }
 
   /**
-   * Creates an empty world map with the given parameters.
-   *
-   * @param name world name
-   * @param uid world UID
-   * @return a new World instance
-   */
-  public World createEmptyWorld(String name, int uid) {
-    return new World(name, uid);
-  }
-
-  /**
-   * Creates an empty world map with default name.
-   *
-   * @param uid world UID
-   * @return a new World instance
-   */
-  public World createEmptyWorld(int uid) {
-    return new World("test-world", uid);
-  }
-
-  /**
-   * Creates a world map with a single region.
-   *
-   * @param uid world UID
-   * @return a new World instance with one region
-   */
-  public World createWorldWithSingleRegion(int uid) {
-    World world = new World("test-world", uid);
-    Region region = createTestRegion(0, 0, 100, 100);
-    world.getZone(0).addRegion(region);
-    return world;
-  }
-
-  /**
-   * Creates a world map with multiple regions.
-   *
-   * @param uid world UID
-   * @param regionCount number of regions to add
-   * @return a new World instance with regions
-   */
-  public World createWorldWithRegions(int uid, int regionCount) {
-    World world = new World("test-world", uid);
-    Zone zone = world.getZone(0);
-
-    for (int i = 0; i < regionCount; i++) {
-      int x = (i % 10) * 10;
-      int y = (i / 10) * 10;
-      Region region = createTestRegion("region-" + i, x, y, 10, 10, 0);
-      zone.addRegion(region);
-    }
-
-    return world;
-  }
-
-  /**
-   * Creates an empty dungeon map.
-   *
-   * @param name dungeon name
-   * @param uid dungeon UID
-   * @return a new Dungeon instance
-   */
-  public Dungeon createEmptyDungeon(String name, int uid) {
-    return new Dungeon(name, uid);
-  }
-
-  /**
-   * Creates an empty dungeon map with default name.
-   *
-   * @param uid dungeon UID
-   * @return a new Dungeon instance
-   */
-  public Dungeon createEmptyDungeon(int uid) {
-    return new Dungeon("test-dungeon", uid);
-  }
-
-  /**
    * Creates a dungeon with a specified number of zones.
    *
    * @param uid dungeon UID
@@ -213,7 +140,7 @@ public class MapTestFixtures {
    * @return a new Dungeon instance with zones
    */
   public Dungeon createDungeonWithZones(int uid, int zoneCount) {
-    Dungeon dungeon = new Dungeon("test-dungeon", uid);
+    Dungeon dungeon = new Dungeon("test-dungeon", uid, zoneFactory);
 
     for (int i = 0; i < zoneCount; i++) {
       dungeon.addZone(i, "zone-" + i);

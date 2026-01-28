@@ -69,10 +69,12 @@ public class GamePanel extends JComponent {
   private final JLabel magicLabel;
   private final JLabel AVLabel;
   private final JLabel DVLabel;
+  private final CombatUtils combatUtils;
 
   /** Initializes this GamePanel. */
   public GamePanel(GameContext context) {
     this.context = context;
+    combatUtils = new CombatUtils(context.getStore());
     drawing = new JVectorPane();
     drawing.setFilter(new LightFilter());
 
@@ -249,7 +251,7 @@ public class GamePanel extends JComponent {
               + (int) (player.species.mana * player.species.iq));
     }
     AVLabel.setText("AV: " + player.getAVString());
-    DVLabel.setText("DV: " + CombatUtils.getDV(player));
+    DVLabel.setText("DV: " + combatUtils.getDV(player));
 
     Stats stats = player.getStatsComponent();
     if (stats.getStr() > (int) player.species.str) {

@@ -23,14 +23,9 @@ import java.awt.Rectangle;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import neon.core.Engine;
 import neon.core.GameContext;
-import neon.entities.Armor;
-import neon.entities.Container;
-import neon.entities.Door;
+import neon.entities.*;
 import neon.entities.EntityFactory;
-import neon.entities.Item;
-import neon.entities.Weapon;
 import neon.entities.components.Enchantment;
 import neon.entities.components.Lock;
 import neon.entities.components.Portal;
@@ -45,7 +40,6 @@ import neon.resources.RItem;
  */
 public class ItemSerializer {
 
-  private final GameStores gameStores;
   private final ItemFactory itemFactory;
   private final SpellFactory spellFactory;
 
@@ -55,6 +49,8 @@ public class ItemSerializer {
   public ItemSerializer(GameContext gameContext) {
     this.gameContext = gameContext;
     this.entityFactory = new EntityFactory(gameContext);
+    this.itemFactory = new ItemFactory(gameContext.getResourceManageer());
+    this.spellFactory = new SpellFactory(gameContext.getResourceManageer());
   }
 
   public Item deserialize(DataInput input) throws IOException {
@@ -63,26 +59,28 @@ public class ItemSerializer {
     long uid = input.readLong();
     int x = input.readInt();
     int y = input.readInt();
-    Item item = entityFactory.getItem(id, x, y, uid);
+    Item item = itemFactory.getItem(id, x, y, uid);
     item.setOwner(input.readLong());
 
     if (input.readBoolean()) {
       readEnchantment(input, item, uid);
     }
 
-    if (item instanceof Door door) {
-      door.setSign(input.readUTF());
-      readPortal(input, door.portal);
-      readLock(input, door.lock);
-      readTrap(input, door.trap);
-    } else if (item instanceof Container container) {
-      readLock(input, container.lock);
-      readTrap(input, container.trap);
-      readContents(input, container);
-    } else if (item instanceof Armor) {
-      ((Armor) item).setState(input.readInt());
-    } else if (item instanceof Weapon) {
-      ((Weapon) item).setState(input.readInt());
+    switch (item) {
+      case Door door -> {
+        door.setSign(input.readUTF());
+        readPortal(input, door.portal);
+        readLock(input, door.lock);
+        readTrap(input, door.trap);
+      }
+      case Container container -> {
+        readLock(input, container.lock);
+        readTrap(input, container.trap);
+        readContents(input, container);
+      }
+      case Armor armor -> armor.setState(input.readInt());
+      case Weapon weapon -> weapon.setState(input.readInt());
+      default -> {}
     }
 
     return item;
@@ -104,19 +102,21 @@ public class ItemSerializer {
       output.writeBoolean(false);
     }
 
-    if (item instanceof Door door) {
-      output.writeUTF(door.toString());
-      writePortal(output, door.portal);
-      writeLock(output, door.lock);
-      writeTrap(output, door.trap);
-    } else if (item instanceof Container container) {
-      writeLock(output, container.lock);
-      writeTrap(output, container.trap);
-      writeContents(output, container);
-    } else if (item instanceof Armor) {
-      output.writeInt(((Armor) item).getState());
-    } else if (item instanceof Weapon) {
-      output.writeInt(((Weapon) item).getState());
+    switch (item) {
+      case Door door -> {
+        output.writeUTF(door.toString());
+        writePortal(output, door.portal);
+        writeLock(output, door.lock);
+        writeTrap(output, door.trap);
+      }
+      case Container container -> {
+        writeLock(output, container.lock);
+        writeTrap(output, container.trap);
+        writeContents(output, container);
+      }
+      case Armor armor -> output.writeInt(armor.getState());
+      case Weapon weapon -> output.writeInt(weapon.getState());
+      default -> {}
     }
   }
 
@@ -124,7 +124,7 @@ public class ItemSerializer {
     String id = input.readUTF();
     int mana = input.readInt();
     float modifier = input.readFloat();
-    Enchantment enchantment = new Enchantment(SpellFactory.getSpell(id), mana, uid);
+    Enchantment enchantment = new Enchantment(spellFactory.getSpell(id), mana, uid);
     enchantment.setModifier(modifier);
     item.setMagicComponent(enchantment);
   }
@@ -191,7 +191,7 @@ public class ItemSerializer {
     lock.setState(input.readInt());
     String id = input.readUTF();
     if (!id.isEmpty()) {
-      lock.setKey((RItem) Engine.getResources().getResource(id));
+      lock.setKey((RItem) gameContext.getResources().getResource(id));
     }
   }
 

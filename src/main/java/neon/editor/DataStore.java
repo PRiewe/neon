@@ -28,9 +28,9 @@ import neon.core.UIStorage;
 import neon.editor.resources.RFaction;
 import neon.editor.resources.RMap;
 import neon.editor.resources.RZoneFactory;
-import neon.entities.AbstractUIDStore;
 import neon.entities.MemoryUIDStore;
 import neon.entities.Player;
+import neon.entities.UIDStore;
 import neon.maps.services.ResourceProvider;
 import neon.resources.*;
 import neon.resources.quest.RQuest;
@@ -47,7 +47,7 @@ public class DataStore implements UIStorage {
   private final HashMap<String, RMod> mods = new HashMap<String, RMod>();
   @Getter private final ResourceManager resourceManager;
   @Getter private RMod active;
-  @Getter private final AbstractUIDStore uidStore;
+  @Getter private final UIDStore uidStore;
   @Getter private final FileSystem files;
   @Getter private final HashSet<RMap> activeMaps = new HashSet<RMap>();
   @Getter private final HashMap<String, Short> mapUIDs = new HashMap<String, Short>();
@@ -290,7 +290,12 @@ public class DataStore implements UIStorage {
   }
 
   @Override
-  public AbstractUIDStore getStore() {
+  public ResourceManager getResourceManageer() {
+    return resourceManager;
+  }
+
+  @Override
+  public UIDStore getStore() {
     return uidStore;
   }
 

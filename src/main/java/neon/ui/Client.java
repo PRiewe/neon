@@ -24,10 +24,7 @@ import java.util.EventObject;
 import javax.swing.UIManager;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.GameContext;
-import neon.core.event.LoadEvent;
-import neon.core.event.MagicEvent;
-import neon.core.event.MessageEvent;
-import neon.core.event.UpdateEvent;
+import neon.core.event.*;
 import neon.core.handlers.MagicHandler;
 import neon.entities.Player;
 import neon.resources.CClient;
@@ -167,33 +164,15 @@ public class Client implements Runnable {
       log.trace("result {}", me);
       if (me.getCaster() instanceof Player) {
         switch (me.getResult()) {
-          case MagicHandler.MANA:
-            ui.showMessage("Not enough mana to cast this spell.", 1);
-            break;
-          case MagicHandler.RANGE:
-            ui.showMessage("Target out of range.", 1);
-            break;
-          case MagicHandler.NONE:
-            ui.showMessage("No spell equiped.", 1);
-            break;
-          case MagicHandler.SKILL:
-            ui.showMessage("Casting failed.", 1);
-            break;
-          case MagicHandler.OK:
-            ui.showMessage("Spell cast.", 1);
-            break;
-          case MagicHandler.NULL:
-            ui.showMessage("No target selected.", 1);
-            break;
-          case MagicHandler.LEVEL:
-            ui.showMessage("Spell is too difficult to cast.", 1);
-            break;
-          case MagicHandler.SILENCED:
-            ui.showMessage("You are silenced", 1);
-            break;
-          case MagicHandler.INTERVAL:
-            ui.showMessage("Can't cast this power yet.", 1);
-            break;
+          case MagicHandler.MANA -> ui.showMessage("Not enough mana to cast this spell.", 1);
+          case MagicHandler.RANGE -> ui.showMessage("Target out of range.", 1);
+          case MagicHandler.NONE -> ui.showMessage("No spell equiped.", 1);
+          case MagicHandler.SKILL -> ui.showMessage("Casting failed.", 1);
+          case MagicHandler.OK -> ui.showMessage("Spell cast.", 1);
+          case MagicHandler.NULL -> ui.showMessage("No target selected.", 1);
+          case MagicHandler.LEVEL -> ui.showMessage("Spell is too difficult to cast.", 1);
+          case MagicHandler.SILENCED -> ui.showMessage("You are silenced", 1);
+          case MagicHandler.INTERVAL -> ui.showMessage("Can't cast this power yet.", 1);
         }
       }
     }

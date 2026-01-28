@@ -19,9 +19,9 @@
 package neon.entities;
 
 import java.util.*;
-import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import neon.ai.AI;
 import neon.entities.components.*;
 import neon.entities.property.*;

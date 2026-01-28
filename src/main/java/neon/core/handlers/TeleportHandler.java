@@ -44,12 +44,11 @@ public class TeleportHandler {
   public static final byte HABITAT = 6;
   public final GameContext gameContext;
   public final MapLoader mapLoader;
-  private final MotionHandler motionHandler;
 
-  public TeleportHandler(GameContext gameContext) {
+    public TeleportHandler(GameContext gameContext) {
     this.gameContext = gameContext;
+
     this.mapLoader = new MapLoader(gameContext);
-    this.motionHandler = new MotionHandler(gameContext);
   }
 
   /**
@@ -77,12 +76,12 @@ public class TeleportHandler {
             ((Door) i).portal.setDestMap(gameContext.getAtlas().getCurrentMap());
           }
         }
-        gameContext.getAtlas().setMap(map);
+        gameContext.getAtlas().setCurrentMap(map);
         gameContext.getScriptEngine().getBindings().putMember("map", map);
         door.portal.setDestMap(gameContext.getAtlas().getCurrentMap());
       } else if (door.portal.getDestTheme() != null) {
         Dungeon dungeon = mapLoader.loadDungeon(door.portal.getDestTheme());
-        gameContext.getAtlas().setMap(dungeon);
+        gameContext.getAtlas().setCurrentMap(dungeon);
         door.portal.setDestMap(gameContext.getAtlas().getCurrentMap());
       }
 

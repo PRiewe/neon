@@ -25,7 +25,9 @@ class RegionIntegrationTest {
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
-    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
   }
 
   @AfterEach

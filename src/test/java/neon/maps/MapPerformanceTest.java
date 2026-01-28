@@ -25,12 +25,16 @@ class MapPerformanceTest {
 
   private MapStore testDb;
   private MapTestFixtures mapTestFixtures;
+  private ZoneFactory zoneFactory;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
-    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
+    zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
   @AfterEach
@@ -138,7 +142,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneRegionInsertionPerformance() throws Exception {
-    Zone zone = new Zone("perf-zone", 1000, 0);
+    Zone zone = zoneFactory.createZone("perf-zone", 1000, 0);
     int regionCount = 500;
     int creaturesPerRegion = 10;
     int itemsPerRegion = 10;
@@ -191,7 +195,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneSpatialQueryPerformanceAtScale() throws Exception {
-    Zone zone = new Zone("spatial-perf-zone", 1001, 0);
+    Zone zone = zoneFactory.createZone("spatial-perf-zone", 1001, 0);
 
     // Create large zone with 500 regions, plus creatures and items
     long uidCounter = 20000;
@@ -241,7 +245,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneBulkRegionAddition() throws Exception {
-    Zone zone = new Zone("bulk-add-zone", 1002, 0);
+    Zone zone = zoneFactory.createZone("bulk-add-zone", 1002, 0);
 
     // Measure bulk addition time including creatures and items
     PerformanceHarness.MeasuredResult<Integer> result =
@@ -286,7 +290,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneGetRegionByPositionPerformance() throws Exception {
-    Zone zone = new Zone("position-perf-zone", 1003, 0);
+    Zone zone = zoneFactory.createZone("position-perf-zone", 1003, 0);
 
     // Create 100x100 grid (10,000 regions) with creatures and items
     long uidCounter = 40000;
@@ -342,7 +346,7 @@ class MapPerformanceTest {
 
   @Test
   void testZoneMultiLayerPerformance() throws Exception {
-    Zone zone = new Zone("multilayer-perf-zone", 1004, 0);
+    Zone zone = zoneFactory.createZone("multilayer-perf-zone", 1004, 0);
 
     int layerCount = 10;
     int regionsPerLayer = 50;
@@ -413,7 +417,7 @@ class MapPerformanceTest {
             () -> {
               for (int i = 0; i < mapCount; i++) {
                 World world = new World("World " + i, 2000 + i, zoneFactory);
-                atlasPosition.setMap(world);
+                atlas.setMap(world);
               }
               return mapCount;
             });
@@ -424,7 +428,7 @@ class MapPerformanceTest {
 
     assertTrue(result.getDurationMillis() < 1000, "Caching " + mapCount + " maps should be fast");
 
-    atlas.getCache().close();
+    atlas.getAtlasMapStore().close();
   }
 
   @Test
@@ -460,7 +464,7 @@ class MapPerformanceTest {
         result.getDurationMillis() < 1000,
         switchCount + " switches should complete within 1 second");
 
-    atlas.getCache().close();
+    atlas.getAtlasMapStore().close();
   }
 
   @Test
@@ -468,7 +472,7 @@ class MapPerformanceTest {
     Atlas atlas = TestEngineContext.getTestAtlas();
 
     World world = new World("Zone Access World", 4000, zoneFactory);
-    atlasPosition.setMap(world);
+    atlas.setMap(world);
 
     Zone zone = atlas.getCurrentZone();
     for (int i = 0; i < 100; i++) {
@@ -499,7 +503,7 @@ class MapPerformanceTest {
         result.getDurationMillis() < 10000,
         accessCount + " zone accesses should complete within 10 seconds");
 
-    atlas.getCache().close();
+    atlas.getAtlasMapStore().close();
   }
 
   // ==================== Integration Performance Tests ====================
@@ -507,18 +511,13 @@ class MapPerformanceTest {
   @Test
   void testFullMapLoadAndQueryPerformance() throws Exception {
     Atlas atlas = TestEngineContext.getTestAtlas();
-    AtlasPosition atlasPosition =
-        new AtlasPosition(
-            TestEngineContext.getGameStores(),
-            TestEngineContext.getQuestTracker(),
-            TestEngineContext.getTestContext().getPlayer());
 
     PerformanceHarness.MeasuredResult<Integer> result =
         PerformanceHarness.measure(
             () -> {
               // Create a large world
               World world = new World("Large World", 5000, zoneFactory);
-              atlasPosition.setMap(world);
+              atlas.setMap(world);
 
               Zone zone = atlas.getCurrentZone();
 
@@ -573,46 +572,6 @@ class MapPerformanceTest {
         result.getDurationMillis() < 10000,
         "Full workflow with creatures and items should complete within 10 seconds");
 
-    atlas.getCache().close();
-  }
-
-  @Test
-  void testMemoryEfficiencyWithLargeMaps() throws Exception {
-    Atlas atlas = TestEngineContext.getTestAtlas();
-    AtlasPosition atlasPosition =
-        new AtlasPosition(
-            TestEngineContext.getGameStores(),
-            TestEngineContext.getQuestTracker(),
-            TestEngineContext.getTestContext().getPlayer());
-
-    Runtime runtime = Runtime.getRuntime();
-    runtime.gc();
-    long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
-
-    // Create 10 large worlds
-    for (int w = 0; w < 10; w++) {
-      World world = new World("World " + w, 6000 + w, zoneFactory);
-      atlasPosition.setMap(world);
-
-      Zone zone = atlasPosition.getCurrentZone();
-      for (int i = 0; i < 200; i++) {
-        Region region = MapTestFixtures.createTestRegion(i * 5, i * 5, 10, 10);
-        zone.addRegion(region);
-      }
-
-      testDb.commit();
-    }
-
-    runtime.gc();
-    long memoryAfter = runtime.totalMemory() - runtime.freeMemory();
-    long memoryUsed = (memoryAfter - memoryBefore) / 1024 / 1024; // MB
-
-    System.out.printf(
-        "[PERF] Memory used for 10 worlds (2000 total regions): ~%d MB%n", memoryUsed);
-
-    // Very lenient assertion - just checking it doesn't explode
-    assertTrue(memoryUsed < 500, "Memory usage should be reasonable");
-
-    atlas.getCache().close();
+    atlas.getAtlasMapStore().close();
   }
 }

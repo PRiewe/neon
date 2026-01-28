@@ -19,6 +19,7 @@
 package neon.maps;
 
 import java.util.*;
+import lombok.Getter;
 
 /**
  * This class represents the surface of the game world. It can be seamlessly traversed.

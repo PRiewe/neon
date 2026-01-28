@@ -67,12 +67,12 @@ public class Dungeon implements Map {
 
   /** Adds an empty zone to this dungeon. */
   public void addZone(int zone, String name) {
-    zones.addNode(zone, new Zone(name, uid, zone));
+    zones.addNode(zone, zoneFactory.createZone(name, uid, zone));
   }
 
   /** Adds an empty zone to this dungeon. */
   public void addZone(int zone, String name, RZoneTheme theme) {
-    zones.addNode(zone, new Zone(name, uid, theme, zone));
+    zones.addNode(zone, zoneFactory.createZoneWithTheme(name, uid, zone, theme));
   }
 
   public Collection<Zone> getZones() {

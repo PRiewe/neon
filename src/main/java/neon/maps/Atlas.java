@@ -19,24 +19,18 @@
 package neon.maps;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentMap;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.GameContext;
 import neon.core.GameStore;
 import neon.entities.Door;
-import neon.maps.generators.DungeonGenerator;
-import neon.entities.UIDStore;
 import neon.maps.mvstore.IntegerDataType;
 import neon.maps.mvstore.MapDataType;
 import neon.maps.mvstore.WorldDataType;
 import neon.maps.services.MapAtlas;
 import neon.maps.services.QuestProvider;
-import neon.resources.ResourceManager;
-import neon.systems.files.FileSystem;
 import neon.util.mapstorage.MapStore;
-import neon.util.mapstorage.MapStoreMVStoreAdapter;
-import org.h2.mvstore.MVStore;
 
 /**
  * This class keeps track of all loaded maps and their connections.
@@ -45,7 +39,7 @@ import org.h2.mvstore.MVStore;
  */
 @Slf4j
 public class Atlas implements Closeable, MapAtlas {
-  private final MapStore db;
+  @Getter private final MapStore atlasMapStore;
   private final ConcurrentMap<Integer, Map> maps;
   private final MapLoader mapLoader;
   private final ZoneFactory zoneFactory;
@@ -76,45 +70,15 @@ public class Atlas implements Closeable, MapAtlas {
     this.gameStore = gameStore;
     this.questProvider = questProvider;
     this.zoneActivator = zoneActivator;
-    this.db = atlasStore;
-    // files.delete(path);
-    // String fileName = files.getFullPath(path);
-    // log.warn("Creating new MVStore at {}", fileName);
+    this.atlasMapStore = atlasStore;
     this.mapLoader = mapLoader;
-    zoneFactory = new ZoneFactory(mapStore, entityStore, resourceManager);
+    zoneFactory =
+        new ZoneFactory(atlasStore, gameContext.getStore(), gameContext.getResourceManageer());
     worldDataType = new WorldDataType(zoneFactory);
     dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
     mapDataType = new MapDataType(worldDataType, dungeonDataType);
-    // db = MVStore.open(fileName);
-    maps = atlasStore.openMap("maps");
-    this.mapLoader = mapLoader;
-    zoneFactory = new ZoneFactory(db, entityStore, resourceManager);
-    worldDataType = new WorldDataType(zoneFactory);
-    dungeonDataType = new Dungeon.DungeonDataType(zoneFactory);
-    mapDataType = new MapDataType(worldDataType, dungeonDataType);
-    // db = MVStore.open(fileName);
-    maps = db.openMap("maps", IntegerDataType.INSTANCE, mapDataType);
+    maps = atlasMapStore.openMap("maps", IntegerDataType.INSTANCE, mapDataType);
     this.gameContext = gameContext;
-  }
-
-  private MapStore getMapStore(FileSystem files, String fileName) {
-    files.delete(fileName);
-
-    log.warn("Creating new MVStore at {}", fileName);
-    return new MapStoreMVStoreAdapter(MVStore.open(files.getFullPath(fileName)));
-  }
-
-  /**
-   * Creates a default zone activator using Engine singleton (for backward compatibility).
-   *
-   * @return a zone activator
-   */
-  static ZoneActivator createDefaultZoneActivator(GameStore gameStore) {
-    return new ZoneActivator(new neon.maps.services.EnginePhysicsManager(), gameStore);
-  }
-
-  public MapStore getCache() {
-    return db;
   }
 
   /**
@@ -122,6 +86,10 @@ public class Atlas implements Closeable, MapAtlas {
    */
   public Map getCurrentMap() {
     return maps.get(currentMap);
+  }
+
+  public void setCurrentMap(Map map) {
+    currentMap = map.getUID();
   }
 
   /**
@@ -156,7 +124,17 @@ public class Atlas implements Closeable, MapAtlas {
     return maps.get(uid);
   }
 
-  public void putMapIfNeeded(Map map) {}
+  public Map getMap(int uid, String... path) {
+    Map map = mapLoader.loadMap(path, uid);
+    return map;
+  }
+
+  public void putMapIfNeeded(Map map) {
+    if (!maps.containsKey(map.getUID())) {
+      // could be a random map that's not in the database yet
+      maps.put(map.getUID(), map);
+    }
+  }
 
   /**
    * Sets the current zone.
@@ -180,28 +158,14 @@ public class Atlas implements Closeable, MapAtlas {
     } else {
       setCurrentZone(0);
     }
-
-    if (getCurrentMap() instanceof Dungeon && getCurrentZone().isRandom()) {
-      new DungeonGenerator(getCurrentZone(), questProvider, gameContext)
-          .generate(door, previousZone, this);
-    }
-  }
-
-  /**
-   * Set the current map.
-   *
-   * @param map the new current map
-   */
-  public void setMap(Map map) {
-    if (!maps.containsKey(map.getUID())) {
-      // could be a random map that's not in the database yet
-      maps.put(map.getUID(), map);
-    }
-    currentMap = map.getUID();
   }
 
   @Override
-  public void close() throws IOException {
-    db.close();
+  public void close() {
+    atlasMapStore.close();
+  }
+
+  public void setMap(Map world) {
+    setCurrentMap(world);
   }
 }

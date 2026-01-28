@@ -32,7 +32,9 @@ class RegionSerializationTest {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
     regionDataType = new RegionDataType(TestEngineContext.getTestResources());
-    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
   }
 
   @AfterEach

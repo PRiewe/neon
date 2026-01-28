@@ -25,7 +25,6 @@ import java.io.IOException;
 import neon.ai.AIFactory;
 import neon.core.Engine;
 import neon.core.GameContext;
-import neon.core.GameStores;
 import neon.entities.*;
 import neon.entities.components.HealthComponent;
 import neon.entities.property.Slot;
@@ -43,7 +42,7 @@ public class CreatureSerializer {
   public CreatureSerializer(GameContext gameContext) {
     this.gameContext = gameContext;
     this.aiFactory = new AIFactory(gameContext);
-    spellFactory = new SpellFactory(resourceManager);
+    spellFactory = new SpellFactory(gameContext.getResourceManageer());
   }
 
   public Creature deserialize(DataInput in) throws IOException {
@@ -66,7 +65,7 @@ public class CreatureSerializer {
     creature.getMagicComponent().setModifier(in.readFloat());
     String spell = in.readUTF();
     if (!spell.isEmpty()) {
-      creature.getMagicComponent().equipSpell(SpellFactory.getSpell(spell));
+      creature.getMagicComponent().equipSpell(spellFactory.getSpell(spell));
     }
 
     int date = in.readInt();

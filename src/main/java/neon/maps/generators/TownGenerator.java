@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import neon.core.GameContext;
 import neon.entities.Door;
 import neon.entities.EntityFactory;
+import neon.entities.ItemFactory;
 import neon.maps.MapUtils;
 import neon.maps.Region;
 import neon.maps.Zone;
@@ -43,6 +44,7 @@ public class TownGenerator {
   private final GameContext gameContext;
   private final EntityFactory entityFactory;
   private final MapUtils mapUtils;
+  private final ItemFactory itemFactory;
 
   public TownGenerator(Zone zone, GameContext gameContext) {
     this(zone, gameContext, new MapUtils());
@@ -61,7 +63,7 @@ public class TownGenerator {
     this.entityFactory = new EntityFactory(gameContext);
     this.mapUtils = mapUtils;
 
-    itemFactory = new ItemFactory(resourceProvider);
+    itemFactory = new ItemFactory(gameContext.getResourceManageer());
   }
 
   /**

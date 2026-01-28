@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+import neon.core.UIStorage;
 import neon.maps.MapUtils;
 import neon.resources.RRegionTheme;
 import neon.test.MapDbTestHelper;
@@ -33,24 +34,21 @@ import org.junit.jupiter.params.provider.MethodSource;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WildernessGeneratorIntegrationTest {
 
-  // ==================== Configuration ====================
-
   /** Controls whether wilderness visualizations are printed to stdout during tests. */
   private static final boolean PRINT_WILDERNESS = false;
 
   public static final String THEMES_PATH = "src/test/resources/sampleMod1/themes/";
 
-  // ==================== Static Theme Data ====================
-
   private static Map<String, RRegionTheme> wildernessThemes;
 
   MapStore testDb;
+  UIStorage uidStore;
 
-  // ==================== Setup ====================
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
     TestEngineContext.initialize(testDb);
+    uidStore = TestEngineContext.getTestUiEngineContext();
   }
 
   @AfterEach
@@ -120,7 +118,7 @@ class WildernessGeneratorIntegrationTest {
     String[][] terrain = new String[height + 2][width + 2];
     MapUtils mapUtils = MapUtils.withSeed(scenario.seed());
     Dice dice = Dice.withSeed(scenario.seed());
-    return new WildernessTerrainGenerator(mapUtils, dice);
+    return new WildernessTerrainGenerator(mapUtils, dice, uidStore);
   }
 
   // ==================== LAYER 1: Lightweight Terrain Generation Tests ====================

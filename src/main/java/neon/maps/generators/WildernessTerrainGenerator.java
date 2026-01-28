@@ -33,7 +33,7 @@ public class WildernessTerrainGenerator {
     this.resourceProvider = dataStore.getResources();
     this.blocksGenerator = new BlocksGenerator(mapUtils);
     this.caveGenerator = new CaveGenerator(dice);
-    this.itemFactory = new ItemFactory(dataStore);
+    this.itemFactory = new ItemFactory(dataStore.getResourceManageer());
   }
 
   public String[][] generate(Rectangle r, RRegionTheme theme, String base) {
@@ -50,8 +50,8 @@ public class WildernessTerrainGenerator {
     return terrain;
   }
 
-  String[][] generateTerrain(int width, int height, RRegionTheme theme, String base) {
-    String[][] terrain = new String[width + 2][height + 2];
+  public void generateTerrain(
+      int width, int height, RRegionTheme theme, String base, String[][] terrain) {
     // create terrain and vegetation
     switch (theme.type) {
       case CHAOTIC -> generateSwamp(width, height, theme, terrain);

@@ -14,21 +14,20 @@ import neon.util.Dice;
 import neon.util.mapstorage.MapStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Nested test class for integration tests that require full Engine context. These tests verify the
+ * test class for integration tests that require full Engine context. These tests verify the
  * generate(Door, Zone, Atlas) method which creates actual entities.
  */
-@Nested
 class DungeonXmlGenerateWithFullContextTests {
 
   private MapStore testDb;
   private Atlas testAtlas;
   private EntityStore entityStore;
   private MapTestFixtures mapTestFixtures;
+  private ZoneFactory zoneFactory;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -43,8 +42,11 @@ class DungeonXmlGenerateWithFullContextTests {
     TestEngineContext.loadTestResourceViaConfig("src/test/resources/neon.ini.sampleMod1.xml");
     // TestEngineContext.loadTestResources("src/test/resources/sampleMod1");
     testAtlas = TestEngineContext.getTestAtlas();
-    entityStore = TestEngineContext.getTestEntityStore();
-    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
+    entityStore = TestEngineContext.getTestUiEngineContext().getStore();
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
+    zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
   @AfterEach
@@ -70,7 +72,7 @@ class DungeonXmlGenerateWithFullContextTests {
       DungeonGeneratorXmlIntegrationTest.ZoneThemeScenario scenario) throws Exception {
     // Given: Set up dungeon structure
     int mapUID = entityStore.createNewMapUID();
-    Dungeon dungeon = new Dungeon("test-dungeon-" + scenario.zoneId(), mapUID);
+    Dungeon dungeon = new Dungeon("test-dungeon-" + scenario.zoneId(), mapUID, zoneFactory);
     dungeon.addZone(0, "zone-0"); // Previous zone
     dungeon.addZone(1, "zone-1", scenario.theme()); // Target zone with theme
 
@@ -109,7 +111,7 @@ class DungeonXmlGenerateWithFullContextTests {
       DungeonGeneratorXmlIntegrationTest.ZoneThemeScenario scenario) throws Exception {
     // Given
     int mapUID = entityStore.createNewMapUID();
-    Dungeon dungeon = new Dungeon("test-dungeon-" + scenario.zoneId(), mapUID);
+    Dungeon dungeon = new Dungeon("test-dungeon-" + scenario.zoneId(), mapUID, zoneFactory);
     dungeon.addZone(0, "zone-0");
     dungeon.addZone(1, "zone-1", scenario.theme());
 

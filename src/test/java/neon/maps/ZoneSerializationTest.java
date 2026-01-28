@@ -25,13 +25,17 @@ class ZoneSerializationTest {
 
   private MapStore testDb;
   private MapTestFixtures mapTestFixtures;
+  private ZoneFactory zoneFactory;
 
   @BeforeEach
   void setUp() throws Exception {
     testDb = MapDbTestHelper.createInMemoryDB();
 
     TestEngineContext.initialize(testDb);
-    mapTestFixtures = new MapTestFixtures(TestEngineContext.getTestResources());
+    mapTestFixtures =
+        new MapTestFixtures(
+            TestEngineContext.getTestResources(), TestEngineContext.getTestZoneFactory());
+    zoneFactory = TestEngineContext.getTestZoneFactory();
   }
 
   @AfterEach
@@ -42,7 +46,7 @@ class ZoneSerializationTest {
 
   @Test
   void testEmptyZoneRoundTrip() throws Exception {
-    Zone original = new Zone("test-zone", 1, 0);
+    Zone original = zoneFactory.createZone("test-zone", 1, 0);
 
     Zone deserialized = serializeAndDeserialize(original);
 
@@ -51,7 +55,7 @@ class ZoneSerializationTest {
 
   @Test
   void testZoneWithSingleRegion() throws Exception {
-    Zone original = new Zone("zone-with-region", 2, 0);
+    Zone original = zoneFactory.createZone("zone-with-region", 2, 0);
     Region region = mapTestFixtures.createTestRegion(10, 20, 30, 40);
     original.addRegion(region);
 
@@ -67,7 +71,7 @@ class ZoneSerializationTest {
 
   @Test
   void testZoneWithMultipleRegions() throws Exception {
-    Zone original = new Zone("multi-region-zone", 3, 0);
+    Zone original = zoneFactory.createZone("multi-region-zone", 3, 0);
 
     // Add 10 regions in a grid
     for (int i = 0; i < 10; i++) {
@@ -85,7 +89,7 @@ class ZoneSerializationTest {
 
   @Test
   void testZoneRTreeSpatialQueriesAfterDeserialization() throws Exception {
-    Zone original = new Zone("spatial-test-zone", 4, 0);
+    Zone original = zoneFactory.createZone("spatial-test-zone", 4, 0);
 
     // Create regions at specific locations
     Region r1 = mapTestFixtures.createTestRegion("r1", 0, 0, 10, 10, 0);
@@ -110,7 +114,7 @@ class ZoneSerializationTest {
 
   @Test
   void testZoneRTreeRangeQueries() throws Exception {
-    Zone original = new Zone("range-query-zone", 5, 0);
+    Zone original = zoneFactory.createZone("range-query-zone", 5, 0);
 
     // Create a 10x10 grid of regions
     for (int y = 0; y < 10; y++) {
@@ -135,7 +139,7 @@ class ZoneSerializationTest {
 
   @Test
   void testZonePreservesMetadata() throws Exception {
-    Zone original = new Zone("metadata-zone", 6, 5);
+    Zone original = zoneFactory.createZone("metadata-zone", 6, 5);
 
     Region region = mapTestFixtures.createTestRegion(0, 0, 50, 50);
     original.addRegion(region);
@@ -153,7 +157,7 @@ class ZoneSerializationTest {
   @Test
   void testLargeZoneSerialization() throws Exception {
     int regionCount = 100;
-    Zone original = new Zone("large-zone", 7, 0);
+    Zone original = zoneFactory.createZone("large-zone", 7, 0);
 
     // Create 100 regions
     for (int i = 0; i < regionCount; i++) {
@@ -172,7 +176,7 @@ class ZoneSerializationTest {
 
   @Test
   void testZoneSerializationPerformance() throws Exception {
-    Zone zone = new Zone("perf-zone", 8, 0);
+    Zone zone = zoneFactory.createZone("perf-zone", 8, 0);
 
     // Add 50 regions
     for (int i = 0; i < 50; i++) {
@@ -203,7 +207,7 @@ class ZoneSerializationTest {
     int[] sizes = {10, 50, 100, 200};
 
     for (int size : sizes) {
-      Zone zone = new Zone("zone-" + size, 100 + size, 0);
+      Zone zone = zoneFactory.createZone("zone-" + size, 100 + size, 0);
 
       for (int i = 0; i < size; i++) {
         Region region = mapTestFixtures.createTestRegion(i * 10, i * 10, 10, 10);
@@ -225,7 +229,7 @@ class ZoneSerializationTest {
 
   @Test
   void testRTreeReconstructionFromMapDb() throws Exception {
-    Zone original = new Zone("rtree-test", 9, 0);
+    Zone original = zoneFactory.createZone("rtree-test", 9, 0);
 
     // Add regions
     for (int i = 0; i < 20; i++) {
@@ -248,8 +252,8 @@ class ZoneSerializationTest {
   @Test
   void testMultipleZonesSameMapDb() throws Exception {
     // Create two zones using the same MapDb instance
-    Zone zone1 = new Zone("zone1", 10, 0);
-    Zone zone2 = new Zone("zone1", 10, 1); // Same map, different index
+    Zone zone1 = zoneFactory.createZone("zone1", 10, 0);
+    Zone zone2 = zoneFactory.createZone("zone1", 10, 1); // Same map, different index
 
     for (int i = 0; i < 5; i++) {
       zone1.addRegion(mapTestFixtures.createTestRegion(i * 10, 0, 10, 10));
@@ -273,10 +277,6 @@ class ZoneSerializationTest {
   /** Helper method to serialize and deserialize a zone. */
   private Zone serializeAndDeserialize(Zone original) throws IOException, ClassNotFoundException {
     // Serialize
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(baos);
-    original.writeExternal(oos);
-    oos.flush();
     WriteBuffer writeBuffer = new WriteBuffer();
     zoneFactory.writeZoneToWriteBuffer(writeBuffer, original);
 

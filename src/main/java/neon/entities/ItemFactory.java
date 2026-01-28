@@ -19,8 +19,6 @@
 package neon.entities;
 
 import java.util.*;
-import neon.ai.*;
-import neon.core.UIStorage;
 import neon.entities.components.Enchantment;
 import neon.entities.components.RenderComponent;
 import neon.entities.components.ShapeComponent;
@@ -31,26 +29,26 @@ import neon.ui.graphics.svg.SVGLoader;
 import neon.util.Dice;
 
 public class ItemFactory {
-  private final UIStorage dataStore;
+  private final ResourceManager resourceManager;
+  private final SpellFactory spellFactory;
 
-  public ItemFactory(UIStorage dataStore) {
-    this.dataStore = dataStore;
+  public ItemFactory(ResourceManager resourceManager) {
+    this.resourceManager = resourceManager;
+    spellFactory = new SpellFactory(resourceManager);
   }
 
   public Item getItem(String id, long uid) {
-    Item item = getItem(id, -1, -1, uid);
-    return item;
+    return getItem(id, -1, -1, uid);
   }
 
   public Item getItem(String id, int x, int y, long uid) {
     // item aanmaken
     RItem resource;
-    if (dataStore.getResources().getResource(id) instanceof LItem li) {
+    if (resourceManager.getResource(id) instanceof LItem li) {
       ArrayList<String> items = new ArrayList<String>(li.items.keySet());
-      resource =
-          (RItem) dataStore.getResources().getResource(items.get(Dice.roll(1, items.size(), -1)));
+      resource = (RItem) resourceManager.getResource(items.get(Dice.roll(1, items.size(), -1)));
     } else {
-      resource = (RItem) dataStore.getResources().getResource(id);
+      resource = (RItem) resourceManager.getResource(id);
     }
     Item item = getItem(resource, uid);
 
@@ -76,7 +74,7 @@ public class ItemFactory {
         mana = ((RWeapon) resource).mana;
       }
       item.setMagicComponent(
-          new Enchantment(SpellFactory.getSpell(resource.spell), mana, item.getUID()));
+          new Enchantment(spellFactory.getSpell(resource.spell), mana, item.getUID()));
     }
 
     return item;

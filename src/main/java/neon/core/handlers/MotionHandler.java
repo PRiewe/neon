@@ -48,11 +48,10 @@ public class MotionHandler {
   public static final byte NULL = 5;
   public static final byte HABITAT = 6;
   public final GameContext gameContext;
-  public final MapLoader mapLoader;
 
   public MotionHandler(GameContext gameContext) {
     this.gameContext = gameContext;
-    this.mapLoader = new MapLoader(gameContext);
+
   }
 
   /**

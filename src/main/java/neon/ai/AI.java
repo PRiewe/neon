@@ -53,6 +53,7 @@ public abstract class AI implements Serializable {
   protected HashMap<Long, Integer> dispositions = new HashMap<Long, Integer>();
   protected final GameContext gameContext;
   protected final MotionHandler motionHandler;
+  protected final CombatUtils combatUtils;
 
   /**
    * Initializes a new AI.
@@ -67,6 +68,7 @@ public abstract class AI implements Serializable {
     this.creature = creature;
     this.gameContext = gameContext;
     this.motionHandler = new MotionHandler(gameContext);
+    this.combatUtils = new CombatUtils(gameContext.getStore());
   }
 
   /** Lets the creature with this AI act. */
@@ -269,10 +271,10 @@ public abstract class AI implements Serializable {
             && !equip(Slot.AMMO)) {
           continue;
         } else if (type.equals(WeaponType.ARROW)
-            && !CombatUtils.getWeaponType(creature).equals(WeaponType.BOW)) {
+            && !combatUtils.getWeaponType(creature).equals(WeaponType.BOW)) {
           continue;
         } else if (type.equals(WeaponType.BOLT)
-            && !CombatUtils.getWeaponType(creature).equals(WeaponType.CROSSBOW)) {
+            && !combatUtils.getWeaponType(creature).equals(WeaponType.CROSSBOW)) {
           continue;
         }
         return true;
@@ -461,7 +463,7 @@ public abstract class AI implements Serializable {
       long uid = creature.getInventoryComponent().get(Slot.WEAPON);
       Weapon weapon = (Weapon) gameContext.getStore().getEntity(uid);
       if (creature.getInventoryComponent().hasEquiped(Slot.WEAPON) && weapon.isRanged()) {
-        if (!(CombatUtils.getWeaponType(creature).equals(WeaponType.THROWN) || equip(Slot.AMMO))) {
+        if (!(combatUtils.getWeaponType(creature).equals(WeaponType.THROWN) || equip(Slot.AMMO))) {
           InventoryHandler.unequip(weapon.getUID(), creature);
         }
       } else if (!creature.getInventoryComponent().hasEquiped(Slot.WEAPON)) {

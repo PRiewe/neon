@@ -53,6 +53,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
   private final MBassador<EventObject> bus;
   private final UserInterface ui;
   private final GameContext context;
+  private final MagicHandler magicHandler;
 
   public InventoryState(
       State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
@@ -60,6 +61,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     this.bus = bus;
     this.ui = ui;
     this.context = context;
+    magicHandler = new MagicHandler(context);
     panel = new JPanel(new BorderLayout());
 
     // info
@@ -112,7 +114,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
     //		System.out.println(item.getClass());
     if (item instanceof Item.Potion) {
       InventoryHandler.removeItem(player, item.getUID());
-      MagicHandler.drink(player, (Item.Potion) item);
+      magicHandler.drink(player, (Item.Potion) item);
       initList();
     } else if (item instanceof Item.Book && !(item instanceof Item.Scroll)) {
       RText text =
@@ -123,7 +125,7 @@ public class InventoryState extends State implements KeyListener, MouseListener 
       new BookDialog(ui.getWindow()).show(item.toString(), text.getText());
     } else if (item instanceof Item.Food) {
       InventoryHandler.removeItem(player, item.getUID());
-      MagicHandler.eat(player, (Item.Food) item);
+      magicHandler.eat(player, (Item.Food) item);
       initList();
     } else if (item instanceof Item.Aid) {
       InventoryHandler.removeItem(player, item.getUID());

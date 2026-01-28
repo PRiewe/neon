@@ -19,16 +19,18 @@
 package neon.maps;
 
 import java.awt.*;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.nio.ByteBuffer;
-import neon.core.GameStores;
+import neon.core.UIStorage;
 import neon.entities.Item;
 import neon.entities.UIDStore;
 import neon.maps.mvstore.MVUtils;
 import neon.maps.mvstore.RegionDataType;
 import neon.resources.RZoneTheme;
+import neon.resources.ResourceManager;
 import neon.util.mapstorage.MapStore;
 import neon.util.spatial.RTree;
 import org.h2.mvstore.WriteBuffer;
@@ -39,7 +41,7 @@ import org.h2.mvstore.WriteBuffer;
  *
  * @author mdriesen
  */
-public class ZoneFactory {
+public class ZoneFactory implements Closeable {
   private final MapStore cache;
   private final UIDStore uidStore;
   private final ResourceManager resourceManager;
@@ -50,15 +52,15 @@ public class ZoneFactory {
    *
    * @param cache the MapDB cache database for spatial indices
    */
-  public ZoneFactory(MapStore cache) {
+  public ZoneFactory(MapStore cache, UIDStore uidStore, ResourceManager resourceManager) {
     this.cache = cache;
     this.uidStore = uidStore;
     this.resourceManager = resourceManager;
     this.regionDataType = new RegionDataType(resourceManager);
   }
 
-  public ZoneFactory(GameStores gameStore) {
-    this(gameStore.getAtlas().getCache(), gameStore.getStore(), gameStore.getResources());
+  public ZoneFactory(UIStorage gameStore, MapStore mapStore) {
+    this(mapStore, gameStore.getStore(), gameStore.getResourceManageer());
   }
 
   public Zone createZone(String name, int map, int index) {
@@ -197,5 +199,24 @@ public class ZoneFactory {
     for (long l : zone.getCreatures()) {
       out.writeLong(l);
     }
+  }
+
+
+  /**
+   * Closes this stream and releases any system resources associated
+   * with it. If the stream is already closed then invoking this
+   * method has no effect.
+   *
+   * <p> As noted in {@link AutoCloseable#close()}, cases where the
+   * close may fail require careful attention. It is strongly advised
+   * to relinquish the underlying resources and to internally
+   * <em>mark</em> the {@code Closeable} as closed, prior to throwing
+   * the {@code IOException}.
+   *
+   * @throws IOException if an I/O error occurs
+   */
+  @Override
+  public void close() throws IOException {
+    cache.close();
   }
 }

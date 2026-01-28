@@ -19,7 +19,9 @@
 package neon.core;
 
 import java.util.EventObject;
+import neon.core.event.TaskSubmission;
 import neon.maps.Atlas;
+import neon.maps.ZoneFactory;
 import neon.narrative.QuestTracker;
 import neon.systems.physics.PhysicsSystem;
 import neon.systems.timing.Timer;
@@ -39,6 +41,8 @@ public interface GameContext extends UIStorage {
 
   QuestTracker getQuestTracker();
 
+  TaskSubmission getTaskSubmissionQueue();
+
   // ========== Actions ==========
 
   ScriptEngine getScriptEngine();
@@ -56,4 +60,6 @@ public interface GameContext extends UIStorage {
   void post(EventObject event);
 
   PhysicsSystem getPhysicsEngine();
+
+  ZoneFactory getZoneFactory();
 }

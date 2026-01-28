@@ -25,6 +25,7 @@ import neon.core.GameContext;
 import neon.core.handlers.InventoryHandler;
 import neon.entities.components.FactionComponent;
 import neon.entities.property.Gender;
+import neon.magic.SpellFactory;
 import neon.resources.*;
 import neon.util.Dice;
 
@@ -32,11 +33,13 @@ public class EntityFactory {
   private final AIFactory aiFactory;
   private final GameContext gameContext;
   private final ItemFactory itemFactory;
+  private final SpellFactory spellFactory;
 
   public EntityFactory(GameContext gameContext) {
     this.gameContext = gameContext;
     this.aiFactory = new AIFactory(gameContext);
-    this.itemFactory = new ItemFactory(gameContext);
+    this.itemFactory = new ItemFactory(gameContext.getResourceManageer());
+    this.spellFactory = new SpellFactory(gameContext.getResourceManageer());
   }
 
   public Item getItem(String id, long uid) {
@@ -66,7 +69,7 @@ public class EntityFactory {
       InventoryHandler.addItem(creature, itemUID);
     }
     for (String s : person.spells) {
-      creature.getMagicComponent().addSpell(neon.magic.SpellFactory.getSpell(s));
+      creature.getMagicComponent().addSpell(spellFactory.getSpell(s));
     }
     FactionComponent factions = creature.getFactionComponent();
     for (String f : person.factions.keySet()) {

@@ -30,11 +30,7 @@ import neon.core.event.ScriptAction;
 import neon.core.event.TaskQueue;
 import neon.core.handlers.InventoryHandler;
 import neon.core.handlers.SkillHandler;
-import neon.entities.Entity;
-import neon.entities.EntityFactory;
-import neon.entities.Item;
-import neon.entities.Player;
-import neon.entities.UIDStore;
+import neon.entities.*;
 import neon.entities.components.Stats;
 import neon.entities.property.Ability;
 import neon.entities.property.Feat;
@@ -51,9 +47,12 @@ import neon.resources.RSign;
 import neon.resources.RSpell.SpellType;
 import neon.systems.files.FileUtils;
 import neon.systems.files.XMLTranslator;
+import neon.util.mapstorage.MapStore;
+import neon.util.mapstorage.MapStoreMVStoreAdapter;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
+import org.h2.mvstore.MVStore;
 import org.jdom2.*;
 import org.jdom2.input.SAXBuilder;
 
@@ -68,6 +67,7 @@ public class GameLoader {
   private final GameContext gameContext;
   private final EntityFactory entityFactory;
   private final MapLoader mapLoader;
+  private final SpellFactory spellFactory;
 
   public GameLoader(
       Configuration config,
@@ -83,6 +83,7 @@ public class GameLoader {
     this.config = config;
     this.engine = engine;
     queue = taskQueue;
+    spellFactory = new SpellFactory(gameContext.getResourceManageer());
 
     mapLoader = new MapLoader(gameContext);
   }
@@ -132,14 +133,18 @@ public class GameLoader {
       log.debug("Engine.initGame() start");
 
       // initialize player
-      RCreature species = ((RCreature) gameStores.getResources().getResource(race)).clone();
-      ItemFactory itemFactory = new ItemFactory(gameStores.getResources());
-      Player player = new Player(species, name, gender, spec, profession, gameStores.getStore());
+
+      ItemFactory itemFactory = new ItemFactory(gameContext.getResourceManageer());
+      RCreature species =
+          new RCreature(((RCreature) gameStore.getResourceManager().getResource(race)).toElement());
+      Player player = new Player(species, name, gender, spec, profession, gameStore.getUidStore());
       player.species.text = "@";
+      MapStore atlasMapStore =
+          new MapStoreMVStoreAdapter(MVStore.open(gameStore.getFileSystem().getFullPath("atlas")));
       Atlas atlas =
           new Atlas(
               gameStore,
-              gameStore.getStore().getCache(),
+              atlasMapStore,
               gameContext.getQuestTracker(),
               new ZoneActivator(gameContext.getPhysicsEngine(), gameContext),
               new MapLoader(new MapUtils(), gameContext),
@@ -163,7 +168,7 @@ public class GameLoader {
       }
       // starting spells
       for (String i : game.getStartingSpells()) {
-        player.getMagicComponent().addSpell(SpellFactory.getSpell(i));
+        player.getMagicComponent().addSpell(spellFactory.getSpell(i));
       }
 
       // position player
@@ -172,7 +177,7 @@ public class GameLoader {
       Map map =
           gameContext.getAtlas().getMap(gameStore.getUidStore().getMapUID(game.getStartMap()));
       gameServices.scriptEngine().getBindings().putMember("map", map);
-      gameContext.getAtlas().setMap(map);
+      gameContext.getAtlas().setCurrentMap(map);
       gameContext.getAtlas().setCurrentZone(game.getStartZone());
     } catch (RuntimeException re) {
       log.error("Error during initGame", re);
@@ -183,7 +188,7 @@ public class GameLoader {
   private void setSign(Player player, RSign sign) {
     player.setSign(sign.id);
     for (String power : sign.powers) {
-      player.getMagicComponent().addSpell(SpellFactory.getSpell(power));
+      player.getMagicComponent().addSpell(spellFactory.getSpell(power));
     }
     for (Ability ability : sign.abilities.keySet()) {
       player.getCharacteristicsComponent().addAbility(ability, sign.abilities.get(ability));
@@ -299,23 +304,19 @@ public class GameLoader {
             gameStore.getResourceManager().getResource(playerData.getAttributeValue("race"));
     Player player =
         new Player(
-            species.clone(),
-            playerData.name,
-            Gender.valueOf(playerData.gender.toUpperCase()),
-            Player.Specialisation.valueOf(playerData.specialisation),
-            playerData.profession,
-            gameStores.getStore());
-    context.startGame(
-        new Game(player, gameStores, context.getPhysicsManager(), context.getQuestTracker()));
             new RCreature(species.toElement()),
             playerData.getAttributeValue("name"),
             Gender.valueOf(playerData.getAttributeValue("gender").toUpperCase()),
             Player.Specialisation.valueOf(playerData.getAttributeValue("spec")),
-            playerData.getAttributeValue("prof"));
+            playerData.getAttributeValue("prof"),
+            gameStore.getUidStore());
+    MapStore atlasMapStore =
+        new MapStoreMVStoreAdapter(MVStore.open(gameStore.getFileSystem().getFullPath("atlas")));
+
     Atlas atlas =
         new Atlas(
             gameStore,
-            gameStore.getStore().getCache(),
+            atlasMapStore,
             gameContext.getQuestTracker(),
             new ZoneActivator(gameContext.getPhysicsEngine(), gameContext),
             new MapLoader(new MapUtils(), gameContext),
@@ -330,7 +331,7 @@ public class GameLoader {
 
     // start map
     int mapUID = Integer.parseInt(playerData.getAttributeValue("map"));
-    gameContext.getAtlas().setMap(gameContext.getAtlas().getMap(mapUID));
+    gameContext.getAtlas().setCurrentMap(gameContext.getAtlas().getMap(mapUID));
     int level = Integer.parseInt(playerData.getAttributeValue("l"));
     gameContext.getAtlas().setCurrentZone(level);
 
@@ -362,7 +363,7 @@ public class GameLoader {
 
     // spells
     for (Element e : playerData.getChildren("spell")) {
-      player.getMagicComponent().addSpell(SpellFactory.getSpell(e.getText()));
+      player.getMagicComponent().addSpell(spellFactory.getSpell(e.getText()));
     }
 
     // feats

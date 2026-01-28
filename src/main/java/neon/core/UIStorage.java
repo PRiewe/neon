@@ -1,8 +1,9 @@
 package neon.core;
 
-import neon.entities.AbstractUIDStore;
 import neon.entities.Player;
+import neon.entities.UIDStore;
 import neon.maps.services.ResourceProvider;
+import neon.resources.ResourceManager;
 import neon.systems.files.FileSystem;
 
 public interface UIStorage {
@@ -10,7 +11,9 @@ public interface UIStorage {
 
   ResourceProvider getResources();
 
-  AbstractUIDStore getStore();
+  ResourceManager getResourceManageer();
+
+  UIDStore getStore();
 
   FileSystem getFileSystem();
 }

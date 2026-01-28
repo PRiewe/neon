@@ -69,7 +69,7 @@ public class Engine implements Runnable {
   private static MBassador<EventObject> bus; // event bus
   private static ResourceManager resources;
 
-  @Getter private final TaskQueue queue;
+  @Getter private final TaskQueue taskQueue;
   private final Configuration config;
 
   // set externally
@@ -106,17 +106,17 @@ public class Engine implements Runnable {
     physics = new PhysicsSystem();
     gameServices = new GameServices(physics, scriptEngine);
 
-    queue = new TaskQueue();
+    taskQueue = new TaskQueue(scriptEngine);
     // create a resourcemanager to keep track of all the resources
     resources = new ResourceManager();
     gameStore = new GameStore(files, resources);
     // we use an IniBuilder to add all resources to the manager
-    new IniBuilder("neon.ini.xml", files, queue).build(resources);
+    new IniBuilder("neon.ini.xml", files, taskQueue).build(resources);
     quests = new QuestTracker(gameStore, gameServices);
     // set up remaining engine components
     config = new Configuration(resources);
-    gameEngineState = new DefaultUIEngineContext(new QuestTracker(gameStore, gameServices));
-    gameEngineState.setGameStore(gameStore);
+    gameEngineState =
+        new DefaultUIEngineContext(gameStore, new QuestTracker(gameStore, gameServices), taskQueue);
     gameEngineState.setGameServices(gameServices);
     gameEngineState.setBus(bus);
   }
@@ -124,14 +124,15 @@ public class Engine implements Runnable {
   /** This method is the run method of the gamethread. It sets up the event system. */
   public void run() {
     EventAdapter adapter = new EventAdapter(quests);
-    bus.subscribe(queue);
-    bus.subscribe(new CombatHandler());
+    bus.subscribe(taskQueue);
+    bus.subscribe(new CombatHandler(gameStore.getUidStore()));
     bus.subscribe(new DeathHandler(gameStore, gameServices));
     bus.subscribe(new InventoryHandler());
     bus.subscribe(adapter);
     bus.subscribe(quests);
-    bus.subscribe(new GameLoader(config, gameStore, gameServices, queue, this, gameEngineState));
-    bus.subscribe(new GameSaver(queue));
+    bus.subscribe(
+        new GameLoader(config, gameStore, gameServices, taskQueue, this, gameEngineState));
+    bus.subscribe(new GameSaver(taskQueue));
   }
 
   /**
@@ -259,7 +260,7 @@ public class Engine implements Runnable {
     gameEngineState.setGame(game);
 
     // set up missing systems
-    bus.subscribe(new MagicHandler(queue, game));
+    bus.subscribe(new MagicHandler(gameEngineState));
 
     // register player
     Player player = game.getPlayer();

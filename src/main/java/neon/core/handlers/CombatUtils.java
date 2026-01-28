@@ -78,8 +78,8 @@ public class CombatUtils implements Serializable {
 
     float mod = 1f;
     switch (getWeaponType(creature)) {
-      case BLADE_ONE, BLADE_TWO, BLUNT_ONE, BLUNT_TWO, AXE_ONE, AXE_TWO, SPEAR ->
-          mod = creature.species.dex / 20;
+      case BLADE_ONE, BLADE_TWO, BLUNT_ONE, BLUNT_TWO, AXE_ONE, AXE_TWO, SPEAR -> mod =
+          creature.species.dex / 20;
       case BOW, CROSSBOW, THROWN -> mod = creature.species.str / 20;
       default -> {}
     }

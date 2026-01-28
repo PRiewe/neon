@@ -30,6 +30,8 @@ import neon.entities.components.RenderComponent;
 import neon.entities.property.Gender;
 import neon.entities.property.Skill;
 import neon.entities.property.Slot;
+import neon.maps.Map;
+import neon.maps.Zone;
 import neon.narrative.Journal;
 import neon.resources.RCreature;
 import neon.resources.RWeapon.WeaponType;
@@ -37,13 +39,17 @@ import neon.resources.RWeapon.WeaponType;
 public class Player extends Hominid {
   public static final Player PLACEHOLDER =
       new Player(
-          new RCreature("test"), "TestPlayer", Gender.MALE, Specialisation.combat, "Warrior");
+          new RCreature("test"),
+          "TestPlayer",
+          Gender.MALE,
+          Specialisation.combat,
+          "Warrior",
+          new MemoryUIDStore());
   private final int baseLevel;
   private final Journal journal = new Journal();
   private final Specialisation spec;
   private final String profession;
   private final EnumMap<Skill, Float> mods;
-  private String sign;
   private boolean sneak = false;
   private final UIDStore uidStore;
 

@@ -60,7 +60,7 @@ public class JournalState extends State implements FocusListener {
   private final JScrollPane featScroller;
   private final JScrollPane traitScroller;
   private final JScrollPane abilityScroller;
-
+  private final CombatUtils combatUtils;
   // spells panel
   private final JList<RSpell> sList;
 
@@ -71,7 +71,7 @@ public class JournalState extends State implements FocusListener {
     this.ui = ui;
     this.context = context;
     main = new JPanel(new BorderLayout());
-
+    this.combatUtils = new CombatUtils(context.getStore());
     // cardlayout om verschillende panels weer te geven.
     layout = new CardLayout();
     cards = new JPanel(layout);
@@ -236,7 +236,7 @@ public class JournalState extends State implements FocusListener {
                 + "/"
                 + heavy
                 + ") kg"));
-    stuff.add(new JLabel("Defense value: " + CombatUtils.getDV(player)));
+    stuff.add(new JLabel("Defense value: " + combatUtils.getDV(player)));
     stuff.add(new JLabel("Attack value: " + player.getAVString()));
 
     for (Skill skill : Skill.values()) {

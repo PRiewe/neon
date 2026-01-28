@@ -74,8 +74,8 @@ public class GameSaver {
     }
 
     // first copy everything from temp to save, to ensure savedoc is not overwritten
-    Engine.getAtlas().getCache().commit();
-    Engine.getStore().getCache().commit();
+    Engine.getAtlas().getAtlasMapStore().commit();
+    Engine.getStore().commit();
     Engine.getFileSystem().storeTemp(dir);
     Engine.getFileSystem()
         .saveFile(doc, new XMLTranslator(), "saves", player.getName(), "save.xml");

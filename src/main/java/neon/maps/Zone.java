@@ -20,35 +20,32 @@ package neon.maps;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.*;
 import lombok.Getter;
-import neon.core.Engine;
 import neon.entities.Creature;
 import neon.entities.Item;
+import neon.entities.UIDStore;
 import neon.resources.RZoneTheme;
+import neon.resources.ResourceManager;
 import neon.ui.graphics.*;
-import neon.util.mapstorage.MapStore;
 import neon.util.spatial.*;
+import org.jetbrains.annotations.NotNull;
 
-public class Zone implements Externalizable {
+public class Zone {
   private static final ZComparator comparator = new ZComparator();
-  private String name;
-  @Getter private int map;
+
+  @Getter private final String name;
+  @Getter private final int map;
+  @Getter private final int index;
   @Getter private RZoneTheme theme;
 
-  @Getter
-  // the index of this zone
-  private int index;
-
-  private HashMap<Point, Integer> lights = new HashMap<Point, Integer>();
-  private SimpleIndex<Long> creatures = new SimpleIndex<Long>();
-  private GridIndex<Long> items = new GridIndex<Long>();
-  private RTree<Region> regions;
-  private RTree<Long> top = new RTree<Long>(100, 40);
+  private final HashMap<Point, Integer> lights = new HashMap<>();
+  private final SimpleIndex<Long> creatures = new SimpleIndex<>();
+  private final GridIndex<Long> items = new GridIndex<>();
+  private final RTree<Region> regions;
+  private final RTree<Long> top = new RTree<>(100, 40);
+  private final UIDStore uidStore;
+  private final ResourceManager resourceManager;
 
   /**
    * Initializes a new zone.
@@ -56,19 +53,21 @@ public class Zone implements Externalizable {
    * @param name the zone name
    * @param map the map UID
    * @param index the zone index
-   * @deprecated Use {@link ZoneFactory#createZone(String, int, int)} instead to avoid constructor
-   *     side effects
    */
-  @Deprecated
-  public Zone(String name, int map, int index) {
+  public Zone(
+      String name,
+      int map,
+      int index,
+      UIDStore uidStore,
+      ResourceManager resourceManager,
+      RTree<Region> tree) {
     this.map = map;
     this.name = name;
     this.index = index;
-    regions = new RTree<Region>(100, 40, Engine.getAtlas().getCache(), map + ":" + index);
+    this.uidStore = uidStore;
+    this.resourceManager = resourceManager;
+    this.regions = tree;
   }
-
-  /** Default constructor for serialization. */
-  public Zone() {}
 
   /**
    * Initializes a new zone with a theme.
@@ -77,57 +76,17 @@ public class Zone implements Externalizable {
    * @param map the map UID
    * @param theme the zone theme
    * @param index the zone index
-   * @deprecated Use {@link ZoneFactory#createZone(String, int, RZoneTheme, int)} instead to avoid
-   *     constructor side effects
    */
-  @Deprecated
-  public Zone(String name, int map, RZoneTheme theme, int index) {
-    this(name, map, index);
+  public Zone(
+      String name,
+      int map,
+      RZoneTheme theme,
+      int index,
+      UIDStore uidStore,
+      ResourceManager resourceManager,
+      RTree<Region> tree) {
+    this(name, map, index, uidStore, resourceManager, tree);
     this.theme = theme;
-  }
-
-  /**
-   * Private constructor for factory creation.
-   *
-   * @param name the zone name
-   * @param map the map UID
-   * @param index the zone index
-   * @param cache the MapDB cache for spatial indices
-   */
-  private Zone(String name, int map, int index, MapStore cache) {
-    this.map = map;
-    this.name = name;
-    this.index = index;
-    regions = new RTree<Region>(100, 40, cache, map + ":" + index);
-  }
-
-  /**
-   * Factory method to create a zone with dependency injection.
-   *
-   * @param name the zone name
-   * @param mapUID the map UID
-   * @param index the zone index
-   * @param cache the MapDB cache for spatial indices
-   * @return a new Zone instance
-   */
-  static Zone create(String name, int mapUID, int index, MapStore cache) {
-    return new Zone(name, mapUID, index, cache);
-  }
-
-  /**
-   * Factory method to create a zone with a theme and dependency injection.
-   *
-   * @param name the zone name
-   * @param mapUID the map UID
-   * @param theme the zone theme
-   * @param index the zone index
-   * @param cache the MapDB cache for spatial indices
-   * @return a new Zone instance with a theme
-   */
-  static Zone create(String name, int mapUID, RZoneTheme theme, int index, MapStore cache) {
-    Zone zone = new Zone(name, mapUID, index, cache);
-    zone.theme = theme;
-    return zone;
   }
 
   /**
@@ -137,25 +96,18 @@ public class Zone implements Externalizable {
   public Collection<Renderable> getRenderables(Rectangle bounds) {
     ArrayList<Renderable> elements = new ArrayList<Renderable>();
     for (long uid : creatures.getElements(bounds)) {
-      elements.add(Engine.getStore().getEntity(uid).getRenderComponent());
+      elements.add(uidStore.getEntity(uid).getRenderComponent());
     }
     for (long uid : items.getElements(bounds)) {
-      elements.add(Engine.getStore().getEntity(uid).getRenderComponent());
+      elements.add(uidStore.getEntity(uid).getRenderComponent());
     }
     //		for(Region r : regions.getElements(bounds)) {
     elements.addAll(regions.getElements(bounds));
     //		}
     for (long uid : top.getElements(bounds)) {
-      elements.add(Engine.getStore().getEntity(uid).getRenderComponent());
+      elements.add(uidStore.getEntity(uid).getRenderComponent());
     }
     return elements;
-  }
-
-  /**
-   * @return the index of this zone
-   */
-  public int getIndex() {
-    return index;
   }
 
   /**
@@ -167,14 +119,6 @@ public class Zone implements Externalizable {
 
   public void fix() {
     theme = null;
-  }
-
-  public RZoneTheme getTheme() {
-    return theme;
-  }
-
-  public int getMap() {
-    return map;
   }
 
   @Override
@@ -198,7 +142,7 @@ public class Zone implements Externalizable {
   public Collection<Creature> getCreatures(Rectangle box) {
     ArrayList<Creature> list = new ArrayList<Creature>();
     for (long uid : creatures.getElements()) {
-      Creature c = (Creature) Engine.getStore().getEntity(uid);
+      Creature c = (Creature) uidStore.getEntity(uid);
       Rectangle bounds = c.getShapeComponent();
       if (box.contains(bounds.x, bounds.y)) {
         list.add(c);
@@ -215,7 +159,7 @@ public class Zone implements Externalizable {
    */
   public Creature getCreature(Point p) {
     for (long uid : creatures.getElements()) {
-      Creature c = (Creature) Engine.getStore().getEntity(uid);
+      Creature c = (Creature) uidStore.getEntity(uid);
       Rectangle bounds = c.getShapeComponent();
       if (p.distance(bounds.x, bounds.y) < 1) {
         return c;
@@ -294,8 +238,8 @@ public class Zone implements Externalizable {
    */
   public Region getRegion(Point p) {
     ArrayList<Region> buffer = new ArrayList<Region>(getRegions(p));
-    Collections.sort(buffer, comparator);
-    return buffer.size() > 0 ? buffer.get(buffer.size() - 1) : null;
+    buffer.sort(comparator);
+    return !buffer.isEmpty() ? buffer.getLast() : null;
   }
 
   /**
@@ -323,7 +267,7 @@ public class Zone implements Externalizable {
     return regions.getElements();
   }
 
-  public void addItem(Item item) {
+  public void addItem(@NotNull Item item) {
     Rectangle bounds = item.getShapeComponent();
     if (item.resource.top) {
       top.insert(item.getUID(), bounds);

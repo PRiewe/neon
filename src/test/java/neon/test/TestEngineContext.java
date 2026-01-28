@@ -1,6 +1,5 @@
 package neon.test;
 
-import java.awt.Rectangle;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import lombok.Getter;
@@ -8,7 +7,6 @@ import neon.core.*;
 import neon.core.event.TaskQueue;
 import neon.entities.Player;
 import neon.entities.UIDStore;
-import neon.entities.components.PhysicsComponent;
 import neon.entities.property.Gender;
 import neon.maps.*;
 import neon.maps.services.*;
@@ -32,12 +30,12 @@ public class TestEngineContext {
   /** -- GETTER -- Gets the test Atlas instance. */
   @Getter private static Atlas testAtlas;
 
-  private static StubResourceManager testResources;
+  private static ResourceManager testResources;
   private static Game testGame;
   private static UIDStore testStore;
   @Getter private static ZoneFactory testZoneFactory;
   @Getter private static GameStore gameStore;
-  @Getter private static UIDStore testEntityStore;
+
   private static ZoneActivator testZoneActivator;
   @Getter private static DefaultUIEngineContext testUiEngineContext;
   @Getter private static QuestTracker testQuestTracker;
@@ -75,11 +73,11 @@ public class TestEngineContext {
     testDb = db;
 
     // Create stub ResourceManager
-    testResources = new StubResourceManager();
-    setStaticField(Engine.class, "resources", testResources);
+    testResources = new ResourceManager();
+    gameStore = new GameStore(stubFileSystem, testResources);
 
     // Create test UIDStore
-    testStore = new UIDStore(getStubFileSystem(), testDb);
+    testStore = gameStore.getStore();
     // Create test Game using new DI constructor
     Player stubPlayer =
         new Player(
@@ -90,48 +88,34 @@ public class TestEngineContext {
             "Warrior",
             testStore);
 
-    // Create test EntityStore
-    testEntityStore = testStore;
-
-    gameStore = new GameStore(stubFileSystem, testResources);
     // Create stub PhysicsManager and ZoneActivator
-    stubPhysicsManager = new StubPhysicsManager();
-
-    testZoneActivator = new ZoneActivator(stubPhysicsManager);
-    PhysicsManager stubPhysicsManager = new StubPhysicsManager();
     PhysicsSystem physicsSystem = new PhysicsSystem();
     GameServices gameServices = new GameServices(physicsSystem, Engine.createScriptEngine());
-    Player stubPlayer = new StubPlayer();
+
     gameStore.setPlayer(stubPlayer);
     testQuestTracker = new QuestTracker(gameStore, gameServices);
-
-    testZoneActivator = new ZoneActivator(stubPhysicsManager, gameStore);
-    testUiEngineContext = new DefaultUIEngineContext(testQuestTracker);
-    testUiEngineContext.setGameStore(gameStore);
+    TaskQueue taskQueue = new TaskQueue(gameServices.scriptEngine());
+    testZoneActivator = new ZoneActivator(physicsSystem, gameStore);
+    testUiEngineContext = new DefaultUIEngineContext(gameStore,testQuestTracker, taskQueue);
     testUiEngineContext.setGameServices(gameServices);
     // Create ZoneFactory for tests
-    testZoneFactory = new ZoneFactory(db);
+    testZoneFactory = testUiEngineContext.getZoneFactory();
+
     MapLoader testMapLoader = new MapLoader(testUiEngineContext);
     // Create test Atlas with dependency injection (doesn't need Engine.game)
-    testAtlas = new Atlas(getStubFileSystem(), testDb, testStore, testResources, mapLoader);
-    gameStores = new DefaultGameStores(getTestResources(), getStubFileSystem(), stubPlayer);
-    questTracker = new QuestTracker(gameStores);
-    atlasPosition = new AtlasPosition(gameStores, questTracker, stubPlayer);
-    testGame = new Game(stubPlayer, gameStores, atlasPosition);
     testAtlas =
-        new Atlas(
-            gameStore, db, testQuestTracker, testZoneActivator, testMapLoader, testUiEngineContext);
-
-    // Create test Game using new DI constructor
+            new Atlas(
+                    gameStore, db, testQuestTracker, testZoneActivator, testMapLoader, testUiEngineContext);
     testGame = new Game(gameStore, testUiEngineContext, testAtlas);
     testUiEngineContext.setGame(testGame);
+    setStaticField(Engine.class, "resources", testResources);
     setStaticField(Engine.class, "game", testGame);
     setStaticField(Engine.class, "gameEngineState", testUiEngineContext);
     // Create stub FileSystem
     setStaticField(Engine.class, "files", new StubFileSystem());
 
     // Create stub PhysicsSystem
-    setStaticField(Engine.class, "physics", new StubPhysicsSystem());
+    setStaticField(Engine.class, "physics", physicsSystem);
   }
 
   /**
@@ -150,16 +134,10 @@ public class TestEngineContext {
       if (testDb != null) {
         testDb.close();
       }
-      if (gameStores.getZoneMapStore() != null) {
-        gameStores.getZoneMapStore().close();
+      if (testZoneFactory != null) {
+        testZoneFactory.close();
       }
-
-      if (gameStores.getStore() != null) {
-        gameStores.getStore().close();
-      }
-
       gameStore.close();
-      testEntityStore.close();
       setStaticField(Engine.class, "resources", null);
       setStaticField(Engine.class, "game", null);
       setStaticField(Engine.class, "files", null);
@@ -185,7 +163,9 @@ public class TestEngineContext {
   }
 
   public static void loadTestResourceViaConfig(String configFilename) throws Exception {
-    IniBuilder iniBuilder = new IniBuilder(configFilename, getStubFileSystem(), new TaskQueue());
+    IniBuilder iniBuilder =
+        new IniBuilder(
+            configFilename, getStubFileSystem(), new TaskQueue(Engine.createScriptEngine()));
     iniBuilder.build(getTestResources());
   }
 
@@ -197,35 +177,13 @@ public class TestEngineContext {
     field.set(null, value);
   }
 
-  /** Stub ResourceManager that returns dummy resources. */
-  static class StubResourceManager extends ResourceManager implements ResourceProvider {}
+  public static EntityStore getTestEntityStore() {
+    return getTestUiEngineContext().getStore();
+  }
 
   /** Stub FileSystem (minimal implementation). */
   public static class StubFileSystem extends FileSystem {
 
     private StubFileSystem() throws IOException {}
-  }
-
-  /** Stub PhysicsSystem (minimal implementation). */
-  static class StubPhysicsSystem extends PhysicsSystem {
-    // Minimal stub - can be extended if needed
-  }
-
-  /** Stub PhysicsManager for testing. */
-  static class StubPhysicsManager implements PhysicsManager {
-    @Override
-    public void clear() {
-      // No-op for tests
-    }
-
-    @Override
-    public void register(neon.maps.Region region, Rectangle bounds, boolean fixed) {
-      // No-op for tests
-    }
-
-    @Override
-    public void register(PhysicsComponent component) {
-      // No-op for tests
-    }
   }
 }
