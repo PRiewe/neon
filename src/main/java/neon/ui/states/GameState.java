@@ -61,7 +61,10 @@ public class GameState extends State implements KeyListener, CollisionListener {
     setVariable("panel", panel);
 
     // makes functions available for scripting:
-    context.getScriptEngine().getBindings().putMember("engine", new ScriptInterface(panel));
+    context
+        .getScriptEngine()
+        .getBindings()
+        .putMember("engine", new ScriptInterface(panel, context));
     bus.subscribe(new TurnHandler(panel, context));
   }
 

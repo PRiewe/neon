@@ -42,12 +42,14 @@ public class PotionDialog implements KeyListener {
   private final UserInterface ui;
   private final GameContext context;
   private final EntityFactory entityFactory;
+  private final InventoryHandler inventoryHandler;
 
   public PotionDialog(UserInterface ui, String coin, GameContext context) {
     this.ui = ui;
     this.coin = coin;
     this.context = context;
     this.entityFactory = new EntityFactory(context);
+    this.inventoryHandler = new InventoryHandler(context);
     JFrame parent = ui.getWindow();
     frame = new JDialog(parent, true);
     frame.setPreferredSize(new Dimension(parent.getWidth() - 100, parent.getHeight() - 100));
@@ -199,7 +201,7 @@ public class PotionDialog implements KeyListener {
     for (long uid : creature.getInventoryComponent()) {
       Item item = (Item) context.getStore().getEntity(uid);
       if (item.getID().equals(id)) {
-        InventoryHandler.removeItem(creature, uid);
+        inventoryHandler.removeItem(creature, uid);
         return uid;
       }
     }

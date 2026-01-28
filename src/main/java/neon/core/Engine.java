@@ -125,14 +125,14 @@ public class Engine implements Runnable {
   public void run() {
     EventAdapter adapter = new EventAdapter(quests);
     bus.subscribe(taskQueue);
-    bus.subscribe(new CombatHandler(gameStore.getUidStore()));
+    bus.subscribe(new CombatHandler(gameEngineState));
     bus.subscribe(new DeathHandler(gameStore, gameServices));
-    bus.subscribe(new InventoryHandler());
+    bus.subscribe(new InventoryHandler(gameEngineState));
     bus.subscribe(adapter);
     bus.subscribe(quests);
     bus.subscribe(
         new GameLoader(config, gameStore, gameServices, taskQueue, this, gameEngineState));
-    bus.subscribe(new GameSaver(taskQueue));
+    bus.subscribe(new GameSaver(taskQueue, gameEngineState));
   }
 
   /**
@@ -230,7 +230,7 @@ public class Engine implements Runnable {
    * @deprecated Use {@link GameContext#getStore()} instead
    */
   @Deprecated
-  public static UIDStore getStore() {
+  private static UIDStore getStore() {
     return gameStore.getUidStore();
   }
 
@@ -239,7 +239,7 @@ public class Engine implements Runnable {
    * @deprecated Use {@link GameContext#getResources()} instead
    */
   @Deprecated
-  public static ResourceManager getResources() {
+  private static ResourceManager getResources() {
     return gameStore.getResourceManager();
   }
 

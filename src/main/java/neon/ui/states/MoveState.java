@@ -48,6 +48,7 @@ public class MoveState extends State implements KeyListener {
   private final GameContext context;
   private final MotionHandler motionHandler;
   private final TeleportHandler teleportHandler;
+  private final InventoryHandler inventoryHandler;
 
   public MoveState(State parent, MBassador<EventObject> bus, GameContext context) {
     super(parent, "move module");
@@ -55,6 +56,7 @@ public class MoveState extends State implements KeyListener {
     this.context = context;
     this.motionHandler = new MotionHandler(context);
     this.teleportHandler = new TeleportHandler(context);
+    this.inventoryHandler = new InventoryHandler(context);
     keys = (CClient) context.getResources().getResource("client", "config");
   }
 
@@ -130,7 +132,7 @@ public class MoveState extends State implements KeyListener {
         bus.publishAsync(new TransitionEvent("container", "holder", entity));
       } else {
         context.getAtlas().getCurrentZone().removeItem((Item) entity);
-        InventoryHandler.addItem(player, entity.getUID());
+        inventoryHandler.addItem(player, entity.getUID());
       }
     } else if (items.size() > 1) {
       bus.publishAsync(

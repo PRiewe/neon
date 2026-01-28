@@ -55,11 +55,13 @@ public class MagicHandler {
   public static final int INTERVAL = 9; // power interval niet gedaan
 
   private final CombatUtils combatUtils;
+  private final InventoryHandler inventoryHandler;
   private final GameContext gameContext;
 
   public MagicHandler(GameContext gameContext) {
     this.gameContext = gameContext;
     this.combatUtils = new CombatUtils(gameContext.getStore());
+    this.inventoryHandler = new InventoryHandler(gameContext);
   }
 
   /**
@@ -211,7 +213,7 @@ public class MagicHandler {
       gameContext.post(new MagicEvent.Result(this, caster, RANGE));
     } else {
       if (item instanceof Item.Scroll) {
-        InventoryHandler.removeItem(caster, item.getUID());
+        inventoryHandler.removeItem(caster, item.getUID());
       } else {
         enchantment.addMana(-MagicUtils.getMana(formula));
       }
@@ -269,7 +271,7 @@ public class MagicHandler {
     } else {
       enchantment.addMana(-MagicUtils.getMana(formula));
       if (item instanceof Item.Scroll) {
-        InventoryHandler.removeItem(caster, item.getUID());
+        inventoryHandler.removeItem(caster, item.getUID());
       }
       gameContext.post(new MagicEvent.Result(this, caster, castSpell(caster, caster, formula)));
     }

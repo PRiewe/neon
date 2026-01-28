@@ -61,6 +61,7 @@ public class JournalState extends State implements FocusListener {
   private final JScrollPane traitScroller;
   private final JScrollPane abilityScroller;
   private final CombatUtils combatUtils;
+  private final InventoryHandler inventoryHandler;
   // spells panel
   private final JList<RSpell> sList;
 
@@ -72,6 +73,7 @@ public class JournalState extends State implements FocusListener {
     this.context = context;
     main = new JPanel(new BorderLayout());
     this.combatUtils = new CombatUtils(context.getStore());
+    this.inventoryHandler = new InventoryHandler(context);
     // cardlayout om verschillende panels weer te geven.
     layout = new CardLayout();
     cards = new JPanel(layout);
@@ -228,7 +230,7 @@ public class JournalState extends State implements FocusListener {
     stuff.add(
         new JLabel(
             "Encumbrance: "
-                + InventoryHandler.getWeight(player)
+                + inventoryHandler.getWeight(player)
                 + " (of "
                 + light
                 + "/"

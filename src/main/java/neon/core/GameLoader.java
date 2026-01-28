@@ -68,6 +68,7 @@ public class GameLoader {
   private final EntityFactory entityFactory;
   private final MapLoader mapLoader;
   private final SpellFactory spellFactory;
+  private final InventoryHandler inventoryHandler;
 
   public GameLoader(
       Configuration config,
@@ -80,6 +81,7 @@ public class GameLoader {
     this.gameServices = gameServices;
     this.gameContext = gameContext;
     this.entityFactory = new EntityFactory(gameContext);
+    this.inventoryHandler = new InventoryHandler(gameContext);
     this.config = config;
     this.engine = engine;
     queue = taskQueue;
@@ -168,7 +170,7 @@ public class GameLoader {
       for (String i : game.getStartingItems()) {
         Item item = entityFactory.getItem(i, gameStore.getUidStore().createNewEntityUID());
         gameStore.getUidStore().addEntity(item);
-        InventoryHandler.addItem(player, item.getUID());
+        inventoryHandler.addItem(player, item.getUID());
       }
       // starting spells
       for (String i : game.getStartingSpells()) {

@@ -22,7 +22,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.HashMap;
-import neon.core.Engine;
 import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
@@ -54,6 +53,8 @@ public abstract class AI implements Serializable {
   protected final GameContext gameContext;
   protected final MotionHandler motionHandler;
   protected final CombatUtils combatUtils;
+  protected final PathFinder pathFinder;
+  protected final InventoryHandler inventoryHandler;
 
   /**
    * Initializes a new AI.
@@ -69,6 +70,8 @@ public abstract class AI implements Serializable {
     this.gameContext = gameContext;
     this.motionHandler = new MotionHandler(gameContext);
     this.combatUtils = new CombatUtils(gameContext.getStore());
+    this.pathFinder = new PathFinder(gameContext);
+    this.inventoryHandler = new InventoryHandler(gameContext);
   }
 
   /** Lets the creature with this AI act. */
@@ -185,8 +188,8 @@ public abstract class AI implements Serializable {
         RSpell formula = item.getMagicComponent().getSpell();
 
         if (formula.effect.equals(Effect.RESTORE_HEALTH) && formula.range == 0) {
-          Engine.post(new MagicEvent.ItemOnSelf(this, creature, item));
-          InventoryHandler.removeItem(creature, item.getUID());
+          gameContext.post(new MagicEvent.ItemOnSelf(this, creature, item));
+          inventoryHandler.removeItem(creature, item.getUID());
           return true;
         }
       }
@@ -196,13 +199,13 @@ public abstract class AI implements Serializable {
       if (power.effect.equals(Effect.RESTORE_HEALTH)
           && power.range == 0
           && creature.getMagicComponent().canUse(power, time)) {
-        Engine.post(new MagicEvent.OnSelf(this, creature, power));
+        gameContext.post(new MagicEvent.OnSelf(this, creature, power));
         return true;
       }
     }
     for (RSpell spell : creature.getMagicComponent().getSpells()) {
       if (spell.effect.equals(Effect.RESTORE_HEALTH) && spell.range == 0) {
-        Engine.post(new MagicEvent.OnSelf(this, creature, spell));
+        gameContext.post(new MagicEvent.OnSelf(this, creature, spell));
         return true;
       }
     }
@@ -234,8 +237,8 @@ public abstract class AI implements Serializable {
       if (item instanceof Item.Scroll || item instanceof Item.Potion) {
         RSpell formula = item.getMagicComponent().getSpell();
         if (formula.effect.equals(effect) && formula.range == 0) {
-          Engine.post(new MagicEvent.ItemOnSelf(this, creature, item));
-          InventoryHandler.removeItem(creature, item.getUID());
+          gameContext.post(new MagicEvent.ItemOnSelf(this, creature, item));
+          inventoryHandler.removeItem(creature, item.getUID());
           return true;
         }
       }
@@ -245,13 +248,13 @@ public abstract class AI implements Serializable {
       if (power.effect.equals(effect)
           && power.range == 0
           && creature.getMagicComponent().canUse(power, time)) {
-        Engine.post(new MagicEvent.OnSelf(this, creature, power));
+        gameContext.post(new MagicEvent.OnSelf(this, creature, power));
         return true;
       }
     }
     for (RSpell spell : creature.getMagicComponent().getSpells()) {
       if (spell.effect.equals(effect) && spell.range == 0) {
-        Engine.post(new MagicEvent.OnSelf(this, creature, spell));
+        gameContext.post(new MagicEvent.OnSelf(this, creature, spell));
         return true;
       }
     }
@@ -266,7 +269,7 @@ public abstract class AI implements Serializable {
       Item item = (Item) gameContext.getStore().getEntity(uid);
       if (item instanceof Weapon && slot.equals(((Weapon) item).getSlot())) {
         WeaponType type = ((Weapon) item).getWeaponType();
-        InventoryHandler.equip(item, creature);
+        inventoryHandler.equip(item, creature);
         if ((type.equals(WeaponType.BOW) || type.equals(WeaponType.CROSSBOW))
             && !equip(Slot.AMMO)) {
           continue;
@@ -279,10 +282,10 @@ public abstract class AI implements Serializable {
         }
         return true;
       } else if (item instanceof Clothing && slot.equals(((Clothing) item).getSlot())) {
-        InventoryHandler.equip(item, creature);
+        inventoryHandler.equip(item, creature);
         return true;
       } else if (item instanceof Item.Scroll && slot.equals(Slot.MAGIC)) {
-        InventoryHandler.equip(item, creature);
+        inventoryHandler.equip(item, creature);
         return true;
       }
     }
@@ -400,7 +403,7 @@ public abstract class AI implements Serializable {
     Rectangle cBounds = creature.getShapeComponent();
 
     Point player = pBounds.getLocation();
-    Point next = PathFinder.findPath(creature, cBounds.getLocation(), destination)[0];
+    Point next = pathFinder.findPath(creature, cBounds.getLocation(), destination)[0];
     if (gameContext.getAtlas().getCurrentZone().getCreature(next) == null && !player.equals(next)) {
       motionHandler.move(creature, next);
     }
@@ -456,7 +459,7 @@ public abstract class AI implements Serializable {
     } else { // if creature is smarter, try A*
       Rectangle cBounds = creature.getShapeComponent();
       Rectangle pBounds = prey.getShapeComponent();
-      p = PathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
+      p = pathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
     }
 
     if (p.distance(preyPos.x, preyPos.y) < 1) {
@@ -464,7 +467,7 @@ public abstract class AI implements Serializable {
       Weapon weapon = (Weapon) gameContext.getStore().getEntity(uid);
       if (creature.getInventoryComponent().hasEquiped(Slot.WEAPON) && weapon.isRanged()) {
         if (!(combatUtils.getWeaponType(creature).equals(WeaponType.THROWN) || equip(Slot.AMMO))) {
-          InventoryHandler.unequip(weapon.getUID(), creature);
+          inventoryHandler.unequip(weapon.getUID(), creature);
         }
       } else if (!creature.getInventoryComponent().hasEquiped(Slot.WEAPON)) {
         equip(Slot.WEAPON);

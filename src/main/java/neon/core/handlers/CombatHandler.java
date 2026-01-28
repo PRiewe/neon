@@ -21,11 +21,11 @@ package neon.core.handlers;
 import java.awt.Rectangle;
 import lombok.extern.slf4j.Slf4j;
 import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.event.CombatEvent;
 import neon.core.event.MagicEvent;
 import neon.entities.Creature;
 import neon.entities.Item;
-import neon.entities.UIDStore;
 import neon.entities.Weapon;
 import neon.entities.components.HealthComponent;
 import neon.entities.property.Slot;
@@ -49,11 +49,13 @@ import net.engio.mbassy.listener.References;
 @Slf4j
 public class CombatHandler {
   private final CombatUtils combatUtils;
-  private final UIDStore uidStore;
+  private final GameContext context;
+  private final InventoryHandler inventoryHandler;
 
-  public CombatHandler(UIDStore uidStore) {
-    this.uidStore = uidStore;
-    combatUtils = new CombatUtils(uidStore);
+  public CombatHandler(GameContext context) {
+    this.context = context;
+    combatUtils = new CombatUtils(context.getStore());
+    inventoryHandler = new InventoryHandler(context);
   }
 
   @Handler
@@ -79,7 +81,7 @@ public class CombatHandler {
    */
   private int fight(Creature attacker, Creature defender) {
     long uid = attacker.getInventoryComponent().get(Slot.WEAPON);
-    Weapon weapon = (Weapon) uidStore.getEntity(uid);
+    Weapon weapon = (Weapon) context.getStore().getEntity(uid);
     return fight(attacker, defender, weapon);
   }
 
@@ -93,18 +95,19 @@ public class CombatHandler {
    */
   private int shoot(Creature shooter, Creature target) {
     // damage is average of arrow and bow (Creature.getAV)
-    Weapon ammo = (Weapon) uidStore.getEntity(shooter.getInventoryComponent().get(Slot.AMMO));
-    InventoryHandler.removeItem(shooter, ammo.getUID());
+    Weapon ammo =
+        (Weapon) context.getStore().getEntity(shooter.getInventoryComponent().get(Slot.AMMO));
+    inventoryHandler.removeItem(shooter, ammo.getUID());
     for (long uid : shooter.getInventoryComponent()) {
-      Item item = (Item) uidStore.getEntity(uid);
+      Item item = (Item) context.getStore().getEntity(uid);
       if (item.getID().equals(ammo.getID())) {
-        InventoryHandler.equip(item, shooter);
+        inventoryHandler.equip(item, shooter);
         break;
       }
     }
 
     long uid = shooter.getInventoryComponent().get(Slot.WEAPON);
-    Weapon weapon = (Weapon) uidStore.getEntity(uid);
+    Weapon weapon = (Weapon) context.getStore().getEntity(uid);
     return fight(shooter, target, weapon);
   }
 
@@ -117,12 +120,13 @@ public class CombatHandler {
    * @return			the outcome of the fight
    */
   private int fling(Creature thrower, Creature target) {
-    Weapon weapon = (Weapon) uidStore.getEntity(thrower.getInventoryComponent().get(Slot.AMMO));
-    InventoryHandler.removeItem(thrower, weapon.getUID());
+    Weapon weapon =
+        (Weapon) context.getStore().getEntity(thrower.getInventoryComponent().get(Slot.AMMO));
+    inventoryHandler.removeItem(thrower, weapon.getUID());
     for (long uid : thrower.getInventoryComponent()) {
-      Item item = (Item) uidStore.getEntity(uid);
+      Item item = (Item) context.getStore().getEntity(uid);
       if (item.getID().equals(weapon.getID())) {
-        InventoryHandler.equip(item, thrower);
+        inventoryHandler.equip(item, thrower);
         break;
       }
     }

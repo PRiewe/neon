@@ -66,6 +66,8 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
   private final HashMap<String, Integer> cData;
   private final HashMap<String, Integer> iData;
 
+  private final InventoryHandler inventoryHandler;
+
   public ContainerState(
       State parent, MBassador<EventObject> bus, UserInterface ui, GameContext context) {
     super(parent);
@@ -74,6 +76,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
     this.context = context;
     this.motionHandler = new MotionHandler(context);
     this.teleportHandler = new TeleportHandler(context);
+    this.inventoryHandler = new InventoryHandler(context);
     panel = new JPanel(new BorderLayout());
     JPanel center = new JPanel(new java.awt.GridLayout(0, 3));
     panel.addKeyListener(this);
@@ -157,7 +160,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
         try {
           if (iList.hasFocus()) { // drop something
             Item item = iList.getSelectedValue();
-            InventoryHandler.removeItem(player, item.getUID());
+            inventoryHandler.removeItem(player, item.getUID());
             if (container instanceof Container) { // register change
               ((Container) container).addItem(item.getUID());
             } else if (container instanceof Zone) { // adjust item position
@@ -166,7 +169,7 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
               iBounds.setLocation(pBounds.x, pBounds.y);
               context.getAtlas().getCurrentZone().addItem(item);
             } else if (container instanceof Creature) {
-              InventoryHandler.addItem(((Creature) container), item.getUID());
+              inventoryHandler.addItem(((Creature) container), item.getUID());
             }
             update();
           } else { // pick up something
@@ -184,11 +187,11 @@ public class ContainerState extends State implements KeyListener, ListSelectionL
               if (container instanceof Zone) {
                 context.getAtlas().getCurrentZone().removeItem((Item) item);
               } else if (container instanceof Creature) {
-                InventoryHandler.removeItem(((Creature) container), item.getUID());
+                inventoryHandler.removeItem(((Creature) container), item.getUID());
               } else {
                 ((Container) container).removeItem(item.getUID());
               }
-              InventoryHandler.addItem(player, item.getUID());
+              inventoryHandler.addItem(player, item.getUID());
               update();
             }
           }
