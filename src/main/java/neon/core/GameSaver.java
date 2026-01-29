@@ -42,9 +42,11 @@ import org.jdom2.Element;
 @Listener(references = References.Strong)
 public class GameSaver {
   private final TaskQueue queue;
+  private final GameContext gameContext;
 
-  public GameSaver(TaskQueue queue) {
+  public GameSaver(TaskQueue queue, GameContext gameContext) {
     this.queue = queue;
+    this.gameContext = gameContext;
   }
 
   /** Saves the current game. */
@@ -54,13 +56,13 @@ public class GameSaver {
     Element root = new Element("save");
     doc.setRootElement(root);
 
-    Player player = Engine.getPlayer();
+    Player player = gameContext.getPlayer();
     root.addContent(savePlayer(player)); // save player data
     root.addContent(saveJournal(player)); // save journal
     root.addContent(saveEvents()); // save events
     root.addContent(saveQuests()); // save quests
     Element timer = new Element("timer");
-    timer.setAttribute("ticks", String.valueOf(Engine.getTimer().getTime()));
+    timer.setAttribute("ticks", String.valueOf(gameContext.getTimer().getTime()));
     root.addContent(timer);
 
     File saves = new File("saves");
@@ -74,10 +76,11 @@ public class GameSaver {
     }
 
     // first copy everything from temp to save, to ensure savedoc is not overwritten
-    Engine.getAtlas().getAtlasMapStore().commit();
-    Engine.getStore().commit();
-    Engine.getFileSystem().storeTemp(dir);
-    Engine.getFileSystem()
+    gameContext.getAtlas().getAtlasMapStore().commit();
+    gameContext.getStore().commit();
+    gameContext.getFileSystem().storeTemp(dir);
+    gameContext
+        .getFileSystem()
         .saveFile(doc, new XMLTranslator(), "saves", player.getName(), "save.xml");
   }
 
@@ -145,7 +148,7 @@ public class GameSaver {
 
     PC.setAttribute("spec", player.getSpecialisation().toString());
 
-    Atlas atlas = Engine.getAtlas();
+    Atlas atlas = gameContext.getAtlas();
     PC.setAttribute("map", Integer.toString(atlas.getCurrentMap().getUID()));
     int l = atlas.getCurrentZoneIndex();
     PC.setAttribute("l", Integer.toString(l));

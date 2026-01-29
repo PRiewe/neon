@@ -26,12 +26,14 @@ import neon.ui.GamePanel;
 
 public class ScriptInterface {
   private final GamePanel panel;
+  private final GameContext gameContext;
 
-  public ScriptInterface(GamePanel panel) {
+  public ScriptInterface(GamePanel panel, GameContext gameContext) {
     this.panel = panel;
+    this.gameContext = gameContext;
     InputStream input = Engine.class.getResourceAsStream("scripts.js");
     Scanner scanner = new Scanner(input, StandardCharsets.UTF_8);
-    Engine.execute(scanner.useDelimiter("\\A").next());
+    gameContext.execute(scanner.useDelimiter("\\A").next());
     scanner.close();
   }
 
@@ -40,10 +42,10 @@ public class ScriptInterface {
   }
 
   public Entity get(long uid) {
-    return Engine.getStore().getEntity(uid);
+    return gameContext.getStore().getEntity(uid);
   }
 
   public Entity getPlayer() {
-    return Engine.getPlayer();
+    return gameContext.getPlayer();
   }
 }

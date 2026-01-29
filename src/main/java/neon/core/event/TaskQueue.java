@@ -22,7 +22,6 @@ import com.google.common.collect.Multimap;
 import java.util.EventObject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import neon.core.Engine;
 import neon.core.ScriptEngine;
 import neon.util.fsm.Action;
 import net.engio.mbassy.listener.Handler;
@@ -58,7 +57,7 @@ public class TaskQueue extends TaskSubmission {
     if (repeat.containsKey(time)) {
       for (RepeatEntry entry : repeat.get(time)) {
         if (entry.script != null) {
-          Engine.execute(entry.script);
+          scriptEngine.execute(entry.script);
         } else {
           entry.task.run(te);
         }

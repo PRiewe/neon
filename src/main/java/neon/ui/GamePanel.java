@@ -74,7 +74,7 @@ public class GamePanel extends JComponent {
   /** Initializes this GamePanel. */
   public GamePanel(GameContext context) {
     this.context = context;
-    combatUtils = new CombatUtils(context.getStore());
+    combatUtils = new CombatUtils(context);
     drawing = new JVectorPane();
     drawing.setFilter(new LightFilter());
 

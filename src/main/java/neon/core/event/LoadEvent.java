@@ -19,6 +19,7 @@
 package neon.core.event;
 
 import java.util.EventObject;
+import lombok.Getter;
 import lombok.ToString;
 import neon.entities.Player.Specialisation;
 import neon.entities.property.Gender;
@@ -27,13 +28,16 @@ import neon.resources.RSign;
 @SuppressWarnings("serial")
 @ToString
 public class LoadEvent extends EventObject {
+  private static int nextInstance = 0;
+
   public enum Mode {
     LOAD,
     NEW,
     DONE
   }
 
-  private final Mode mode;
+  private final int instance;
+  @Getter private final Mode mode;
   private String save;
 
   // new mode variabelen
@@ -50,6 +54,7 @@ public class LoadEvent extends EventObject {
    */
   public LoadEvent(Object source, String save) {
     super(source);
+    instance = nextInstance++;
     this.save = save;
     mode = Mode.LOAD;
   }
@@ -62,6 +67,7 @@ public class LoadEvent extends EventObject {
   public LoadEvent(Object source) {
     super(source);
     mode = Mode.DONE;
+    instance = nextInstance++;
   }
 
   public LoadEvent(
@@ -80,10 +86,7 @@ public class LoadEvent extends EventObject {
     this.specialisation = specialisation;
     this.profession = profession;
     this.sign = sign;
-  }
-
-  public Mode getMode() {
-    return mode;
+    instance = nextInstance++;
   }
 
   public String getSaveName() {

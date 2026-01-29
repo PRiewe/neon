@@ -69,7 +69,7 @@ public class AimState extends State implements KeyListener {
     this.context = context;
     keys = (CClient) context.getResources().getResource("client", "config");
     target = new Point();
-    combatUtils = new CombatUtils(context.getStore());
+    combatUtils = new CombatUtils(context);
   }
 
   @Override

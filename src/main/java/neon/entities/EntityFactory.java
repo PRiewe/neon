@@ -34,12 +34,14 @@ public class EntityFactory {
   private final GameContext gameContext;
   private final ItemFactory itemFactory;
   private final SpellFactory spellFactory;
+  private final InventoryHandler inventoryHandler;
 
   public EntityFactory(GameContext gameContext) {
     this.gameContext = gameContext;
     this.aiFactory = new AIFactory(gameContext);
     this.itemFactory = new ItemFactory(gameContext.getResourceManageer());
     this.spellFactory = new SpellFactory(gameContext.getResourceManageer());
+    this.inventoryHandler = new InventoryHandler(gameContext);
   }
 
   public Item getItem(String id, long uid) {
@@ -66,7 +68,7 @@ public class EntityFactory {
       long itemUID = gameContext.getStore().createNewEntityUID();
       Item item = getItem(i, itemUID);
       gameContext.getStore().addEntity(item);
-      InventoryHandler.addItem(creature, itemUID);
+      inventoryHandler.addItem(creature, itemUID);
     }
     for (String s : person.spells) {
       creature.getMagicComponent().addSpell(spellFactory.getSpell(s));

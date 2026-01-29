@@ -20,7 +20,7 @@ package neon.ai;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import neon.core.Engine;
+import neon.core.GameContext;
 import neon.core.event.MagicEvent;
 import neon.entities.Creature;
 import neon.entities.components.ShapeComponent;
@@ -31,10 +31,14 @@ import neon.util.Dice;
 public class HuntBehaviour implements Behaviour {
   private final Creature creature;
   private final Creature prey;
+  private final GameContext gameContext;
+  private final PathFinder pathFinder;
 
-  public HuntBehaviour(Creature hunter, Creature prey) {
+  public HuntBehaviour(Creature hunter, Creature prey, GameContext gameContext) {
     creature = hunter;
     this.prey = prey;
+    this.gameContext = gameContext;
+    this.pathFinder = new PathFinder(gameContext);
   }
 
   public void act() {
@@ -43,14 +47,14 @@ public class HuntBehaviour implements Behaviour {
     Rectangle preyPos = prey.getShapeComponent();
 
     if (dice == 1) {
-      int time = Engine.getTimer().getTime();
+      int time = gameContext.getTimer().getTime();
       for (RSpell.Power power : creature.getMagicComponent().getPowers()) {
         if (power.effect.getSchool().equals(Skill.DESTRUCTION)
             && creature.getMagicComponent().canUse(power, time)
             && power.range >= Point.distance(creaturePos.x, creaturePos.y, preyPos.x, preyPos.y)) {
           creature.getMagicComponent().equipSpell(power);
           ShapeComponent bounds = prey.getShapeComponent();
-          Engine.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
+          gameContext.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
           return; // abort hunt as soon as a spell is cast
         }
       }
@@ -59,7 +63,7 @@ public class HuntBehaviour implements Behaviour {
             && spell.range >= Point.distance(creaturePos.x, creaturePos.y, preyPos.x, preyPos.y)) {
           creature.getMagicComponent().equipSpell(spell);
           ShapeComponent bounds = prey.getShapeComponent();
-          Engine.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
+          gameContext.post(new MagicEvent.CreatureOnPoint(this, creature, bounds.getLocation()));
           return; // abort hunt as soon as a spell is cast
         }
       }
@@ -84,7 +88,7 @@ public class HuntBehaviour implements Behaviour {
     } else { // if creature is smarter, try A*
       ShapeComponent cBounds = creature.getShapeComponent();
       ShapeComponent pBounds = prey.getShapeComponent();
-      p = PathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
+      p = pathFinder.findPath(creature, cBounds.getLocation(), pBounds.getLocation())[0];
     }
 
     if (p.distance(preyPos.x, preyPos.y) < 1) {
