@@ -104,7 +104,7 @@ public class ItemSerializer {
 
     switch (item) {
       case Door door -> {
-        output.writeUTF(door.toString());
+        output.writeUTF(door.getSign());
         writePortal(output, door.portal);
         writeLock(output, door.lock);
         writeTrap(output, door.trap);

@@ -18,7 +18,8 @@
 
 package neon.entities;
 
-import lombok.Setter;
+import java.util.Objects;
+import lombok.Getter;
 import neon.entities.components.DoorRenderComponent;
 import neon.entities.components.Lock;
 import neon.entities.components.Portal;
@@ -30,8 +31,7 @@ public class Door extends Item {
   public final Lock lock;
   public final Trap trap;
   public final Portal portal;
-
-  @Setter private String sign;
+  @Getter private String sign = "";
 
   public Door(long uid, RItem resource) {
     super(uid, resource);
@@ -42,11 +42,15 @@ public class Door extends Item {
   }
 
   public boolean hasSign() {
-    return sign != null;
+    return sign != null && !sign.isEmpty();
+  }
+
+  public void setSign(String newSign) {
+    sign = Objects.requireNonNullElse(newSign, "");
   }
 
   public String toString() {
-    if (sign != null) {
+    if (sign != null && !sign.isEmpty()) {
       return sign;
     } else {
       return super.toString();
